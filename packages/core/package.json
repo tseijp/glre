@@ -1,0 +1,41 @@
+{
+  "name": "glre",
+  "author": "tseijp",
+  "license": "MIT",
+  "version": "0.1.0",
+  "module": "index.js",
+  "types": "index.ts",
+  "main": "index.cjs.js",
+  "umd": "index.develop.js",
+  "private": false,
+  "sideEffect": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "reev": "latest",
+    "refr": "latest",
+    "reii": "latest"
+  },
+  "devDependencies": {
+    "@glre/types": "*"
+  },
+  "keywords": [
+    "glsl",
+    "webgl",
+    "hooks",
+    "react",
+    "reactjs",
+    "reactive",
+    "solid",
+    "typescript"
+  ],
+  "files": [
+    "index.ts",
+    "index.js",
+    "index.d.ts",
+    "index.cjs.js",
+    "index.develop.js",
+    "index.product.js"
+  ]
+}

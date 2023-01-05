@@ -1,0 +1,52 @@
+# my created
+*exe
+sample*
+examples
+packages/*
+!packages/core
+
+**/*.js
+**/*.cjs
+**/*.mjs
+**/*.esm.js
+**/*.develop.js
+**/*.product.js
+examples
+packages/*
+!packages/core
+yarn.lock
+TODO.md
+
+# See https://help.github.com/ignore-files/ for more about ignoring files.
+
+# dependencies
+node_modules
+
+# generated files
+.docusaurus
+.cache-loader
+
+# production
+build
+docs
+tmp
+
+# testing
+coverage
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+npm-error.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+lerna-error.log*
+
+
+

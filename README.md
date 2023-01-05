@@ -22,11 +22,10 @@ gl.render("#myCanvas");
 
 ```tsx
 import { createRoot } from 'react-dom/client'
-import { useGL, usePg } from "glre/react"
+import useGL from "@glre/react"
 
 const App = () => {
-  const gl = useGL("myCanvas");
-  gl`
+  useGL("myCanvas")`
     void main() {
       gl_FragColor = vec4(1.0);
     }
