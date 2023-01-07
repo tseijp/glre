@@ -97,13 +97,13 @@ export function lookAt(eye = [0, 0, 3], center = [0, 0, 0], up = [0, 1, 0]) {
         const [ux, uy, uz] = up
         let [z0, z1, z2] = [ex - cx, ey - cy, ez - cz]
         let lz = 1 / Math.sqrt(z0 ** 2 + z1 ** 2 + z2 ** 2)
-        [z0, z1, z2] = !lz ? [0, 0, 0] : [z0 * lz, z1 * lz, z2 * lz]
+        ;[z0, z1, z2] = !lz ? [0, 0, 0] : [z0 * lz, z1 * lz, z2 * lz]
         let [x0, x1, x2] = [uy * z2 - uz * z1, uz * z0 - ux * z2, ux * z1 - uy * z0]
         let lx = 1 / Math.sqrt(x0 ** 2 + x1 ** 2 + x2 ** 2)
-        [x0, x1, x2] = !lx ? [0, 0, 0] : [x0 * lx, x1 * lx, x2 * lx]
+        ;[x0, x1, x2] = !lx ? [0, 0, 0] : [x0 * lx, x1 * lx, x2 * lx]
         let [y0, y1, y2] = [z1 * x2 - z2 * x1, z2 * x0 - z0 * x2, z0 * x1 - z1 * x0]
         let ly = 1 / Math.sqrt(y0 ** 2 + y1 ** 2 + y2 ** 2)
-        [y0, y1, y2] = !ly ? [0, 0, 0] : [y0 * ly, y1 * ly, y2 * ly]
+        ;[y0, y1, y2] = !ly ? [0, 0, 0] : [y0 * ly, y1 * ly, y2 * ly]
         ret[0] = x0
         ret[1] = y0
         ret[2] = z0
