@@ -13,12 +13,8 @@
     "access": "public"
   },
   "dependencies": {
-    "reev": "latest",
-    "refr": "latest",
-    "reii": "latest"
-  },
-  "devDependencies": {
-    "@glre/types": "*"
+    "reev": "0.3.0",
+    "refr": "0.2.0"
   },
   "keywords": [
     "glsl",
@@ -31,11 +27,14 @@
     "typescript"
   ],
   "files": [
-    "index.ts",
     "index.js",
-    "index.d.ts",
     "index.cjs.js",
     "index.develop.js",
-    "index.product.js"
+    "index.product.js",
+    "index.ts",
+    "events.ts",
+    "helpers.ts",
+    "utils.ts",
+    "types.ts"
   ]
 }
