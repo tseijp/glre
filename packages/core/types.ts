@@ -32,7 +32,7 @@ export interface GL {
         el: any
         event: Event
         frame: Frame
-        stride: Nested<number>
+        stride: Nested<number> // @TODO Nested<(key: string, value: number: number[], ibo: number[]) => number>
         location: Nested<any>
         activeUnit: Nested<number>
         uniformType: Nested<string>
@@ -45,18 +45,35 @@ export interface GL {
         setMount(frame: Fun): GL
         setClean(frame: Fun): GL
         setUniform(key: string, value: Uniform): GL
-        setAttribute(key: string, value: Attribute, iboValue?: Attribute): GL
         setTexture(key: string, value: string): GL
+        setAttribute(key: string, value: Attribute, iboValue?: Attribute): GL
+        setConfig<K extends keyof GLConfig>(key: K, value: GLConfig[K]): GL
+//         setUniform: Durable<(
+//                 key: string,
+//                 value: Uniform,
+//                 isMatrix: boolean
+//         ) => GL>,
+//         setTexture: Durable<(
+//                 key: string,
+//                 value: string,
+//                 activeUnit: number
+//         ) => GL>,
+//         setAttribute: Durable<(
+//                 key: string,
+//                 value: Attribute,
+//                 iboValue: Attribute
+//         ) => GL>,
+//         setConfig: Durable<<K extends keyof GLConfig>(
+//                 key: K,
+//                 value: GLConfig[K]
+//         ) => GL>,
 }
 
 export interface GLConfig {
-        id?: string
-        size?: [number, number]
-        mouse?: [number, number]
-        count?: number
-        frag?: string
-        vert?: string
-        fragShader?: string
-        vertShader?: string
-        lastActiveUnit?: number
+        id: string
+        frag: string
+        vert: string
+        size: [number, number]
+        mouse: [number, number]
+        count: number
 }

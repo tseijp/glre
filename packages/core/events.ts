@@ -50,4 +50,4 @@ export const glEvent = (self: GL) =>
                             });
                     });
             }
-    });
+    } as any);

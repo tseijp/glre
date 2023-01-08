@@ -4,25 +4,29 @@ import { durable, nested } from 'reev'
 import { createVbo, createIbo } from './utils'
 import type { GL, GLConfig } from './types'
 
-export function gl(config: GLConfig = {}) {
-        const self = ((arg = '') => {
-                if (typeof arg === 'function') return self.frame.mount(arg)
-        }) as GL
+export const defaultConfig: GLConfig = {
+        id: 'myCanvas',
+        frag: '', // @TODO feat: add default fragment shader
+        vert: '', // @TODO feat: add default vertex shader
+        size: [0, 0],
+        mouse: [0, 0],
+        count: 1000,
+}
 
-        // initial value
-        self.id = config.id || 'myCanvas'
-        self.size = config.size || [0, 0]
-        self.mouse = config.mouse || [0, 0]
-        self.count = config.count || 1000
-        self.frag = config.frag || config.fragShader || ''
-        self.vert = config.vert || config.vertShader || ''
+export const gl = (config?: string | Partial<GLConfig>) => {
+        const self = ((arg = '') => {
+          if (typeof arg === 'function') return self.frame.mount(arg)
+        }) as GL
 
         // core state
         const ev = (self.event = glEvent(self))
         const fr = (self.frame = frame())
         self.lastActiveUnit = 0
-        self.stride = nested((_key, value) => (value.length / self.count) << 0)
         self.activeUnit = nested(() => self.lastActiveUnit++)
+        self.stride = nested((_key, value, iboValue) => {
+                const count = iboValue?.length || self.count
+                return (value.length / count) << 0
+        })
         self.uniformType = nested((_key, value, isMatrix = false) => {
                 if (typeof value === 'number') return `uniform1f`
                 if (!isMatrix) return `uniform${value.length}fv`
@@ -41,6 +45,14 @@ export function gl(config: GLConfig = {}) {
         self.setMount = (mount) => void ev.mount({ mount }) || self
         self.setClean = (clean) => void ev.mount({ clean }) || self
 
+        // config
+        self.setConfig = durable((key, value) => {
+                self[key] = value || defaultConfig[key]
+        }, self)
+
+        if (typeof config === "string") config = { id: config }
+        if (typeof config === "object") self.setConfig(config)
+
         // uniform
         self.setUniform = durable((key, value, isMatrix = false) => {
                 const type = self.uniformType(key, value, isMatrix)
@@ -53,7 +65,7 @@ export function gl(config: GLConfig = {}) {
         self.setAttribute = durable((key, value, iboValue) => {
                 self.setFrame(() => {
                         const { gl } = self
-                        const stride = self.stride(key, value)
+                        const stride = self.stride(key, value, iboValue)
                         const location = self.location(key, true)
                         gl.bindBuffer(gl.ARRAY_BUFFER, createVbo(gl, value))
                         gl.enableVertexAttribArray(location)
@@ -72,3 +84,7 @@ export function gl(config: GLConfig = {}) {
 
         return self
 }
+
+export default gl
+
+
