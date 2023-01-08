@@ -1,21 +1,18 @@
 # my created
 *exe
+memo
+examples
 sample*
-examples
-packages/*
-!packages/core
-
-**/*.js
-**/*.cjs
-**/*.mjs
-**/*.esm.js
-**/*.develop.js
-**/*.product.js
-examples
-packages/*
-!packages/core
 yarn.lock
 TODO.md
+
+# build
+packages/**/*.js
+packages/**/*.cjs
+packages/**/*.mjs
+packages/**/*.esm.js
+packages/**/*.develop.js
+packages/**/*.product.js
 
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 
@@ -28,7 +25,6 @@ node_modules
 
 # production
 build
-docs
 tmp
 
 # testing

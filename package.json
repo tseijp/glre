@@ -6,11 +6,11 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "publish": "yarn rollup && cd packages/core && yarn publish",
     "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs",
     "watch": "cd packages/core && npx jest --watch --runInBand",
     "cov": "cd packages/core && npx jest --coverage",
     "ls": "cd packages/core && npm publish --dry-run",
+    "pub": "yarn rollup && cd packages/core && yarn publish",
     "start": "cd examples/docs && yarn start",
     "clean": "yarn && lerna clean -y",
     "bootstrap": "yarn && lerna bootstrap"
@@ -38,6 +38,7 @@
     "node": ">=14"
   },
   "workspaces": [
+    "examples/*",
     "packages/*"
   ]
 }

@@ -1,0 +1,53 @@
+{
+  "name": "@glre/react",
+  "author": "tseijp",
+  "license": "MIT",
+  "version": "0.1.0",
+  "module": "index.js",
+  "types": "index.ts",
+  "main": "index.cjs.js",
+  "umd": "index.develop.js",
+  "private": false,
+  "sideEffect": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "devDependencies": {
+    "@types/node": "18.7.21",
+    "@types/react": "18.0.21",
+    "@types/react-dom": "18.0.6",
+    "glre": "*",
+    "react": "*",
+    "react-dom": "*"
+  },
+  "peerDependencies": {
+    "react": "^16.8.6",
+    "react-dom": "^16.8.6"
+  },
+  "peerDependenciesMeta": {
+    "react-dom": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "keywords": [
+    "glsl",
+    "webgl",
+    "hooks",
+    "react",
+    "reactjs",
+    "reactive",
+    "solid",
+    "typescript"
+  ],
+  "files": [
+    "index.ts",
+    "index.js",
+    "index.d.ts",
+    "index.cjs.js",
+    "index.develop.js",
+    "index.product.js"
+  ]
+}
