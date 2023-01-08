@@ -4,19 +4,18 @@ import { durable, nested } from 'reev'
 import { createVbo, createIbo } from './utils'
 import type { GL, GLConfig } from './types'
 
-export const defaultConfig: GLConfig = {
-        id: 'myCanvas',
-        frag: '', // @TODO feat: add default fragment shader
-        vert: '', // @TODO feat: add default vertex shader
-        size: [0, 0],
-        mouse: [0, 0],
-        count: 1000,
-}
-
 export const gl = (config?: string | Partial<GLConfig>) => {
         const self = ((arg = '') => {
-          if (typeof arg === 'function') return self.frame.mount(arg)
+                if (typeof arg === 'function') return self.frame.mount(arg)
         }) as GL
+
+        // default state
+        self.id = 'myCanvas'
+        self.frag = ''; // @TODO feat: add default fragment shader
+        self.vert = ''; // @TODO feat: add default vertex shader
+        self.size = [0, 0]
+        self.mouse = [0, 0]
+        self.count = 6
 
         // core state
         const ev = (self.event = glEvent(self))
@@ -24,8 +23,8 @@ export const gl = (config?: string | Partial<GLConfig>) => {
         self.lastActiveUnit = 0
         self.activeUnit = nested(() => self.lastActiveUnit++)
         self.stride = nested((_key, value, iboValue) => {
-                const count = iboValue?.length || self.count
-                return (value.length / count) << 0
+                const count = iboValue ? Math.max(...iboValue) + 1 : self.count;
+                return (value.length / count) << 0;
         })
         self.uniformType = nested((_key, value, isMatrix = false) => {
                 if (typeof value === 'number') return `uniform1f`
@@ -44,12 +43,10 @@ export const gl = (config?: string | Partial<GLConfig>) => {
         self.setFrame = (frame) => void fr.mount(frame) || self
         self.setMount = (mount) => void ev.mount({ mount }) || self
         self.setClean = (clean) => void ev.mount({ clean }) || self
+        self.setConfig = durable((key, value) => void (self[key] = value), self)
 
-        // config
-        self.setConfig = durable((key, value) => {
-                self[key] = value || defaultConfig[key]
-        }, self)
-
+        // init config
+        self.setConfig(defaultConfig)
         if (typeof config === "string") config = { id: config }
         if (typeof config === "object") self.setConfig(config)
 
@@ -82,7 +79,15 @@ export const gl = (config?: string | Partial<GLConfig>) => {
                 Object.assign(image, { src, alt: key, crossOrigin: 'anonymous' })
         }, self)
 
-        return self
+        // shorthands
+        self.clear = (key) => self.gl.clear(self.gl[key || "COLOR_BUFFER_BIT"])
+        self.viewport = (size) => self.gl.viewport(0, 0, ...(size || self.size))
+        self.drawArrays = (mode = 'POINTS') =>
+                self.gl.drawArrays(self.gl[mode], 0, self.count)
+        self.drawElements = (mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') =>
+                self.gl.drawElements(self.gl[mode], self.count, self.gl[type], 0)
+
+        return self;
 }
 
 export default gl

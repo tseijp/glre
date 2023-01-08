@@ -1,3 +1,4 @@
+import { GL } from './types';
 /**
  * ref: https://stackoverflow.com/questions/52489261/typescript-can-i-define-an-n-length-tuple-type
  */
@@ -67,6 +68,10 @@ export interface GL {
 //                 key: K,
 //                 value: GLConfig[K]
 //         ) => GL>,
+        clear(key?: GLClearMode): void
+        viewport(size: [number, number]): void
+        drawArrays(key?: GLDrawMode): void
+        drawElements(key?: GLDrawMode): void
 }
 
 export interface GLConfig {
@@ -77,3 +82,22 @@ export interface GLConfig {
         mouse: [number, number]
         count: number
 }
+
+export type GLClearMode =
+        | 'COLOR_BUFFER_BIT'
+        | 'DEPTH_BUFFER_BIT'
+        | 'STENCIL_BUFFER_BIT'
+
+export type GLDrawMode =
+        | 'POINTS'
+        | 'LINE_STRIP'
+        | 'LINE_LOOP'
+        | 'LINES'
+        | 'TRIANGLE_STRIP'
+        | 'TRIANGLE_FAN'
+        | 'TRIANGLES'
+
+export type GLDrawType =
+        | 'UNSIGNED_BYTE'
+        | 'UNSIGNED_SHORT'
+        | 'UNSIGNED_INT'
