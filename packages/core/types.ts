@@ -37,6 +37,7 @@ export interface GL {
         location: Nested<any>
         activeUnit: Nested<number>
         uniformType: Nested<string>
+        default: GL
         /**
          * setter
          */
@@ -68,6 +69,8 @@ export interface GL {
 //                 key: K,
 //                 value: GLConfig[K]
 //         ) => GL>,
+        mount(): void
+        clean(): void
         clear(key?: GLClearMode): void
         viewport(size: [number, number]): void
         drawArrays(key?: GLDrawMode): void

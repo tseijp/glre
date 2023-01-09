@@ -4,15 +4,35 @@ import { durable, nested } from 'reev'
 import { createVbo, createIbo } from './utils'
 import type { GL, GLConfig } from './types'
 
+const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
+
+const _defaultVertexShader = `
+  attribute vec4 a_position;
+  void main() {
+    gl_Position = a_position;
+  }
+`
+
+const _defaultFragmentShader = `
+  precision highp float;
+  uniform vec2 resolution;
+  void main() {
+    gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
+  }
+`
+
 export const gl = (config?: string | Partial<GLConfig>) => {
         const self = ((arg = '') => {
-                if (typeof arg === 'function') return self.frame.mount(arg)
+                if (typeof arg === 'function') self.frame.mount(arg)
+                if (typeof arg === 'string' && !self.frag) self.frag = arg
+                if (typeof arg === 'string' && self.frag) self.vert = arg
+                return self
         }) as GL
 
         // default state
         self.id = 'myCanvas'
-        self.frag = ''; // @TODO feat: add default fragment shader
-        self.vert = ''; // @TODO feat: add default vertex shader
+        self.frag = _defaultFragmentShader;
+        self.vert = _defaultVertexShader;
         self.size = [0, 0]
         self.mouse = [0, 0]
         self.count = 6
@@ -45,11 +65,6 @@ export const gl = (config?: string | Partial<GLConfig>) => {
         self.setClean = (clean) => void ev.mount({ clean }) || self
         self.setConfig = durable((key, value) => void (self[key] = value), self)
 
-        // init config
-        self.setConfig(defaultConfig)
-        if (typeof config === "string") config = { id: config }
-        if (typeof config === "object") self.setConfig(config)
-
         // uniform
         self.setUniform = durable((key, value, isMatrix = false) => {
                 const type = self.uniformType(key, value, isMatrix)
@@ -80,16 +95,23 @@ export const gl = (config?: string | Partial<GLConfig>) => {
         }, self)
 
         // shorthands
+        self.mount = () => ev("mount")
+        self.clean = () => ev("clean")
         self.clear = (key) => self.gl.clear(self.gl[key || "COLOR_BUFFER_BIT"])
         self.viewport = (size) => self.gl.viewport(0, 0, ...(size || self.size))
-        self.drawArrays = (mode = 'POINTS') =>
+        self.drawArrays = (mode = 'TRIANGLES') =>
                 self.gl.drawArrays(self.gl[mode], 0, self.count)
         self.drawElements = (mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') =>
                 self.gl.drawElements(self.gl[mode], self.count, self.gl[type], 0)
 
+        // init config
+        if (typeof config === "string") config = { id: config }
+        if (typeof config === "object") self.setConfig(config)
+        if (self.count === 6) self.setAttribute({ a_position })
+
         return self;
 }
 
+gl.default = null as unknown as GL
+
 export default gl
-
-
