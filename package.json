@@ -14,6 +14,7 @@
     "start": "cd examples/docs && yarn start",
     "build": "cd examples/docs && yarn build",
     "serve": "cd examples/docs && yarn serve",
+    "write": "cd examples/docs && docusaurus write-translations",
     "clean": "yarn && lerna clean -y",
     "bootstrap": "yarn && lerna bootstrap"
   },

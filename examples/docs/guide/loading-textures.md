@@ -14,7 +14,7 @@ date: 2023-01-01
 
 ## Creating fragment and vertex shader
 
-```ts
+```tsx
 const vert = `
   attribute vec3 position;
   attribute vec2 texCoord;
@@ -25,6 +25,7 @@ const vert = `
     gl.PointSize = 10.0;
   }
 `
+
 const frag = `
   uniform sampler2D textureUnit;
   varying vec2 vTexCoord;
@@ -38,7 +39,7 @@ const frag = `
 
 ## Set uniform and attribute
 
-```ts
+```tsx
 const textureUnit = 'https://i.imgur.com/XXXXX.png'
 const color = [21, 21, 21, 1]
 const position = [-1, 1, 0, 1, 1, 0, -1, -1, 0, 1, -1, 0];
@@ -47,7 +48,6 @@ const indices = [0, 1, 2, 2, 1, 3];
 
 const App = (props) => {
   const gl = useGL({ frag, vert })
-  return <canvas id={gl.id} {...props}>
   gl.setTexture({ textureUnit })
   gl.setUniform({ color })
   gl.setAttribute({ position, texCoord }, indices)
@@ -55,7 +55,7 @@ const App = (props) => {
 
 ## Rendering the scene
 
-```ts
+```tsx
 gl.setFrame(() => {
   gl.clear()      // to run gl.clear(gl.COLOR_BUFFER_BIT)
   gl.viewport()   // to run gl.viewport(0, 0, width, height)
@@ -66,7 +66,7 @@ gl.setFrame(() => {
 
 ## The result
 
-```ts
+```tsx
 import { createRoot } from 'react-dom/client'
 import { useGL } from '@glre/react'
 
@@ -80,6 +80,7 @@ const vert = `
     gl.PointSize = 10.0;
   }
 `
+
 const frag = `
   uniform sampler2D textureUnit;
   varying vec2 vTexCoord;

@@ -12,8 +12,12 @@ const config = {
         organizationName: 'tseijp',
         projectName: 'tseijp',
         i18n: {
-                defaultLocale: 'ja',
-                locales: ['ja'],
+                defaultLocale: "en",
+                locales: ["en", "ja"],
+                localeConfigs: {
+                        en: { label: 'English', },
+                        ja: { label: '日本語', },
+                },
         },
         markdown: { mermaid: true, },
         // themes: ['@docusaurus/theme-mermaid'], // @TODO
@@ -47,10 +51,11 @@ const config = {
                         title: 'glre',
                         logo: { alt: '', src: 'img/logo.svg', },
                         items: [
-                                { to: '/docs', label: 'Docs', position: 'left' },
-                                { to: '/api', label: 'API', position: 'left' },
-                                { to: '/guide', label: 'Guide', position: 'left' },
-                                { label: 'GitHub', position: 'right', href: 'https://github.com/tseijp/glre', },
+                                { position: 'left', to: '/docs', label: 'Docs', },
+                                { position: 'left', to: '/api', label: 'API', },
+                                { position: 'left', to: '/guide', label: 'Guide', },
+                                { position: 'right', type: 'localeDropdown', },
+                                { position: 'right', label: 'GitHub', href: 'https://github.com/tseijp/glre', },
                         ],
                 },
                 footer: {
