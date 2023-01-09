@@ -7,24 +7,31 @@ This is a simple GLSL reactive engine. It is a work in progress.
 ## Usage
 
 ```ts
-import gl from "glre";
+import gl from 'glre'
 
-const { mount } = gl("myCanvas")`
+const { mount } = gl`
   precision highp float;
   uniform vec2 resolution;
   void main() {
     gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
   }
-`;
+`
 
-widow.addEventListener("DOMContentLoaded", mount);
+gl.setFrame(() => {
+  gl.clear()
+  gl.viewport()
+  gl.drawArrays()
+  return true
+})
+
+widow.addEventListener("DOMContentLoaded", mount)
 ```
 
 ## Getting started
 
 ```tsx
 import { createRoot } from 'react-dom/client'
-import { useGL, useFrame } from "@glre/react"
+import { useGL, useFrame } from '@glre/react'
 
 const App = () => {
   const gl = useGL("myCanvas")`
@@ -33,12 +40,12 @@ const App = () => {
     void main() {
       gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
     }
-  `;
+  `
 
   useFrame(() => {
-    gl.clear();
-    gl.viewport();
-    gl.drawArrays();
+    gl.clear()
+    gl.viewport()
+    gl.drawArrays()
   })
 
   return <canvas id="myCanvas" />

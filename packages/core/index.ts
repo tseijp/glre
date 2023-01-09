@@ -58,8 +58,8 @@ export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
         })
 
         // setter
-        self.setDpr = (...args) => void ev('resize', ...args) || self
-        self.setSize = (...args) => void ev('resize', ...args) || self
+        self.setDpr = (...args) => void ev('resize', {}, ...args) || self
+        self.setSize = (...args) => void ev('resize', {}, ...args) || self
         self.setFrame = (frame) => void fr.mount(frame) || self
         self.setMount = (mount) => void ev.mount({ mount }) || self
         self.setClean = (clean) => void ev.mount({ clean }) || self

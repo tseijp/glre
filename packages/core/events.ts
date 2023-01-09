@@ -23,7 +23,7 @@ export const glEvent = (self: GL) =>
                     window.removeEventListener('mousemove', e.on('mousemove'))
             },
             // user mousemove event
-            mousemove(_e, { clientX, clientY }, ...args) {
+            mousemove(_e, { clientX, clientY }) {
                     const [w, h] = self.size
                     self.mouse[0] = (clientX - w / 2) / (w / 2)
                     self.mouse[1] = -(clientY - h / 2) / (h / 2)
