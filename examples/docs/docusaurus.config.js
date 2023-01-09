@@ -49,7 +49,7 @@ const config = {
                 }],
                 navbar: {
                         title: 'glre',
-                        logo: { alt: '', src: 'img/logo.svg', },
+                        logo: { alt: '', src: 'img/favicon.ico', },
                         items: [
                                 { position: 'left', to: '/docs', label: 'Docs', },
                                 { position: 'left', to: '/api', label: 'API', },
