@@ -1,4 +1,3 @@
-import { GL } from './types';
 /**
  * ref: https://stackoverflow.com/questions/52489261/typescript-can-i-define-an-n-length-tuple-type
  */
@@ -14,7 +13,9 @@ export type Attributes = Record<string, Attribute>
 export type Uniforms = Record<string, Uniform>
 
 export interface GL {
+        (fun: Fun): GL
         (shader: string): GL
+        (strings: TemplateStringsArray, ...args: any[]): GL
         /**
          * initial value
          */
@@ -76,6 +77,11 @@ export interface GL {
         drawArrays(key?: GLDrawMode): void
         drawElements(key?: GLDrawMode): void
 }
+
+export type GLInitArg =
+        | string
+        | Partial<GLConfig>
+        | TemplateStringsArray
 
 export interface GLConfig {
         id: string

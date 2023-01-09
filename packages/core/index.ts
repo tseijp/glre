@@ -1,8 +1,8 @@
 import { frame } from 'refr'
 import { glEvent } from './events'
 import { durable, nested } from 'reev'
-import { createVbo, createIbo } from './utils'
-import type { GL, GLConfig } from './types'
+import { createVbo, createIbo, interleave, isTemplateLiteral } from './utils'
+import type { GL, GLInitArg } from './types'
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
 
@@ -21,11 +21,11 @@ const _defaultFragmentShader = `
   }
 `
 
-export const gl = (config?: string | Partial<GLConfig>) => {
-        const self = ((arg = '') => {
+export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
+        const self = ((arg: any, ...args: any[]) => {
+                if (isTemplateLiteral(arg)) arg = interleave(arg, args)
+                if (typeof arg === 'string') self.frag = arg
                 if (typeof arg === 'function') self.frame.mount(arg)
-                if (typeof arg === 'string' && !self.frag) self.frag = arg
-                if (typeof arg === 'string' && self.frag) self.vert = arg
                 return self
         }) as GL
 
@@ -105,8 +105,9 @@ export const gl = (config?: string | Partial<GLConfig>) => {
                 self.gl.drawElements(self.gl[mode], self.count, self.gl[type], 0)
 
         // init config
-        if (typeof config === "string") config = { id: config }
-        if (typeof config === "object") self.setConfig(config)
+        if (isTemplateLiteral(initArg)) initArg = interleave(initArg, initArgs)
+        if (typeof initArg === "string") self.frag = initArg
+        if (typeof initArg === "object") self.setConfig(initArg)
         if (self.count === 6) self.setAttribute({ a_position })
 
         return self;

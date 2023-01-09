@@ -1,3 +1,23 @@
+/**
+ * utils
+ */
+export function interleave(
+        strings: readonly string[],
+        args: any[]
+) {
+        let result = strings[0]
+        for (let i = 0, len = args.length; i < len; i += 1)
+                result += args[i] + strings[i + 1]
+        return result
+}
+
+export function isTemplateLiteral(strings: unknown): strings is string[] {
+        return Array.isArray(strings) && typeof strings[0] === "string"
+}
+
+/**
+ * graphics
+ */
 export function createShader(gl, source, type) {
         const shader = gl.createShader(type)
         gl.shaderSource(shader, source)
@@ -90,6 +110,9 @@ export function createTexture(gl, img) {
         return texture
 }
 
+/**
+ * Matrix
+ */
 export function lookAt(eye = [0, 0, 3], center = [0, 0, 0], up = [0, 1, 0]) {
         const ret = new Float32Array(16)
         const [ex, ey, ez] = eye
