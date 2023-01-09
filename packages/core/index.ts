@@ -30,7 +30,7 @@ export const gl = (config?: string | Partial<GLConfig>) => {
         }) as GL
 
         // default state
-        self.id = 'myCanvas'
+        self.id = 'myCanvas' // @TODO feat: create hashid
         self.frag = _defaultFragmentShader;
         self.vert = _defaultVertexShader;
         self.size = [0, 0]

@@ -12,6 +12,8 @@
     "ls": "cd packages/core && npm publish --dry-run",
     "pub": "yarn rollup && cd packages/core && yarn publish",
     "start": "cd examples/docs && yarn start",
+    "build": "cd examples/docs && yarn build",
+    "serve": "cd examples/docs && yarn serve",
     "clean": "yarn && lerna clean -y",
     "bootstrap": "yarn && lerna bootstrap"
   },

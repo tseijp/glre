@@ -2,7 +2,7 @@ import { gl } from 'glre'
 import { useRef, useMemo, useEffect, useCallback } from 'react'
 import type { GL, GLConfig } from "glre/types"
 
-export function useGL(config: Partial<GLConfig>, target?: GL) {
+export function useGL(config?: Partial<GLConfig>, target?: GL) {
         const self = useMemo(() => {
                 if (target) return target
                 return (gl.default = gl(config))

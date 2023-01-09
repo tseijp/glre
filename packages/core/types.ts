@@ -72,7 +72,7 @@ export interface GL {
         mount(): void
         clean(): void
         clear(key?: GLClearMode): void
-        viewport(size: [number, number]): void
+        viewport(size?: [number, number]): void
         drawArrays(key?: GLDrawMode): void
         drawElements(key?: GLDrawMode): void
 }
