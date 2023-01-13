@@ -15,25 +15,34 @@ export const glEvent = (self: GL) =>
                     window.addEventListener('resize', e.on('resize'))
                     window.addEventListener('mousemove', e.on('mousemove'))
                     e('resize')
+                    let iTime = performance.now(), iPrevTime = 0, iDeltaTime = 0;
+                    self.setFrame(() => {
+                            iPrevTime = iTime
+                            iTime = performance.now()
+                            iDeltaTime = iTime - iPrevTime
+                            self.setUniform({ iTime, iPrevTime, iDeltaTime })
+                            return true;
+                    })
                     self.frame()
             },
             // run if canvas is cleaned
             clean(e) {
                     window.removeEventListener('resize', e.on('resize'))
                     window.removeEventListener('mousemove', e.on('mousemove'))
+                    self.frame.cancel()
             },
             // user mousemove event
             mousemove(_e, { clientX, clientY }) {
                     const [w, h] = self.size
                     self.mouse[0] = (clientX - w / 2) / (w / 2)
                     self.mouse[1] = -(clientY - h / 2) / (h / 2)
-                    self.setUniform('mouse', self.mouse)
+                    self.setUniform('iMouse', self.mouse)
             },
             // user mousemove event
             resize(_e, _resizeEvent, width = 0, height = 0) {
                     self.size[0] = self.el.width = width || window.innerWidth
                     self.size[1] = self.el.height = height || window.innerHeight
-                    self.setUniform('resolution', self.size)
+                    self.setUniform('iResolution', self.size)
             },
             // load image event
             load(_e, loadEvent) {

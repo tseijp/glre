@@ -10,17 +10,18 @@ date: 2023-01-01
 
 # Basic API
 
-## Set frame callback
+
+## Set buffer object
 
 ```ts
-// Schedule an update
-gl.setFrame(dt => {})
+// set uniform
+gl.setUniform("iTime", performance.now() / 1000) // or
+gl.setUniform({ iTime: performance.now() / 1000 })
 
-// Start an update loop
-gl.setFrame(dt => true)
+// set attribute
+gl.setAttribute("a_position", [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]) // or
+gl.setAttribute({ a_position: [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1] })
 ```
-
-[more][refr]
 
 ## Set mount and clean callback
 
@@ -34,6 +35,18 @@ gl.setClean(() => {})
 
 [more][reev]
 
+## Set frame callback
+
+```ts
+// Schedule an update
+gl.setFrame(dt => {})
+
+// Start an update loop
+gl.setFrame(dt => true)
+```
+
+[more][refr]
+
 ## Render shorthands
 
 ```ts
@@ -46,13 +59,21 @@ gl.setFrame(() => {
 })
 ```
 
-## default uniform
+## Shader Inputs
 
-uniform | type | description
-:------ | :--- | :----------
-`mouse` | `vec2` | mouse event values
-`resolution` | `vec2` | window size values
-`scroll` | `float`| scroll event value
+uniform type        | uniform key             | description | availability
+:------------------ | :---------------------- | :---------- | :----------:
+`uniform vec3`      | `iResolution`           | viewport resolution (in pixels) | ✔
+`uniform float`     | `iTime`                 | shader playback time (in seconds) | ✔
+`uniform float`     | `iTimeDelta`            | render time (in seconds) | ✔
+`uniform float`     | `iFrameRate`            | shader frame rate | ❌
+`uniform int`       | `iFrame`                | shader playback frame | ❌
+`uniform float`     | `iChannelTime[4]`       | channel playback time (in seconds) | ✔
+`uniform vec3`      | `iChannelResolution[4]` | channel resolution (in pixels)| ❌
+`uniform vec4`      | `iMouse`                | mouse pixel coords. xy: current (if MLB down), zw: click | ✔
+`uniform samplerXX` | `iChannel0..3`          | input channel. XX = 2D/Cube| ❌
+`uniform vec4`      | `iDate`                 | (year, month, day, time in seconds)| ❌
+`uniform float`     | `iSampleRate`           | sound sample rate (i.e., 44100) | ❌
 
 [refr]: https://github.com/tseijp/refr
 [reev]: https://github.com/tseijp/reev

@@ -29,9 +29,9 @@ export default function Home() {
 function Canvas (props: any) {
         const gl = useGL()`
                 precision highp float;
-                uniform vec2 resolution;
+                uniform vec2 iResolution;
                 void main() {
-                        gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
+                        gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
                 }
         `
         useFrame(() => {
