@@ -130,6 +130,7 @@ const App = (props) => {
     gl.clear();
     gl.viewport();
     gl.drawArrays();
+    return true;
   });
   return <canvas id={gl.id} {...props} />;
 };

@@ -111,9 +111,9 @@ function Canvas (props: any) {
           }
 
           float de(vec3 p) {
-              float x = 16. * iMouse.x;
-              float y = iMouse.y * 16.;
-              return deMengerSponge1(p, 32.0 + y, 16. + y * 0.5 + x * 0.5);
+              float x = - abs(iMouse.x) * 16.;
+              float y = - 16. * iMouse.y;
+              return deMengerSponge1(p, 32.0 + x, 16. + x * 0.5 + y * 0.5);
           }
 
           void main() {
@@ -153,8 +153,8 @@ function Canvas (props: any) {
 
       useFrame(() => {
                 const now = performance.now() / 1000 / 100;
-                const x = 32 * Math.cos(now);
-                const z = 32 * Math.sin(now);
+                const x = 32.8 * Math.cos(now);
+                const z = 32.8 * Math.sin(now);
                 gl.setUniform({ eye: [x, 0, z] });
                 return true;
       });
@@ -182,7 +182,11 @@ const Text = () => {
       justifyContent: "center",
       flexDirection: "column",
     }}>
-      <h1 style={{ color, fontSize: "10rem" }}>GLRE</h1>
+      <h1 style={{
+        color,
+        fontSize: "10rem",
+        fontFamily: "'Press Start 2P', cursive",
+      }}>GLRE</h1>
       <div style={{ color }}>GLSL Reactive Engine</div>
       <div style={{
         display: "flex",
