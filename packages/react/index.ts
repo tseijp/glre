@@ -22,6 +22,11 @@ export function useAttribute(props, self?: GL) {
         return self.setAttribute(props)
 }
 
+export function useUniform(props, self?: GL) {
+        if (!self) self = gl.default
+        return self.setUniform(props)
+}
+
 export function useFrame(fun, self?: GL) {
         if (!self) self = gl.default
         const ref = useMutable(fun)
