@@ -184,10 +184,11 @@ const Text = () => {
     }}>
       <h1 style={{
         color,
-        fontSize: "10rem",
+        marginTop: "5rem",
+        fontSize: "5rem",
         fontFamily: "'Press Start 2P', cursive",
       }}>GLRE</h1>
-      <div style={{ color }}>GLSL Reactive Engine</div>
+      <div style={{ color, fontSize: "2.5rem" }}>GLSL Reactive Engine</div>
       <div style={{
         display: "flex",
         fontSize: "1.5rem",
