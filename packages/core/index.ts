@@ -90,13 +90,13 @@ export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
         // texture
         self.setTexture = durable((key, src) => {
                 const image = new Image()
-                image.addEventListener('load', ev.on('load'), false)
+                image.addEventListener("load", (e) => ev("load", e, image), false)
                 Object.assign(image, { src, alt: key, crossOrigin: 'anonymous' })
         }, self)
 
         // shorthands
-        self.mount = () => ev("mount")
-        self.clean = () => ev("clean")
+        self.mount = ev.on("mount")
+        self.clean = ev.on("clean")
         self.clear = (key) => self.gl.clear(self.gl[key || "COLOR_BUFFER_BIT"])
         self.viewport = (size) => self.gl.viewport(0, 0, ...(size || self.size))
         self.drawArrays = (mode = 'TRIANGLES') =>

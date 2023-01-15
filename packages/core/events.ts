@@ -45,9 +45,8 @@ export const glEvent = (self: GL) =>
                     self.setUniform('iResolution', self.size)
             },
             // load image event
-            load(_e, loadEvent) {
+            load(_e, _loadEvent, image) {
                     self.setFrame(() => {
-                            const image = loadEvent.path[0]
                             const activeUnit = self.activeUnit(image.alt)
                             const location = self.location(image.alt)
                             const texture = createTexture(self.gl, image)
