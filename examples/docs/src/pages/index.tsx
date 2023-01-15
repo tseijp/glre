@@ -75,7 +75,7 @@ console.log(_R)
 console.log(_E)
 
 function Canvas (props: any) {
-        const { isDarkTheme } = useColorMode();
+        const isDarkTheme = useColorMode().colorMode === "dark";
         const gl = useGL()`
           precision mediump float;
           uniform float focal;
@@ -145,62 +145,62 @@ function Canvas (props: any) {
         `
 
         useFrame(() => {
-                gl.clear();
-                gl.viewport();
-                gl.drawArrays();
-                return true;
-        });
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+                return true
+        })
 
-      useFrame(() => {
-                const now = performance.now() / 1000 / 100;
-                const x = 32.8 * Math.cos(now);
-                const z = 32.8 * Math.sin(now);
-                gl.setUniform({ eye: [x, 0, z] });
-                return true;
-      });
+        useFrame(() => {
+                const now = performance.now() / 1000 / 100
+                const x = 32.8 * Math.cos(now)
+                const z = 32.8 * Math.sin(now)
+                gl.setUniform({ eye: [x, 0, z] })
+                return true
+        })
 
-      useUniform({
+        useUniform({
                 focal: 500,
                 up: [0, 1, 0],
                 focus: [0, 0, 0],
                 color: isDarkTheme
                     ? [0, 0, 0]
                     : [117 / 255, 117 / 255, 117 / 255] // rgb(117,117,117)
-      });
+        })
 
         return <canvas id={gl.id} {...props} />
 }
 
 const Text = () => {
-  const { isDarkTheme } = useColorMode();
-  const color = isDarkTheme ? "#fff" : "#212121";
-  return (
-    <div style={{
-      display: "flex",
-      fontSize: "1.5rem",
-      alignItems: "center",
-      justifyContent: "center",
-      flexDirection: "column",
-    }}>
-      <h1 style={{
-        color,
-        marginTop: "5rem",
-        fontSize: "5rem",
-        fontFamily: "'Press Start 2P', cursive",
-      }}>GLRE</h1>
-      <div style={{ color, fontSize: "2.5rem" }}>GLSL Reactive Engine</div>
-      <div style={{
-        display: "flex",
-        fontSize: "1.5rem",
-        alignItems: "center",
-        justifyContent: "center",
-        flexDirection: "row",
-        marginTop: "2rem",
-        gap: "1rem",
-      }}>
-        <a style={{ color }} href="/docs">Getting started</a>
-        <a style={{ color: "rgb(255,185,0)"  }} href="https://codesandbox.io/s/glre-test3-ntlk3l" target="_blank">Try demo</a>
-      </div>
-    </div>
-  )
+        const isDarkTheme = useColorMode().colorMode === "dark"
+        const color = isDarkTheme ? "#fff" : "#212121"
+        return (
+          <div style={{
+            display: "flex",
+            fontSize: "1.5rem",
+            alignItems: "center",
+            justifyContent: "center",
+            flexDirection: "column",
+          }}>
+            <h1 style={{
+              color,
+              marginTop: "5rem",
+              fontSize: "5rem",
+              fontFamily: "'Press Start 2P', cursive",
+            }}>GLRE</h1>
+            <div style={{ color, fontSize: "2.5rem" }}>GLSL Reactive Engine</div>
+            <div style={{
+              display: "flex",
+              fontSize: "1.5rem",
+              alignItems: "center",
+              justifyContent: "center",
+              flexDirection: "row",
+              marginTop: "2rem",
+              gap: "1rem",
+            }}>
+              <a style={{ color }} href="/docs">Getting started</a>
+              <a style={{ color: "rgb(255,185,0)"  }} href="https://codesandbox.io/s/glre-test3-ntlk3l" target="_blank">Try demo</a>
+            </div>
+          </div>
+        )
 }

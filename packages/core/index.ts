@@ -1,7 +1,7 @@
 import { frame } from 'refr'
 import { glEvent } from './events'
 import { durable, nested } from 'reev'
-import { createVbo, createIbo, interleave, isTemplateLiteral } from './utils'
+import { createAttribute, interleave, isTemplateLiteral } from './utils'
 import type { GL, GLInitArg } from './types'
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
@@ -68,22 +68,19 @@ export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
         // uniform
         self.setUniform = durable((key, value, isMatrix = false) => {
                 const type = self.uniformType(key, value, isMatrix)
-                if (isMatrix)
-                        self.setFrame(() => self.gl[type](self.location(key), false, value))
-                else self.setFrame(() => self.gl[type](self.location(key), value))
+                self.setFrame(() => {
+                        if (isMatrix)
+                                self.gl[type](self.location(key), false, value)
+                        else self.gl[type](self.location(key), value)
+                })
         }, self)
 
         // attribute
-        self.setAttribute = durable((key, value, iboValue) => {
+        self.setAttribute = durable((key, ...args) => {
                 self.setFrame(() => {
-                        const { gl } = self
-                        const stride = self.stride(key, value, iboValue)
+                        const stride = self.stride(key, ...args)
                         const location = self.location(key, true)
-                        gl.bindBuffer(gl.ARRAY_BUFFER, createVbo(gl, value))
-                        gl.enableVertexAttribArray(location)
-                        gl.vertexAttribPointer(location, stride, gl.FLOAT, false, 0, 0)
-                        if (iboValue)
-                                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, createIbo(gl, iboValue))
+                        createAttribute(self.gl, stride, location, ...args)
                 })
         }, self)
 

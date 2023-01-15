@@ -5,8 +5,9 @@ import type { GL, GLConfig } from "glre/types"
 export function useGL(config?: Partial<GLConfig>, target?: GL) {
         const self = useMemo(() => {
                 if (target) return target
-                return (gl.default = gl(config))
-        }, [target, config])
+                return (gl.default = gl())
+        }, [target])
+        useEffect(() => void self.setConfig(config), [self, config])
         useEffect(() => void self.event('mount'), [self])
         useEffect(() => () => self.event('clean'), [self])
         return self

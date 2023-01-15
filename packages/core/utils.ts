@@ -59,6 +59,14 @@ export function createIbo(gl, data) {
         return ibo
 }
 
+export function createAttribute(gl, stride, location, value, iboValue) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, createVbo(gl, value))
+        gl.enableVertexAttribArray(location)
+        gl.vertexAttribPointer(location, stride, gl.FLOAT, false, 0, 0)
+        if (iboValue)
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, createIbo(gl, iboValue))
+}
+
 export function createFramebuffer(gl, width, height) {
         const frameBuffer = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer)
