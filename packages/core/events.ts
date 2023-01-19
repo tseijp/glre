@@ -1,12 +1,18 @@
 import { event } from 'reev'
-import { createProgram, createShader, createTexture } from './utils'
+import { createProgram, createShader, createTexture, joinHeaderShader } from './utils'
 import type { GL } from './types'
 
 export const glEvent = (self: GL) =>
     event({
             // run if canvas is mounted
             mount(e) {
-                    // @ts-ignore
+                    if (self.int) self.frag = joinHeaderShader(`precision ${self.int} int;`, self.frag)
+                    if (self.float) self.frag = joinHeaderShader(`precision ${self.float} float;`, self.frag)
+                    if (self.sampler2D) self.frag = joinHeaderShader(`precision ${self.sampler2D} sampler2D;`, self.frag)
+                    if (self.samplerCube) self.frag = joinHeaderShader(`precision ${self.samplerCube} samplerCube;`, self.frag)
+                    // self.uniformHeader.map(([key, header]) => self.frag = joinHeaderShader(header, self.frag, key))
+                    // self.uniformHeader.map(([key, header]) => self.frag = joinHeaderShader(header, self.vert, key))
+                    // self.attributeHeader.map(([key, header]) => self.vert = joinHeaderShader(header, self.vert, key))
                     const el = (self.el = document.getElementById(self.id)) // @ts-ignore
                     const gl = (self.gl = el?.getContext('webgl'))
                     const frag = createShader(gl, self.frag, gl?.FRAGMENT_SHADER)

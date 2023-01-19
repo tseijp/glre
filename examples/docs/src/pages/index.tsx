@@ -77,7 +77,6 @@ console.log(_E)
 function Canvas (props: any) {
         const isDarkTheme = useColorMode().colorMode === "dark";
         const gl = useGL()`
-          precision mediump float;
           uniform float focal;
           uniform vec2 iMouse;
           uniform vec2 iResolution;

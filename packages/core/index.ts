@@ -1,8 +1,8 @@
 import { frame } from 'refr'
 import { glEvent } from './events'
 import { durable, nested } from 'reev'
-import { createAttribute, interleave, isTemplateLiteral } from './utils'
-import type { GL, GLInitArg } from './types'
+import { createAttribute, interleave, isTemplateLiteral, switchUniformType } from './utils'
+import type { GL } from './types'
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
 
@@ -14,14 +14,13 @@ const _defaultVertexShader = `
 `
 
 const _defaultFragmentShader = `
-  precision highp float;
   uniform vec2 resolution;
   void main() {
     gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
   }
 `
 
-export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
+export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
         const self = ((arg: any, ...args: any[]) => {
                 if (isTemplateLiteral(arg)) arg = interleave(arg, args)
                 if (typeof arg === 'string') self.frag = arg
@@ -33,24 +32,31 @@ export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
         self.id = 'myCanvas' // @TODO feat: create hashid
         self.frag = _defaultFragmentShader;
         self.vert = _defaultVertexShader;
+        // self.float = "mediump" // @TODO check bugs
         self.size = [0, 0]
         self.mouse = [0, 0]
         self.count = 6
+        self.uniformHeader = []
+        self.attributeHeader = []
 
         // core state
         const ev = (self.event = glEvent(self))
         const fr = (self.frame = frame())
         self.lastActiveUnit = 0
         self.activeUnit = nested(() => self.lastActiveUnit++)
-        self.stride = nested((_key, value, iboValue) => {
+        self.vertexStride = nested((key, value, iboValue) => {
                 const count = iboValue ? Math.max(...iboValue) + 1 : self.count;
-                return (value.length / count) << 0;
+                const stride = (value.length / count) << 0
+                self.attributeHeader.push([key, `vertex vec${stride} ${key};`])
+                return stride
         })
-        self.uniformType = nested((_key, value, isMatrix = false) => {
-                if (typeof value === 'number') return `uniform1f`
-                if (!isMatrix) return `uniform${value.length}fv`
-                else return `uniformMatrix${Math.sqrt(value.length) << 0}fv`
+
+        self.uniformType = nested((key, value, isMatrix) => {
+                const [type, code] = switchUniformType(value, isMatrix)
+                self.uniformHeader.push([key, `uniform ${code} ${key}`])
+                return type
         })
+
         self.location = nested((key, isAttribute = false) => {
                 return isAttribute
                         ? self.gl?.getAttribLocation(self.pg, key)
@@ -78,7 +84,7 @@ export const gl = (initArg?: GLInitArg, ...initArgs: any[]) => {
         // attribute
         self.setAttribute = durable((key, ...args) => {
                 self.setFrame(() => {
-                        const stride = self.stride(key, ...args)
+                        const stride = self.vertexStride(key, ...args)
                         const location = self.location(key, true)
                         createAttribute(self.gl, stride, location, ...args)
                 })

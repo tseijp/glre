@@ -25,7 +25,13 @@ export interface GL {
         count: number
         frag: string
         vert: string
+        int: PrecisionMode
+        float: PrecisionMode
+        sampler2D: PrecisionMode
+        samplerCube: PrecisionMode
         lastActiveUnit: number
+        uniformHeader: [string, string][]
+        attributeHeader: [string, string][]
         /**
          * core state
          */
@@ -50,7 +56,7 @@ export interface GL {
         setUniform(key: string, value: Uniform): GL
         setTexture(key: string, value: string): GL
         setAttribute(key: string, value: Attribute, iboValue?: Attribute): GL
-        setConfig<K extends keyof GLConfig>(key: K, value: GLConfig[K]): GL
+        setConfig<K extends keyof Partial<GL>>(key: K, value: GLConfig[K]): GL
 //         setUniform: Durable<(
 //                 key: string,
 //                 value: Uniform,
@@ -78,19 +84,10 @@ export interface GL {
         drawElements(key?: GLDrawMode): void
 }
 
-export type GLInitArg =
-        | string
-        | Partial<GLConfig>
-        | TemplateStringsArray
-
-export interface GLConfig {
-        id: string
-        frag: string
-        vert: string
-        size: [number, number]
-        mouse: [number, number]
-        count: number
-}
+export type PrecisionMode =
+        | 'highp'
+        | 'mediump'
+        | 'lowp'
 
 export type GLClearMode =
         | 'COLOR_BUFFER_BIT'

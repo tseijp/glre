@@ -1,10 +1,7 @@
 /**
  * utils
  */
-export function interleave(
-        strings: readonly string[],
-        args: any[]
-) {
+export function interleave(strings: readonly string[], args: any[]) {
         let result = strings[0]
         for (let i = 0, len = args.length; i < len; i += 1)
                 result += args[i] + strings[i + 1]
@@ -13,6 +10,21 @@ export function interleave(
 
 export function isTemplateLiteral(strings: unknown): strings is string[] {
         return Array.isArray(strings) && typeof strings[0] === "string"
+}
+
+export function joinHeaderShader(header, shader, key = "") {
+        if (shader.indexOf(header) === -1)
+                if (key === "" || shader.indexOf(key) !== -1)
+                        return header + shader
+        return shader
+}
+
+export function switchUniformType(value, isMatrix) {
+        let length = typeof value === "number" ? 0 : (value as any[]).length
+        if (!length)  return [`uniform1f`, `float`]
+        if (!isMatrix)  return [`uniform${length}fv`, `vec${length}`]
+        length = Math.sqrt(length) << 0;
+        return [`uniformMatrix${length}fv`, `mat${length}`]
 }
 
 /**
