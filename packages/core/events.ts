@@ -24,7 +24,7 @@ export const glEvent = (self: GL) =>
                     let iTime = performance.now(), iPrevTime = 0, iDeltaTime = 0;
                     self.setFrame(() => {
                             iPrevTime = iTime
-                            iTime = performance.now()
+                            iTime = performance.now() / 1000
                             iDeltaTime = iTime - iPrevTime
                             self.setUniform({ iTime, iPrevTime, iDeltaTime })
                             return true;
