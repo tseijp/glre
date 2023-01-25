@@ -180,7 +180,7 @@ void main() {
 
         p = eye + dir;
         d = de(p, vec4(1.), 1., spongeScale, shaftDiameter);
-        vec3 moonPos = vec3(0., moonHeight * (1. + iMouse.y), 0.);
+        vec3 moonPos = vec3(0., moonHeight, 0.);
         vec3 lightPos = vec3(-iMouse.x * eye.z, 0., 1.);
         if (uv.y < 0.) {
                 p.xy += deltaRay * reflectionPWeight * uv.y / noise;
