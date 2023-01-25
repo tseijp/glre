@@ -15,7 +15,7 @@ export function useGL(config?: Partial<GLConfig>, target?: GL) {
 
 export function useTexture(props, self?: GL) {
         if (!self) self = gl.default
-        return self.setTexture(props)
+        useEffect(() => self.setTexture(props), [props, self])
 }
 
 export function useAttribute(props, self?: GL) {

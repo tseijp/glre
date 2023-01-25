@@ -1,8 +1,8 @@
 import { gl } from 'glre'
 import { onMount, onCleanup } from 'solid-js'
-import type { GL, GLConfig } from "glre/types"
+import type { GL } from 'glre/types'
 
-export function createGL(config: Partial<GLConfig>, _gl?: GL) {
+export function createGL(config: Partial<GL>, _gl?: GL) {
         const self = _gl || (gl.default = gl(config))
         onMount(() => self.event('mount'))
         onCleanup(() => self.event('clean'))
