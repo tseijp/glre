@@ -263,7 +263,7 @@ void main() {
         return (
           <canvas
             id={gl.id}
-            style={{ top: 0, left: 0, position: "fixed" }}
+            style={{ top: 0, left: 0, position: "fixed", background: "#212121" }}
           />
         );
 }
