@@ -29,66 +29,66 @@ export default function Home() {
 }
 
 function useLevaUniform() {
-  return useUniform(
-    // useControls(
-      {
-      imageSize: .8,
-      riverBankHeight: .01,
-      holeDiameter: .1,
-      shaftDiameter: .2,
-      spongeScale: 16,
-      windowThreshold: .75,
-      blueColorWeight: .04,
-      windowShaftWeight: .1,
-      reflectionUVWeight: .01,
-      reflectionPWeight: .1,
-      moonHeight: 2.6,
-      moonRadius: .59
-    }
-    // )
-  );
+        return useUniform(
+                // useControls(
+                {
+                        imageSize: .8,
+                        riverBankHeight: .01,
+                        holeDiameter: .1,
+                        shaftDiameter: .2,
+                        spongeScale: 16,
+                        windowThreshold: .75,
+                        blueColorWeight: .04,
+                        windowShaftWeight: .1,
+                        reflectionUVWeight: .01,
+                        reflectionPWeight: .1,
+                        moonHeight: 2.6,
+                        moonRadius: .59
+                }
+                // )
+        );
 }
 
 function Canvas () {
   const gl = useGL({ float: "mediump" })`
-// Uniforms
-uniform float focal;
-uniform float iTime;
-uniform vec2 iMouse;
-uniform vec2 iResolution;
-uniform vec3 up;
-uniform vec3 eye;
-uniform vec3 focus;
-uniform vec4 topSkyColor;
-uniform vec4 btmSkyColor;
-uniform vec4 topSeaColor;
-uniform vec4 btmSeaColor;
-uniform sampler2D FBM;
-uniform sampler2D GLRE;
-uniform float windowLightWeight0;
-uniform float windowLightWeight1;
-uniform float windowLightWeight2;
-uniform float windowLightWeight3;
-uniform float windowLightWeight4;
-uniform float windowLightWeight5;
-uniform float windowLightWeight6;
-uniform float windowLightWeight7;
+// // Uniforms
+// uniform float focal;
+// uniform float iTime;
+// uniform vec2 iMouse;
+// uniform vec2 iResolution;
+// uniform vec3 up;
+// uniform vec3 eye;
+// uniform vec3 focus;
+// uniform vec4 topSkyColor;
+// uniform vec4 btmSkyColor;
+// uniform vec4 topSeaColor;
+// uniform vec4 btmSeaColor;
+// uniform sampler2D FBM;
+// uniform sampler2D GLRE;
+// uniform float windowLightWeight0;
+// uniform float windowLightWeight1;
+// uniform float windowLightWeight2;
+// uniform float windowLightWeight3;
+// uniform float windowLightWeight4;
+// uniform float windowLightWeight5;
+// uniform float windowLightWeight6;
+// uniform float windowLightWeight7;
 
-// Uniforms from leva
-uniform float holeDiameter;
-uniform float spongeScale;
-uniform float shaftDiameter;
-uniform float imageSize;
-uniform float windowThreshold;
-uniform float riverBankHeight;
-uniform float blueColorWeight;
-uniform float windowShaftWeight;
-uniform float reflectionUVWeight;
-uniform float reflectionPWeight;
-uniform float moonHeight;
-uniform float moonRadius;
-uniform vec4 baseColor;
-uniform vec4 lightColor;
+// // Uniforms from leva
+// uniform float holeDiameter;
+// uniform float spongeScale;
+// uniform float shaftDiameter;
+// uniform float imageSize;
+// uniform float windowThreshold;
+// uniform float riverBankHeight;
+// uniform float blueColorWeight;
+// uniform float windowShaftWeight;
+// uniform float reflectionUVWeight;
+// uniform float reflectionPWeight;
+// uniform float moonHeight;
+// uniform float moonRadius;
+// uniform vec4 baseColor;
+// uniform vec4 lightColor;
 
 // Helper macros
 #define ITERATIONS 8
@@ -121,7 +121,7 @@ void main() {
         vec2 uv = 2. * scr / max(iResolution.y, iResolution.x); // -1 ~ 1
         float noise = fbm(uv * 0.5 + 1.);
         vec2 textureUV = uv / imageSize + 0.5;
-        vec4 color = texture2D(GLRE, textureUV);
+        vec4 textureColor = texture2D(GLRE, textureUV);
 
         // River bank
         if (abs(uv.y) < riverBankHeight) {
@@ -153,27 +153,27 @@ void main() {
 
         for (int i = 0; i < ITERATIONS; i++) {
                 p = p + d * dir;
-                d = de(p, color, building, spongeScale, shaftDiameter);
+                d = de(p, textureColor, building, spongeScale, shaftDiameter);
                 if(d <= e.x) {
-                        gl_FragColor = max(baseColor, color) * windowLightWeight; // * lighting * 2.;
+                        gl_FragColor = max(baseColor, textureColor) * windowLightWeight;
                         return;
                 }
         }
 
         for (int i = 0; i < ITERATIONS; i++) {
                 p = p + d * dir;
-                d = de(p, color, building, spongeScale, diameter);
+                d = de(p, textureColor, building, spongeScale, diameter);
                 if(d <= e.x) {
-                        gl_FragColor = max(lightColor * noise, color) * windowLightWeight; // * lighting * 2.;
+                        gl_FragColor = max(lightColor * noise, textureColor) * windowLightWeight;
                         return;
                 }
         }
 
         for (int i = 0; i < ITERATIONS; i++) {
                 p = p + d * dir;
-                d = de(p, color, building, spongeScale, diameter);
+                d = de(p, textureColor, building, spongeScale, diameter);
                 if(d <= e.x) {
-                        gl_FragColor = max(lightColor * noise, color) * windowLightWeight; // * lighting * 2.;
+                        gl_FragColor = max(lightColor * noise, textureColor) * windowLightWeight;
                         return;
                 }
         }
@@ -204,8 +204,8 @@ void main() {
 
         // Sky color
         if (uv.y < 0.) {
-                  gl_FragColor = mix(topSkyColor, btmSkyColor, -uv.y);
-                  gl_FragColor += vec4(vec3(pow(noise, 4.)) * 0.05, 1.);
+                gl_FragColor = mix(topSkyColor, btmSkyColor, -uv.y);
+                gl_FragColor += vec4(vec3(pow(noise, 4.)) * 0.05, 1.);
         } else {
                 gl_FragColor = mix(topSeaColor, btmSeaColor, uv.y);
                 gl_FragColor += vec4(vec3(pow(noise, 4.)) * 0.25, 1.);
@@ -234,10 +234,7 @@ void main() {
                 btmSeaColor: [	26 / 255, 31 / 255, 42 / 255, 1],
         });
 
-        useTexture({
-                FBM: useBaseUrl("/img/FBM.png"),
-                GLRE: useBaseUrl("/img/GLRE.webp"),
-        });
+        useTexture({ GLRE: useBaseUrl("/img/GLRE.webp") });
 
         // useStats();
 

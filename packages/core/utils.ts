@@ -12,14 +12,14 @@ export function isTemplateLiteral(strings: unknown): strings is string[] {
         return Array.isArray(strings) && typeof strings[0] === "string"
 }
 
-export function joinHeaderShader(header, shader, key = "") {
+export function joinHeaderShader(header: string, shader: string, key = "") {
         if (shader.indexOf(header) === -1)
                 if (key === "" || shader.indexOf(key) !== -1)
                         return header + shader
         return shader
 }
 
-export function switchUniformType(value, isMatrix) {
+export function switchUniformType(value: unknown, isMatrix = false) {
         let length = typeof value === "number" ? 0 : (value as any[]).length
         if (!length)  return [`uniform1f`, `float`]
         if (!isMatrix)  return [`uniform${length}fv`, `vec${length}`]
