@@ -1,14 +1,7 @@
----
-marp: true
-hide_table_of_contents: true
-title: "Introduction"
-description: "Introduction"
-image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
-date: 2023-01-01
----
+# 🌇 glre
 
-# Introduction
+<strong>
+<samp>
 
 <p align="center">
 
@@ -29,7 +22,6 @@ date: 2023-01-01
     https://bundlephobia.com/package/glre@latest)
 
 glre is a simple glsl Reactive Engine on the web and native via TypeScript, React, Solid and more.
-
 
 </p>
 <p align="center" valign="top">
@@ -158,7 +150,63 @@ createRoot(document.getElementById("root")).render(<App style={style} />);
 ```
 
 <details>
-<summary>pure js supported</summary>
+<summary>
+
+solid js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo2-m1h6cr))
+
+</summary>
+
+```html
+<html>
+  <body>
+    <script type="module">
+      import html from "https://cdn.skypack.dev/solid-js/html";
+      import { gl } from "https://cdn.skypack.dev/glre@latest";
+      import { render } from "https://cdn.skypack.dev/solid-js/web";
+      import { onCleanup, onMount } from "https://cdn.skypack.dev/solid-js";
+
+      function createGL(config, _gl) {
+        const self = _gl || (gl.default = gl(config));
+        onMount(() => self.mount());
+        onCleanup(() => self.clean());
+        return self;
+      }
+
+      function onFrame(fun, self) {
+        if (!self) self = gl.default;
+        onMount(() => self.setFrame(fun));
+      }
+
+      const App = () => {
+        const gl = createGL()`
+          precision highp float;
+          uniform vec2 iResolution;
+          void main() {
+            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+          }
+        `;
+        onFrame(() => {
+          gl.clear();
+          gl.viewport();
+          gl.drawArrays();
+          return true;
+        });
+        return html`<canvas id=${gl.id} />`;
+      };
+
+      render(App, document.body);
+    </script>
+  </body>
+</html>
+```
+
+</details>
+<details>
+<summary>
+
+pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr3y))
+
+</summary>
 
 ```html
 <!DOCTYPE html>
@@ -168,9 +216,9 @@ createRoot(document.getElementById("root")).render(<App style={style} />);
       import createGL from "https://cdn.skypack.dev/glre@latest"
       const gl = createGL`
         precision highp float;
-        uniform vec2 resolution;
+        uniform vec2 iResolution;
         void main() {
-          gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
+          gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
         }
       `;
 
@@ -193,3 +241,5 @@ createRoot(document.getElementById("root")).render(<App style={style} />);
 ```
 
 </details>
+</samp>
+</strong>
