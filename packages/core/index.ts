@@ -53,7 +53,7 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
 
         self.uniformType = nested((key, value, isMatrix) => {
                 const [type, code] = switchUniformType(value, isMatrix)
-                self.uniformHeader.push([key, `uniform ${code} ${key}`])
+                self.uniformHeader.push([key, `uniform ${code} ${key};`])
                 return type
         })
 
@@ -83,10 +83,9 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
 
         // attribute
         self.setAttribute = durable((key, ...args) => {
+                const stride = self.vertexStride(key, ...args)
                 self.setFrame(() => {
-                        const stride = self.vertexStride(key, ...args)
-                        const location = self.location(key, true)
-                        createAttribute(self.gl, stride, location, ...args)
+                        createAttribute(self.gl, stride, self.location(key, true), ...args)
                 })
         }, self)
 

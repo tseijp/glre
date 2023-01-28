@@ -51,44 +51,44 @@ function useLevaUniform() {
 
 function Canvas () {
   const gl = useGL({ float: "mediump" })`
-// // Uniforms
-// uniform float focal;
-// uniform float iTime;
-// uniform vec2 iMouse;
-// uniform vec2 iResolution;
-// uniform vec3 up;
-// uniform vec3 eye;
-// uniform vec3 focus;
-// uniform vec4 topSkyColor;
-// uniform vec4 btmSkyColor;
-// uniform vec4 topSeaColor;
-// uniform vec4 btmSeaColor;
-// uniform sampler2D FBM;
-// uniform sampler2D GLRE;
-// uniform float windowLightWeight0;
-// uniform float windowLightWeight1;
-// uniform float windowLightWeight2;
-// uniform float windowLightWeight3;
-// uniform float windowLightWeight4;
-// uniform float windowLightWeight5;
-// uniform float windowLightWeight6;
-// uniform float windowLightWeight7;
+// Uniforms
+uniform float focal;
+uniform float iTime;
+uniform vec2 iMouse;
+uniform vec2 iResolution;
+uniform vec3 up;
+uniform vec3 eye;
+uniform vec3 focus;
+uniform vec4 topSkyColor;
+uniform vec4 btmSkyColor;
+uniform vec4 topSeaColor;
+uniform vec4 btmSeaColor;
+uniform sampler2D FBM;
+uniform sampler2D GLRE;
+uniform float windowLightWeight0;
+uniform float windowLightWeight1;
+uniform float windowLightWeight2;
+uniform float windowLightWeight3;
+uniform float windowLightWeight4;
+uniform float windowLightWeight5;
+uniform float windowLightWeight6;
+uniform float windowLightWeight7;
 
-// // Uniforms from leva
-// uniform float holeDiameter;
-// uniform float spongeScale;
-// uniform float shaftDiameter;
-// uniform float imageSize;
-// uniform float windowThreshold;
-// uniform float riverBankHeight;
-// uniform float blueColorWeight;
-// uniform float windowShaftWeight;
-// uniform float reflectionUVWeight;
-// uniform float reflectionPWeight;
-// uniform float moonHeight;
-// uniform float moonRadius;
-// uniform vec4 baseColor;
-// uniform vec4 lightColor;
+// Uniforms from leva
+uniform float holeDiameter;
+uniform float spongeScale;
+uniform float shaftDiameter;
+uniform float imageSize;
+uniform float windowThreshold;
+uniform float riverBankHeight;
+uniform float blueColorWeight;
+uniform float windowShaftWeight;
+uniform float reflectionUVWeight;
+uniform float reflectionPWeight;
+uniform float moonHeight;
+uniform float moonRadius;
+uniform vec4 baseColor;
+uniform vec4 lightColor;
 
 // Helper macros
 #define ITERATIONS 8

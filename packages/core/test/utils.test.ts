@@ -1,7 +1,7 @@
 import {
     interleave,
     isTemplateLiteral,
-    joinHeaderShader,
+    concat,
     switchUniformType,
 } from 'glre/utils'
 
@@ -18,19 +18,20 @@ describe('utils', () => {
                 expect(isTemplateLiteral(_1[0])).toEqual(true)
         })
 
-        const headerUniform = `uniform vec2 iMouse`;
-        const withUniform = `void main() { gl_FragColor = vec4(iMouse, 0., 1.)}`
-        const noneUniform = `void main() { gl_FragColor = vec4(0., 1., 0., 1.)}`
+        const headerUniform = `uniform vec2 iMouse;`;
+        const withUniform = `void main() { gl_FragColor = vec4(iMouse, 0., 1.); }`
+        const noneUniform = `void main() { gl_FragColor = vec4(0., 1., 0., 1.); }`
         it.each`
-                i    | key         | shader         | toBe
-                ${0} | ${void 0}   | ${withUniform} | ${headerUniform + withUniform}
-                ${1} | ${"iMouse"} | ${withUniform} | ${headerUniform + withUniform}
-                ${2} | ${void 0}   | ${noneUniform} | ${headerUniform + withUniform}
-                ${3} | ${"iMouse"} | ${noneUniform} | ${withUniform}
-        `('joinHeaderShader $i', ({ key, shader, toBe }) => {
-                expect(joinHeaderShader(headerUniform, shader, key)).toBe(toBe)
+                i    | key         | shader                         | toBe
+                ${0} | ${void 0}   | ${                withUniform} | ${headerUniform + withUniform}
+                ${1} | ${"iMouse"} | ${                withUniform} | ${headerUniform + withUniform}
+                ${2} | ${"iMouse"} | ${                noneUniform} | ${noneUniform}
+                ${3} | ${void 0}   | ${headerUniform + withUniform} | ${headerUniform + withUniform}
+                ${4} | ${"iMouse"} | ${headerUniform + withUniform} | ${headerUniform + withUniform}
+                ${5} | ${"iMouse"} | ${headerUniform + noneUniform} | ${headerUniform + noneUniform}
+        `('concat $i', ({ key, shader, toBe }) => {
+                expect(concat(shader, headerUniform, key)).toBe(toBe)
         })
-
         it.each`
                 i    | uniformType           | uniformKey | isMatrix | value
                 ${0} | ${'uniform1f'}        | ${'float'} | ${false} | ${10}

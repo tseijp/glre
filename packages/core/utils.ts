@@ -12,11 +12,17 @@ export function isTemplateLiteral(strings: unknown): strings is string[] {
         return Array.isArray(strings) && typeof strings[0] === "string"
 }
 
-export function joinHeaderShader(header: string, shader: string, key = "") {
-        if (shader.indexOf(header) === -1)
-                if (key === "" || shader.indexOf(key) !== -1)
-                        return header + shader
-        return shader
+export function include(source: string, target: string) {
+        source = source.replace(/\s+/g, '')
+        target = target.replace(/\s+/g, '')
+        return source.indexOf(target) !== -1
+}
+
+export function concat(source: string, target: string, key = "") {
+        if (key === "" || include(source, key))
+                if (!include(source, target))
+                        return target + source
+        return source
 }
 
 export function switchUniformType(value: unknown, isMatrix = false) {
