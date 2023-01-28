@@ -35,7 +35,9 @@
     "index.ts",
     "events.ts",
     "helpers.ts",
-    "utils.ts",
-    "types.ts"
+    "react.ts",
+    "solid.ts",
+    "types.ts",
+    "utils.ts"
   ]
 }

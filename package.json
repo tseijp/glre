@@ -6,17 +6,17 @@
         "private": true,
         "sideEffects": false,
         "scripts": {
-                "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs",
-                "watch": "cd examples/cov && yarn watch",
-                "cov": "cd examples/cov && yarn cov",
-                "ls": "cd packages/core && npm publish --dry-run",
-                "pub": "yarn rollup && cd packages/core && yarn publish",
+                "bootstrap": "yarn && lerna bootstrap",
+                "clean": "yarn && lerna clean -y",
                 "start": "cd examples/docs && yarn start",
                 "build": "cd examples/docs && yarn build",
                 "serve": "cd examples/docs && yarn serve",
                 "write": "cd examples/docs && docusaurus write-translations",
-                "clean": "yarn && lerna clean -y",
-                "bootstrap": "yarn && lerna bootstrap"
+                "watch": "cd examples/cov && yarn watch",
+                "cov": "cd examples/cov && yarn cov",
+                "ls": "cd packages/core && npm publish --dry-run",
+                "pub": "cd packages/core && yarn publish",
+                "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs"
         },
         "dependencies": {
                 "lerna": "5.5.4"

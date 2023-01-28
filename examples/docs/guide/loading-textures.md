@@ -68,7 +68,7 @@ gl.setFrame(() => {
 
 ```tsx
 import { createRoot } from 'react-dom/client'
-import { useGL } from '@glre/react'
+import { useGL } from 'glre/react'
 
 const vert = `
   attribute vec3 position;

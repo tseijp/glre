@@ -1,11 +1,11 @@
-import { gl } from 'glre'
+import { gl } from './index'
+import type { GL } from './types'
 import { useRef, useMemo, useEffect, useCallback } from 'react'
-import type { GL, GLConfig } from "glre/types"
 
-export function useGL(config?: Partial<GLConfig>, target?: GL) {
+export function useGL(config?: Partial<GL>, target?: GL) {
         const self = useMemo(() => {
                 if (target) return target
-                return (gl.default = gl())
+                return (gl.default = gl(target))
         }, [target])
         useEffect(() => void self.setConfig(config), [self, config])
         useEffect(() => void self.event('mount'), [self])

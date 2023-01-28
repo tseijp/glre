@@ -1,6 +1,6 @@
-import { gl } from 'glre'
+import { gl } from './index'
+import type { GL } from './types'
 import { onMount, onCleanup } from 'solid-js'
-import type { GL } from 'glre/types'
 
 export function createGL(config: Partial<GL>, _gl?: GL) {
         const self = _gl || (gl.default = gl(config))
