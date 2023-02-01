@@ -12,15 +12,15 @@ export function isTemplateLiteral(strings: unknown): strings is string[] {
         return Array.isArray(strings) && typeof strings[0] === "string"
 }
 
-export function include(source: string, target: string) {
+export function includes(source: string, target: string) {
         source = source.replace(/\s+/g, '')
         target = target.replace(/\s+/g, '')
-        return source.indexOf(target) !== -1
+        return source.includes(target)
 }
 
 export function concat(source: string, target: string, key = "") {
-        if (key === "" || include(source, key))
-                if (!include(source, target))
+        if (key === "" || includes(source, key))
+                if (!source.includes(target))
                         return target + source
         return source
 }
