@@ -13,7 +13,7 @@
     "access": "public"
   },
   "dependencies": {
-    "reev": "0.3.0",
+    "reev": "0.9.0",
     "refr": "0.2.0"
   },
   "keywords": [

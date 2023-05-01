@@ -4,53 +4,63 @@ import Layout from '@theme/Layout'
 import StatsImpl from 'stats.js'
 // import { useControls } from 'leva'
 import { range, makePriority } from '../../helpers'
-import useBaseUrl from '@docusaurus/useBaseUrl';
+import useBaseUrl from '@docusaurus/useBaseUrl'
 // import { useColorMode } from '@docusaurus/theme-common';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
 
-const WINDOW_DELAY_MS = 500;
+const WINDOW_DELAY_MS = 500
 
 export default function Home() {
-        const { siteConfig } = useDocusaurusContext();
+        const { siteConfig } = useDocusaurusContext()
         return (
-          <Layout noFooter>
-            <Head>
-              <title>
-                {siteConfig.title} {siteConfig.titleDelimiter} {siteConfig.tagline}
-              </title>
-              <style>
-                @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-              </style>
-            </Head>
-            <Canvas style={{ top: 0, left: 0, position: 'fixed', zIndex: -1 }}/>
-          </Layout>
-        );
+                <Layout noFooter>
+                        <Head>
+                                <title>
+                                        {siteConfig.title}{' '}
+                                        {siteConfig.titleDelimiter}{' '}
+                                        {siteConfig.tagline}
+                                </title>
+                                <style>
+                                        @import
+                                        url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+                                </style>
+                        </Head>
+                        <Canvas
+                                style={{
+                                        top: 0,
+                                        left: 0,
+                                        position: 'fixed',
+                                        zIndex: -1,
+                                }}
+                        />
+                </Layout>
+        )
 }
 
 function useLevaUniform() {
         return useUniform(
                 // useControls(
                 {
-                        imageSize: .8,
-                        riverBankHeight: .01,
-                        holeDiameter: .1,
-                        shaftDiameter: .2,
+                        imageSize: 0.8,
+                        riverBankHeight: 0.01,
+                        holeDiameter: 0.1,
+                        shaftDiameter: 0.2,
                         spongeScale: 16,
-                        windowThreshold: .75,
-                        blueColorWeight: .04,
-                        windowShaftWeight: .1,
-                        reflectionUVWeight: .01,
-                        reflectionPWeight: .1,
+                        windowThreshold: 0.75,
+                        blueColorWeight: 0.04,
+                        windowShaftWeight: 0.1,
+                        reflectionUVWeight: 0.01,
+                        reflectionPWeight: 0.1,
                         moonHeight: 2.6,
-                        moonRadius: .59
+                        moonRadius: 0.59,
                 }
                 // )
-        );
+        )
 }
 
-function Canvas () {
-  const gl = useGL({ float: "mediump" })`
+function Canvas() {
+        const gl = useGL({ float: 'mediump' })`
 // Uniforms
 uniform float focal;
 uniform float iTime;
@@ -212,14 +222,14 @@ void main() {
         }
         gl_FragColor.b += abs(uv.y) * blueColorWeight;
 }
-`;
+`
 
         useFrame(() => {
-                gl.clear();
-                gl.viewport();
-                gl.drawArrays();
-                return true;
-        });
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+                return true
+        })
 
         useUniform({
                 focal: 5000,
@@ -231,26 +241,30 @@ void main() {
                 topSkyColor: [5 / 255, 6 / 255, 7 / 255, 1],
                 btmSkyColor: [44 / 255, 45 / 255, 47 / 255, 1],
                 topSeaColor: [21 / 255, 22 / 255, 27 / 255, 1],
-                btmSeaColor: [	26 / 255, 31 / 255, 42 / 255, 1],
-        });
+                btmSeaColor: [26 / 255, 31 / 255, 42 / 255, 1],
+        })
 
-        useTexture({ GLRE: useBaseUrl("/img/GLRE.webp") });
+        useTexture({ GLRE: useBaseUrl('/img/GLRE.webp') })
 
         // useStats();
 
-        useLevaUniform();
+        useLevaUniform()
 
         useFrame(() => {
-                range(8).forEach((i) => gl.setUniform(`windowLightWeight${i}`, 1))
-                const memo = [1, 1, 1, 1, 1, 1, 1];
-                const priority = makePriority();
-                gl.event.mount('mousemove', () => {
+                range(8).forEach((i) =>
+                        gl.setUniform(`windowLightWeight${i}`, 1)
+                )
+                const memo = [1, 1, 1, 1, 1, 1, 1]
+                const priority = makePriority()
+                gl.event('mousemove', () => {
                         if (Math.abs(gl.mouse[1]) > 0.5) return
-                        const i = (gl.mouse[0] + 1) * 4 << 0 // 0 ~ 7
-                        if (memo[i] == 0) return;
-                        gl.setUniform(`windowLightWeight${i}`, memo[i] = 0)
+                        const i = ((gl.mouse[0] + 1) * 4) << 0 // 0 ~ 7
+                        if (memo[i] == 0) return
+                        gl.setUniform(`windowLightWeight${i}`, (memo[i] = 0))
                         priority.then(async () => {
-                                await new Promise((_) => setTimeout(_, WINDOW_DELAY_MS))
+                                await new Promise((_) =>
+                                        setTimeout(_, WINDOW_DELAY_MS)
+                                )
                                 gl.setUniform(`windowLightWeight${i}`, 1)
                                 memo[i] = 1
                         }, i)
@@ -258,27 +272,33 @@ void main() {
         })
 
         return (
-          <canvas
-            id={gl.id}
-            style={{ top: 0, left: 0, position: "fixed", background: "#212121" }}
-          />
-        );
+                <canvas
+                        id={gl.id}
+                        style={{
+                                top: 0,
+                                left: 0,
+                                position: 'fixed',
+                                background: '#212121',
+                        }}
+                />
+        )
 }
 
 export function useStats() {
-        const stats = React.useMemo(() => new StatsImpl(), []);
+        const stats = React.useMemo(() => new StatsImpl(), [])
         React.useEffect(() => {
-                stats.showPanel(0);
-                stats.domElement.style.cssText = "position:absolute;bottom:0px;left:0px;";
-                document.body.appendChild(stats.dom);
-                return () => document.body.removeChild(stats.dom);
-        }, [stats]);
+                stats.showPanel(0)
+                stats.domElement.style.cssText =
+                        'position:absolute;bottom:0px;left:0px;'
+                document.body.appendChild(stats.dom)
+                return () => document.body.removeChild(stats.dom)
+        }, [stats])
 
         useFrame(() => {
-                stats.end();
-                stats.begin();
-                return true;
-        });
+                stats.end()
+                stats.begin()
+                return true
+        })
 }
 
 // ref: https://qiita.com/aa_debdeb/items/bffe5b7a33f5bf65d25b
@@ -406,7 +426,7 @@ _ # # _ _ _ _
 # # _ _ _ # #
 _ # # _ _ # #
 _ _ # # # # #
-`;
+`
 
 const _L = `
 # # _ _ _ _ _

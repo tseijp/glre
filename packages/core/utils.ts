@@ -19,8 +19,8 @@ export function includes(source: string, target: string) {
 }
 
 export function concat(source: string, target: string, key = "") {
-        if (key === "" || includes(source, key))
-                if (!source.includes(target))
+        if (key === "" || source.includes(key))
+                if (!includes(source, target))
                         return target + source
         return source
 }

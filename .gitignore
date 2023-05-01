@@ -3,6 +3,7 @@
 memo
 sample*
 TODO.md
+reev
 
 # build
 packages/**/*.js

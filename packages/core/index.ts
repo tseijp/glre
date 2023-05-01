@@ -1,10 +1,15 @@
 import { frame } from 'refr'
 import { glEvent } from './events'
 import { durable, nested } from 'reev'
-import { createAttribute, interleave, isTemplateLiteral, switchUniformType } from './utils'
+import {
+        createAttribute,
+        interleave,
+        isTemplateLiteral,
+        switchUniformType,
+} from './utils'
 import type { GL } from './types'
 
-const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
+const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
 const _defaultVertexShader = `
   attribute vec4 a_position;
@@ -30,8 +35,8 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
 
         // default state
         self.id = 'myCanvas' // @TODO feat: create hashid
-        self.frag = _defaultFragmentShader;
-        self.vert = _defaultVertexShader;
+        self.frag = _defaultFragmentShader
+        self.vert = _defaultVertexShader
         // self.float = "mediump" // @TODO check bugs
         self.size = [0, 0]
         self.mouse = [0, 0]
@@ -40,12 +45,12 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
         self.attributeHeader = []
 
         // core state
-        const ev = (self.event = glEvent(self))
-        const fr = (self.frame = frame())
+        const e = (self.event = glEvent(self))
+        const f = (self.frame = frame())
         self.lastActiveUnit = 0
         self.activeUnit = nested(() => self.lastActiveUnit++)
         self.vertexStride = nested((key, value, iboValue) => {
-                const count = iboValue ? Math.max(...iboValue) + 1 : self.count;
+                const count = iboValue ? Math.max(...iboValue) + 1 : self.count
                 const stride = (value.length / count) << 0
                 self.attributeHeader.push([key, `vertex vec${stride} ${key};`])
                 return stride
@@ -64,14 +69,12 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
         })
 
         // setter
-        self.setDpr = (...args) => void ev('resize', {}, ...args) || self
-        self.setSize = (...args) => void ev('resize', {}, ...args) || self
-        self.setFrame = (frame) => void fr.mount(frame) || self
-        self.setMount = (mount) => void ev.mount({ mount }) || self
-        self.setClean = (clean) => void ev.mount({ clean }) || self
+        self.setDpr = () => void e.resize() || self
+        self.setSize = () => void e.resize() || self
+        self.setFrame = (frame) => void f.mount(frame) || self
+        self.setMount = (mount) => void e({ mount }) || self
+        self.setClean = (clean) => void e({ clean }) || self
         self.setConfig = durable((key, value) => void (self[key] = value), self)
-
-        // uniform
         self.setUniform = durable((key, value, isMatrix = false) => {
                 const type = self.uniformType(key, value, isMatrix)
                 self.setFrame(() => {
@@ -80,39 +83,51 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
                         else self.gl[type](self.location(key), value)
                 })
         }, self)
-
-        // attribute
         self.setAttribute = durable((key, ...args) => {
                 const stride = self.vertexStride(key, ...args)
                 self.setFrame(() => {
-                        createAttribute(self.gl, stride, self.location(key, true), ...args)
+                        createAttribute(
+                                self.gl,
+                                stride,
+                                self.location(key, true),
+                                ...args
+                        )
                 })
         }, self)
 
         // texture
         self.setTexture = durable((key, src) => {
                 const image = new Image()
-                image.addEventListener("load", (e) => ev("load", e, image), false)
-                Object.assign(image, { src, alt: key, crossOrigin: 'anonymous' })
+                image.addEventListener('load', (_) => e.load(_, image), false)
+                Object.assign(image, {
+                        src,
+                        alt: key,
+                        crossOrigin: 'anonymous',
+                })
         }, self)
 
         // shorthands
-        self.mount = ev.on("mount")
-        self.clean = ev.on("clean")
-        self.clear = (key) => self.gl.clear(self.gl[key || "COLOR_BUFFER_BIT"])
+        self.mount = (...args) => e.mount(...args)
+        self.clean = (...args) => e.clean(...args)
+        self.clear = (key) => self.gl.clear(self.gl[key || 'COLOR_BUFFER_BIT'])
         self.viewport = (size) => self.gl.viewport(0, 0, ...(size || self.size))
         self.drawArrays = (mode = 'TRIANGLES') =>
                 self.gl.drawArrays(self.gl[mode], 0, self.count)
         self.drawElements = (mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') =>
-                self.gl.drawElements(self.gl[mode], self.count, self.gl[type], 0)
+                self.gl.drawElements(
+                        self.gl[mode],
+                        self.count,
+                        self.gl[type],
+                        0
+                )
 
         // init config
         if (isTemplateLiteral(initArg)) initArg = interleave(initArg, initArgs)
-        if (typeof initArg === "string") self.frag = initArg
-        if (typeof initArg === "object") self.setConfig(initArg)
+        if (typeof initArg === 'string') self.frag = initArg
+        if (typeof initArg === 'object') self.setConfig(initArg)
         if (self.count === 6) self.setAttribute({ a_position })
 
-        return self;
+        return self
 }
 
 gl.default = null as unknown as GL

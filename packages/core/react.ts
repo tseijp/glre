@@ -8,14 +8,14 @@ export function useGL(config?: Partial<GL>, target?: GL) {
                 return (gl.default = gl(target))
         }, [target])
         useEffect(() => void self.setConfig(config), [self, config])
-        useEffect(() => void self.event('mount'), [self])
-        useEffect(() => () => self.event('clean'), [self])
+        useEffect(() => void self.event.mount(), [self])
+        useEffect(() => () => self.event.clean(), [self])
         return self
 }
 
 export function useTexture(props, self?: GL) {
         if (!self) self = gl.default
-        useEffect(() => self.setTexture(props), [props, self])
+        useEffect(() => void self?.setTexture(props), [props, self])
 }
 
 export function useAttribute(props, self?: GL) {
@@ -31,7 +31,7 @@ export function useUniform(props, self?: GL) {
 export function useFrame(fun, self?: GL) {
         if (!self) self = gl.default
         const ref = useMutable(fun)
-        useEffect(() => void self.setFrame(ref), [ref, self])
+        useEffect(() => void self?.setFrame(ref), [ref, self])
 }
 
 export function useMutable(fun) {

@@ -3649,13 +3649,6 @@
   resolved "https://registry.npmjs.org/@types/range-parser/-/range-parser-1.2.4.tgz#cd667bcfdd025213aafb7ca5915a932590acdcdc"
   integrity sha512-EEhsLsD6UsDM1yFhAvy0Cjr6VwmpMWqFBCb9w07wVugF7w9nfajxLuVmngTIpgS6svCnm6Vaw+MZhoDCKnOfsw==
 
-"@types/react-dom@*":
-  version "18.0.10"
-  resolved "https://registry.npmjs.org/@types/react-dom/-/react-dom-18.0.10.tgz#3b66dec56aa0f16a6cc26da9e9ca96c35c0b4352"
-  integrity sha512-E42GW/JA4Qv15wQdqJq8DL4JhNpB3prJgjgapN3qJT9K2zO5IIAQh4VXvCEDupoqAwnz0cY4RlXeC/ajX5SFHg==
-  dependencies:
-    "@types/react" "*"
-
 "@types/react-router-config@*", "@types/react-router-config@^5.0.6":
   version "5.0.6"
   resolved "https://registry.npmjs.org/@types/react-router-config/-/react-router-config-5.0.6.tgz#87c5c57e72d241db900d9734512c50ccec062451"
@@ -5446,7 +5439,7 @@ csso@^4.2.0:
   dependencies:
     css-tree "^1.1.2"
 
-csstype@^3.0.2, csstype@^3.0.4, csstype@^3.1.0:
+csstype@^3.0.2, csstype@^3.0.4:
   version "3.1.1"
   resolved "https://registry.npmjs.org/csstype/-/csstype-3.1.1.tgz#841b532c45c758ee546a11d5bd7b7b473c8c30b9"
   integrity sha512-DJR/VvkAvSZW9bTouZue2sSxDwdTN92uHjqeKVm+0dAqdfNykRzQ95tay8aXMBAAPpUiq4Qcug2L7neoRh2Egw==
@@ -10543,11 +10536,6 @@ redent@^3.0.0:
     indent-string "^4.0.0"
     strip-indent "^3.0.0"
 
-reev@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.npmjs.org/reev/-/reev-0.3.0.tgz#bb56acb0100cbb2e9907223928423ca1541f0f70"
-  integrity sha512-CQy5edymWSon+9vo5HFJQSyr+FQ5z3ln2ZaA6gFpOyj9QIGK0It+Z6VqvdISjjQT5QWWdlwReFRx4w9HYRpB/A==
-
 refr@0.2.0:
   version "0.2.0"
   resolved "https://registry.npmjs.org/refr/-/refr-0.2.0.tgz#6904faa7dc46f9f822e5d31e10482279d9f678d7"
@@ -11174,13 +11162,6 @@ socks@^2.6.2:
   dependencies:
     ip "^2.0.0"
     smart-buffer "^4.2.0"
-
-solid-js@1.6.8:
-  version "1.6.8"
-  resolved "https://registry.npmjs.org/solid-js/-/solid-js-1.6.8.tgz#c21a71f376b915061db7b5b9511e90babe1ccabf"
-  integrity sha512-+X5rf4bL3Il/LI2pn6O2d63D/KyG8Shxj3DM6violSPOhRgm5ln37Pq6uVDAvJcmsObOBeGOjXAwZvqwyZjisg==
-  dependencies:
-    csstype "^3.1.0"
 
 sort-css-media-queries@2.1.0:
   version "2.1.0"
