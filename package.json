@@ -15,7 +15,7 @@
                 "watch": "cd examples/cov && yarn watch",
                 "cov": "cd examples/cov && yarn cov",
                 "ls": "cd packages/core && npm publish --dry-run",
-                "pub": "cd packages/core && yarn publish",
+                "pub": "yarn rollup && cd packages/core && yarn publish",
                 "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs"
         },
         "dependencies": {
