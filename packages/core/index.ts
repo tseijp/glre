@@ -25,7 +25,7 @@ const _defaultFragmentShader = `
   }
 `
 
-export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
+export const gl = (initArg?: string | Partial<GL>, ...initArgs: any[]) => {
         const self = ((arg: any, ...args: any[]) => {
                 if (isTemplateLiteral(arg)) arg = interleave(arg, args)
                 if (typeof arg === 'string') self.frag = arg
@@ -83,14 +83,15 @@ export const gl = (initArg?: Partial<GL>, ...initArgs: any[]) => {
                         else self.gl[type](self.location(key), value)
                 })
         }, self)
-        self.setAttribute = durable((key, ...args) => {
-                const stride = self.vertexStride(key, ...args)
+        self.setAttribute = durable((key, value, iboValue) => {
+                const stride = self.vertexStride(key, value, iboValue)
                 self.setFrame(() => {
                         createAttribute(
                                 self.gl,
                                 stride,
                                 self.location(key, true),
-                                ...args
+                                value,
+                                iboValue
                         )
                 })
         }, self)

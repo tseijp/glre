@@ -68,8 +68,8 @@ export interface GL {
         setTexture(target: { [key: string]: string }): GL
         setAttribute(key: string, value: Attribute, iboValue?: Attribute): GL
         setAttribute(target: { [key: string]: Attribute }): GL
-        setConfig(key: keyof GL, value: GL[keyof GL]): GL
-        setConfig(target: Partial<GL>): GL
+        setConfig(key?: keyof GL, value?: GL[keyof GL]): GL
+        setConfig(target?: Partial<GL>): GL
         mount(): void
         clean(): void
         clear(key?: GLClearMode): void
