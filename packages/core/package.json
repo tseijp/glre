@@ -2,7 +2,7 @@
   "name": "glre",
   "author": "tseijp",
   "license": "MIT",
-  "version": "0.12.0",
+  "version": "0.13.1",
   "module": "index.js",
   "types": "index.ts",
   "main": "index.cjs.js",
