@@ -12,6 +12,7 @@
                 "build": "cd examples/docs && yarn build",
                 "serve": "cd examples/docs && yarn serve",
                 "write": "cd examples/docs && docusaurus write-translations",
+                "tunnel": "cd examples/native && yarn start --tunnel",
                 "android": "cd examples/native && yarn start --android",
                 "ios": "cd examples/native && yarn start --ios",
                 "web": "cd examples/native && yarn start --web",

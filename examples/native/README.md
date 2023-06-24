@@ -1,12 +1,19 @@
-# Website
+# @glre/native
 
-This website is built using [Docusaurus 2](https://docusaurus.io/), a modern static website generator.
+This website is built using [Expo](https://docs.expo.dev/), a modern static website generator.
 
 ### Installation
 
 ```
 $ yarn
 ```
+
+**android install**
+
+install [JDK][JDK] and [Android Studio]
+
+[JDK]: https://www.oracle.com/jp/java/technologies/downloads/
+[android]: https://developer.android.com/studio
 
 ### Local Development
 
