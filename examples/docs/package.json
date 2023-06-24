@@ -3,7 +3,7 @@
         "author": "tsei",
         "license": "MIT",
         "version": "0.0.0",
-        "private": false,
+        "private": true,
         "scripts": {
                 "docusaurus": "docusaurus",
                 "start": "docusaurus start",

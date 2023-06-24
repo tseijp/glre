@@ -18,6 +18,8 @@
                 "web": "cd examples/native && yarn start --web",
                 "watch": "cd examples/cov && yarn start",
                 "cov": "cd examples/cov && yarn cov",
+                "qwik": "cd examples/qwik && yarn start",
+                "solid": "cd examples/solid && yarn start",
                 "ls": "cd packages/core && npm publish --dry-run",
                 "pub": "yarn rollup && cd packages/core && yarn publish",
                 "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs"
