@@ -3,7 +3,7 @@ import { createGL } from 'glre/solid'
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
-const iResolution = 1
+const iResolution = [window.innerWidth, window.innerHeight]
 
 const _defaultVertex = `
   attribute vec4 a_position;
@@ -14,9 +14,9 @@ const _defaultVertex = `
 
 const _defaultFragment = `
   precision mediump float;
-  uniform vec2 resolution;
+  uniform vec2 iResolution;
   void main() {
-    gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
+    gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
   }
 `
 
@@ -30,11 +30,9 @@ const App = () => {
                         self.uniform({ iResolution })
                 },
                 render() {
-                        const gl = self.gl
-                        gl.viewport(0, 0, ...self.size)
-                        gl.clear(gl.COLOR_BUFFER_BIT)
-                        gl.drawArrays(gl.TRIANGLES, 0, self.count)
-                        return true
+                        self.clear()
+                        self.viewport()
+                        self.drawArrays()
                 },
         })
         return (

@@ -14,8 +14,6 @@ import {
 } from './utils'
 import type { GL } from './types'
 
-// const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
-
 const _defaultVertex = `
   attribute vec4 a_position;
   void main() {
@@ -25,9 +23,9 @@ const _defaultVertex = `
 
 const _defaultFragment = `
   precision mediump float;
-  uniform vec2 resolution;
+  uniform vec2 iResolution;
   void main() {
-    gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
+    gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
   }
 `
 
@@ -44,13 +42,12 @@ const self = event<GL>({
         counter: 0,
         init(varying?: string[]) {
                 const gl = self.gl
-                const fr = (self.frame = queue())
                 const _v = self.vs || self.vert || self.vertex
                 const _f = self.fs || self.frag || self.fragment
                 const vs = createShader(gl, _v, gl.VERTEX_SHADER)
                 const fs = createShader(gl, _f, gl.FRAGMENT_SHADER)
-                fr(() => void self.render() || 1)
-                frame(() => void fr.flush() || 1)
+                self.frame = queue()
+                frame(() => void self.render() || 1)
                 self.pg = varying
                         ? createTfProgram(gl, vs, fs, varying)
                         : createProgram(gl, vs, fs)
@@ -64,6 +61,7 @@ const self = event<GL>({
         },
         render() {
                 self.gl.useProgram(self.pg)
+                self.frame.flush()
                 iPrevTime = iTime
                 iTime = performance.now() / 1000
                 iDeltaTime = iTime - iPrevTime
@@ -99,14 +97,6 @@ const self = event<GL>({
                         crossOrigin: 'anonymous',
                 })
         },
-        ref(target: unknown) {
-                if (target) {
-                        self.target = target
-                        self.mount()
-                } else self.clean()
-        },
-        mount() {},
-        clean() {},
         resize(
                 _e: any,
                 width = window.innerWidth,
@@ -133,8 +123,8 @@ const self = event<GL>({
                         })
                 })
         },
-        clear(key) {
-                self.gl.clear(self.gl[key || 'COLOR_BUFFER_BIT'])
+        clear(key = 'COLOR_BUFFER_BIT') {
+                self.gl.clear(self.gl[key])
         },
         viewport(size: number[]) {
                 self.gl.viewport(0, 0, ...(size || self.size))

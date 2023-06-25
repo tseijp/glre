@@ -10,10 +10,15 @@ export function createGLEvent(props?: any, self = gl) {
 }
 
 export function createGL(props?: any, self = gl) {
-        const memo = createMemo<any>(() => props)
         return createGLEvent({
+                ref(target: unknown) {
+                        if (target) {
+                                self.target = target
+                                self.mount()
+                        }
+                },
                 mount() {
-                        self(memo())
+                        self(props)
                         self.el = self.target
                         self.gl = self.target.getContext('webgl2')
                         self.init()
@@ -21,15 +26,6 @@ export function createGL(props?: any, self = gl) {
                         frame.start()
                         window.addEventListener('resize', self.resize)
                         window.addEventListener('mousemove', self.mousemove)
-                        let iTime = performance.now(),
-                                iPrevTime = 0,
-                                iDeltaTime = 0
-                        self('render', () => {
-                                iPrevTime = iTime
-                                iTime = performance.now() / 1000
-                                iDeltaTime = iTime - iPrevTime
-                                self.uniform({ iTime, iPrevTime, iDeltaTime })
-                        })
                 },
                 clean() {
                         window.removeEventListener('resize', self.resize)

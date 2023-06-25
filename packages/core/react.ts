@@ -13,6 +13,12 @@ export const useGLEvent = (props: Partial<GL>, self = gl) => {
 export const useGL = (props: Partial<GL>, self = gl) => {
         const memo = useMutable(props) as Partial<GL>
         return useGLEvent({
+                ref(target: unknown) {
+                        if (target) {
+                                self.target = target
+                                self.mount()
+                        } else self.clean()
+                },
                 mount() {
                         self(memo)
                         self.el = self.target
