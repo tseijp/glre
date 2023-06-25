@@ -2,10 +2,8 @@ import React from 'react'
 import Head from '@docusaurus/Head'
 import Layout from '@theme/Layout'
 import StatsImpl from 'stats.js'
-// import { useControls } from 'leva'
 import { range, makePriority } from '../../helpers'
 import useBaseUrl from '@docusaurus/useBaseUrl'
-// import { useColorMode } from '@docusaurus/theme-common';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
 

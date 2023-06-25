@@ -1,8 +1,5 @@
-/**
- * ref: https://stackoverflow.com/questions/52489261/typescript-can-i-define-an-n-length-tuple-type
- */
-import type { Frame, Fun, Queue } from '../refr/types'
-import type { Nested, EventState } from '../reev/types'
+import type { Queue } from 'refr/types'
+import type { Nested, EventState } from 'reev/types'
 
 export type Uniform = number | number[]
 
@@ -55,7 +52,7 @@ export type GL = EventState<{
         clean(): void
         render(): void
         mousemove(e: Event): void
-        resize(e?: Event): void
+        resize(e?: Event, width?: number, height?: number): void
         load(e?: Event, image?: HTMLImageElement): void
 
         /**

@@ -38,7 +38,6 @@ function onContextCreate(gl) {
                 createShader(gl, vs, gl.VERTEX_SHADER),
                 createShader(gl, fs, gl.FRAGMENT_SHADER)
         )
-
         gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
         gl.clearColor(0, 1, 1, 1)
         gl.clear(gl.COLOR_BUFFER_BIT)

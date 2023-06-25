@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { useWindowDimensions } from 'react-native'
 import { useMutable } from 'reev/react'
 import { gl } from './index'
 import { frame } from 'refr'
@@ -12,33 +13,28 @@ export const useGLEvent = (props: Partial<GL>, self = gl) => {
 
 export const useGL = (props: Partial<GL>, self = gl) => {
         const memo = useMutable(props) as Partial<GL>
+        const { height, width } = useWindowDimensions()
         return useGLEvent({
-                ref(target: unknown) {
-                        if (target) {
-                                self.target = target
-                                self.mount()
-                        } else self.clean()
+                ref(gl: any) {
+                        self(memo)
+                        self.el = {}
+                        self.gl = gl
+                        self.mount()
                 },
                 mount() {
-                        self(memo)
-                        self.el = self.target
-                        self.gl = self.target.getContext('webgl2')
                         self.init()
-                        self.resize()
-                        frame.start()
-                        window.addEventListener('resize', self.resize)
-                        window.addEventListener('mousemove', self.mousemove)
+                        self.resize(void 0, width, height)
+                        console.log({ ...frame })
+                        // frame.start()
                 },
                 clean() {
-                        frame.cancel()
-                        window.removeEventListener('resize', self.resize)
-                        window.removeEventListener('mousemove', self.mousemove)
+                        // frame.cancel()
                 },
         })
 }
 
 export function useTexture(props: any, self = gl) {
-        return self.texture(props)
+        return self?.texture(props)
 }
 
 export function useAttribute(props: any, self = gl) {

@@ -1,5 +1,5 @@
 import { event, durable, nested } from 'reev'
-import { queue, frame } from '../refr'
+import { queue, frame } from 'refr'
 import {
         uniformType,
         vertexStride,
@@ -13,6 +13,8 @@ import {
         activeTexture,
 } from './utils'
 import type { GL } from './types'
+
+const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
 const _defaultVertex = `
   attribute vec4 a_position;
@@ -46,7 +48,7 @@ const self = event<GL>({
                 const _f = self.fs || self.frag || self.fragment
                 const vs = createShader(gl, _v, gl.VERTEX_SHADER)
                 const fs = createShader(gl, _f, gl.FRAGMENT_SHADER)
-                self.frame = queue()
+                if (self.count === 6) self.attribute({ a_position })
                 frame(() => void self.render() || 1)
                 self.pg = varying
                         ? createTfProgram(gl, vs, fs, varying)
@@ -142,6 +144,7 @@ const self = event<GL>({
         },
 })
 
+self.frame = queue()
 self.texture = durable(self._texture)
 self.uniform = durable(self._uniform)
 self.attribute = durable(self._attribute)
