@@ -28,15 +28,6 @@ export const useGL = (props: Partial<GL>, self = gl) => {
                         frame.start()
                         window.addEventListener('resize', self.resize)
                         window.addEventListener('mousemove', self.mousemove)
-                        let iTime = performance.now(),
-                                iPrevTime = 0,
-                                iDeltaTime = 0
-                        self('render', () => {
-                                iPrevTime = iTime
-                                iTime = performance.now() / 1000
-                                iDeltaTime = iTime - iPrevTime
-                                self.uniform({ iTime, iPrevTime, iDeltaTime })
-                        })
                 },
                 clean() {
                         window.removeEventListener('resize', self.resize)
