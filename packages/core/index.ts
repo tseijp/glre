@@ -1,136 +1,164 @@
-import { frame } from 'refr'
-import { glEvent } from './events'
-import { durable, nested } from 'reev'
+import { event, durable, nested } from 'reev'
+import { queue, frame } from '../refr'
 import {
+        uniformType,
+        vertexStride,
+        createProgram,
+        createTfProgram,
+        createShader,
         createAttribute,
-        interleave,
-        isTemplateLiteral,
-        switchUniformType,
+        createTexture,
+        createVbo,
+        createIbo,
+        activeTexture,
 } from './utils'
 import type { GL } from './types'
 
-const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
+// const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
-const _defaultVertexShader = `
+const _defaultVertex = `
   attribute vec4 a_position;
   void main() {
     gl_Position = a_position;
   }
 `
 
-const _defaultFragmentShader = `
+const _defaultFragment = `
+  precision mediump float;
   uniform vec2 resolution;
   void main() {
     gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
   }
 `
 
-export const gl = (initArg?: string | Partial<GL>, ...initArgs: any[]) => {
-        const self = ((arg: any, ...args: any[]) => {
-                if (isTemplateLiteral(arg)) arg = interleave(arg, args)
-                if (typeof arg === 'string') self.frag = arg
-                if (typeof arg === 'function') self.frame.mount(arg)
-                return self
-        }) as GL
+let iTime = performance.now(),
+        iPrevTime = 0,
+        iDeltaTime = 0
 
-        // default state
-        self.id = 'myCanvas' // @TODO feat: create hashid
-        self.frag = _defaultFragmentShader
-        self.vert = _defaultVertexShader
-        // self.float = "mediump" // @TODO check bugs
-        self.size = [0, 0]
-        self.mouse = [0, 0]
-        self.count = 6
-        self.uniformHeader = []
-        self.attributeHeader = []
-
-        // core state
-        const e = (self.event = glEvent(self))
-        const f = (self.frame = frame())
-        self.lastActiveUnit = 0
-        self.activeUnit = nested(() => self.lastActiveUnit++)
-        self.vertexStride = nested((key, value, iboValue) => {
-                const count = iboValue ? Math.max(...iboValue) + 1 : self.count
-                const stride = (value.length / count) << 0
-                self.attributeHeader.push([key, `vertex vec${stride} ${key};`])
-                return stride
-        })
-
-        self.uniformType = nested((key, value, isMatrix) => {
-                const [type, code] = switchUniformType(value, isMatrix)
-                self.uniformHeader.push([key, `uniform ${code} ${key};`])
-                return type
-        })
-
-        self.location = nested((key, isAttribute = false) => {
-                return isAttribute
-                        ? self.gl?.getAttribLocation(self.pg, key)
-                        : self.gl?.getUniformLocation(self.pg, key)
-        })
-
-        // setter
-        self.setDpr = () => void e.resize() || self
-        self.setSize = () => void e.resize() || self
-        self.setFrame = (frame) => void f.mount(frame) || self
-        self.setMount = (mount) => void e({ mount }) || self
-        self.setClean = (clean) => void e({ clean }) || self
-        self.setConfig = durable((key, value) => void (self[key] = value), self)
-        self.setUniform = durable((key, value, isMatrix = false) => {
-                const type = self.uniformType(key, value, isMatrix)
-                self.setFrame(() => {
-                        if (isMatrix)
-                                self.gl[type](self.location(key), false, value)
-                        else self.gl[type](self.location(key), value)
+const self = event<GL>({
+        vertex: _defaultVertex,
+        fragment: _defaultFragment,
+        size: [0, 0],
+        mouse: [0, 0],
+        count: 6,
+        counter: 0,
+        init(varying?: string[]) {
+                const gl = self.gl
+                const fr = (self.frame = queue())
+                const _v = self.vs || self.vert || self.vertex
+                const _f = self.fs || self.frag || self.fragment
+                const vs = createShader(gl, _v, gl.VERTEX_SHADER)
+                const fs = createShader(gl, _f, gl.FRAGMENT_SHADER)
+                fr(() => void self.render() || 1)
+                frame(() => void fr.flush() || 1)
+                self.pg = varying
+                        ? createTfProgram(gl, vs, fs, varying)
+                        : createProgram(gl, vs, fs)
+                self.lastActiveUnit = 0
+                self.activeUnit = nested(() => self.lastActiveUnit++)
+                self.location = nested((key, isAttribute = false) => {
+                        return isAttribute
+                                ? gl?.getAttribLocation(self.pg, key)
+                                : gl?.getUniformLocation(self.pg, key)
                 })
-        }, self)
-        self.setAttribute = durable((key, value, iboValue) => {
-                const stride = self.vertexStride(key, value, iboValue)
-                self.setFrame(() => {
-                        createAttribute(
-                                self.gl,
-                                stride,
-                                self.location(key, true),
-                                value,
-                                iboValue
-                        )
+        },
+        render() {
+                self.gl.useProgram(self.pg)
+                iPrevTime = iTime
+                iTime = performance.now() / 1000
+                iDeltaTime = iTime - iPrevTime
+                self.uniform({ iTime, iPrevTime, iDeltaTime })
+        },
+        _uniform(key: string, value = 0, isMatrix = false) {
+                const type = uniformType(value, isMatrix)
+                self.frame(() => {
+                        const loc = self.location(key)
+                        if (isMatrix) self.gl[type](loc, false, value)
+                        else self.gl[type](loc, value)
                 })
-        }, self)
-
-        // texture
-        self.setTexture = durable((key, src) => {
+        },
+        _attribute(key: string, value: number[], iboValue?: number[]) {
+                self.frame(() => {
+                        const loc = self.location(key, true)
+                        const vbo = createVbo(self.gl, value)
+                        const ibo = createIbo(self.gl, iboValue)
+                        const stride = vertexStride(self.count, value, iboValue)
+                        createAttribute(self.gl, stride, loc, vbo, ibo)
+                })
+        },
+        _texture(key: string, src: string) {
                 const image = new Image()
-                image.addEventListener('load', (_) => e.load(_, image), false)
+                image.addEventListener(
+                        'load',
+                        (_) => self.load(_, image),
+                        false
+                )
                 Object.assign(image, {
                         src,
                         alt: key,
                         crossOrigin: 'anonymous',
                 })
-        }, self)
-
-        // shorthands
-        self.mount = (...args) => e.mount(...args)
-        self.clean = (...args) => e.clean(...args)
-        self.clear = (key) => self.gl.clear(self.gl[key || 'COLOR_BUFFER_BIT'])
-        self.viewport = (size) => self.gl.viewport(0, 0, ...(size || self.size))
-        self.drawArrays = (mode = 'TRIANGLES') =>
+        },
+        ref(target: unknown) {
+                if (target) {
+                        self.target = target
+                        self.mount()
+                } else self.clean()
+        },
+        mount() {},
+        clean() {},
+        resize(
+                _e: any,
+                width = window.innerWidth,
+                height = window.innerHeight
+        ) {
+                self.size[0] = self.el.width = width
+                self.size[1] = self.el.height = height
+                self.uniform('iResolution', self.size)
+        },
+        mousemove(_e: any, x = _e.clientX, y = _e.clientY) {
+                const [w, h] = self.size
+                self.mouse[0] = (x - w / 2) / (w / 2)
+                self.mouse[1] = -(y - h / 2) / (h / 2)
+                self.uniform('iMouse', self.mouse)
+        },
+        load(_: any, image: any) {
+                self.frame(() => {
+                        const loc = self.location(image.alt)
+                        const unit = self.activeUnit(image.alt)
+                        const texture = createTexture(self.gl, image)
+                        self.frame(() => {
+                                activeTexture(self.gl, loc, unit, texture)
+                                return true
+                        })
+                })
+        },
+        clear(key) {
+                self.gl.clear(self.gl[key || 'COLOR_BUFFER_BIT'])
+        },
+        viewport(size: number[]) {
+                self.gl.viewport(0, 0, ...(size || self.size))
+        },
+        drawArrays(mode = 'TRIANGLES') {
                 self.gl.drawArrays(self.gl[mode], 0, self.count)
-        self.drawElements = (mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') =>
+        },
+        drawElements(mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') {
                 self.gl.drawElements(
                         self.gl[mode],
                         self.count,
                         self.gl[type],
                         0
                 )
+        },
+})
 
-        // init config
-        if (isTemplateLiteral(initArg)) initArg = interleave(initArg, initArgs)
-        if (typeof initArg === 'string') self.frag = initArg
-        if (typeof initArg === 'object') self.setConfig(initArg)
-        if (self.count === 6) self.setAttribute({ a_position })
+self.texture = durable(self._texture)
+self.uniform = durable(self._uniform)
+self.attribute = durable(self._attribute)
 
-        return self
-}
+// @TODO
+// export const clone = gl.clone()
 
-gl.default = null as unknown as GL
+export { self as gl }
 
-export default gl
+export default self

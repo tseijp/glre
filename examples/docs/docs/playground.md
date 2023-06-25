@@ -1,10 +1,21 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: "Playground"
-description: "Playground"
+title: 'Playground'
+description: 'Playground'
 image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
 date: 2023-01-01
 ---
 
@@ -28,4 +39,3 @@ CodeSandbox is a popular playground solution. Runs Docusaurus in a remote Docker
 StackBlitz uses a novel WebContainers technology to run Docusaurus directly in your browser.
 
 [Try it now!](https://https://stackblitz.com/)
-
