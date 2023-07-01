@@ -6,7 +6,6 @@
         "private": true,
         "sideEffects": false,
         "scripts": {
-                "bootstrap": "npm i && lerna bootstrap",
                 "clean": "npm i && npx lerna clean -y",
                 "start": "cd examples/docs && npm run start",
                 "build": "cd examples/docs && npm run build",
@@ -21,7 +20,7 @@
                 "qwik": "cd examples/qwik && npm run start",
                 "solid": "cd examples/solid && npm run start",
                 "ls": "cd packages/core && npm publish --dry-run",
-                "pub": "npm run rollup && cd packages/core && npm run publish",
+                "pub": "npm run rollup && cd packages/core && yarn publish",
                 "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs"
         },
         "dependencies": {

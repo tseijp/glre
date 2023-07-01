@@ -10,7 +10,7 @@ export const useGLEvent = (props: Partial<GL>, self = gl) => {
         return useMemo(() => self(memo), [])
 }
 
-export const useGL = (props: Partial<GL>, self = gl) => {
+export const useGL = (props: Partial<GL> = {}, self = gl) => {
         const memo = useMutable(props) as Partial<GL>
         return useGLEvent({
                 ref(target: unknown) {

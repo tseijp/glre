@@ -1,47 +1,41 @@
 import React from 'react'
-import { View } from 'react-native'
+import { View, StyleSheet, useWindowDimensions } from 'react-native'
 import { GLView } from 'expo-gl'
-import { createProgram, createShader } from 'glre/utils'
+import { useGL } from 'glre/native'
 
-const vs = `
-  void main(void) {
-    gl_Position = vec4(0.0, 0.0, 0.0, 1.0);
-    gl_PointSize = 150.0;
-  }
-`
-const fs = `
-  void main(void) {
-    gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
-  }
-`
+const styles = StyleSheet.create({
+        container: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+        },
+        canvas: {
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                width: '100vw',
+                height: '100vh',
+        },
+})
 
 export default function App() {
+        const { width, height } = useWindowDimensions()
+        const self = useGL({
+                render() {
+                        self.clear()
+                        self.viewport()
+                        self.drawArrays()
+                },
+        })
+
         return (
-                <View
-                        style={{
-                                flex: 1,
-                                justifyContent: 'center',
-                                alignItems: 'center',
-                        }}
-                >
+                <View style={styles.container}>
                         <GLView
-                                style={{ width: 300, height: 300 }}
-                                onContextCreate={onContextCreate}
+                                style={{ width, height }}
+                                onContextCreate={self.ref}
                         />
                 </View>
         )
-}
-
-function onContextCreate(gl) {
-        createProgram(
-                gl,
-                createShader(gl, vs, gl.VERTEX_SHADER),
-                createShader(gl, fs, gl.FRAGMENT_SHADER)
-        )
-        gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight)
-        gl.clearColor(0, 1, 1, 1)
-        gl.clear(gl.COLOR_BUFFER_BIT)
-        gl.drawArrays(gl.POINTS, 0, 1)
-        gl.flush()
-        gl.endFrameEXP()
 }
