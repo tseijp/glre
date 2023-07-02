@@ -58,17 +58,13 @@ function useLevaUniform() {
 }
 
 function Canvas() {
-        const gl = useGL({ frag })
-        console.log({ ...gl })
-        setTimeout(() => {
-                console.log({ ...gl })
-        }, 1000)
-
-        useFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-                return true
+        const gl = useGL({
+                frag,
+                render() {
+                        gl.clear()
+                        gl.viewport()
+                        gl.drawArrays()
+                },
         })
 
         useUniform({

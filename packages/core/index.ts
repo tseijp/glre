@@ -35,7 +35,7 @@ let iTime = performance.now(),
         iPrevTime = 0,
         iDeltaTime = 0
 
-const self = event<GL>({
+const self = event<Partial<GL>>({
         vertex: _defaultVertex,
         fragment: _defaultFragment,
         size: [0, 0],
@@ -87,6 +87,7 @@ const self = event<GL>({
                 })
         },
         _texture(key: string, src: string) {
+                if (typeof window === 'undefined') return
                 const image = new Image()
                 image.addEventListener(
                         'load',
@@ -142,7 +143,7 @@ const self = event<GL>({
                         0
                 )
         },
-})
+}) as GL
 
 self.frame = queue()
 self.texture = durable(self._texture)

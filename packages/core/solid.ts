@@ -1,16 +1,12 @@
-import { createMemo, onMount, onCleanup } from 'solid-js'
+import { onMount, onCleanup } from 'solid-js'
 import { frame } from 'refr'
 import { gl } from './index'
 import type { Fun } from 'reev/types'
 
-export function createGLEvent(props?: any, self = gl) {
-        const memo = createMemo<any>(() => props)
-        onCleanup(() => void (self.clean(), self(memo())))
-        return self(memo())
-}
-
 export function createGL(props?: any, self = gl) {
-        return createGLEvent({
+        onCleanup(self.clean)
+
+        return self({
                 ref(target: unknown) {
                         if (target) {
                                 self.target = target
@@ -28,6 +24,7 @@ export function createGL(props?: any, self = gl) {
                         window.addEventListener('mousemove', self.mousemove)
                 },
                 clean() {
+                        self(props)
                         frame.cancel()
                         window.removeEventListener('resize', self.resize)
                         window.removeEventListener('mousemove', self.mousemove)
