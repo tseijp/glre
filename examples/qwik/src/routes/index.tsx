@@ -1,7 +1,10 @@
 import { component$ } from '@builder.io/qwik'
+import { useGL } from 'glre/qwik'
+
 import type { DocumentHead } from '@builder.io/qwik-city'
 
 export default component$(() => {
+        useGL()
         return (
                 <canvas
                         style={{

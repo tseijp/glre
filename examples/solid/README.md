@@ -1,3 +1,27 @@
+# @glre/solid
+
+## Dependencies
+
+- ![glre][glre] ![glre_][glre_] glre
+- ![solid-js][solid-js] ![solid-js_][solid-js_] solid-js
+- ![solid-devtools][solid-devtools] ![solid-devtools_][solid-devtools_] solid-devtools
+- ![typescript][typescript] ![typescript_][typescript_] typescript
+- ![vite][vite] ![vite_][vite_] vite
+- ![vite-plugin-solid][vite-plugin-solid] ![vite-plugin-solid_][vite-plugin-solid_] vite-plugin-solid
+
+[glre]: https://img.shields.io/npm/v/glre?style=flat&colorA=000&colorB=000
+[glre_]: https://img.shields.io/badge/using_0.13.1-black?style=flat
+[solid-js]: https://img.shields.io/npm/v/solid-js?style=flat&colorA=000&colorB=000
+[solid-js_]: https://img.shields.io/badge/using_1.7.6-black?style=flat
+[solid-devtools]: https://img.shields.io/npm/v/solid-devtools?style=flat&colorA=000&colorB=000
+[solid-devtools_]: https://img.shields.io/badge/using_0.27.3-black?style=flat
+[typescript]: https://img.shields.io/npm/v/typescript?style=flat&colorA=000&colorB=000
+[typescript_]: https://img.shields.io/badge/using_5.1.6-black?style=flat
+[vite]: https://img.shields.io/npm/v/vite?style=flat&colorA=000&colorB=000
+[vite_]: https://img.shields.io/badge/using_4.3.9-black?style=flat
+[vite-plugin-solid]: https://img.shields.io/npm/v/vite-plugin-solid?style=flat&colorA=000&colorB=000
+[vite-plugin-solid_]: https://img.shields.io/badge/using_2.7.0-black?style=flat
+
 ## Usage
 
 Those templates dependencies are maintained via [pnpm](https://pnpm.io) via `pnpm up -Lri`.

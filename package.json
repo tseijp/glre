@@ -17,7 +17,7 @@
                 "web": "cd examples/native && npm run start --web",
                 "watch": "cd examples/cov && npm run start",
                 "cov": "cd examples/cov && npm run cov",
-                "qwik": "cd examples/qwik && npm run start",
+                "qwik": "cd examples/qwik && npm run dev",
                 "solid": "cd examples/solid && npm run start",
                 "ls": "cd packages/core && npm publish --dry-run",
                 "pub": "npm run rollup && cd packages/core && yarn publish",
@@ -37,8 +37,7 @@
                 "@rollup/plugin-node-resolve": "15.0.1",
                 "@rollup/plugin-terser": "0.2.1",
                 "@rollup/plugin-typescript": "10.0.1",
-                "rollup": "3.8.1",
-                "typescript": "4.9.4"
+                "rollup": "3.8.1"
         },
         "engines": {
                 "node": ">=14"
