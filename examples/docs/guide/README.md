@@ -1,9 +1,20 @@
 ---
 hide_table_of_contents: true
-title: "Creating a scene"
-description: "Creating a scene"
+title: 'Creating a scene'
+description: 'Creating a scene'
 image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
 date: 2023-01-01
 ---
 
@@ -26,12 +37,12 @@ Save the following HTML to a file on your computer.
 ```html
 <!DOCTYPE html>
 <html>
- <body>
-  <canvas id="myCanvas"></canvas>
-  <script type="module">
-   // Our Javascript will go here.
-  </script>
- </body>
+        <body>
+                <canvas id="myCanvas"></canvas>
+                <script type="module">
+                        // Our Javascript will go here.
+                </script>
+        </body>
 </html>
 ```
 
@@ -102,42 +113,42 @@ const gl = createGL`
 
 ```ts
 gl.setFrame(() => {
-  gl.clear();
-  gl.viewport();
-  gl.drawArrays();
-  return true;
-});
+        gl.clear()
+        gl.viewport()
+        gl.drawArrays()
+        return true
+})
 ```
 
 ## Animating the cube
 
 ```ts
 gl.setFrame(() => {
-  const t = performance.now() / 1000;
-  const x = 200 * Math.cos(t);
-  const z = 200 * Math.sin(t);
-  gl.setUniform({ eye: [x, 0, z] });
-  return true;
-});
+        const t = performance.now() / 1000
+        const x = 200 * Math.cos(t)
+        const z = 200 * Math.sin(t)
+        gl.setUniform({ eye: [x, 0, z] })
+        return true
+})
 ```
 
 ## setUniform
 
 ```ts
 gl.setUniform({
-  focal: 500,
-  up: [0, 1, 0],
-  focus: [0, 0, 0],
-  color: [0, 1, 0]
-});
+        focal: 500,
+        up: [0, 1, 0],
+        focus: [0, 0, 0],
+        color: [0, 1, 0],
+})
 ```
 
 ## Create your app
 
 ```ts
-const style = { top: 0, left: 0, position: "fixed" };
-Object.assign(document.getElementById(gl.id).style, style);
-document.addEventListener("DOMContentLoaded", gl.mount);
+const style = { top: 0, left: 0, position: 'fixed' }
+Object.assign(document.getElementById(gl.id).style, style)
+document.addEventListener('DOMContentLoaded', gl.mount)
 ```
 
 ## The result
@@ -145,13 +156,13 @@ document.addEventListener("DOMContentLoaded", gl.mount);
 ```html
 <!DOCTYPE html>
 <html>
- <body>
-  <canvas id="myCanvas"></canvas>
-  <script type="module">
-    import createGL from "https://cdn.skypack.dev/glre@latest"
+        <body>
+                <canvas id="myCanvas"></canvas>
+                <script type="module">
+                        import createGL from 'https://cdn.skypack.dev/glre@latest'
 
-    // Creating the scene
-    const gl = createGL`
+                        // Creating the scene
+                        const gl = createGL`
       precision highp float;
       uniform vec2 iResolution; // window size
       uniform vec3 color;       // light color
@@ -192,34 +203,37 @@ document.addEventListener("DOMContentLoaded", gl.mount);
         }
         gl_FragColor = vec4(0.0, 0.0, 0.0, 1.0);
       }
-    `;
+    `
 
-    gl.setFrame(() => {
-      gl.clear();
-      gl.viewport();
-      gl.drawArrays();
-      return true;
-    });
+                        gl.setFrame(() => {
+                                gl.clear()
+                                gl.viewport()
+                                gl.drawArrays()
+                                return true
+                        })
 
-    gl.setFrame(() => {
-      const t = performance.now() / 1000;
-      const x = 200 * Math.cos(t);
-      const z = 200 * Math.sin(t);
-      gl.setUniform({ eye: [x, 0, z] });
-      return true;
-    });
+                        gl.setFrame(() => {
+                                const t = performance.now() / 1000
+                                const x = 200 * Math.cos(t)
+                                const z = 200 * Math.sin(t)
+                                gl.setUniform({ eye: [x, 0, z] })
+                                return true
+                        })
 
-    gl.setUniform({
-      focal: 500,
-      up: [0, 1, 0],
-      focus: [0, 0, 0],
-      color: [0, 1, 0]
-    });
+                        gl.setUniform({
+                                focal: 500,
+                                up: [0, 1, 0],
+                                focus: [0, 0, 0],
+                                color: [0, 1, 0],
+                        })
 
-    const style = { top: 0, left: 0, position: "fixed" };
-    Object.assign(document.getElementById(gl.id).style, style);
-    document.addEventListener("DOMContentLoaded", gl.mount);
-  </script>
-</body>
+                        const style = { top: 0, left: 0, position: 'fixed' }
+                        Object.assign(
+                                document.getElementById(gl.id).style,
+                                style
+                        )
+                        document.addEventListener('DOMContentLoaded', gl.mount)
+                </script>
+        </body>
 </html>
 ```

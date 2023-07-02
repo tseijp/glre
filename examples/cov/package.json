@@ -3,7 +3,7 @@
         "author": "tseijp",
         "version": "0.1.0",
         "license": "MIT",
-        "private": false,
+        "private": true,
         "sideEffects": false,
         "scripts": {
                 "watch": "npx jest --watch --runInBand",
