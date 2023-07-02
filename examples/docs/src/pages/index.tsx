@@ -2,10 +2,8 @@ import React from 'react'
 import Head from '@docusaurus/Head'
 import Layout from '@theme/Layout'
 import StatsImpl from 'stats.js'
-// import { useControls } from 'leva'
 import { range, makePriority } from '../../helpers'
 import useBaseUrl from '@docusaurus/useBaseUrl'
-// import { useColorMode } from '@docusaurus/theme-common';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
 
@@ -60,17 +58,13 @@ function useLevaUniform() {
 }
 
 function Canvas() {
-        const gl = useGL({ frag })
-        console.log({ ...gl })
-        setTimeout(() => {
-                console.log({ ...gl })
-        }, 1000)
-
-        useFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-                return true
+        const gl = useGL({
+                frag,
+                render() {
+                        gl.clear()
+                        gl.viewport()
+                        gl.drawArrays()
+                },
         })
 
         useUniform({

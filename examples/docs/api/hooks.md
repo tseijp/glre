@@ -31,6 +31,10 @@ useFrame(() => {})
 // Start an update loop
 useFrame(() => true)
 
+// set vertex
+useVertex(vertex: Record<string, number[]>): GL
+
+
 // set uniform
 useUniform(uniform: Record<string, number | number[]>): GL
 

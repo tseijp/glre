@@ -1,18 +1,19 @@
-import { useEffect, useMemo } from 'react'
-import { useMutable } from '../reev/react'
+import { useState, useEffect, useMemo } from 'react'
 import { gl } from './index'
-import { frame } from '../refr'
+import { frame } from 'refr'
+import { mutable } from 'reev'
 import type { GL } from './types'
-import type { Fun } from '../refr'
+import type { Fun } from 'refr'
+import type { MutableArgs } from 'reev/types'
 
-export const useGLEvent = (props: Partial<GL>, self = gl) => {
-        const memo = useMutable(props) as Partial<GL>
-        return useMemo(() => self(memo), [])
+export const useMutable = <T extends object>(...args: MutableArgs<T>) => {
+        const [memo] = useState(() => mutable<T>())
+        return memo(...args)
 }
 
-export const useGL = (props: Partial<GL>, self = gl) => {
-        const memo = useMutable(props) as Partial<GL>
-        return useGLEvent({
+export const useGL = (props: Partial<GL> = {}, self = gl) => {
+        const memo1 = useMutable(props) as Partial<GL>
+        const memo2 = useMutable({
                 ref(target: unknown) {
                         if (target) {
                                 self.target = target
@@ -20,7 +21,6 @@ export const useGL = (props: Partial<GL>, self = gl) => {
                         } else self.clean()
                 },
                 mount() {
-                        self(memo)
                         self.el = self.target
                         self.gl = self.target.getContext('webgl2')
                         self.init()
@@ -30,14 +30,17 @@ export const useGL = (props: Partial<GL>, self = gl) => {
                         window.addEventListener('mousemove', self.mousemove)
                 },
                 clean() {
+                        frame.cancel()
                         window.removeEventListener('resize', self.resize)
                         window.removeEventListener('mousemove', self.mousemove)
                 },
-        })
+        }) as Partial<GL>
+
+        return useMemo(() => self(memo2)(memo1), [self, memo1, memo2])
 }
 
 export function useTexture(props: any, self = gl) {
-        return self?.texture(props)
+        return self.texture(props)
 }
 
 export function useAttribute(props: any, self = gl) {

@@ -1,5 +1,5 @@
 import { event, durable, nested } from 'reev'
-import { queue, frame } from '../refr'
+import { queue, frame } from 'refr'
 import {
         uniformType,
         vertexStride,
@@ -13,6 +13,8 @@ import {
         activeTexture,
 } from './utils'
 import type { GL } from './types'
+
+const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
 const _defaultVertex = `
   attribute vec4 a_position;
@@ -33,7 +35,7 @@ let iTime = performance.now(),
         iPrevTime = 0,
         iDeltaTime = 0
 
-const self = event<GL>({
+const self = event<Partial<GL>>({
         vertex: _defaultVertex,
         fragment: _defaultFragment,
         size: [0, 0],
@@ -46,7 +48,7 @@ const self = event<GL>({
                 const _f = self.fs || self.frag || self.fragment
                 const vs = createShader(gl, _v, gl.VERTEX_SHADER)
                 const fs = createShader(gl, _f, gl.FRAGMENT_SHADER)
-                self.frame = queue()
+                if (self.count === 6) self.attribute({ a_position })
                 frame(() => void self.render() || 1)
                 self.pg = varying
                         ? createTfProgram(gl, vs, fs, varying)
@@ -85,6 +87,7 @@ const self = event<GL>({
                 })
         },
         _texture(key: string, src: string) {
+                if (typeof window === 'undefined') return
                 const image = new Image()
                 image.addEventListener(
                         'load',
@@ -126,8 +129,8 @@ const self = event<GL>({
         clear(key = 'COLOR_BUFFER_BIT') {
                 self.gl.clear(self.gl[key])
         },
-        viewport(size: number[]) {
-                self.gl.viewport(0, 0, ...(size || self.size))
+        viewport(size: number[] = self.size) {
+                self.gl.viewport(0, 0, ...size)
         },
         drawArrays(mode = 'TRIANGLES') {
                 self.gl.drawArrays(self.gl[mode], 0, self.count)
@@ -140,8 +143,9 @@ const self = event<GL>({
                         0
                 )
         },
-})
+}) as GL
 
+self.frame = queue()
 self.texture = durable(self._texture)
 self.uniform = durable(self._uniform)
 self.attribute = durable(self._attribute)

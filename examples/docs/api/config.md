@@ -23,7 +23,7 @@ date: 2023-01-01
 
 | `GLConfig`                | default      | description                   |
 | :------------------------ | :----------- | :---------------------------- |
-| `id: string`              | `myCanvas`   | canvas id                     |
+| `el: Element`             |              | canvas element                |
 | `fs: string`              | [more][frag] | fragment shader               |
 | `vs: string`              | [more][vert] | vertex shader                 |
 | `frag: string`            | [more][frag] | fragment shader               |

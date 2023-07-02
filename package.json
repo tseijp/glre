@@ -6,26 +6,24 @@
         "private": true,
         "sideEffects": false,
         "scripts": {
-                "bootstrap": "yarn && lerna bootstrap",
-                "clean": "yarn && lerna clean -y",
-                "start": "cd examples/docs && yarn start",
-                "build": "cd examples/docs && yarn build",
-                "serve": "cd examples/docs && yarn serve",
+                "clean": "npm i && npx lerna clean -y",
+                "start": "cd examples/docs && npm run start",
+                "build": "cd examples/docs && npm run build",
+                "serve": "cd examples/docs && npm run serve",
                 "write": "cd examples/docs && docusaurus write-translations",
-                "tunnel": "cd examples/native && yarn start --tunnel",
-                "android": "cd examples/native && yarn start --android",
-                "ios": "cd examples/native && yarn start --ios",
-                "web": "cd examples/native && yarn start --web",
-                "watch": "cd examples/cov && yarn start",
-                "cov": "cd examples/cov && yarn cov",
-                "qwik": "cd examples/qwik && yarn start",
-                "solid": "cd examples/solid && yarn start",
+                "tunnel": "cd examples/native && npm run tunnel",
+                "android": "cd examples/native && npm run android",
+                "ios": "cd examples/native && npm run ios",
+                "web": "cd examples/native && npm run web",
+                "watch": "cd examples/cov && npm run start",
+                "cov": "cd examples/cov && npm run cov",
+                "qwik": "cd examples/qwik && npm run dev",
+                "solid": "cd examples/solid && npm run start",
                 "ls": "cd packages/core && npm publish --dry-run",
-                "pub": "yarn rollup && cd packages/core && yarn publish",
+                "pub": "npm run rollup && cd packages/core && yarn publish",
                 "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs"
         },
         "dependencies": {
-                "glre": "*",
                 "lerna": "7.0.2"
         },
         "devDependencies": {
@@ -38,8 +36,7 @@
                 "@rollup/plugin-node-resolve": "15.0.1",
                 "@rollup/plugin-terser": "0.2.1",
                 "@rollup/plugin-typescript": "10.0.1",
-                "rollup": "3.8.1",
-                "typescript": "4.9.4"
+                "rollup": "3.8.1"
         },
         "engines": {
                 "node": ">=14"

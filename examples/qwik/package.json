@@ -17,11 +17,9 @@
         },
         "devDependencies": {
                 "glre": "*",
-                "@builder.io/qwik": "^1.1.5",
-                "@builder.io/qwik-city": "^1.1.5",
-                "@types/eslint": "8.40.0",
-                "@types/node": "^20.2.5",
-                "typescript": "5.0.4",
+                "@builder.io/qwik": "1.1.5",
+                "@builder.io/qwik-city": "1.1.5",
+                "typescript": "5.1.6",
                 "undici": "5.22.1",
                 "vite": "4.3.9",
                 "vite-tsconfig-paths": "4.2.0"

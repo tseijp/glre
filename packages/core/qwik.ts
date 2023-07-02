@@ -1,11 +1,12 @@
-import { useSignal, useTask$ } from '@builder.io/qwik'
+import { useSignal, useVisibleTask$, $ } from '@builder.io/qwik'
 import { gl } from './index'
-import { frame } from '../refr'
-import type { Fun } from '../reev/types'
+import { frame } from 'refr'
+import type { GL } from './types'
+import type { Fun } from 'reev/types'
 
-export function useGL(props?: any, self = gl) {
+export function useGL(props?: any, self = $(gl) as unknown as GL) {
         const ref = useSignal<Element>()
-        useTask$(({ cleanup }) => {
+        useVisibleTask$(({ cleanup }) => {
                 self(props)
                 self.el = self.target = ref.value
                 self.gl = self.target.getContext('webgl2')
