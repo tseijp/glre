@@ -11,10 +11,10 @@
                 "build": "cd examples/docs && npm run build",
                 "serve": "cd examples/docs && npm run serve",
                 "write": "cd examples/docs && docusaurus write-translations",
-                "tunnel": "cd examples/native && npm run start --tunnel",
-                "android": "cd examples/native && npm run start --android",
-                "ios": "cd examples/native && npm run start --ios",
-                "web": "cd examples/native && npm run start --web",
+                "tunnel": "cd examples/native && npm run tunnel",
+                "android": "cd examples/native && npm run android",
+                "ios": "cd examples/native && npm run ios",
+                "web": "cd examples/native && npm run web",
                 "watch": "cd examples/cov && npm run start",
                 "cov": "cd examples/cov && npm run cov",
                 "qwik": "cd examples/qwik && npm run dev",
@@ -24,7 +24,6 @@
                 "rollup": "cd packages/core && npx rollup -c ../../rollup.config.ts --configPlugin typescript --bundleConfigAsCjs"
         },
         "dependencies": {
-                "glre": "*",
                 "lerna": "7.0.2"
         },
         "devDependencies": {

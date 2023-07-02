@@ -19,6 +19,7 @@ install [JDK][JDK] and [Android Studio]
 
 - ![expo][expo] ![expo_][expo_] expo
 - ![expo-gl][expo-gl] ![expo-gl_][expo-gl_] expo-gl
+- ![expo-webpack-config][expo-webpack-config] ![expo-webpack-config_][expo-webpack-config_] @expo/webpack-config
 - ![glre][glre] ![glre_][glre_] glre
 - ![react][react] ![react_][react_] react
 - ![react-dom][react-dom] ![react-dom_][react-dom_] react-dom
@@ -30,6 +31,8 @@ install [JDK][JDK] and [Android Studio]
 [expo_]: https://img.shields.io/badge/using_49.0.0-beta.3-black?style=flat
 [expo-gl]: https://img.shields.io/npm/v/expo-gl?style=flat&colorA=000&colorB=000
 [expo-gl_]: https://img.shields.io/badge/using_13.0.0-black?style=flat
+[expo-webpack-config]: https://img.shields.io/npm/v/@expo/webpack-config?style=flat&colorA=000&colorB=000
+[expo-webpack-config_]: https://img.shields.io/badge/using_18.1.0-black?style=flat
 [glre]: https://img.shields.io/npm/v/glre?style=flat&colorA=000&colorB=000
 [glre_]: https://img.shields.io/badge/using_0.13.1-black?style=flat
 [react]: https://img.shields.io/npm/v/react?style=flat&colorA=000&colorB=000

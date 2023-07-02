@@ -6,7 +6,7 @@ import { frame } from 'refr'
 import type { GL } from './types'
 import type { Fun } from 'refr'
 
-export const useGLEvent = (props: Partial<GL> = {}, self = gl) => {
+export const useGLEvent = <T>(props: Partial<GL & T> = {}, self = gl) => {
         const memo = useMutable(props) as Partial<GL>
         return useMemo(() => self(memo), [])
 }
@@ -21,14 +21,25 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
                         self.mount()
                 },
                 mount() {
-                        const { width, height } = Dimensions.get('window')
+                        const {
+                                drawingBufferWidth: width,
+                                drawingBufferHeight: height,
+                        } = self.gl
                         self.size = [width, height]
                         self.init()
                         self.resize(void 0, width, height)
+                        Dimensions.addEventListener('change', self.change)
                         frame.start()
                 },
                 clean() {
                         frame.cancel()
+                },
+                change() {
+                        const {
+                                drawingBufferWidth: width,
+                                drawingBufferHeight: height,
+                        } = self.gl
+                        self.resize(void 0, width, height)
                 },
         })
 }

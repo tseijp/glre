@@ -4,20 +4,24 @@
         "main": "./index",
         "scripts": {
                 "start": "npx expo start",
+                "tunnel": "npx expo start --tunnel",
                 "android": "npx expo start --android",
                 "ios": "npx expo start --ios",
                 "web": "npx expo start --web"
         },
         "dependencies": {
                 "@expo/cli": "0.10.7",
-                "expo": "49.0.0-beta.3",
-                "expo-gl": "13.0.0",
-                "expo-status-bar": "1.6.0",
+                "@expo/webpack-config": "18.1.0",
+                "expo": "48.0.19",
+                "expo-gl": "12.4.0",
+                "expo-status-bar": "1.4.4",
                 "glre": "*",
+                "reev": "*",
+                "refr": "*",
                 "react": "18.2.0",
                 "react-dom": "18.2.0",
-                "react-native": "0.72.0",
-                "react-native-web": "0.19.6",
+                "react-native": "0.71.8",
+                "react-native-web": "0.18.10",
                 "typescript": "5.1.6"
         },
         "devDependencies": {

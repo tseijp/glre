@@ -128,8 +128,8 @@ const self = event<GL>({
         clear(key = 'COLOR_BUFFER_BIT') {
                 self.gl.clear(self.gl[key])
         },
-        viewport(size: number[]) {
-                self.gl.viewport(0, 0, ...(size || self.size))
+        viewport(size: number[] = self.size) {
+                self.gl.viewport(0, 0, ...size)
         },
         drawArrays(mode = 'TRIANGLES') {
                 self.gl.drawArrays(self.gl[mode], 0, self.count)
