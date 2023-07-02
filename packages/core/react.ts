@@ -1,9 +1,15 @@
-import { useEffect, useMemo } from 'react'
-import { useMutable } from 'reev/react'
+import { useState, useEffect, useMemo } from 'react'
 import { gl } from './index'
 import { frame } from 'refr'
+import { mutable } from 'reev'
 import type { GL } from './types'
 import type { Fun } from 'refr'
+import type { MutableArgs } from 'reev/types'
+
+export const useMutable = <T extends object>(...args: MutableArgs<T>) => {
+        const [memo] = useState(() => mutable<T>())
+        return memo(...args)
+}
 
 export const useGLEvent = (props: Partial<GL>, self = gl) => {
         const memo = useMutable(props) as Partial<GL>
