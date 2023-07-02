@@ -8,18 +8,17 @@ export function useGL(props?: any, self = $(gl) as unknown as GL) {
         const ref = useSignal<Element>()
         useVisibleTask$(({ cleanup }) => {
                 self(props)
-                console.log('HI')
-                // self.el = self.target = ref.value
-                // self.gl = self.target.getContext('webgl2')
-                // self.init()
-                // self.resize()
-                // frame.start()
-                // window.addEventListener('resize', self.resize)
-                // window.addEventListener('mousemove', self.mousemove)
+                self.el = self.target = ref.value
+                self.gl = self.target.getContext('webgl2')
+                self.init()
+                self.resize()
+                frame.start()
+                window.addEventListener('resize', self.resize)
+                window.addEventListener('mousemove', self.mousemove)
                 cleanup(() => {
-                        // self.clean()
-                        // window.removeEventListener('resize', self.resize)
-                        // window.removeEventListener('mousemove', self.mousemove)
+                        self.clean()
+                        window.removeEventListener('resize', self.resize)
+                        window.removeEventListener('mousemove', self.mousemove)
                 })
         })
         return self
