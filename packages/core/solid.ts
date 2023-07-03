@@ -5,8 +5,7 @@ import type { Fun } from 'reev/types'
 
 export function createGL(props?: any, self = gl) {
         onCleanup(self.clean)
-
-        return self({
+        const memo = {
                 ref(target: unknown) {
                         if (target) {
                                 self.target = target
@@ -14,7 +13,6 @@ export function createGL(props?: any, self = gl) {
                         }
                 },
                 mount() {
-                        self(props)
                         self.el = self.target
                         self.gl = self.target.getContext('webgl2')
                         self.init()
@@ -24,12 +22,13 @@ export function createGL(props?: any, self = gl) {
                         window.addEventListener('mousemove', self.mousemove)
                 },
                 clean() {
-                        self(props)
+                        self(props)(memo)
                         frame.cancel()
                         window.removeEventListener('resize', self.resize)
                         window.removeEventListener('mousemove', self.mousemove)
                 },
-        })
+        }
+        return self(props)(memo)
 }
 
 export function onFrame(fun: Fun, self = gl) {

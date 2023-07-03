@@ -4,10 +4,10 @@
         "main": "./index",
         "scripts": {
                 "start": "npx expo start",
-                "tunnel": "npx expo start --tunnel",
-                "android": "npx expo start --android",
-                "ios": "npx expo start --ios",
-                "web": "npx expo start --web"
+                "tunnel": "npx expo start --clear --tunnel",
+                "android": "npx expo start --clear --android",
+                "ios": "npx expo start --clear --ios",
+                "web": "npx expo start --clear --web"
         },
         "dependencies": {
                 "@expo/cli": "0.10.7",

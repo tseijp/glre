@@ -6,42 +6,36 @@ import { frame } from 'refr'
 import type { GL } from './types'
 import type { Fun } from 'refr'
 
-export const useGLEvent = <T>(props: Partial<GL & T> = {}, self = gl) => {
-        const memo = useMutable(props) as Partial<GL>
-        return useMemo(() => self(memo), [])
-}
-
 export const useGL = (props: Partial<GL> = {}, self = gl) => {
-        const memo = useMutable(props) as Partial<GL>
-        return useGLEvent({
+        const change = () => {
+                self.resize(
+                        void 0,
+                        self.gl.drawingBufferWidth,
+                        self.gl.drawingBufferHeight
+                )
+        }
+        const memo1 = useMutable(props) as Partial<GL>
+        const memo2 = useMutable({
                 ref(gl: any) {
-                        self(memo)
                         self.el = {}
                         self.gl = gl
                         self.mount()
                 },
                 mount() {
-                        const {
-                                drawingBufferWidth: width,
-                                drawingBufferHeight: height,
-                        } = self.gl
-                        self.size = [width, height]
                         self.init()
-                        self.resize(void 0, width, height)
-                        Dimensions.addEventListener('change', self.change)
+                        change()
                         frame.start()
+                        Dimensions.addEventListener('change', change)
                 },
                 clean() {
+                        self(memo2)(memo1)
                         frame.cancel()
                 },
-                change() {
-                        const {
-                                drawingBufferWidth: width,
-                                drawingBufferHeight: height,
-                        } = self.gl
-                        self.resize(void 0, width, height)
-                },
-        })
+        }) as Partial<GL>
+
+        useEffect(() => self.clean, [self])
+
+        return useMemo(() => self(memo2)(memo1), [self, memo2, memo1])
 }
 
 export function useTexture(props: any, self = gl) {

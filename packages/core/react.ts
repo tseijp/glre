@@ -30,6 +30,7 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
                         window.addEventListener('mousemove', self.mousemove)
                 },
                 clean() {
+                        self(memo2)(memo1)
                         frame.cancel()
                         window.removeEventListener('resize', self.resize)
                         window.removeEventListener('mousemove', self.mousemove)
