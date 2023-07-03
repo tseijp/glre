@@ -1,10 +1,21 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: "Loading textures"
-description: "Loading textures"
+title: 'Loading textures'
+description: 'Loading textures'
 image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
 date: 2023-01-01
 ---
 
@@ -57,10 +68,10 @@ const App = (props) => {
 
 ```tsx
 gl.setFrame(() => {
-  gl.clear()      // to run gl.clear(gl.COLOR_BUFFER_BIT)
-  gl.viewport()   // to run gl.viewport(0, 0, width, height)
-  gl.drawArrays() // to run gl.drawArrays(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
-  return true     // to continue rendering
+        gl.clear() // to run gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.viewport() // to run gl.viewport(0, 0, width, height)
+        gl.drawArrays() // to run gl.drawArrays(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
+        return true // to continue rendering
 })
 ```
 
@@ -90,24 +101,24 @@ const frag = `
 `
 
 const textureUnit = '...png'
-const position = [-1, 1, 0, 1, 1, 0, -1, -1, 0, 1, -1, 0];
-const texCoord = [0, 0, 1, 0, 0, 1, 1, 1];
-const indices = [0, 1, 2, 2, 1, 3];
+const position = [-1, 1, 0, 1, 1, 0, -1, -1, 0, 1, -1, 0]
+const texCoord = [0, 0, 1, 0, 0, 1, 1, 1]
+const indices = [0, 1, 2, 2, 1, 3]
 
 const App = (props) => {
-  const gl = useGL({ frag, vert })
-  gl.setTexture({ textureUnit })
-  gl.setAttribute({ position, texCoord }, indices)
-  gl.setFrame(() => {
-    gl.clear()      // to run gl.clear(gl.COLOR_BUFFER_BIT)
-    gl.viewport()   // to run gl.viewport(0, 0, width, height)
-    gl.drawArrays() // to run gl.drawArrays(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
-    return true     // to continue rendering
-  })
-  return <canvas id={gl.id} {...props} />
+        const gl = useGL({ frag, vert })
+        gl.setTexture({ textureUnit })
+        gl.setAttribute({ position, texCoord }, indices)
+        gl.setFrame(() => {
+                gl.clear() // to run gl.clear(gl.COLOR_BUFFER_BIT)
+                gl.viewport() // to run gl.viewport(0, 0, width, height)
+                gl.drawArrays() // to run gl.drawArrays(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0)
+                return true // to continue rendering
+        })
+        return <canvas id={gl.id} {...props} />
 }
 
-const style = { top: 0, left: 0, position: "fixed", background: "#212121" };
+const style = { top: 0, left: 0, position: 'fixed', background: '#212121' }
 
-createRoot(document.getElementById("root")).render(<App style={style} />);
+createRoot(document.getElementById('root')).render(<App style={style} />)
 ```

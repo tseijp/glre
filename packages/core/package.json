@@ -1,43 +1,67 @@
 {
-  "name": "glre",
-  "author": "tseijp",
-  "license": "MIT",
-  "version": "0.13.1",
-  "module": "index.js",
-  "types": "index.ts",
-  "main": "index.cjs.js",
-  "umd": "index.develop.js",
-  "private": false,
-  "sideEffect": false,
-  "publishConfig": {
-    "access": "public"
-  },
-  "dependencies": {
-    "reev": "0.9.0",
-    "refr": "0.2.0"
-  },
-  "keywords": [
-    "glsl",
-    "webgl",
-    "hooks",
-    "react",
-    "reactjs",
-    "reactive",
-    "solid",
-    "solidjs",
-    "typescript"
-  ],
-  "files": [
-    "index.js",
-    "index.cjs.js",
-    "index.develop.js",
-    "index.product.js",
-    "index.ts",
-    "events.ts",
-    "helpers.ts",
-    "react.ts",
-    "solid.ts",
-    "types.ts",
-    "utils.ts"
-  ]
+        "name": "glre",
+        "author": "tseijp",
+        "license": "MIT",
+        "version": "0.14.0",
+        "module": "index.js",
+        "types": "index.ts",
+        "main": "index.cjs.js",
+        "umd": "index.develop.js",
+        "private": false,
+        "sideEffect": false,
+        "publishConfig": {
+                "access": "public"
+        },
+        "dependencies": {
+                "reev": "0.10.0",
+                "refr": "0.3.0"
+        },
+        "keywords": [
+                "glsl",
+                "webgl",
+                "hooks",
+                "react",
+                "reactjs",
+                "reactive",
+                "solid",
+                "solidjs",
+                "typescript"
+        ],
+        "peerDependencies": {
+                "expo": "*",
+                "expo-gl": "*",
+                "react": ">=16.8",
+                "react-dom": ">=16.8",
+                "solid-js": "*"
+        },
+        "peerDependenciesMeta": {
+                "expo": {
+                        "optional": true
+                },
+                "expo-gl": {
+                        "optional": true
+                },
+                "react": {
+                        "optional": true
+                },
+                "react-dom": {
+                        "optional": true
+                },
+                "solid-js": {
+                        "optional": true
+                }
+        },
+        "files": [
+                "index.js",
+                "index.cjs.js",
+                "index.develop.js",
+                "index.product.js",
+                "index.ts",
+                "native.ts",
+                "qwik.ts",
+                "react.ts",
+                "solid.ts",
+                "types.ts",
+                "utils.ts"
+        ]
 }

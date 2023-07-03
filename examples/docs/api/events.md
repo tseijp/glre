@@ -1,30 +1,46 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: "Event API"
-description: "Event API"
+title: 'Event API'
+description: 'Event API'
 image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
 date: 2023-01-01
 ---
 
 # Event API
 
 ```ts
-gl.event.mount({
-  // mount
-  mount() {},
+import { gl } from 'glre'
 
-  // clean
-  clean() {},
+gl({
+        // mount
+        mount() {},
 
-  // mousemove
-  mousemove() {},
+        // clean
+        clean() {},
 
-  // resize
-  resize() {},
+        // render
+        render() {},
 
-  // scroll
-  scroll() {},
+        // mousemove
+        mousemove() {},
+
+        // resize
+        resize() {},
+
+        // scroll
+        scroll() {},
 })
 ```

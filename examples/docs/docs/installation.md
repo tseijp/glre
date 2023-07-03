@@ -1,10 +1,21 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: "Installation"
-description: "Installation"
+title: 'Installation'
+description: 'Installation'
 image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
 date: 2023-01-01
 ---
 
@@ -24,7 +35,7 @@ yaan add glre
 
 ```html
 <script type="module">
-  import { gl } from "https://cdn.skypack.dev/glre@latest"
-  gl.setConfig({ id: "myCanvas" })
+        import { gl } from 'https://cdn.skypack.dev/glre@latest'
+        gl.setConfig({ id: 'myCanvas' })
 </script>
 ```
