@@ -23,6 +23,7 @@ export type GL = EventState<{
         frag: string
         vertex: string
         fragment: string
+        varying: string
         int: PrecisionMode
         float: PrecisionMode
         sampler2D: PrecisionMode

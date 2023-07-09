@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from 'react'
-import { gl } from './index'
+import { createTF, gl } from './index'
 import { frame } from 'refr'
 import { mutable } from 'reev'
 import type { GL } from './types'
@@ -38,6 +38,13 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
         }) as Partial<GL>
 
         return useMemo(() => self(memo2)(memo1), [self, memo1, memo2])
+}
+
+export const useTF = (props: Partial<GL>, self = gl) => {
+        const memo = useMutable(props) as Partial<GL>
+        const tf = useMemo(() => createTF(memo, self), [memo, self])
+        useEffect(() => void tf.mount() || tf.clean, [self])
+        return tf
 }
 
 export function useTexture(props: any, self = gl) {
