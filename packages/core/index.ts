@@ -35,7 +35,7 @@ let iTime = performance.now(),
         iPrevTime = 0,
         iDeltaTime = 0
 
-export const createGL = () => {
+export const createGL = (props?: Partial<GL>) => {
         const self = event<Partial<GL>>({
                 vertex: _defaultVertex,
                 fragment: _defaultFragment,
@@ -44,6 +44,7 @@ export const createGL = () => {
                 count: 6,
                 counter: 0,
                 init() {
+                        self(props)
                         const gl = self.gl
                         const _v = self.vs || self.vert || self.vertex
                         const _f = self.fs || self.frag || self.fragment
@@ -97,8 +98,8 @@ export const createGL = () => {
                 },
                 resize(
                         _e: any,
-                        width = window.innerWidth,
-                        height = window.innerHeight
+                        width = self.width || window.innerWidth,
+                        height = self.height || window.innerHeight
                 ) {
                         self.size[0] = self.el.width = width
                         self.size[1] = self.el.height = height
@@ -106,8 +107,9 @@ export const createGL = () => {
                 },
                 mousemove(_e: any, x = _e.clientX, y = _e.clientY) {
                         const [w, h] = self.size
-                        self.mouse[0] = (x - w / 2) / (w / 2)
-                        self.mouse[1] = -(y - h / 2) / (h / 2)
+                        const { top, left } = self.el.getBoundingClientRect()
+                        self.mouse[0] = (x - top - w / 2) / (w / 2)
+                        self.mouse[1] = -(y - left - h / 2) / (h / 2)
                         self.uniform('iMouse', self.mouse)
                 },
                 load(_: any, image: any) {

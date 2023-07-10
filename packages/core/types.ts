@@ -14,6 +14,8 @@ export type GL = EventState<{
          * initial value
          */
         id: string
+        width: number
+        height: number
         size: [number, number]
         mouse: [number, number]
         count: number
