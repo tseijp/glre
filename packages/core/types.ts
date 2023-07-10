@@ -14,6 +14,8 @@ export type GL = EventState<{
          * initial value
          */
         id: string
+        width: number
+        height: number
         size: [number, number]
         mouse: [number, number]
         count: number
@@ -23,6 +25,7 @@ export type GL = EventState<{
         frag: string
         vertex: string
         fragment: string
+        varying: string
         int: PrecisionMode
         float: PrecisionMode
         sampler2D: PrecisionMode

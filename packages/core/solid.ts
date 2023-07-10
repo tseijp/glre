@@ -4,7 +4,6 @@ import { gl } from './index'
 import type { Fun } from 'reev/types'
 
 export function createGL(props?: any, self = gl) {
-        onCleanup(self.clean)
         const memo = {
                 ref(target: unknown) {
                         if (target) {
@@ -28,7 +27,15 @@ export function createGL(props?: any, self = gl) {
                         window.removeEventListener('mousemove', self.mousemove)
                 },
         }
+        onCleanup(self.clean)
         return self(props)(memo)
+}
+
+export const createTF = (props: any, self = gl) => {
+        const tf = createTF(props, self)
+        onMount(() => tf.mount())
+        onCleanup(() => tf.clean())
+        return tf
 }
 
 export function onFrame(fun: Fun, self = gl) {

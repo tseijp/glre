@@ -1,11 +1,13 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import Head from '@docusaurus/Head'
 import Layout from '@theme/Layout'
 import StatsImpl from 'stats.js'
-import { range, makePriority } from '../../helpers'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
+import { createGL } from 'glre'
 import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
+import { range, makePriority } from '../../helpers'
+import type { GL } from 'glre/types'
 
 const WINDOW_DELAY_MS = 500
 
@@ -36,7 +38,7 @@ export default function Home() {
         )
 }
 
-function useLevaUniform() {
+function useLevaUniform(gl: GL) {
         return useUniform(
                 // useControls(
                 {
@@ -52,39 +54,48 @@ function useLevaUniform() {
                         reflectionPWeight: 0.1,
                         moonHeight: 2.6,
                         moonRadius: 0.59,
-                }
+                },
+                gl
                 // )
         )
 }
 
 function Canvas() {
-        const gl = useGL({
-                frag,
-                render() {
-                        gl.clear()
-                        gl.viewport()
-                        gl.drawArrays()
+        const gl = useMemo(createGL, [])
+
+        useGL(
+                {
+                        frag,
+                        render() {
+                                gl.clear()
+                                gl.viewport()
+                                gl.drawArrays()
+                        },
                 },
-        })
+                gl
+        )
 
-        useUniform({
-                focal: 5000,
-                eye: [0, 0, -100],
-                up: [0, -1, 0],
-                focus: [0, 0, 0],
-                baseColor: [48 / 256, 43 / 256, 49 / 256, 1],
-                lightColor: [1, 185 / 255, 0, 1],
-                topSkyColor: [5 / 255, 6 / 255, 7 / 255, 1],
-                btmSkyColor: [44 / 255, 45 / 255, 47 / 255, 1],
-                topSeaColor: [21 / 255, 22 / 255, 27 / 255, 1],
-                btmSeaColor: [26 / 255, 31 / 255, 42 / 255, 1],
-        })
+        useUniform(
+                {
+                        focal: 5000,
+                        eye: [0, 0, -100],
+                        up: [0, -1, 0],
+                        focus: [0, 0, 0],
+                        baseColor: [48 / 256, 43 / 256, 49 / 256, 1],
+                        lightColor: [1, 185 / 255, 0, 1],
+                        topSkyColor: [5 / 255, 6 / 255, 7 / 255, 1],
+                        btmSkyColor: [44 / 255, 45 / 255, 47 / 255, 1],
+                        topSeaColor: [21 / 255, 22 / 255, 27 / 255, 1],
+                        btmSeaColor: [26 / 255, 31 / 255, 42 / 255, 1],
+                },
+                gl
+        )
 
-        useTexture({ GLRE: useBaseUrl('/img/GLRE.webp') })
+        useTexture({ GLRE: useBaseUrl('/img/GLRE.webp') }, gl)
 
         // useStats();
 
-        useLevaUniform()
+        useLevaUniform(gl)
 
         useFrame(() => {
                 range(8).forEach((i) => gl.uniform(`windowLightWeight${i}`, 1))
@@ -103,7 +114,7 @@ function Canvas() {
                                 memo[i] = 1
                         }, i)
                 })
-        })
+        }, gl)
 
         return (
                 <canvas
