@@ -1,0 +1,112 @@
+---
+marp: true
+hide_table_of_contents: true
+title: 'Round  Box'
+description: 'Round Box'
+image: https://github.com/tseijp.png
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
+date: 2023-01-01
+---
+
+# Round Box
+
+<Canvas />
+
+## Code Example
+
+```cpp
+float roundBoxSDF(vec3 p, vec3 b, float r) {
+        vec3 q = abs(p) - b;
+        return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
+}
+```
+
+## More
+
+<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" allowfullscreen />
+
+export const frag = `
+precision highp float;
+uniform vec2 iResolution; // canvas size
+uniform vec3 up;          // camera up direction
+uniform vec3 eye;         // camera position
+uniform vec3 focus;       // camera focus point
+uniform float focal;      // camera focal length
+uniform vec3 boxSize;     // object size
+uniform float radius;     // object corner radius
+/**
+ * roundBoxSDF
+ */
+float roundBoxSDF(vec3 p, vec3 b, float r) {
+        vec3 q = abs(p) - b;
+        return length(max(q, 0.)) + min(max(q.x, max(q.y,q.z)), 0.) - r;
+}
+/**
+ * main
+ */
+void main() {
+        vec3 look = normalize(focus - eye);
+        vec3 right = normalize(cross(look, up));
+        vec2 scr = gl_FragCoord.xy - 0.5 * iResolution;
+        vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
+        /**
+         * Ray marching
+         */
+        vec3 p = eye + dir;
+        vec3 e = vec3(0.0005, 0.0, 0.0);
+        float d = roundBoxSDF(p, boxSize, radius);
+        for (int i = 0; i < 50; i++) {
+                if (d <= e.x) {
+                        float dx = roundBoxSDF(p + e.xyy, boxSize, radius) - d;
+                        float dy = roundBoxSDF(p + e.yxx, boxSize, radius) - d;
+                        float dz = roundBoxSDF(p + e.yyx, boxSize, radius) - d;
+                        vec3 norm = normalize(vec3(dx, dy, dz));
+                        gl_FragColor = vec4(norm * 0.5 + 0.5, 1.);
+                        return;
+                }
+                p = p + d * normalize(dir);
+                d = roundBoxSDF(p, boxSize, radius);
+        }
+}`
+
+import { Leva } from 'leva'
+import {
+        useGLRender,
+        useResizeRef,
+        useOrbitControls,
+        useUniformControls,
+} from './hooks'
+
+export const Canvas = () => {
+        const self = useGLRender(frag)
+        const ref = useResizeRef(self)
+        useOrbitControls('eye', self)
+        useUniformControls(
+                {
+                        up: [0, 1, 0],
+                        focus: [0, 0, 0],
+                        focal: 500,
+                        boxSize: [32, 32, 32],
+                        radius: 20
+                },
+                self
+        )
+        return (
+                <div ref={ref}>
+                        <canvas ref={self.ref} />
+                        <Leva />
+                </div>
+        )
+
+}

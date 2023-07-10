@@ -21,26 +21,33 @@ date: 2023-01-01
 
 # Basic API
 
+## Set gl config
+
+```ts
+gl('count', 6) // or
+gl({ count: 6 })
+```
+
 ## Set buffer object
 
 ```ts
 // set uniform
-gl.setUniform('iTime', performance.now() / 1000) // or
-gl.setUniform({ iTime: performance.now() / 1000 })
+gl.uniform('iTime', performance.now() / 1000) // or
+gl.uniform({ iTime: performance.now() / 1000 })
 
 // set attribute
-gl.setAttribute('a_position', [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]) // or
-gl.setAttribute({ a_position: [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1] })
+gl.attribute('a_position', [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]) // or
+gl.attribute({ a_position: [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1] })
 ```
 
 ## Set mount and clean callback
 
 ```ts
 // run when mount phase
-gl.setMount(() => {})
+gl('mount', () => {})
 
 // run when clean phase
-gl.setClean(() => {})
+gl('clean', () => {})
 ```
 
 [more][reev]
@@ -49,10 +56,10 @@ gl.setClean(() => {})
 
 ```ts
 // Schedule an update
-gl.setFrame((dt) => {})
+gl.frame((dt) => {})
 
 // Start an update loop
-gl.setFrame((dt) => true)
+gl.frame((dt) => true)
 ```
 
 [more][refr]
@@ -60,10 +67,10 @@ gl.setFrame((dt) => true)
 ## Render shorthands
 
 ```ts
-gl.setFrame(() => {
-        gl.clear() // to call gl.clear(gl.COLOR_BUFFER_BIT)
-        gl.viewport() // to call gl.viewport(0, 0, width, height)
-        gl.drawArrays() // to call gl.drawArrays(gl.TRIANGLES, 0, count)
+gl.frame(() => {
+        gl.clear() // ...... to call gl.clear(gl.COLOR_BUFFER_BIT)
+        gl.viewport() // ... to call gl.viewport(0, 0, width, height)
+        gl.drawArrays() // . to call gl.drawArrays(gl.TRIANGLES, 0, count)
         // or
         gl.drawElements() // to call gl.drawElements(gl.TRIANGLES, count, gl.UNSIGNED_SHORT, 0)
 })

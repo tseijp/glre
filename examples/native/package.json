@@ -11,6 +11,7 @@
         },
         "dependencies": {
                 "@expo/cli": "0.10.7",
+                "@expo/ngrok": "4.1.0 ",
                 "@expo/webpack-config": "18.1.0",
                 "expo": "48.0.19",
                 "expo-gl": "12.4.0",

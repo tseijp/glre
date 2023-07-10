@@ -25,6 +25,9 @@ date: 2023-01-01
 import { gl } from 'glre'
 
 gl({
+        // init
+        init() {},
+
         // mount
         mount() {},
 
@@ -43,4 +46,16 @@ gl({
         // scroll
         scroll() {},
 })
+```
+
+## create event
+
+```ts
+import { createGL, createTF } from 'glre'
+
+// create initialized gl event
+const gl = createGL()
+
+// create tranfrom buffer event
+const tf = createTF()
 ```

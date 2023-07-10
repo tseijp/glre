@@ -178,7 +178,7 @@ createRoot(document.getElementById('root')).render(<App style={style} />)
                                 `,
                         })
 
-                        gl.setFrame(() => {
+                        gl.frame(() => {
                                 gl.clear()
                                 gl.viewport()
                                 gl.drawArrays()

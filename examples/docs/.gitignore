@@ -1,3 +1,12 @@
+### my created
+
+src/pages/editor.tsx
+docs/support-*
+guide/primitives/*
+!guide/primitives/01*
+!guide/primitives/02*
+!guide/primitives/03*
+
 # Dependencies
 /node_modules
 

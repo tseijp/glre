@@ -34,8 +34,23 @@ yaan add glre
 ## Install from CDN or static hosting
 
 ```html
+<canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import { gl } from 'https://cdn.skypack.dev/glre@latest'
-        gl.setConfig({ id: 'myCanvas' })
+        import self from 'https://cdn.skypack.dev/glre@latest'
+        function setup() {
+                self.el = document.getElementById('id')
+                self.gl = self.el.getContext('webgl2')
+                self.init()
+                self.resize()
+                draw()
+        }
+        function draw() {
+                requestAnimationFrame(draw)
+                self.render()
+                self.clear()
+                self.viewport()
+                self.drawArrays()
+        }
+        document.addEventListener('DOMContentLoaded', setup)
 </script>
 ```

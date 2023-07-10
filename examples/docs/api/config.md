@@ -36,3 +36,10 @@ date: 2023-01-01
 
 [frag]: https://github.com/tseijp/glre/blob/main/packages/core/index.ts
 [vert]: https://github.com/tseijp/glre/blob/main/packages/core/index.ts
+
+## Set gl config
+
+```ts
+gl('count', 6) // or
+gl({ count: 6 })
+```

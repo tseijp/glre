@@ -1,0 +1,110 @@
+---
+marp: true
+hide_table_of_contents: true
+title: 'Box'
+description: 'Box'
+image: https://github.com/tseijp.png
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
+date: 2023-01-01
+---
+
+# Box
+
+<Canvas />
+
+## Code Example
+
+```cpp
+float boxSDF(vec3 p, vec3 b) {
+        vec3 q = abs(p) - b;
+        return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+```
+
+## More
+
+<iframe src="https://www.youtube.com/embed/62-pRVZuS5c" allowfullscreen />
+
+export const frag = `
+precision highp float;
+uniform vec2 iResolution; // canvas size
+uniform vec3 up;          // camera up direction
+uniform vec3 eye;         // camera position
+uniform vec3 focus;       // camera focus point
+uniform float focal;      // camera focal length
+uniform vec3 boxSize;     // object size
+/**
+ * boxSDF
+ */
+float boxSDF(vec3 p, vec3 b) {
+        vec3 q = abs(p) - b;
+        return length(max(q,0.0)) + min(max(q.x,max(q.y,q.z)),0.0);
+}
+/**
+ * main
+ */
+void main() {
+        vec3 look = normalize(focus - eye);
+        vec3 right = normalize(cross(look, up));
+        vec2 scr = gl_FragCoord.xy - 0.5 * iResolution;
+        vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
+        /**
+         * Ray marching
+         */
+        vec3 p = eye + dir;
+        vec3 e = vec3(0.0005, 0.0, 0.0);
+        float d = boxSDF(p, boxSize);
+        for (int i = 0; i < 50; i++) {
+                if (d <= e.x) {
+                        float dx = boxSDF(p + e.xyy, boxSize) - d;
+                        float dy = boxSDF(p + e.yxx, boxSize) - d;
+                        float dz = boxSDF(p + e.yyx, boxSize) - d;
+                        vec3 norm = normalize(vec3(dx, dy, dz));
+                        gl_FragColor = vec4(norm * 0.5 + 0.5, 1.);
+                        return;
+                }
+                p = p + d * normalize(dir);
+                d = boxSDF(p, boxSize);
+        }
+}`
+
+import { Leva } from 'leva'
+import {
+        useGLRender,
+        useResizeRef,
+        useOrbitControls,
+        useUniformControls,
+} from './hooks'
+
+export const Canvas = () => {
+        const self = useGLRender(frag)
+        const ref = useResizeRef(self)
+        useOrbitControls('eye', self)
+        useUniformControls(
+                {
+                        up: [0, 1, 0],
+                        focus: [0, 0, 0],
+                        focal: 500,
+                        boxSize: [32, 32, 32],
+                },
+                self
+        )
+        return (
+                <div ref={ref}>
+                        <canvas ref={self.ref} />
+                        <Leva />
+                </div>
+        )
+
+}
