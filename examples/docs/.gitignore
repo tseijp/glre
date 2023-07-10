@@ -6,6 +6,7 @@ guide/primitives/*
 !guide/primitives/01*
 !guide/primitives/02*
 !guide/primitives/03*
+!guide/primitives/hooks
 
 # Dependencies
 /node_modules
