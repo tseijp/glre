@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Box'
-description: 'Box'
+title: 'Torus'
+description: 'Torus'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,22 +19,14 @@ keywords:
 date: 2023-01-01
 ---
 
-# Box
-
-<Canvas />
-
-## Code Example
+# Torus
 
 ```cpp
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float torusSDF(vec3 p, float radius, float tube) {
+        vec2 q = vec2(length(p.xz) - radius, p.y);
+        return length(q) - tube;
 }
 ```
-
-## More
-
-<iframe src="https://www.youtube.com/embed/62-pRVZuS5c" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -43,18 +35,19 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;     // object size
+uniform float radius;     // radius size
+uniform float tube;       // tube size
 /**
  * SDF
  */
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float torusSDF(vec3 p, float radius, float tube) {
+        vec2 q = vec2(length(p.xz) - radius, p.y);
+        return length(q) - tube;
 }
-float SDF(vec3 p) {
-        return boxSDF(p, boxSize);
+float SDF (vec3 p) {
+        return torusSDF(p, radius, tube);
 }
-/*
+/**
  * main
  */
 void main() {
@@ -99,7 +92,8 @@ export const Canvas = () => {
                         up: [0, 1, 0],
                         focus: [0, 0, 0],
                         focal: 500,
-                        boxSize: [32, 32, 32],
+                        radius: 50,
+                        tube: 25,
                 },
                 self
         )
@@ -109,5 +103,4 @@ export const Canvas = () => {
                         <Leva />
                 </div>
         )
-
 }

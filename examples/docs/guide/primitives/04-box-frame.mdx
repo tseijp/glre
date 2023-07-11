@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Box'
-description: 'Box'
+title: 'Box Frame'
+description: 'Box Frame'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,22 +19,26 @@ keywords:
 date: 2023-01-01
 ---
 
-# Box
+# Box Frame
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float boxFrameSDF(vec3 p, vec3 b, float e) {
+        p = abs(p) - b;
+        vec3 q = abs(p + e) - e;
+        return min(min(
+        length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
+        length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
+        length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
 }
 ```
 
 ## More
 
-<iframe src="https://www.youtube.com/embed/62-pRVZuS5c" allowfullscreen />
+<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -44,17 +48,22 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform vec3 boxSize;     // object size
+uniform float boxFrame;   // frame size
 /**
  * SDF
  */
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float boxFrameSDF(vec3 p, vec3 b, float e) {
+        p = abs(p) - b;
+        vec3 q = abs(p + e) - e;
+        return min(min(
+        length(max(vec3(p.x,q.y,q.z),0.0))+min(max(p.x,max(q.y,q.z)),0.0),
+        length(max(vec3(q.x,p.y,q.z),0.0))+min(max(q.x,max(p.y,q.z)),0.0)),
+        length(max(vec3(q.x,q.y,p.z),0.0))+min(max(q.x,max(q.y,p.z)),0.0));
 }
 float SDF(vec3 p) {
-        return boxSDF(p, boxSize);
+        return boxFrameSDF(p, boxSize, boxFrame);
 }
-/*
+/**
  * main
  */
 void main() {
@@ -100,6 +109,7 @@ export const Canvas = () => {
                         focus: [0, 0, 0],
                         focal: 500,
                         boxSize: [32, 32, 32],
+                        boxFrame: 2
                 },
                 self
         )
