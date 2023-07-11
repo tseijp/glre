@@ -26,7 +26,7 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float roundBoxSDF(vec3 p, vec3 b, float r) {
+float boxRoundBoxSDF(vec3 p, vec3 b, float r) {
         vec3 q = abs(p) - b;
         return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
 }
@@ -34,7 +34,7 @@ float roundBoxSDF(vec3 p, vec3 b, float r) {
 
 ## More
 
-<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" allowfullscreen />
+<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" />
 
 export const frag = `
 precision highp float;
@@ -43,17 +43,17 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;     // object size
-uniform float round;      // object corner radius
+uniform vec3 boxSize;
+uniform float boxRound;
 /**
  * SDF
  */
-float roundBoxSDF(vec3 p, vec3 b, float r) {
+float boxRoundBoxSDF(vec3 p, vec3 b, float r) {
         vec3 q = abs(p) - b + r;
         return length(max(q, 0.)) + min(max(q.x, max(q.y,q.z)), 0.) - r;
 }
 float SDF(vec3 p) {
-        return roundBoxSDF(p, boxSize, round);
+        return boxRoundBoxSDF(p, boxSize, boxRound);
 }
 /**
  * main
@@ -98,7 +98,7 @@ export const Canvas = () => {
         useUniformControls(
                 {
                         boxSize: [32, 32, 32],
-                        round: 20,
+                        boxRound: 20,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

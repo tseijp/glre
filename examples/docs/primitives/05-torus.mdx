@@ -28,7 +28,7 @@ date: 2023-01-01
 ```cpp
 float torusSDF(vec3 p, float r, float tube) {
         vec2 q = vec2(length(p.yz) - r, p.x);
-        return length(q) - tube;
+        return length(q) - torusTube
 }
 ```
 
@@ -39,17 +39,17 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float radius;     // radius size
-uniform float tube;       // tube size
+uniform float torusRadius;
+uniform float torusTube;
 /**
  * SDF
  */
-float torusSDF(vec3 p, float r, float tube) {
+float torusSDF(vec3 p, float r, float t) {
         vec2 q = vec2(length(p.yz) - r, p.x);
-        return length(q) - tube;
+        return length(q) - t;
 }
 float SDF (vec3 p) {
-        return torusSDF(p, radius, tube);
+        return torusSDF(p, torusRadius, torusTube);
 }
 /**
  * main
@@ -93,8 +93,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        radius: 50,
-                        tube: 25,
+                        torusRadius: 40,
+                        torusTube: 12,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

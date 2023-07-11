@@ -26,19 +26,13 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float  len(float x, float y, float z) {
-        return length(max(vec3(x, y, z), 0.)) + min(max(x, max(y, z)), 0.);
-}
+#define len(x, y, z) length(max(vec3(x, y, z), 0.)) + min(max(x, max(y, z)), 0.)
 float boxFrameSDF(vec3 p, vec3 b, float e) {
         p = abs(p) - b;
         vec3 q = abs(p + e) - e;
-        return min(min(_(p.x, q.y, q.z), _(q.x, p.y, q.z)), _(q.x, q.y, p.z));
+        return min(min(len(p.x, q.y, q.z), len(q.x, p.y, q.z)), len(q.x, q.y, p.z));
 }
 ```
-
-## More
-
-<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -52,13 +46,11 @@ uniform float boxFrame;   // frame size
 /**
  * SDF
  */
-float l(float x, float y, float z) {
-        return length(max(vec3(x, y, z), 0.)) + min(max(x, max(y, z)), 0.);
-}
+#define len(x, y, z) length(max(vec3(x, y, z), 0.)) + min(max(x, max(y, z)), 0.)
 float boxFrameSDF(vec3 p, vec3 b, float e) {
         p = abs(p) - b;
         vec3 q = abs(p + e) - e;
-        return min(min(l(p.x, q.y, q.z), l(q.x, p.y, q.z)), l(q.x, q.y, p.z));
+        return min(min(len(p.x, q.y, q.z), len(q.x, p.y, q.z)), len(q.x, q.y, p.z));
 }
 float SDF(vec3 p) {
         return boxFrameSDF(p, boxSize, boxFrame);

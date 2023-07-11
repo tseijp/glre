@@ -38,7 +38,7 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float radius;
+uniform float circleRadius;
 /**
  * SDF
  */
@@ -47,7 +47,7 @@ float fDisc(vec3 p, float r) {
 	return l < 0. ? abs(p.z) : length(vec2(p.z, l));
 }
 float SDF(vec3 p) {
-        return fDisc(p, radius);
+        return fDisc(p, circleRadius);
 }
 /**
  * main
@@ -91,7 +91,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        radius: 50,
+                        circleRadius: 30,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

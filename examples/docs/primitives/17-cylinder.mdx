@@ -39,8 +39,8 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float height;
-uniform float radius;
+uniform float cylinderHeight;
+uniform float cylinderRadius;
 /**
  * SDF
  */
@@ -49,7 +49,7 @@ float cylinderSDF(vec3 p, float h, float r) {
         return min(max(d.x, d.y), 0.) + length(max(d, 0.));
 }
 float SDF (vec3 p) {
-        return cylinderSDF(p, height, radius);
+        return cylinderSDF(p, cylinderHeight, cylinderRadius);
 }
 /**
  * main
@@ -93,8 +93,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        height: 50,
-                        radius: 50,
+                        cylinderHeight: 20,
+                        cylinderRadius: 20,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

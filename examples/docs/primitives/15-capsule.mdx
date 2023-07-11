@@ -40,9 +40,9 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 left;
-uniform vec3 right;
-uniform float radius;
+uniform vec3 capsuleLeft;
+uniform vec3 capsuleRight;
+uniform float capsuleRadius;
 /**
  * SDF
  */
@@ -52,16 +52,16 @@ float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
         return length(pa - ba * h) - r;
 }
 float SDF (vec3 p) {
-        return capsuleSDF(p, left, right, radius);
+        return capsuleSDF(p, capsuleLeft, capsuleRight, capsuleRadius);
 }
 /**
  * main
  */
 void main() {
         vec3 look = normalize(focus - eye);
-        vec3 right = normalize(cross(look, up));
+        vec3 capsuleRight = normalize(cross(look, up));
         vec2 scr = gl_FragCoord.xy - iResolution * .5;
-        vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
+        vec3 dir = normalize(focal * look + scr.x * capsuleRight + scr.y * up);
         /**
          * Ray marching
          */
@@ -96,9 +96,9 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        left: [-25, 0, 0],
-                        right: [25, 0, 0],
-                        radius: 50,
+                        capsuleLeft: [-10, 0, 0],
+                        capsuleRight: [10, 0, 0],
+                        capsuleRadius: 20,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

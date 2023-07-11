@@ -38,8 +38,8 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 normal;
-uniform float distance;
+uniform vec3 planeNormal;
+uniform float planeDistance;
 /**
  * SDF
  */
@@ -47,7 +47,7 @@ float planeSDF(vec3 p, vec3 n, float d) {
 	return dot(p, n) + d;
 }
 float SDF (vec3 p) {
-        return planeSDF(p, normalize(normal), distance);
+        return planeSDF(p, normalize(planeNormal), planeDistance);
 }
 /**
  * main
@@ -91,8 +91,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        normal: [0, 1, 0],
-                        distance: 5,
+                        planeNormal: [0, 1, 0],
+                        planeDistance: 5,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

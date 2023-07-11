@@ -38,7 +38,7 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float radius;
+uniform float sphereRadius;
 /**
  * SDF
  */
@@ -46,7 +46,7 @@ float sphereSDF(vec3 p, float s) {
         return length(p) - s;
 }
 float SDF(vec3 p) {
-        return sphereSDF(p, radius);
+        return sphereSDF(p, sphereRadius);
 }
 /**
  * main
@@ -90,7 +90,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        radius: 50,
+                        sphereRadius: 50,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

@@ -59,7 +59,7 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float size;
+uniform float oSize;
 /**
  * SDF
  */
@@ -78,7 +78,7 @@ float truncatedOctahedronSDF(vec3 p, float r) {
         return d - r;
 }
 float SDF (vec3 p) {
-        return truncatedOctahedronSDF(p, size);
+        return truncatedOctahedronSDF(p, oSize);
 }
 /**
  * main
@@ -122,7 +122,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        size: 50,
+                        oSize: 50,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

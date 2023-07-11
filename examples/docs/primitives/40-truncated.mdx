@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Truncated Something'
-description: 'Truncated Something'
+title: 'Truncated '
+description: 'Truncated'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,7 +19,7 @@ keywords:
 date: 2023-01-01
 ---
 
-# Truncated Something
+# Truncated
 
 <Canvas />
 
@@ -170,13 +170,13 @@ import {
 } from './hooks'
 
 export const selectedVertex = {
-        cube: [0, 1, 2],
+        cube: [0, 1, 2], // 1 ①
         tetrahedron: [0, 1, 2],
-        octahedron: [3, 4, 5, 6],
-        dodecahedron: [13, 14, 15, 16, 17, 18],
-        icosahedron: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        truncatedOctahedron: [0, 1, 2, 3, 4, 5, 6],
-        truncatedIcosahedron: [3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+        octahedron: [3, 4, 5, 6], // 2
+        dodecahedron: [13, 14, 15, 16, 17, 18],                                            // 4      : select dodeca => last sub three bar !!!
+        icosahedron: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],                                    // 2, 3   : sub 1 (o) add 3
+        truncatedOctahedron: [0, 1, 2, 3, 4, 5, 6],                                        // 1, 2   : select t o
+        truncatedIcosahedron: [3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], // 2, 3, 4: select t i
         truncatedAll: [0, 1, 2, 3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 }
 
@@ -188,7 +188,7 @@ export const Canvas = () => {
                 update.prev = set
                 let x = 0
                 const animate = () => {
-                        x += 0.005
+                        x += 0.01
                         ;[...Array(19)].forEach((_v, i) => {
                                 const isInclude = set.has(i)
                                 const isChange = prev.has(i) !== isInclude
@@ -255,7 +255,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        size: 50,
+                        size: 32,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

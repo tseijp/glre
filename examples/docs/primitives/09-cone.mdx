@@ -26,9 +26,16 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float coneSDF(vec3 p, vec2 c, float h) {
-        float q = length(p.xz);
-        return max(dot(c.xy, vec2(q,p.y)), -h - p.y);
+float coneSDF(vec3 p, float r, float h) {
+	vec2 q = vec2(length(p.xz), p.y + h * 0.5);
+	vec2 tip = q - vec2(0, h);
+	vec2 dir = normalize(vec2(h, r));
+	float d = max(dot(tip, dir), -q.y);
+	float e = dot(tip, vec2(dir.y, -dir.x));
+	if ((q.y > h) && (e < 0.)) d = max(d, length(tip));
+	if ((q.x > r) && (e > length(vec2(h, r))))
+		d = max(d, length(q - vec2(r, 0)));
+	return d;
 }
 ```
 
@@ -39,23 +46,24 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float angle;
-uniform float height;
+uniform float coneRadius;
+uniform float coneHeight;
 /**
  * SDF
  */
-float coneSDF(vec3 p, float c, float h) {
-        vec2 q = h * vec2(angle, -1.);
-        vec2 w = vec2(length(p.xz), p.y);
-        vec2 a = w - q * clamp(dot(w, q) / dot(q, q), 0., 1.);
-        vec2 b = w - q * vec2(clamp(w.x / q.x, 0., 1.), 1.);
-        float k = sign(q.y);
-        float d = min(dot(a, a), dot(b, b));
-        float s = max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
-        return sqrt(d) * sign(s);
+float coneSDF(vec3 p, float r, float h) {
+	vec2 q = vec2(length(p.xz), p.y + h * 0.5);
+	vec2 tip = q - vec2(0, h);
+	vec2 dir = normalize(vec2(h, r));
+	float d = max(dot(tip, dir), -q.y);
+	float e = dot(tip, vec2(dir.y, -dir.x));
+	if ((q.y > h) && (e < 0.)) d = max(d, length(tip));
+	if ((q.x > r) && (e > length(vec2(h, r))))
+		d = max(d, length(q - vec2(r, 0)));
+	return d;
 }
 float SDF (vec3 p) {
-        return coneSDF(p, angle, height);
+        return coneSDF(p, coneRadius, coneHeight);
 }
 /**
  * main
@@ -99,8 +107,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        angle: 1,
-                        height: 50,
+                        coneRadius: 20,
+                        coneHeight: 40,
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],
