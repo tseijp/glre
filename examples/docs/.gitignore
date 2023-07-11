@@ -3,6 +3,7 @@
 src/pages/editor.tsx
 docs/support-*
 primitives/*
+!primitives/README*
 !primitives/01*
 !primitives/02*
 !primitives/03*
