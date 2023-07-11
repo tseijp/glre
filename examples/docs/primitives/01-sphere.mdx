@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Round  Box'
-description: 'Round Box'
+title: 'Sphere'
+description: 'Sphere'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,22 +19,17 @@ keywords:
 date: 2023-01-01
 ---
 
-# Round Box
+# Sphere
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float roundBoxSDF(vec3 p, vec3 b, float r) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
+float sphereSDF(vec3 p, float s) {
+        return length(p) - s;
 }
 ```
-
-## More
-
-<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -43,17 +38,15 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;     // object size
-uniform float round;      // object corner radius
+uniform float radius;
 /**
  * SDF
  */
-float roundBoxSDF(vec3 p, vec3 b, float r) {
-        vec3 q = abs(p) - b + r;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y,q.z)), 0.) - r;
+float sphereSDF(vec3 p, float s) {
+        return length(p) - s;
 }
 float SDF(vec3 p) {
-        return roundBoxSDF(p, boxSize, round);
+        return sphereSDF(p, radius);
 }
 /**
  * main
@@ -97,11 +90,10 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
+                        radius: 50,
                         focal: 500,
-                        boxSize: [32, 32, 32],
-                        round: 20
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )
@@ -111,5 +103,4 @@ export const Canvas = () => {
                         <Leva />
                 </div>
         )
-
 }

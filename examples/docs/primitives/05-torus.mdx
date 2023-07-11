@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Cylinder'
-description: 'Cylinder'
+title: 'Torus'
+description: 'Torus'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,16 +19,16 @@ keywords:
 date: 2023-01-01
 ---
 
-# Cylinder
+# Torus
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float cylinderSDF(vec3 p, float h, float r) {
-        vec2 d = abs(vec2(length(p. xz),p.y)) - vec2(r,h);
-        return min(max(d.x, d.y), 0.) + length(max(d, 0.));
+float torusSDF(vec3 p, float r, float tube) {
+        vec2 q = vec2(length(p.yz) - r, p.x);
+        return length(q) - tube;
 }
 ```
 
@@ -39,17 +39,17 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float height;
-uniform float radius;
+uniform float radius;     // radius size
+uniform float tube;       // tube size
 /**
  * SDF
  */
-float cylinderSDF(vec3 p, float h, float r) {
-        vec2 d = abs(vec2(length(p. xz),p.y)) - vec2(r,h);
-        return min(max(d.x, d.y), 0.) + length(max(d, 0.));
+float torusSDF(vec3 p, float r, float tube) {
+        vec2 q = vec2(length(p.yz) - r, p.x);
+        return length(q) - tube;
 }
 float SDF (vec3 p) {
-        return cylinderSDF(p, height, radius);
+        return torusSDF(p, radius, tube);
 }
 /**
  * main
@@ -93,11 +93,11 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
-                        focal: 500,
-                        height: 50,
                         radius: 50,
+                        tube: 25,
+                        focal: 500,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )

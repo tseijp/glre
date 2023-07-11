@@ -2,20 +2,24 @@
 
 src/pages/editor.tsx
 docs/support-*
-guide/primitives/*
-!guide/primitives/01*
-!guide/primitives/02*
-!guide/primitives/03*
-!guide/primitives/04*
-!guide/primitives/05*
-!guide/primitives/09*
-!guide/primitives/12*
-!guide/primitives/15*
-!guide/primitives/17*
-!guide/primitives/31*
-!guide/primitives/35*
-!guide/primitives/36*
-!guide/primitives/hooks
+primitives/*
+!primitives/01*
+!primitives/02*
+!primitives/03*
+!primitives/04*
+!primitives/05*
+!primitives/09*
+!primitives/12*
+!primitives/15*
+!primitives/17*
+!primitives/31*
+!primitives/35*
+!primitives/36*
+!primitives/37*
+!primitives/38*
+!primitives/39*
+!primitives/40*
+!primitives/hooks
 
 # Dependencies
 /node_modules

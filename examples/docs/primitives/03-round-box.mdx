@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Dodecahedron'
-description: 'Dodecahedron'
+title: 'Round  Box'
+description: 'Round Box'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,38 +19,22 @@ keywords:
 date: 2023-01-01
 ---
 
-# Dodecahedron
+# Round Box
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-#define PHI (1.618033988749895)
-#define _13 normalize(vec3(0, PHI, 1))
-#define _14 normalize(vec3(0, -PHI, 1))
-#define _15 normalize(vec3(1, 0, PHI))
-#define _16 normalize(vec3(-1, 0, PHI))
-#define _17 normalize(vec3(PHI, 1, 0))
-#define _18 normalize(vec3(-PHI, 1, 0))
-#define _(v) d = max(d, abs(dot(p, v)));
-float dodecahedronSDF(vec3 p, float r) {
-        float d = 0.;
-        _(_13) _(_14) _(_15) _(_16)
-        _(_17) _(_18)
-        return d - r;
+float roundBoxSDF(vec3 p, vec3 b, float r) {
+        vec3 q = abs(p) - b;
+        return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
 }
 ```
 
 ## More
 
-- [Glitch transform][XtyXzW]
-- [HG SDF in WebGL][Xs3GRB]
-- [hg_sdf][hg_sdf]
-
-[XtyXzW]: https://www.shadertoy.com/view/XtyXzW
-[Xs3GRB]: https://www.shadertoy.com/view/Xs3GRB
-[hg_sdf]: http://mercury.sexy/hg_sdf/
+<iframe src="https://www.youtube.com/embed/s5NGeUV2EyU" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -59,26 +43,17 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float size;
+uniform vec3 boxSize;     // object size
+uniform float round;      // object corner radius
 /**
  * SDF
  */
-#define PHI (1.618033988749895)
-#define _13 normalize(vec3(0, PHI, 1))
-#define _14 normalize(vec3(0, -PHI, 1))
-#define _15 normalize(vec3(1, 0, PHI))
-#define _16 normalize(vec3(-1, 0, PHI))
-#define _17 normalize(vec3(PHI, 1, 0))
-#define _18 normalize(vec3(-PHI, 1, 0))
-#define _(v) d = max(d, abs(dot(p, v)));
-float dodecahedronSDF(vec3 p, float r) {
-    float d = 0.;
-    _(_13) _(_14) _(_15) _(_16)
-    _(_17) _(_18)
-    return d - r;
+float roundBoxSDF(vec3 p, vec3 b, float r) {
+        vec3 q = abs(p) - b + r;
+        return length(max(q, 0.)) + min(max(q.x, max(q.y,q.z)), 0.) - r;
 }
-float SDF (vec3 p) {
-        return dodecahedronSDF(p, size);
+float SDF(vec3 p) {
+        return roundBoxSDF(p, boxSize, round);
 }
 /**
  * main
@@ -94,7 +69,7 @@ void main() {
         vec3 p = eye + dir;
         vec3 e = vec3(.0005, 0., 0.);
         float d = SDF(p);
-        for (int i = 0; i < 100; i++) {
+        for (int i = 0; i < 50; i++) {
                 if (d <= e.x) {
                         float dx = SDF(p + e.xyy) - d;
                         float dy = SDF(p + e.yxy) - d;
@@ -122,10 +97,11 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
+                        boxSize: [32, 32, 32],
+                        round: 20,
                         focal: 500,
-                        size: 50,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )
@@ -135,4 +111,5 @@ export const Canvas = () => {
                         <Leva />
                 </div>
         )
+
 }

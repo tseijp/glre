@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Capsule'
-description: 'Capsule'
+title: 'Cylinder'
+description: 'Cylinder'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,17 +19,16 @@ keywords:
 date: 2023-01-01
 ---
 
-# Capsule
+# Cylinder
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
-        vec3 pa = p - a, ba = b - a;
-        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
-        return length(pa - ba * h) - r;
+float cylinderSDF(vec3 p, float h, float r) {
+        vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(r, h);
+        return min(max(d.x, d.y), 0.) + length(max(d, 0.));
 }
 ```
 
@@ -40,19 +39,17 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 left;
-uniform vec3 right;
+uniform float height;
 uniform float radius;
 /**
  * SDF
  */
-float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
-        vec3 pa = p - a, ba = b - a;
-        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
-        return length(pa - ba * h) - r;
+float cylinderSDF(vec3 p, float h, float r) {
+        vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(r, h);
+        return min(max(d.x, d.y), 0.) + length(max(d, 0.));
 }
 float SDF (vec3 p) {
-        return capsuleSDF(p, left, right, radius);
+        return cylinderSDF(p, height, radius);
 }
 /**
  * main
@@ -96,12 +93,11 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
-                        focal: 500,
-                        left: [-25, 0, 0],
-                        right: [25, 0, 0],
+                        height: 50,
                         radius: 50,
+                        focal: 500,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )

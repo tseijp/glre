@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Torus'
-description: 'Torus'
+title: 'Truncated Octahedron'
+description: 'Truncated Octahedron'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,18 +19,38 @@ keywords:
 date: 2023-01-01
 ---
 
-# Torus
+# Truncated Octahedron
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float torusSDF(vec3 p, float radius, float tube) {
-        vec2 q = vec2(length(p.xz) - radius, p.y);
-        return length(q) - tube;
+#define PHI (1.618033988749895)
+#define _0 vec3(1, 0, 0)
+#define _1 vec3(0, 1, 0)
+#define _2 vec3(0, 0, 1)
+#define _3 normalize(vec3(1, 1, 1))
+#define _4 normalize(vec3(-1, 1, 1))
+#define _5 normalize(vec3(1, -1, 1))
+#define _6 normalize(vec3(1, 1, -1))
+#define _(v) d = max(d, abs(dot(p, v)));
+float truncatedOctahedronSDF(vec3 p, float r) {
+        float d = 0.;
+        _(_0) _(_0) _(_2) _(_3) _(_4) _(_5) _(_6)
+        return d - r;
 }
 ```
+
+## More
+
+- [Glitch transform][XtyXzW]
+- [HG SDF in WebGL][Xs3GRB]
+- [hg_sdf][hg_sdf]
+
+[XtyXzW]: https://www.shadertoy.com/view/XtyXzW
+[Xs3GRB]: https://www.shadertoy.com/view/Xs3GRB
+[hg_sdf]: http://mercury.sexy/hg_sdf/
 
 export const frag = `
 precision highp float;
@@ -39,17 +59,26 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float radius;     // radius size
-uniform float tube;       // tube size
+uniform float size;
 /**
  * SDF
  */
-float torusSDF(vec3 p, float radius, float tube) {
-        vec2 q = vec2(length(p.xz) - radius, p.y);
-        return length(q) - tube;
+#define PHI (1.618033988749895)
+#define _0 vec3(1, 0, 0)
+#define _1 vec3(0, 1, 0)
+#define _2 vec3(0, 0, 1)
+#define _3 normalize(vec3(1, 1, 1))
+#define _4 normalize(vec3(-1, 1, 1))
+#define _5 normalize(vec3(1, -1, 1))
+#define _6 normalize(vec3(1, 1, -1))
+#define _(v) d = max(d, abs(dot(p, v)));
+float truncatedOctahedronSDF(vec3 p, float r) {
+        float d = 0.;
+        _(_0) _(_1) _(_2) _(_3) _(_4) _(_5) _(_6)
+        return d - r;
 }
 float SDF (vec3 p) {
-        return torusSDF(p, radius, tube);
+        return truncatedOctahedronSDF(p, size);
 }
 /**
  * main
@@ -65,7 +94,7 @@ void main() {
         vec3 p = eye + dir;
         vec3 e = vec3(.0005, 0., 0.);
         float d = SDF(p);
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 100; i++) {
                 if (d <= e.x) {
                         float dx = SDF(p + e.xyy) - d;
                         float dy = SDF(p + e.yxy) - d;
@@ -93,11 +122,10 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
+                        size: 50,
                         focal: 500,
-                        radius: 50,
-                        tube: 25,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )

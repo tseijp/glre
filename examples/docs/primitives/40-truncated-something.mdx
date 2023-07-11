@@ -1,0 +1,272 @@
+---
+marp: true
+hide_table_of_contents: true
+title: 'Truncated Something'
+description: 'Truncated Something'
+image: https://github.com/tseijp.png
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
+date: 2023-01-01
+---
+
+# Truncated Something
+
+<Canvas />
+
+## Code Example
+
+```cpp
+#define PHI (1.618033988749895)
+#define _0 vec3(1, 0, 0)
+#define _1 vec3(0, 1, 0)
+#define _2 vec3(0, 0, 1)
+#define _3 normalize(vec3(1, 1, 1))
+#define _4 normalize(vec3(-1, 1, 1))
+#define _5 normalize(vec3(1, -1, 1))
+#define _6 normalize(vec3(1, 1, -1))
+#define _7 normalize(vec3(0, 1, PHI + 1.))
+#define _8 normalize(vec3(0, -1, PHI + 1.))
+#define _9 normalize(vec3(PHI + 1., 0, 1))
+#define _10 normalize(vec3(-PHI - 1., 0, 1))
+#define _11 normalize(vec3(1, PHI + 1., 0))
+#define _12 normalize(vec3(-1, PHI + 1., 0))
+#define _13 normalize(vec3(0, PHI, 1))
+#define _14 normalize(vec3(0, -PHI, 1))
+#define _15 normalize(vec3(1, 0, PHI))
+#define _16 normalize(vec3(-1, 0, PHI))
+#define _17 normalize(vec3(PHI, 1, 0))
+#define _18 normalize(vec3(-PHI, 1, 0))
+#define _(v) d = max(d, abs(dot(p, v)));
+float truncatedSDF(vec3 p, float r) {
+        float d = 0.;
+        _(_0) _(_1) _(_2)
+        _(_3) _(_4) _(_5) _(_6)
+        _(_7) _(_8) _(_9) _(_10)
+        _(_11) _(_12) _(_13) _(_14)
+        _(_15) _(_16) _(_17) _(_18)
+        return d - r;
+}
+```
+
+## More
+
+- [Glitch transform][XtyXzW]
+- [HG SDF in WebGL][Xs3GRB]
+- [hg_sdf][hg_sdf]
+
+[XtyXzW]: https://www.shadertoy.com/view/XtyXzW
+[Xs3GRB]: https://www.shadertoy.com/view/Xs3GRB
+[hg_sdf]: http://mercury.sexy/hg_sdf/
+
+export const frag = `
+precision highp float;
+uniform vec2 iResolution; // canvas size
+uniform vec3 up;          // camera up direction
+uniform vec3 eye;         // camera position
+uniform vec3 focus;       // camera focus point
+uniform float focal;      // camera focal length
+uniform float size;
+uniform float u0;
+uniform float u1;
+uniform float u2;
+uniform float u3;
+uniform float u4;
+uniform float u5;
+uniform float u6;
+uniform float u7;
+uniform float u8;
+uniform float u9;
+uniform float u10;
+uniform float u11;
+uniform float u12;
+uniform float u13;
+uniform float u14;
+uniform float u15;
+uniform float u16;
+uniform float u17;
+uniform float u18;
+/**
+ * SDF
+ */
+#define PHI (1.618033988749895)
+#define _0 vec3(1, 0, 0)
+#define _1 vec3(0, 1, 0)
+#define _2 vec3(0, 0, 1)
+#define _3 normalize(vec3(1, 1, 1))
+#define _4 normalize(vec3(-1, 1, 1))
+#define _5 normalize(vec3(1, -1, 1))
+#define _6 normalize(vec3(1, 1, -1))
+#define _7 normalize(vec3(0, 1, PHI + 1.))
+#define _8 normalize(vec3(0, -1, PHI + 1.))
+#define _9 normalize(vec3(PHI + 1., 0, 1))
+#define _10 normalize(vec3(-PHI - 1., 0, 1))
+#define _11 normalize(vec3(1, PHI + 1., 0))
+#define _12 normalize(vec3(-1, PHI + 1., 0))
+#define _13 normalize(vec3(0, PHI, 1))
+#define _14 normalize(vec3(0, -PHI, 1))
+#define _15 normalize(vec3(1, 0, PHI))
+#define _16 normalize(vec3(-1, 0, PHI))
+#define _17 normalize(vec3(PHI, 1, 0))
+#define _18 normalize(vec3(-PHI, 1, 0))
+#define _(v) d = max(d, abs(dot(p, v)));
+float truncatedSDF(vec3 p, float r) {
+        float d = 0.;
+        _(_0 * u0) _(_1 * u1) _(_2 * u2)
+        _(_3 * u3) _(_4 * u4) _(_5 * u5) _(_6 * u6)
+        _(_7 * u7) _(_8 * u8) _(_9 * u9) _(_10 * u10)
+        _(_11 * u11) _(_12 * u12) _(_13 * u13) _(_14 * u14)
+        _(_15 * u15) _(_16 * u16) _(_17 * u17) _(_18 * u18)
+        return d - r;
+}
+float SDF (vec3 p) {
+        return truncatedSDF(p, size);
+}
+/**
+ * main
+ */
+void main() {
+        vec3 look = normalize(focus - eye);
+        vec3 right = normalize(cross(look, up));
+        vec2 scr = gl_FragCoord.xy - iResolution * .5;
+        vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
+        /**
+         * Ray marching
+         */
+        vec3 p = eye + dir;
+        vec3 e = vec3(.0005, 0., 0.);
+        float d = SDF(p);
+        for (int i = 0; i < 100; i++) {
+                if (d <= e.x) {
+                        float dx = SDF(p + e.xyy) - d;
+                        float dy = SDF(p + e.yxy) - d;
+                        float dz = SDF(p + e.yyx) - d;
+                        vec3 norm = normalize(vec3(dx, dy, dz));
+                        gl_FragColor = vec4(norm * .5 + .5, 1.);
+                        return;
+                }
+                p = p + d * dir;
+                d = SDF(p);
+        }
+}`
+
+import { Leva, useControls, buttonGroup } from 'leva'
+import { useEffect, useRef } from 'react'
+import {
+        useOnce,
+        useGLRender,
+        useResizeRef,
+        useOrbitControls,
+        useUniformControls,
+} from './hooks'
+
+export const selectedVertex = {
+        cube: [0, 1, 2],
+        tetrahedron: [0, 1, 2],
+        octahedron: [3, 4, 5, 6],
+        dodecahedron: [13, 14, 15, 16, 17, 18],
+        icosahedron: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        truncatedOctahedron: [0, 1, 2, 3, 4, 5, 6],
+        truncatedIcosahedron: [3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+        truncatedAll: [0, 1, 2, 3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
+}
+
+export const Canvas = () => {
+        const self = useGLRender(frag)
+        const ref = useResizeRef(self)
+        const update = useRef((set) => {
+                const prev = update.prev
+                update.prev = set
+                let x = 0
+                const animate = () => {
+                        x += 0.005
+                        ;[...Array(19)].forEach((_v, i) => {
+                                const isInclude = set.has(i)
+                                const isChange = prev.has(i) !== isInclude
+                                if (isChange) {
+                                        self.uniform(`u${i}`, isInclude ? x : 1 - x)
+                                        update.set({ ["u" + i]: isInclude ? x : 1 - x })
+                                }
+                        })
+                        if (x < 1) self.frame(animate)
+                }
+                self.frame(animate)
+        }).current
+        update.add = (...arr) => {
+                const set = new Set([...update.prev])
+                arr.forEach((v) => set.add(v))
+                update(set);
+        }
+        update.sub = (...arr) => {
+                const set = new Set([...update.prev])
+                arr.forEach((v) => set.delete(v))
+                update(set)
+        }
+        const [{ select }, setControls] = useControls(() => ({
+                select: {
+                        value: 'cube',
+                        options: [
+                                'cube',
+                                'tetrahedron',
+                                'octahedron',
+                                'dodecahedron',
+                                'icosahedron',
+                                'truncatedOctahedron',
+                                'truncatedIcosahedron',
+                                'truncatedAll'
+                        ],
+                },
+                enable: buttonGroup({
+                        1: () => update.add(0, 1, 2),
+                        2: () => update.add(3, 4, 5, 6),
+                        3: () => update.add(7, 8, 9, 10, 11, 12),
+                        4: () => update.add(13, 14, 15, 16, 17, 18),
+                }),
+                disable: buttonGroup({
+                        1: () => update.sub(0, 1, 2),
+                        2: () => update.sub(3, 4, 5, 6),
+                        3: () => update.sub(7, 8, 9, 10, 11, 12),
+                        4: () => update.sub(13, 14, 15, 16, 17, 18),
+                }),
+                ...[...Array(19).keys()].reduce((acc, i) => {
+                        const value = selectedVertex.cube.includes(i) ? 1 : 0
+                        const onChange = (v) => self.uniform(`u${i}`, v)
+                        return {...acc, ["u" + i] : { value, min: 0, max: 1, onChange } }
+                }, {}),
+        }))
+        update.set = setControls
+        useOnce(() => {
+                [...Array(19)].forEach((_v, i) => {
+                        self.uniform(`u${i}`, selectedVertex.cube.includes(i) ? 1 : 0)
+                })
+        })
+        useEffect(() => {
+                update(new Set(selectedVertex[select]))
+        }, [select])
+        useOrbitControls('eye', self)
+        useUniformControls(
+                {
+                        size: 50,
+                        focal: 500,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
+                },
+                self
+        )
+        return (
+                <div ref={ref}>
+                        <canvas ref={self.ref} />
+                        <Leva />
+                </div>
+        )
+
+}

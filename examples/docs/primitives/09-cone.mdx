@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Octahedron'
-description: 'Octahedron'
+title: 'Cone'
+description: 'Cone'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,23 +19,16 @@ keywords:
 date: 2023-01-01
 ---
 
-# Octahedron
+# Cone
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float octahedronSDF(vec3 p, float s) {
-        p = abs(p);
-        float m = p.x + p.y + p.z - s;
-        vec3 q;
-        if (3. * p.x < m) q = p.xyz;
-        else if ( 3. * p.y < m ) q = p.yzx;
-        else if ( 3. * p.z < m ) q = p.zxy;
-        else return m * .57735027;
-        float k = clamp(.5 * (q.z - q.y + s), .0, s);
-        return length(vec3(q.x, q.y - s + k,q.z - k));
+float coneSDF(vec3 p, vec2 c, float h) {
+        float q = length(p.xz);
+        return max(dot(c.xy, vec2(q,p.y)), -h - p.y);
 }
 ```
 
@@ -46,23 +39,23 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float size;
+uniform float angle;
+uniform float height;
 /**
  * SDF
  */
-float octahedronSDF(vec3 p, float s) {
-        p = abs(p);
-        float m = p.x + p.y + p.z - s;
-        vec3 q;
-        if (3. * p.x < m) q = p.xyz;
-        else if ( 3. * p.y < m ) q = p.yzx;
-        else if ( 3. * p.z < m ) q = p.zxy;
-        else return m * .57735027;
-        float k = clamp(.5 * (q.z - q.y + s), .0, s);
-        return length(vec3(q.x, q.y - s + k,q.z - k));
+float coneSDF(vec3 p, float c, float h) {
+        vec2 q = h * vec2(angle, -1.);
+        vec2 w = vec2(length(p.xz), p.y);
+        vec2 a = w - q * clamp(dot(w, q) / dot(q, q), 0., 1.);
+        vec2 b = w - q * vec2(clamp(w.x / q.x, 0., 1.), 1.);
+        float k = sign(q.y);
+        float d = min(dot(a, a), dot(b, b));
+        float s = max(k * (w.x * q.y - w.y * q.x), k * (w.y - q.y));
+        return sqrt(d) * sign(s);
 }
 float SDF (vec3 p) {
-        return octahedronSDF(p, size);
+        return coneSDF(p, angle, height);
 }
 /**
  * main
@@ -106,10 +99,11 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
+                        angle: 1,
+                        height: 50,
                         focal: 500,
-                        size: 50,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )

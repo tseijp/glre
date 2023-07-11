@@ -52,6 +52,15 @@ const config = {
                                 editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs/guide',
                         },
                 ],
+                [
+                        '@docusaurus/plugin-content-docs',
+                        {
+                                id: 'primitives',
+                                path: 'primitives/',
+                                routeBasePath: 'primitives',
+                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs/primitives',
+                        },
+                ],
         ],
         themeConfig: {
                 metadata: [
@@ -74,6 +83,11 @@ const config = {
                                         position: 'left',
                                         to: '/guide',
                                         label: 'Guide',
+                                },
+                                {
+                                        position: 'left',
+                                        to: '/primitives',
+                                        label: 'Primitives',
                                 },
                                 { position: 'right', type: 'localeDropdown' },
                                 {

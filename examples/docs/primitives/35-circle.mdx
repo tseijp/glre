@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Sphere'
-description: 'Sphere'
+title: 'Circle'
+description: 'Circle'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,7 +19,7 @@ keywords:
 date: 2023-01-01
 ---
 
-# Sphere
+# Circle
 
 <Canvas />
 
@@ -38,15 +38,16 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform float size;       // object size
+uniform float radius;
 /**
  * SDF
  */
-float sphereSDF(vec3 p, float s) {
-        return length(p) - s;
+float fDisc(vec3 p, float r) {
+        float l = length(p.xy) - r;
+	return l < 0. ? abs(p.z) : length(vec2(p.z, l));
 }
 float SDF(vec3 p) {
-        return sphereSDF(p, size);
+        return fDisc(p, radius);
 }
 /**
  * main
@@ -90,10 +91,10 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
+                        radius: 50,
                         focal: 500,
-                        size: 50,
+                        focus: [0, 0, 0],
+                        up: [0, 1, 0],
                 },
                 self
         )
