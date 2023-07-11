@@ -72,7 +72,7 @@ uniform float size;       // object size
 ```c
 float boxSDF(vec3 p, float side) {
         vec3 d = abs(p) - side;
-        return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+        return min(max(d.x, max(d.y, d.z)), 0.) + length(max(d, 0.));
 }
 ```
 
@@ -89,13 +89,13 @@ void main() {
          */
         vec3 look = normalize(focus - eye);
         vec3 right = normalize(cross(look, up));
-        vec2 scr = gl_FragCoord.xy - 0.5 * iResolution;
+        vec2 scr = gl_FragCoord.xy - iResolution * .5;
         vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
         /**
         * Ray marching
         */
         vec3 p = eye + dir;
-        vec3 e = vec3(0.0005, 0.0, 0.0);
+        vec3 e = vec3(.0005, .0, .0);
         float d = boxSDF(p, size);
         for (int i = 0; i < 50; i++) {
                 if (d <= e.x) {
@@ -103,10 +103,10 @@ void main() {
                         float dy = boxSDF(p + e.yxx, size) - d;
                         float dz = boxSDF(p + e.yyx, size) - d;
                         vec3 norm = normalize(vec3(dx, dy, dz));
-                        gl_FragColor = vec4(norm * 0.5 + 0.5, 1.);
+                        gl_FragColor = vec4(norm * .5 + .5, 1.);
                         return;
                 }
-                p = p + d * normalize(dir);
+                p = p + d * dir;
                 d = boxSDF(p, size);
         }
 }
@@ -168,7 +168,7 @@ function draw() {
                  */
                 float boxSDF(vec3 p, float side) {
                         vec3 d = abs(p) - side;
-                        return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+                        return min(max(d.x, max(d.y, d.z)), 0.) + length(max(d, 0.));
                 }
                 /**
                  * main
@@ -179,13 +179,13 @@ function draw() {
                          */
                         vec3 look = normalize(focus - eye);
                         vec3 right = normalize(cross(look, up));
-                        vec2 scr = gl_FragCoord.xy - 0.5 * iResolution;
+                        vec2 scr = gl_FragCoord.xy - iResolution * .5;
                         vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
                         /**
                          * Ray marching
                          */
                         vec3 p = eye + dir;
-                        vec3 e = vec3(0.0005, 0.0, 0.0);
+                        vec3 e = vec3(.0005, 0., 0.);
                         float d = boxSDF(p, size);
                         for (int i = 0; i < 50; i++) {
                                 if (d <= e.x) {
@@ -193,10 +193,10 @@ function draw() {
                                         float dy = boxSDF(p + e.yxx, size) - d;
                                         float dz = boxSDF(p + e.yyx, size) - d;
                                         vec3 norm = normalize(vec3(dx, dy, dz));
-                                        gl_FragColor = vec4(norm * 0.5 + 0.5, 1.);
+                                        gl_FragColor = vec4(norm * .5 + .5, 1.);
                                         return;
                                 }
-                                p = p + d * normalize(dir);
+                                p = p + d * dir;
                                 d = boxSDF(p, size);
                         }
                 }

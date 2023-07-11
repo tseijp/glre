@@ -6,6 +6,15 @@ guide/primitives/*
 !guide/primitives/01*
 !guide/primitives/02*
 !guide/primitives/03*
+!guide/primitives/04*
+!guide/primitives/05*
+!guide/primitives/09*
+!guide/primitives/12*
+!guide/primitives/15*
+!guide/primitives/17*
+!guide/primitives/31*
+!guide/primitives/35*
+!guide/primitives/36*
 !guide/primitives/hooks
 
 # Dependencies

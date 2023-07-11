@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Box'
-description: 'Box'
+title: 'Capsule'
+description: 'Capsule'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,22 +19,19 @@ keywords:
 date: 2023-01-01
 ---
 
-# Box
+# Capsule
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
+        vec3 pa = p - a, ba = b - a;
+        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
+        return length(pa - ba * h) - r;
 }
 ```
-
-## More
-
-<iframe src="https://www.youtube.com/embed/62-pRVZuS5c" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -43,18 +40,21 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;     // object size
+uniform vec3 left;
+uniform vec3 right;
+uniform float radius;
 /**
  * SDF
  */
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
+        vec3 pa = p - a, ba = b - a;
+        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
+        return length(pa - ba * h) - r;
 }
-float SDF(vec3 p) {
-        return boxSDF(p, boxSize);
+float SDF (vec3 p) {
+        return capsuleSDF(p, left, right, radius);
 }
-/*
+/**
  * main
  */
 void main() {
@@ -99,7 +99,9 @@ export const Canvas = () => {
                         up: [0, 1, 0],
                         focus: [0, 0, 0],
                         focal: 500,
-                        boxSize: [32, 32, 32],
+                        left: [-25, 0, 0],
+                        right: [25, 0, 0],
+                        radius: 50,
                 },
                 self
         )
@@ -109,5 +111,4 @@ export const Canvas = () => {
                         <Leva />
                 </div>
         )
-
 }

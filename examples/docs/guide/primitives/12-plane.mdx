@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Box'
-description: 'Box'
+title: 'Plane'
+description: 'Plane'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -19,22 +19,17 @@ keywords:
 date: 2023-01-01
 ---
 
-# Box
+# Plane
 
 <Canvas />
 
 ## Code Example
 
 ```cpp
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float planeSDF(vec3 p, vec3 n, float h) {
+        return dot(p, n) + h;
 }
 ```
-
-## More
-
-<iframe src="https://www.youtube.com/embed/62-pRVZuS5c" allowfullscreen />
 
 export const frag = `
 precision highp float;
@@ -43,18 +38,18 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;     // object size
+uniform vec3 normal;
+uniform float height;
 /**
  * SDF
  */
-float boxSDF(vec3 p, vec3 b) {
-        vec3 q = abs(p) - b;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
+float planeSDF(vec3 p, vec3 n, float h) {
+        return dot(p, n) + h;
 }
-float SDF(vec3 p) {
-        return boxSDF(p, boxSize);
+float SDF (vec3 p) {
+        return planeSDF(p, normalize(normal), height);
 }
-/*
+/**
  * main
  */
 void main() {
@@ -99,7 +94,8 @@ export const Canvas = () => {
                         up: [0, 1, 0],
                         focus: [0, 0, 0],
                         focal: 500,
-                        boxSize: [32, 32, 32],
+                        normal: [0, 0, 1],
+                        height: 10,
                 },
                 self
         )
@@ -109,5 +105,4 @@ export const Canvas = () => {
                         <Leva />
                 </div>
         )
-
 }

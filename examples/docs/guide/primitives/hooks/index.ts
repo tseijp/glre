@@ -16,13 +16,11 @@ export function useGLRender(frag: string, width = 960, height = 540) {
         const [self] = useState(() => createGL({ frag, width, height }))
         useGL({}, self)
         useOnce(() => {
-                self({
-                        render() {
-                                self.clear()
-                                self.viewport()
-                                self.drawArrays()
-                                return true
-                        },
+                self('render', () => {
+                        self.clear()
+                        self.viewport()
+                        self.drawArrays()
+                        return true
                 })
         })
         return self
@@ -31,16 +29,14 @@ export function useGLRender(frag: string, width = 960, height = 540) {
 export function useResizeRef(self: GL) {
         const ref = useRef<Element | null>(null)
         useOnce(() => {
-                self({
-                        resize() {
-                                self.frame(() => {
-                                        const w = ref.current?.clientWidth
-                                        if (!w || w >= self.width) return
-                                        self.size[0] = self.el.width = w
-                                        self.size[1] = self.el.height = w
-                                        self.uniform({ iResolution: [w, w] })
-                                })
-                        },
+                self('resize', () => {
+                        self.frame(() => {
+                                const w = ref.current?.clientWidth
+                                if (!w || w >= self.width) return
+                                self.size[0] = self.el.width = w
+                                self.size[1] = self.el.height = w
+                                self.uniform({ iResolution: [w, w] })
+                        })
                 })
         })
         return ref
@@ -48,13 +44,11 @@ export function useResizeRef(self: GL) {
 
 export function useOrbitControls(key: string, self: GL) {
         useOnce(() => [
-                self({
-                        render() {
-                                const t = performance.now() / 1000
-                                const x = 200 * Math.cos(t)
-                                const z = 200 * Math.sin(t)
-                                self.uniform({ [key]: [x, 0, z] })
-                        },
+                self('render', () => {
+                        const t = performance.now() / 1000
+                        const x = 200 * Math.cos(t)
+                        const z = 200 * Math.sin(t)
+                        self.uniform({ [key]: [x, 0, z] })
                 }),
         ])
         return self

@@ -40,10 +40,13 @@ uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float size;       // object size
 /**
- * sphereSDF
+ * SDF
  */
 float sphereSDF(vec3 p, float s) {
         return length(p) - s;
+}
+float SDF(vec3 p) {
+        return sphereSDF(p, size);
 }
 /**
  * main
@@ -51,25 +54,25 @@ float sphereSDF(vec3 p, float s) {
 void main() {
         vec3 look = normalize(focus - eye);
         vec3 right = normalize(cross(look, up));
-        vec2 scr = gl_FragCoord.xy - .5 * iResolution;
+        vec2 scr = gl_FragCoord.xy - iResolution * .5;
         vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
         /**
          * Ray marching
          */
         vec3 p = eye + dir;
         vec3 e = vec3(.0005, 0., 0.);
-        float d = sphereSDF(p, size);
+        float d = SDF(p);
         for (int i = 0; i < 50; i++) {
                 if (d <= e.x) {
-                        float dx = sphereSDF(p + e.xyy, size) - d;
-                        float dy = sphereSDF(p + e.yxx, size) - d;
-                        float dz = sphereSDF(p + e.yyx, size) - d;
+                        float dx = SDF(p + e.xyy) - d;
+                        float dy = SDF(p + e.yxy) - d;
+                        float dz = SDF(p + e.yyx) - d;
                         vec3 norm = normalize(vec3(dx, dy, dz));
                         gl_FragColor = vec4(norm * .5 + .5, 1.);
                         return;
                 }
-                p = p + d * normalize(dir);
-                d = sphereSDF(p, size);
+                p = p + d * dir;
+                d = SDF(p);
         }
 }`
 

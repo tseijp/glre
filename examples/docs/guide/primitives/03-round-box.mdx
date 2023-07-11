@@ -44,13 +44,16 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform vec3 boxSize;     // object size
-uniform float radius;     // object corner radius
+uniform float round;      // object corner radius
 /**
- * roundBoxSDF
+ * SDF
  */
 float roundBoxSDF(vec3 p, vec3 b, float r) {
-        vec3 q = abs(p) - b;
+        vec3 q = abs(p) - b + r;
         return length(max(q, 0.)) + min(max(q.x, max(q.y,q.z)), 0.) - r;
+}
+float SDF(vec3 p) {
+        return roundBoxSDF(p, boxSize, round);
 }
 /**
  * main
@@ -58,25 +61,25 @@ float roundBoxSDF(vec3 p, vec3 b, float r) {
 void main() {
         vec3 look = normalize(focus - eye);
         vec3 right = normalize(cross(look, up));
-        vec2 scr = gl_FragCoord.xy - 0.5 * iResolution;
+        vec2 scr = gl_FragCoord.xy - iResolution * .5;
         vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
         /**
          * Ray marching
          */
         vec3 p = eye + dir;
-        vec3 e = vec3(0.0005, 0.0, 0.0);
-        float d = roundBoxSDF(p, boxSize, radius);
+        vec3 e = vec3(.0005, 0., 0.);
+        float d = SDF(p);
         for (int i = 0; i < 50; i++) {
                 if (d <= e.x) {
-                        float dx = roundBoxSDF(p + e.xyy, boxSize, radius) - d;
-                        float dy = roundBoxSDF(p + e.yxx, boxSize, radius) - d;
-                        float dz = roundBoxSDF(p + e.yyx, boxSize, radius) - d;
+                        float dx = SDF(p + e.xyy) - d;
+                        float dy = SDF(p + e.yxy) - d;
+                        float dz = SDF(p + e.yyx) - d;
                         vec3 norm = normalize(vec3(dx, dy, dz));
-                        gl_FragColor = vec4(norm * 0.5 + 0.5, 1.);
+                        gl_FragColor = vec4(norm * .5 + .5, 1.);
                         return;
                 }
-                p = p + d * normalize(dir);
-                d = roundBoxSDF(p, boxSize, radius);
+                p = p + d * dir;
+                d = SDF(p);
         }
 }`
 
@@ -98,7 +101,7 @@ export const Canvas = () => {
                         focus: [0, 0, 0],
                         focal: 500,
                         boxSize: [32, 32, 32],
-                        radius: 20
+                        round: 20
                 },
                 self
         )
