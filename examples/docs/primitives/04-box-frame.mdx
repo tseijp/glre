@@ -27,7 +27,7 @@ date: 2023-01-01
 
 ```cpp
 #define len(x, y, z) length(max(vec3(x, y, z), 0.)) + min(max(x, max(y, z)), 0.)
-float boxFrameSDF(vec3 p, vec3 b, float e) {
+float boxFrameFrameSDF(vec3 p, vec3 b, float e) {
         p = abs(p) - b;
         vec3 q = abs(p + e) - e;
         return min(min(len(p.x, q.y, q.z), len(q.x, p.y, q.z)), len(q.x, q.y, p.z));
@@ -42,21 +42,21 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;     // repeat space
-uniform vec3 boxSize;
-uniform float boxFrame;
-#define repetition(x) p = mod(p, x * repeat) - x * repeat * .5;
+uniform vec3 boxFrameSize;
+uniform float boxFrameFrame;
+#define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
 #define len(x, y, z) length(max(vec3(x, y, z), 0.)) + min(max(x, max(y, z)), 0.)
-float boxFrameSDF(vec3 p, vec3 b, float e) {
+float boxFrameFrameSDF(vec3 p, vec3 b, float e) {
         p = abs(p) - b;
         vec3 q = abs(p + e) - e;
         return min(min(len(p.x, q.y, q.z), len(q.x, p.y, q.z)), len(q.x, q.y, p.z));
 }
 float SDF(vec3 p) {
-        repetition(boxSize)
-        return boxFrameSDF(p, boxSize, boxFrame);
+        repetition(boxFrameSize)
+        return boxFrameFrameSDF(p, boxFrameSize, boxFrameFrame);
 }
 /**
  * main
@@ -100,8 +100,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        boxSize: [32, 32, 32],
-                        boxFrame: 2,
+                        boxFrameSize: [32, 32, 32],
+                        boxFrameFrame: { value: 2, min: 0, max: 15},
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

@@ -95,7 +95,7 @@ export const Canvas = () => {
         useUniformControls(
                 {
                         planeNormal: [0, 1, 0],
-                        planeDistance: 5,
+                        planeDistance: { value: 5, min: 0, max: 10 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

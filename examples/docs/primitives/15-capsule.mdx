@@ -101,7 +101,7 @@ export const Canvas = () => {
                 {
                         capsuleLeft: [-10, 0, 0],
                         capsuleRight: [10, 0, 0],
-                        capsuleRadius: 20,
+                        capsuleRadius: { value: 20, min: 0, max: 40 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

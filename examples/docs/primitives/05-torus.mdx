@@ -26,9 +26,9 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float torusSDF(vec3 p, float r, float tube) {
-        vec2 q = vec2(length(p.yz) - r, p.x);
-        return length(q) - torusTube
+float torusSDF(vec3 p, float r, float t) {
+        vec2 q = vec2(length(p.yz) - r + t, p.x);
+        return length(q) - t;
 }
 ```
 
@@ -47,7 +47,7 @@ uniform float torusTube;
  * SDF
  */
 float torusSDF(vec3 p, float r, float t) {
-        vec2 q = vec2(length(p.yz) - r, p.x);
+        vec2 q = vec2(length(p.yz) - r + t, p.x);
         return length(q) - t;
 }
 float SDF (vec3 p) {
@@ -96,7 +96,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        torusRadius: 40,
+                        torusRadius: { value: 40, min: 0, max: 80 },
                         torusTube: { value: 12, min: 0, max: 100 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,

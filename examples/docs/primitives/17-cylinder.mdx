@@ -96,8 +96,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        cylinderHeight: 20,
-                        cylinderRadius: 20,
+                        cylinderHeight: { value: 20, min: 0, max: 40 },
+                        cylinderRadius: { value: 20, min: 0, max: 40 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

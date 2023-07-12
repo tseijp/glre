@@ -26,8 +26,9 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float sphereSDF(vec3 p, float s) {
-        return length(p) - s;
+float circleSDF(vec3 p, float r) {
+        float l = length(p.xy) - r;
+	return l < 0. ? abs(p.z) : length(vec2(p.z, l));
 }
 ```
 
@@ -44,13 +45,13 @@ uniform float circleRadius;
 /**
  * SDF
  */
-float fDisc(vec3 p, float r) {
+float circleSDF(vec3 p, float r) {
         float l = length(p.xy) - r;
 	return l < 0. ? abs(p.z) : length(vec2(p.z, l));
 }
 float SDF(vec3 p) {
         repetition(vec3(circleRadius));
-        return fDisc(p, circleRadius);
+        return circleSDF(p, circleRadius);
 }
 /**
  * main
@@ -94,7 +95,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        circleRadius: 30,
+                        circleRadius: { value: 20, min: 0, max: 40 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

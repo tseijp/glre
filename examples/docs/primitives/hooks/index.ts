@@ -32,6 +32,7 @@ export function useResizeRef(self: GL) {
                 self('resize', () => {
                         self.frame(() => {
                                 const w = ref.current?.clientWidth
+                                const h = (w / self[0]) * self[1]
                                 if (!w || w >= self.width) return
                                 self.size[0] = self.el.width = w
                                 self.size[1] = self.el.height = w
@@ -42,13 +43,13 @@ export function useResizeRef(self: GL) {
         return ref
 }
 
-export function useOrbitControls(key: string, self: GL) {
+export function useOrbitControls(key: string, self: GL, y = 0) {
         useOnce(() => [
                 self('render', () => {
-                        const t = performance.now() / 1000
+                        const t = performance.now() / 5000
                         const x = 200 * Math.cos(t)
                         const z = 200 * Math.sin(t)
-                        self.uniform({ [key]: [x, 0, z] })
+                        self.uniform({ [key]: [x, y, z] })
                 }),
         ])
         return self

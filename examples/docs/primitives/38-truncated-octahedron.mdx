@@ -37,7 +37,7 @@ date: 2023-01-01
 #define _(v) d = max(d, abs(dot(p, v)));
 float truncatedOctahedronSDF(vec3 p, float r) {
         float d = 0.;
-        _(_0) _(_0) _(_2) _(_3) _(_4) _(_5) _(_6)
+        _(_0) _(_1) _(_2) _(_3) _(_4) _(_5) _(_6)
         return d - r;
 }
 ```
@@ -60,7 +60,7 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;     // repeat space
-uniform float oSize;
+uniform float truncatedOctahedronSize;
 #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
@@ -80,8 +80,8 @@ float truncatedOctahedronSDF(vec3 p, float r) {
         return d - r;
 }
 float SDF (vec3 p) {
-        repetition(vec3(oSize))
-        return truncatedOctahedronSDF(p, oSize);
+        repetition(vec3(truncatedOctahedronSize))
+        return truncatedOctahedronSDF(p, truncatedOctahedronSize);
 }
 /**
  * main
@@ -125,7 +125,11 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        oSize: 50,
+                        truncatedOctahedronSize: {
+                                value: 25,
+                                min: 0,
+                                max: 50,
+                        },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

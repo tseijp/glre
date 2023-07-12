@@ -28,7 +28,7 @@ const config = {
                                 docs: {
                                         path: 'docs/',
                                         routeBasePath: 'docs',
-                                        editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs/docs',
+                                        editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                                 },
                         },
                 ],
@@ -40,7 +40,7 @@ const config = {
                                 id: 'api',
                                 path: 'api/',
                                 routeBasePath: 'api',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs/api',
+                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                         },
                 ],
                 [
@@ -49,7 +49,7 @@ const config = {
                                 id: 'guide',
                                 path: 'guide/',
                                 routeBasePath: 'guide',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs/guide',
+                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                         },
                 ],
                 [
@@ -58,7 +58,7 @@ const config = {
                                 id: 'primitives',
                                 path: 'primitives/',
                                 routeBasePath: 'primitives',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs/primitives',
+                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                         },
                 ],
         ],

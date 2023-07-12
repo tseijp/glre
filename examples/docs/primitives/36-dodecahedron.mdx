@@ -125,7 +125,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        dodecahedronSize: 30,
+                        dodecahedronSize: { value: 25, min: 0, max: 50 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

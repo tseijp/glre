@@ -76,7 +76,7 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;     // repeat space
-uniform float size;
+uniform float truncatedSize;
 uniform float u0;
 uniform float u1;
 uniform float u2;
@@ -131,8 +131,8 @@ float truncatedSDF(vec3 p, float r) {
         return d - r;
 }
 float SDF (vec3 p) {
-        repetition(vec3(size))
-        return truncatedSDF(p, size);
+        repetition(vec3(truncatedSize))
+        return truncatedSDF(p, truncatedSize);
 }
 /**
  * main
@@ -256,7 +256,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        size: 32,
+                        truncatedSize: { value: 25, min: 0, max: 50},
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

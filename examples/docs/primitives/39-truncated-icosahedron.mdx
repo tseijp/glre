@@ -72,7 +72,7 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;     // repeat space
-uniform float iSize;
+uniform float truncatedIcosahedronSize;
 #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
@@ -104,8 +104,8 @@ float truncatedIcosahedronSDF(vec3 p, float r) {
         return d - r;
 }
 float SDF (vec3 p) {
-        repetition(vec3(iSize))
-        return truncatedIcosahedronSDF(p, iSize);
+        repetition(vec3(truncatedIcosahedronSize))
+        return truncatedIcosahedronSDF(p, truncatedIcosahedronSize);
 }
 /**
  * main
@@ -149,7 +149,11 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        iSize: 50,
+                        truncatedIcosahedronSize: {
+                                value: 25,
+                                min: 0,
+                                max: 50,
+                        },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

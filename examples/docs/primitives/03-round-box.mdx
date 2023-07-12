@@ -26,8 +26,8 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float boxRoundBoxSDF(vec3 p, vec3 b, float r) {
-        vec3 q = abs(p) - b;
+float roundBoxSDF(vec3 p, vec3 b, float r) {
+        vec3 q = abs(p) - b + r;
         return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
 }
 ```
@@ -44,19 +44,19 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;      // repeat space
-uniform vec3 boxSize;
-uniform float boxRound;
+uniform vec3 roundBoxSize;
+uniform float roundBoxRound;
 #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
-float boxRoundBoxSDF(vec3 p, vec3 b, float r) {
+float roundBoxSDF(vec3 p, vec3 b, float r) {
         vec3 q = abs(p) - b + r;
-        return length(max(q, 0.)) + min(max(q.x, max(q.y,q.z)), 0.) - r;
+        return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
 }
 float SDF(vec3 p) {
-        repetition(boxSize)
-        return boxRoundBoxSDF(p, boxSize, boxRound);
+        repetition(roundBoxSize)
+        return roundBoxSDF(p, roundBoxSize, roundBoxRound);
 }
 /**
  * main
@@ -100,8 +100,8 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        boxSize: [32, 32, 32],
-                        boxRound: { value: 20, min: 0, max: 40 },
+                        roundBoxSize: [32, 32, 32],
+                        roundBoxRound: { value: 20, min: 0, max: 40 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

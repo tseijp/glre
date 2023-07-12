@@ -32,7 +32,7 @@ date: 2023-01-01
 #define _5 normalize(vec3(1, -1, 1))
 #define _6 normalize(vec3(1, 1, -1))
 #define _(v) d = max(d, abs(dot(p, v)));
-float dodecahedronSDF(vec3 p, float r) {
+float octahedronSDF(vec3 p, float r) {
         float d = 0.;
         _(_3) _(_4) _(_5) _(_6)
         return d - r;
@@ -68,14 +68,14 @@ uniform float octahedronSize;
 #define _5 normalize(vec3(1, -1, 1))
 #define _6 normalize(vec3(1, 1, -1))
 #define _(v) d = max(d, abs(dot(p, v)));
-float dodecahedronSDF(vec3 p, float r) {
+float octahedronSDF(vec3 p, float r) {
         float d = 0.;
         _(_3) _(_4) _(_5) _(_6)
         return d - r;
 }
 float SDF (vec3 p) {
         repetition(vec3(octahedronSize))
-        return dodecahedronSDF(p, octahedronSize);
+        return octahedronSDF(p, octahedronSize);
 }
 /**
  * main
@@ -119,7 +119,7 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        octahedronSize: 20,
+                        octahedronSize: { value: 20, min: 0, max: 40 },
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
