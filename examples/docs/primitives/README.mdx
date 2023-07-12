@@ -176,8 +176,10 @@ float truncatedIcosahedronSDF(vec3 p, float r) {
 }
 #define _min(x) d = min(d, x);
 #define gap(x, y) vec3(x * 40., 0., y * 40.)
+#define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 float SDF(vec3 p) {
         float d = 1e10;
+        repetition(vec3(80.))
         _min(              sphereSDF(p + gap(-3., -3.), sphereRadius))
         _min(                 boxSDF(p + gap(-3., -1.), boxSize))
         _min(            roundBoxSDF(p + gap(-3., 1.), roundBoxSize, roundBoxRound))
@@ -270,6 +272,7 @@ export const Canvas = () => {
                                 min: 0,
                                 max: 50,
                         },
+                        repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],
