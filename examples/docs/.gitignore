@@ -1,6 +1,5 @@
 ### my created
 
-src/pages/editor.tsx
 docs/support-*
 primitives/*
 !primitives/README*

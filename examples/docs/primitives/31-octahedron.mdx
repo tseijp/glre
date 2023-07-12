@@ -56,7 +56,9 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
+uniform float repeat;     // repeat space
 uniform float octahedronSize;
+#define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
@@ -72,6 +74,7 @@ float dodecahedronSDF(vec3 p, float r) {
         return d - r;
 }
 float SDF (vec3 p) {
+        repetition(vec3(octahedronSize))
         return dodecahedronSDF(p, octahedronSize);
 }
 /**
@@ -117,6 +120,7 @@ export const Canvas = () => {
         useUniformControls(
                 {
                         octahedronSize: 20,
+                        repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

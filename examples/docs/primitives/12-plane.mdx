@@ -38,8 +38,10 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
+uniform float repeat;     // repeat space
 uniform vec3 planeNormal;
 uniform float planeDistance;
+#define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
@@ -47,6 +49,7 @@ float planeSDF(vec3 p, vec3 n, float d) {
 	return dot(p, n) + d;
 }
 float SDF (vec3 p) {
+        repetition(vec3(planeDistance))
         return planeSDF(p, normalize(planeNormal), planeDistance);
 }
 /**
@@ -63,7 +66,7 @@ void main() {
         vec3 p = eye + dir;
         vec3 e = vec3(.0005, 0., 0.);
         float d = SDF(p);
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 100; i++) {
                 if (d <= e.x) {
                         float dx = SDF(p + e.xyy) - d;
                         float dy = SDF(p + e.yxy) - d;
@@ -93,6 +96,7 @@ export const Canvas = () => {
                 {
                         planeNormal: [0, 1, 0],
                         planeDistance: 5,
+                        repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

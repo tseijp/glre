@@ -41,8 +41,10 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;     // object size
-uniform float boxFrame;   // frame size
+uniform float repeat;     // repeat space
+uniform vec3 boxSize;
+uniform float boxFrame;
+#define repetition(x) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
@@ -53,6 +55,7 @@ float boxFrameSDF(vec3 p, vec3 b, float e) {
         return min(min(len(p.x, q.y, q.z), len(q.x, p.y, q.z)), len(q.x, q.y, p.z));
 }
 float SDF(vec3 p) {
+        repetition(boxSize)
         return boxFrameSDF(p, boxSize, boxFrame);
 }
 /**
@@ -69,7 +72,7 @@ void main() {
         vec3 p = eye + dir;
         vec3 e = vec3(.0005, 0., 0.);
         float d = SDF(p);
-        for (int i = 0; i < 50; i++) {
+        for (int i = 0; i < 100; i++) {
                 if (d <= e.x) {
                         float dx = SDF(p + e.xyy) - d;
                         float dy = SDF(p + e.yxy) - d;
@@ -99,6 +102,7 @@ export const Canvas = () => {
                 {
                         boxSize: [32, 32, 32],
                         boxFrame: 2,
+                        repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

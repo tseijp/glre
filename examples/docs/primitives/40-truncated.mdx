@@ -75,6 +75,7 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
+uniform float repeat;     // repeat space
 uniform float size;
 uniform float u0;
 uniform float u1;
@@ -95,6 +96,7 @@ uniform float u15;
 uniform float u16;
 uniform float u17;
 uniform float u18;
+#define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
@@ -129,6 +131,7 @@ float truncatedSDF(vec3 p, float r) {
         return d - r;
 }
 float SDF (vec3 p) {
+        repetition(vec3(size))
         return truncatedSDF(p, size);
 }
 /**
@@ -170,13 +173,11 @@ import {
 } from './hooks'
 
 export const selectedVertex = {
-        cube: [0, 1, 2], // 1 ①
-        tetrahedron: [0, 1, 2],
-        octahedron: [3, 4, 5, 6], // 2
-        dodecahedron: [13, 14, 15, 16, 17, 18],                                            // 4      : select dodeca => last sub three bar !!!
-        icosahedron: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],                                    // 2, 3   : sub 1 (o) add 3
-        truncatedOctahedron: [0, 1, 2, 3, 4, 5, 6],                                        // 1, 2   : select t o
-        truncatedIcosahedron: [3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], // 2, 3, 4: select t i
+        cube: [0, 1, 2],
+        dodecahedron: [13, 14, 15, 16, 17, 18],
+        icosahedron: [3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+        truncatedOctahedron: [0, 1, 2, 3, 4, 5, 6],
+        truncatedIcosahedron: [3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
         truncatedAll: [0, 1, 2, 3, 4, 5, 6, , 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18]
 }
 
@@ -256,6 +257,7 @@ export const Canvas = () => {
         useUniformControls(
                 {
                         size: 32,
+                        repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

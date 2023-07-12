@@ -172,8 +172,16 @@ import { GLView } from 'expo-gl'
 import { useGL, useFrame } from 'glre/native'
 import { registerRootComponent } from 'expo'
 
+const fragment = `
+precision highp float;
+uniform vec2 iResolution;
+void main() {
+  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+}
+`
+
 const App = () => {
-        const self = useGL({})
+        const self = useGL({ fragment })
         useFrame(() => {
                 self.clear()
                 self.viewport()

@@ -1,8 +1,8 @@
 ---
 marp: true
 hide_table_of_contents: true
-title: 'Configuration'
-description: 'Configuration'
+title: 'APIs'
+description: 'APIs'
 image: https://github.com/tseijp.png
 keywords:
         [
@@ -18,6 +18,21 @@ keywords:
         ]
 date: 2023-01-01
 ---
+
+# API
+
+## Set gl config
+
+```ts
+import { gl, createGL } from 'glre'
+import { useGL } from 'glre/react'
+
+gl({ count: 6 }) // or
+
+useGL({ count: 6 }) // or
+
+createGL({ count: 6 })
+```
 
 # Configuration
 
@@ -36,10 +51,3 @@ date: 2023-01-01
 
 [frag]: https://github.com/tseijp/glre/blob/main/packages/core/index.ts
 [vert]: https://github.com/tseijp/glre/blob/main/packages/core/index.ts
-
-## Set gl config
-
-```ts
-gl('count', 6) // or
-gl({ count: 6 })
-```
