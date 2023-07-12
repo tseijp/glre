@@ -37,9 +37,17 @@ yaan add glre
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
         import self from 'https://cdn.skypack.dev/glre@latest'
+        const fragment = `
+          precision highp float;
+          uniform vec2 iResolution;
+          void main() {
+            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+          }
+        `
         function setup() {
-                self.el = document.getElementById('id')
-                self.gl = self.el.getContext('webgl2')
+                const el = document.getElementById('id')
+                const gl = el.getContext('webgl2')
+                self({ el, gl, fragment })
                 self.init()
                 self.resize()
                 draw()

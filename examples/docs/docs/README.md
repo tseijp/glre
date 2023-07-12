@@ -21,6 +21,9 @@ date: 2023-01-01
 
 # Introduction
 
+<strong>
+<samp>
+
 <p align="center">
 
 [![ npm version ](https://img.shields.io/npm/v/glre?style=flat&colorA=000&colorB=000)](https://www.npmjs.com/package/glre)
@@ -137,63 +140,124 @@ import { createRoot } from 'react-dom/client'
 import { useGL, useFrame } from 'glre/react'
 
 const fragment = `
-  precision highp float;
-  uniform vec2 iResolution;
-  void main() {
-    gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-  }
+precision highp float;
+uniform vec2 iResolution;
+void main() {
+  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+}
 `
 
-const App = (props) => {
+const App = () => {
         const gl = useGL({ fragment })
         useFrame(() => {
                 gl.clear()
                 gl.viewport()
                 gl.drawArrays()
-                return true
         })
-        return <canvas id={gl.id} {...props} />
+        return <canvas ref={gl.ref} />
 }
 
-const style = { top: 0, left: 0, position: 'fixed' }
-createRoot(document.getElementById('root')).render(<App style={style} />)
+createRoot(document.getElementById('root')).render(<App />)
 ```
 
 <details>
-<summary>pure js supported</summary>
+<summary>
 
-```html
-<!DOCTYPE html>
-<html>
-        <body>
-                <script type="module">
-                        import createGL from 'https://cdn.skypack.dev/glre@latest'
-                        const gl = createGL({
-                                fragment: `
-                                  precision highp float;
-                                  uniform vec2 resolution;
-                                  void main() {
-                                    gl_FragColor = vec4(fract(gl_FragCoord.xy / resolution), 0, 1);
-                                  }
-                                `,
-                        })
+react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-react-native-test-k2vfvk))
 
-                        gl.frame(() => {
-                                gl.clear()
-                                gl.viewport()
-                                gl.drawArrays()
-                                return true
-                        })
+</summary>
 
-                        const style = { top: 0, left: 0, position: 'fixed' }
-                        const canvas = document.createElement('canvas')
-                        Object.assign(canvas, { id: gl.id })
-                        Object.assign(canvas.style, style)
-                        document.body.append(canvas)
-                        window.addEventListener('DOMContentLoaded', gl.mount)
-                </script>
-        </body>
-</html>
+```ts
+import { GLView } from 'expo-gl'
+import { useGL, useFrame } from 'glre/native'
+import { registerRootComponent } from 'expo'
+
+const App = () => {
+        const self = useGL({})
+        useFrame(() => {
+                self.clear()
+                self.viewport()
+                self.drawArrays()
+                self.gl.flush()
+                self.gl.endFrameEXP()
+        })
+        return <GLView style={{ flex: 1 }} onContextCreate={self.ref} />
+}
+
+registerRootComponent(App)
 ```
 
 </details>
+<details>
+<summary>
+
+solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-solid-test-qgzhxh))
+
+</summary>
+
+```ts
+import { render } from 'solid-js/web'
+import { createGL, onFrame } from 'glre/solid'
+
+const fragment = `
+precision highp float;
+uniform vec2 iResolution;
+void main() {
+  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+}
+`
+
+const App = () => {
+        const gl = createGL({ fragment })
+        onFrame(() => {
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+        })
+        return <canvas ref={gl.ref} />
+}
+
+render(() => <App />, document.getElementById('root'))
+```
+
+</details>
+<details>
+<summary>
+
+pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr3y))
+
+</summary>
+
+```html
+<canvas id="id" style="top: 0; left: 0; position: fixed" />
+<script type="module">
+        import self from 'https://cdn.skypack.dev/glre@latest'
+        const fragment = `
+          precision highp float;
+          uniform vec2 iResolution;
+          void main() {
+            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+          }
+        `
+        function setup() {
+                const el = document.getElementById('id')
+                const gl = el.getContext('webgl2')
+                self({ el, gl, fragment })
+                self.init()
+                self.resize()
+                draw()
+        }
+        function draw() {
+                requestAnimationFrame(draw)
+                self.render()
+                self.clear()
+                self.viewport()
+                self.drawArrays()
+        }
+        document.addEventListener('DOMContentLoaded', setup)
+</script>
+```
+
+</details>
+</samp>
+</strong>
