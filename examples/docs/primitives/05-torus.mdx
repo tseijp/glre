@@ -96,9 +96,9 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        torusRadius: { value: 40, min: 0, max: 80 },
-                        torusTube: { value: 12, min: 0, max: 100 },
-                        repeat: { value: 0, min: 0, max: 50 },
+                        torusRadius: { min: 0, value: 15, max: 30 },
+                        torusTube: { min: 0, value: 5, max: 50 },
+                        repeat: { min: 0, value: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

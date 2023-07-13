@@ -43,12 +43,12 @@ export function useResizeRef(self: GL) {
         return ref
 }
 
-export function useOrbitControls(key: string, self: GL, y = 0) {
+export function useOrbitControls(key: string, self: GL, y = 0, r = 50) {
         useOnce(() => [
                 self('render', () => {
                         const t = performance.now() / 5000
-                        const x = 200 * Math.cos(t)
-                        const z = 200 * Math.sin(t)
+                        const x = r * Math.cos(t)
+                        const z = r * Math.sin(t)
                         self.uniform({ [key]: [x, y, z] })
                 }),
         ])

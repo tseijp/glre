@@ -26,10 +26,10 @@ date: 2023-01-01
 ## Code Example
 
 ```cpp
-float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
-        vec3 pa = p - a, ba = b - a;
-        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
-        return length(pa - ba * h) - r;
+float capsuleSDF(vec3 p, float h, float r) {
+        vec3 ba = vec3(0., h, 0.);
+        float d = clamp(dot(p, ba) / dot(ba, ba), 0., 1.);
+        return length(p - ba * d) - r;
 }
 ```
 
@@ -41,21 +41,20 @@ uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;     // repeat space
-uniform vec3 capsuleLeft;
-uniform vec3 capsuleRight;
+uniform float capsuleHeight;
 uniform float capsuleRadius;
 #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
  * SDF
  */
-float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
-        vec3 pa = p - a, ba = b - a;
-        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
-        return length(pa - ba * h) - r;
+float capsuleSDF(vec3 p, float h, float r) {
+        vec3 ba = vec3(0., h, 0.);
+        float d = clamp(dot(p, ba) / dot(ba, ba), 0., 1.);
+        return length(p - ba * d) - r;
 }
 float SDF (vec3 p) {
         repetition(vec3(capsuleRadius))
-        return capsuleSDF(p, capsuleLeft, capsuleRight, capsuleRadius);
+        return capsuleSDF(p, capsuleHeight, capsuleRadius);
 }
 /**
  * main
@@ -99,10 +98,9 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        capsuleLeft: [-10, 0, 0],
-                        capsuleRight: [10, 0, 0],
-                        capsuleRadius: { value: 20, min: 0, max: 40 },
-                        repeat: { value: 0, min: 0, max: 50 },
+                        capsuleHeight: { min: 0, value: 5, max: 30 },
+                        capsuleRadius: { min: 0, value: 15, max: 30 },
+                        repeat: { min: 0, value: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

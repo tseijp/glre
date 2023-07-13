@@ -43,7 +43,9 @@ uniform vec3 up;          // camera up direction
 uniform vec3 eye;         // camera position
 uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
-uniform vec3 boxSize;
+uniform float boxWidth;
+uniform float boxHeight;
+uniform float boxDepth;
 uniform float repeat;      // repeat space
 #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
 /**
@@ -53,6 +55,7 @@ float boxSDF(vec3 p, vec3 b) {
         vec3 q = abs(p) - b;
         return length(max(q, 0.)) + min(max(q.x, max(q.y, q.z)), 0.);
 }
+#define boxSize vec3(boxWidth, boxHeight, boxDepth)
 float SDF(vec3 p) {
         repetition(boxSize)
         return boxSDF(p, boxSize);
@@ -99,8 +102,10 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        boxSize: [32, 32, 32],
-                        repeat: { value: 0, min: 0, max: 10 },
+                        boxWidth: { min: 0, value: 15, max: 30 },
+                        boxHeight: { min: 0, value: 15, max: 30 },
+                        boxDepth: { min: 0, value: 15, max: 30 },
+                        repeat: { min: 0, value: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],

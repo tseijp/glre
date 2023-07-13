@@ -37,10 +37,16 @@ uniform vec3 focus;       // camera focus point
 uniform float focal;      // camera focal length
 uniform float repeat;     // repeat space
 uniform float sphereRadius;
-uniform vec3 boxSize;
-uniform vec3 roundBoxSize;
+uniform float boxWidth;
+uniform float boxHeight;
+uniform float boxDepth;
+uniform float roundBoxWidth;
+uniform float roundBoxHeight;
+uniform float roundBoxDepth;
 uniform float roundBoxRound;
-uniform vec3 boxFrameSize;
+uniform float boxFrameWidth;
+uniform float boxFrameHeight;
+uniform float boxFrameDepth;
 uniform float boxFrameFrame;
 uniform float torusRadius;
 uniform float torusTube;
@@ -48,8 +54,7 @@ uniform float coneRadius;
 uniform float coneHeight;
 uniform vec3 planeNormal;
 uniform float planeDistance;
-uniform vec3 capsuleLeft;
-uniform vec3 capsuleRight;
+uniform float capsuleHeight;
 uniform float capsuleRadius;
 uniform float cylinderHeight;
 uniform float cylinderRadius;
@@ -118,10 +123,10 @@ float coneSDF(vec3 p, float r, float h) {
 float planeSDF(vec3 p, vec3 n, float d) {
 	return dot(p, n) + d;
 }
-float capsuleSDF(vec3 p, vec3 a, vec3 b, float r) {
-        vec3 pa = p - a, ba = b - a;
-        float h = clamp(dot(pa, ba) / dot(ba, ba), 0., 1.);
-        return length(pa - ba * h) - r;
+float capsuleSDF(vec3 p, float h, float r) {
+        vec3 ba = vec3(0., h, 0.);
+        float d = clamp(dot(p, ba) / dot(ba, ba), 0., 1.);
+        return length(p - ba * d) - r;
 }
 float cylinderSDF(vec3 p, float h, float r) {
         vec2 d = abs(vec2(length(p.xz), p.y)) - vec2(r, h);
@@ -175,27 +180,30 @@ float truncatedIcosahedronSDF(vec3 p, float r) {
         return d - r;
 }
 #define _min(x) d = min(d, x);
-#define gap(x, y) vec3(x * 40., 0., y * 40.)
+#define gap(x, y) vec3(x * 30., 0., y * 30.)
 #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
+#define boxSize      vec3(     boxWidth,      boxHeight,      boxDepth)
+#define roundBoxSize vec3(roundBoxWidth, roundBoxHeight, roundBoxDepth)
+#define boxFrameSize vec3(boxFrameWidth, boxFrameHeight, boxFrameDepth)
 float SDF(vec3 p) {
         float d = 1e10;
-        repetition(vec3(80.))
+        repetition(vec3(120.))
         _min(              sphereSDF(p + gap(-3., -3.), sphereRadius))
         _min(                 boxSDF(p + gap(-3., -1.), boxSize))
-        _min(            roundBoxSDF(p + gap(-3., 1.), roundBoxSize, roundBoxRound))
-        _min(            boxFrameSDF(p + gap(-3., 3.), boxFrameSize, boxFrameFrame))
+        _min(            roundBoxSDF(p + gap(-3.,  1.), roundBoxSize, roundBoxRound))
+        _min(            boxFrameSDF(p + gap(-3.,  3.), boxFrameSize, boxFrameFrame))
         _min(               torusSDF(p + gap(-1., -3.), torusRadius, torusTube))
         _min(                coneSDF(p + gap(-1., -1.), coneRadius, coneHeight))
-        _min(             capsuleSDF(p + gap(-1., 1.), capsuleLeft, capsuleRight, capsuleRadius))
-        _min(            cylinderSDF(p + gap(-1., 3.), cylinderHeight, cylinderRadius))
-        _min(          octahedronSDF(p + gap(1., -3.), octahedronSize))
-        _min(              circleSDF(p + gap(1., -1.), circleRadius))
-        _min(        dodecahedronSDF(p + gap(1., 1.), dodecahedronSize))
-        _min(         icosahedronSDF(p + gap(1., 3.), icosahedronSize))
-        _min( truncatedOctahedronSDF(p + gap(3., -3.), truncatedOctahedronSize))
-        _min(truncatedIcosahedronSDF(p + gap(3., -1.), truncatedIcosahedronSize))
-        _min(        truncatedXXXSDF(p + gap(3., 1.), truncatedIcosahedronSize))
-        _min(        truncatedYYYSDF(p + gap(3., 3.), truncatedIcosahedronSize))
+        _min(             capsuleSDF(p + gap(-1.,  1.), capsuleHeight, capsuleRadius))
+        _min(            cylinderSDF(p + gap(-1.,  3.), cylinderHeight, cylinderRadius))
+        _min(          octahedronSDF(p + gap( 1., -3.), octahedronSize))
+        _min(              circleSDF(p + gap( 1., -1.), circleRadius))
+        _min(        dodecahedronSDF(p + gap( 1.,  1.), dodecahedronSize))
+        _min(         icosahedronSDF(p + gap( 1.,  3.), icosahedronSize))
+        _min( truncatedOctahedronSDF(p + gap( 3., -3.), truncatedOctahedronSize))
+        _min(truncatedIcosahedronSDF(p + gap( 3., -1.), truncatedIcosahedronSize))
+        _min(        truncatedXXXSDF(p + gap( 3.,  1.), truncatedIcosahedronSize))
+        _min(        truncatedYYYSDF(p + gap( 3.,  3.), truncatedIcosahedronSize))
         // _min(planeSDF(p, planeNormal, planeDistance))
         return d;
 }
@@ -238,40 +246,38 @@ import {
 export const Canvas = () => {
         const self = useGLRender(frag)
         const ref = useResizeRef(self)
-        useOrbitControls('eye', self, 100)
+        const range = { min: 0, value: 15, max: 30 }
+        useOrbitControls('eye', self, 100, 250)
         useUniformControls(
                 {
-                        sphereRadius: { value: 50, min: 0, max: 100 },
-                        boxSize: [32, 32, 32],
-                        roundBoxSize: [32, 32, 32],
-                        roundBoxRound: { value: 20, min: 0, max: 40 },
-                        boxFrameSize: [32, 32, 32],
-                        boxFrameFrame: { value: 2, min: 0, max: 15 },
-                        torusRadius: { value: 40, min: 0, max: 80 },
-                        torusTube: { value: 12, min: 0, max: 100 },
-                        coneRadius: { value: 20, min: 0, max: 40 },
-                        coneHeight: { value: 40, min: 0, max: 80 },
+                        sphereRadius: range,
+                        boxWidth: range,
+                        boxHeight: range,
+                        boxDepth: range,
+                        roundBoxWidth: range,
+                        roundBoxHeight: range,
+                        roundBoxDepth: range,
+                        roundBoxRound: { min: 0, value: 5, max: 50 },
+                        boxFrameWidth: range,
+                        boxFrameHeight: range,
+                        boxFrameDepth: range,
+                        boxFrameFrame: { min: 0, value: 1, max: 15 },
+                        torusRadius: range,
+                        torusTube: { min: 0, value: 5, max: 50 },
+                        coneRadius: range,
+                        coneHeight: { min: 0, value: 30, max: 60 },
                         planeNormal: [0, 1, 0],
-                        planeDistance: { value: 5, min: 0, max: 10 },
-                        capsuleLeft: [-10, 0, 0],
-                        capsuleRight: [10, 0, 0],
-                        capsuleRadius: { value: 20, min: 0, max: 40 },
-                        cylinderHeight: { value: 20, min: 0, max: 40 },
-                        cylinderRadius: { value: 20, min: 0, max: 40 },
-                        octahedronSize: { value: 20, min: 0, max: 40 },
-                        circleRadius: { value: 20, min: 0, max: 40 },
-                        dodecahedronSize: { value: 25, min: 0, max: 50 },
-                        icosahedronSize: { value: 25, min: 0, max: 50 },
-                        truncatedOctahedronSize: {
-                                value: 25,
-                                min: 0,
-                                max: 50,
-                        },
-                        truncatedIcosahedronSize: {
-                                value: 25,
-                                min: 0,
-                                max: 50,
-                        },
+                        planeDistance: range,
+                        capsuleHeight: { min: 0, value: 5, max: 30 },
+                        capsuleRadius: range,
+                        cylinderHeight: range,
+                        cylinderRadius: range,
+                        octahedronSize: range,
+                        circleRadius: range,
+                        dodecahedronSize: range,
+                        icosahedronSize: range,
+                        truncatedOctahedronSize: range,
+                        truncatedIcosahedronSize: range,
                         repeat: { value: 0, min: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],

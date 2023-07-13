@@ -110,9 +110,9 @@ export const Canvas = () => {
         useOrbitControls('eye', self)
         useUniformControls(
                 {
-                        coneRadius: { value: 20, min: 0, max: 40 },
-                        coneHeight: { value: 40, min: 0, max: 80 },
-                        repeat: { value: 0, min: 0, max: 50 },
+                        coneRadius: { min: 0, value: 15, max: 30 },
+                        coneHeight: { min: 0, value: 30, max: 600 },
+                        repeat: { min: 0, value: 0, max: 50 },
                         focal: 500,
                         focus: [0, 0, 0],
                         up: [0, 1, 0],
