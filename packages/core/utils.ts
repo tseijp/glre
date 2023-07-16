@@ -30,7 +30,7 @@ export function createShader(gl: any, source: string, type: unknown) {
         gl.compileShader(shader)
         if (gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
                 return shader
-        } else console.warn(gl.getShaderInfoLog(shader))
+        } else throw 'Could not compile glsl\n\n' + gl.getShaderInfoLog(shader)
 }
 
 export function createProgram(gl: any, vs: any, fs: any) {

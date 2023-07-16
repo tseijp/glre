@@ -1,0 +1,160 @@
+---
+marp: true
+hide_table_of_contents: true
+title: 'Support Solid.js'
+description: 'Support Solid.js'
+image: https://github.com/tseijp.png
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
+date: 2023-01-01
+---
+
+# Support Solid.js
+
+<Canvas />
+
+## Code Example
+
+```tsx
+import { useMemo } from 'react'
+import { createGL, onFrame } from 'glre/solid'
+
+export const Canvas = () => {
+        const gl = createGL()
+
+        onFrame(() => {
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+                return true
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+import { useMemo } from 'react'
+import { createGL } from 'glre'
+import { useGL, useFrame } from 'glre/react'
+import { useGLRender, useUniformControls, useResizeRef } from './hooks'
+
+export const frag = `
+precision highp float;
+uniform vec2 iResolution; // canvas size
+uniform vec3 up;          // camera up direction
+uniform vec3 eye;         // camera position
+uniform vec3 focus;       // camera focus point
+uniform float focal;      // camera focal length
+uniform float repeat;     // repeat space
+uniform float zoom;       // camera zoom
+uniform float solidGap;   // gap between objects
+uniform float solidNorm;  // normal length
+uniform float solidScale; // scale of objects
+uniform float solidPosZ;  // z position of objects
+uniform vec3 color1;
+uniform vec3 color2;
+uniform float cylinderHeight;
+uniform float cylinderRadius;
+#define PI 3.141592
+#define M(X, Y, Z) mat3(1. / X, 0, 0, 0, 1. / Y, 0., 0, 0, 1. / Z)
+#define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
+/**
+ * SDF
+ */
+float cylinderSDF(vec3 p, float h, float r, float sign) {
+        p.y = p.y - sign * cylinderHeight;
+        float dShpere = length(p.xy) - r;
+        float dPlane = sign * dot(p.xy, normalize(vec2(-1., solidNorm)));
+        float dx = max(dShpere, dPlane);
+        float dy = abs(p.z) - h;
+        return min(max(dx, dy), 0.) + length(vec2(max(dx, 0.), max(dy, 0.)));
+}
+float SDF (vec3 p) {
+        repetition(vec3(cylinderRadius))
+        p = M(solidScale, 1., 1.) * p;
+        p.z = p.z + solidPosZ;
+        float d1 = cylinderSDF(p + vec3(0., 0., solidGap * 0.5), cylinderHeight, cylinderRadius, -1.);
+        float d2 = cylinderSDF(p + vec3(0., 0., -solidGap * 0.5), cylinderHeight, cylinderRadius, 1.);
+        return min(d1, d2);
+}
+/**
+ * main
+ */
+void main() {
+        vec3 look = normalize(focus - eye);
+        vec3 right = normalize(cross(look, up));
+        vec2 scr = gl_FragCoord.xy - iResolution * .5;
+        vec3 dir = vec3(scr.x, scr.y, 0.) / zoom;
+        /**
+         * Ray marching
+         */
+        vec3 p = eye + dir;
+        vec3 e = vec3(.0005, 0., 0.);
+        float d = SDF(p);
+        for (int i = 0; i < 100; i++) {
+                if (d <= e.x) {
+                        float dx = SDF(p + e.xyy) - d;
+                        float dy = SDF(p + e.yxy) - d;
+                        float dz = SDF(p + e.yyx) - d;
+                        vec3 norm = normalize(vec3(dx, dy, dz));
+                        float lighting = dot(norm, vec3(0., 1., 0.)) + 0.5;
+                        vec3 color = p.z < 0. ? color2 : color1;
+                        gl_FragColor = vec4(lighting * color, 1.);
+                        return;
+                }
+                p = p + d * look;
+                d = SDF(p);
+        }
+}`
+
+export const Canvas = () => {
+        // const src = useBaseUrl('/img/memo/solid.jpg')
+        const self = useGLRender(frag, 1920 / 2, 1080 / 2) // 300 * 2, 279 * 2)
+        const ref = useResizeRef(self)
+        useUniformControls(
+                {
+                        cylinderHeight: { min: 0, value: 9.2, max: 18.4 },
+                        cylinderRadius: { min: 0, value: 14.5, max: 29 },
+                        solidGap: { min: 0, value: 34, max: 68 },
+                        solidNorm: { min: 0, value: 1.64, max: 3.28 },
+                        solidScale: { min: 0, value: 1.83, max: 3.66 },
+                        solidPosZ: { min: 0, value: 2.6, max: 5.2 },
+                        color1: [53 / 255, 97 / 255, 159 / 255],
+                        color2: [74 / 255, 128 / 255, 191 / 255],
+                        eye: [25, 44, 50],
+                        repeat: { min: 0, value: 0, max: 50 },
+                        focal: 500,
+                        focus: [0, 0, 0],
+                        zoom: { min: 0, value: 8, max: 16 },
+                        up: [0, 1, 0],
+                },
+                self
+        )
+        return (
+                <div ref={ref} style={{ position: 'relative' }}>
+                        <canvas ref={self.ref} />
+                        {/*<img
+                                src={src}
+                                style={{
+                                        width: 300 * 2,
+                                        height: 279 * 2,
+                                        position: 'absolute',
+                                        left: 0,
+                                        zIndex: -1,
+                                        // display: 'none',
+                                }}
+                        />*/}
+                </div>
+        )
+}

@@ -1,6 +1,8 @@
 ### my created
 
 docs/support-*
+!docs/support-react*
+!docs/support-solid*
 primitives/*
 !primitives/README*
 !primitives/01*

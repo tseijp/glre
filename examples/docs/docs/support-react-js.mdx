@@ -1,0 +1,133 @@
+---
+marp: true
+hide_table_of_contents: true
+title: 'Support React.js'
+description: 'Support React.js'
+image: https://github.com/tseijp.png
+keywords:
+        [
+                glsl,
+                webgl,
+                hooks,
+                react,
+                reactjs,
+                reactive,
+                solid,
+                solidjs,
+                typescript,
+        ]
+date: 2023-01-01
+---
+
+# Support React.js
+
+<Canvas />
+
+## Code Example
+
+```tsx
+import { useMemo } from 'react'
+import { useGL, useFrame } from 'glre/react'
+
+export const frag = `
+precision mediump float;
+uniform vec2 iResolution;
+uniform float iTime;
+uniform float ellipseRadius;
+uniform float ellipseXCoord;
+uniform float ellipseYCoord;
+uniform float ellipseStroke;
+#define PI 3.141592
+#define M(X, Y, A) mat2(1. / X, 0, 0, 1. / Y) * mat2(cos(A), -sin(A), sin(A), cos(A))
+#define circle(p) length(p) - ellipseRadius
+#define ellipse(p, A) circle(M(ellipseXCoord, ellipseYCoord, A) * p)
+#define onion(p, A) d = min(d, abs(ellipse(p, A)) - ellipseStroke)
+void main() {
+        vec2 uv = fract(gl_FragCoord.xy / iResolution);
+        vec2 p = uv * 2.4 - 1.2;
+        p.x *= iResolution.x / iResolution.y;
+        float d = circle(p);
+        onion(p, PI / 2. + iTime);
+        onion(p, PI / 6. + iTime);
+        onion(p, -PI / 6. + iTime);
+        if (d < 0.)
+                gl_FragColor = vec4(96. / 255., 219. / 255., 251. / 255., 0.8);
+}
+`
+
+export const Canvas = () => {
+        const gl = useGL({ frag })
+
+        useFrame(() => {
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+                return true
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+import useBaseUrl from '@docusaurus/useBaseUrl'
+import { useMemo } from 'react'
+import { createGL } from 'glre'
+import { useGL, useFrame } from 'glre/react'
+import { useGLRender, useUniformControls, useResizeRef } from './hooks'
+
+export const frag = `
+precision mediump float;
+uniform vec2 iResolution;
+uniform float iTime;
+uniform float ellipseRadius;
+uniform float ellipseXCoord;
+uniform float ellipseYCoord;
+uniform float ellipseStroke;
+#define PI 3.141592
+#define M(X, Y, A) mat2(1. / X, 0, 0, 1. / Y) * mat2(cos(A), -sin(A), sin(A), cos(A))
+#define circle(p) length(p) - ellipseRadius
+#define ellipse(p, A) circle(M(ellipseXCoord, ellipseYCoord, A) * p)
+#define onion(p, A) d = min(d, abs(ellipse(p, A)) - ellipseStroke)
+void main() {
+        vec2 uv = fract(gl_FragCoord.xy / iResolution);
+        vec2 p = uv * 2.4 - 1.2;
+        p.x *= iResolution.x / iResolution.y;
+        float d = circle(p);
+        onion(p, PI / 2. + iTime);
+        onion(p, PI / 6. + iTime);
+        onion(p, -PI / 6. + iTime);
+        if (d < 0.)
+                gl_FragColor = vec4(96. / 255., 219. / 255., 251. / 255., 0.8);
+}
+`
+
+export const Canvas = () => {
+        // const src = useBaseUrl('/img/memo/react.png')
+        const self = useGLRender(frag, 1920 / 2, 1080 / 2)
+        const ref = useResizeRef(self)
+        useUniformControls(
+                {
+                        ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
+                        ellipseXCoord: { min: 0, value: 2.2, max: 4.4 },
+                        ellipseYCoord: { min: 0, value: 5.4, max: 10.8 },
+                        ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
+                },
+                self
+        )
+        return (
+                <div ref={ref} style={{ position: 'relative' }}>
+                        <canvas ref={self.ref} />
+                        {/*<img
+                                src={src}
+                                style={{
+                                        width: 1024,
+                                        height: 890,
+                                        position: 'absolute',
+                                        left: 0,
+                                        zIndex: -1,
+                                        display: 'none',
+                                }}
+                        />*/}
+                </div>
+        )
+}
