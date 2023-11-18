@@ -184,7 +184,7 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 
 ```ts
 import { render } from 'solid-js/web'
-import { createGL, onFrame } from 'glre/solid'
+import { onGL, onFrame } from 'glre/solid'
 
 const fragment = `
 precision highp float;
@@ -195,7 +195,7 @@ void main() {
 `
 
 const App = () => {
-        const gl = createGL({ fragment })
+        const gl = onGL({ fragment })
         onFrame(() => {
                 gl.clear()
                 gl.viewport()

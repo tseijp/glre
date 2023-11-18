@@ -160,12 +160,7 @@ const App = () => {
 createRoot(document.getElementById('root')).render(<App />)
 ```
 
-<details>
-<summary>
-
-react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-react-native-test-k2vfvk))
-
-</summary>
+## react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-react-native-test-k2vfvk))
 
 ```ts
 import { GLView } from 'expo-gl'
@@ -195,17 +190,11 @@ const App = () => {
 registerRootComponent(App)
 ```
 
-</details>
-<details>
-<summary>
-
-solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-solid-test-qgzhxh))
-
-</summary>
+## solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-solid-test-qgzhxh))
 
 ```ts
 import { render } from 'solid-js/web'
-import { createGL, onFrame } from 'glre/solid'
+import { onGL, onFrame } from 'glre/solid'
 
 const fragment = `
 precision highp float;
@@ -216,7 +205,7 @@ void main() {
 `
 
 const App = () => {
-        const gl = createGL({ fragment })
+        const gl = onGL({ fragment })
         onFrame(() => {
                 gl.clear()
                 gl.viewport()
@@ -228,13 +217,7 @@ const App = () => {
 render(() => <App />, document.getElementById('root'))
 ```
 
-</details>
-<details>
-<summary>
-
-pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr3y))
-
-</summary>
+## pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr3y))
 
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
@@ -266,6 +249,5 @@ pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-
 </script>
 ```
 
-</details>
 </samp>
 </strong>

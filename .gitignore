@@ -1,18 +1,11 @@
 # my created
 *exe
+dist
 memo
 sample*
 TODO.md
 reev
 refr
-
-# build
-packages/**/*.js
-packages/**/*.cjs
-packages/**/*.mjs
-packages/**/*.esm.js
-packages/**/*.develop.js
-packages/**/*.product.js
 
 # See https://help.github.com/ignore-files/ for more about ignoring files.
 

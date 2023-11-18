@@ -61,13 +61,10 @@ export type GL = EventState<{
         /**
          * setter
          */
-        _uniform(key: string, value: Uniform): GL
         uniform(key: string, value: Uniform): GL
         uniform(target: { [key: string]: Uniform }): GL
-        _texture(key: string, value: string): GL
         texture(key: string, value: string): GL
         texture(target: { [key: string]: string }): GL
-        _attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(target: { [key: string]: Attribute }): GL
         // config(key?: keyof GL, value?: GL[keyof GL]): GL

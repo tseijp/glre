@@ -1,9 +1,10 @@
 import { onMount, onCleanup } from 'solid-js'
 import { frame } from 'refr'
-import { gl } from './index'
+import { createTF, gl } from './index'
+import { GL } from './types'
 import type { Fun } from 'reev/types'
 
-export function createGL(props?: any, self = gl) {
+export const onGL = (props?: Partial<GL>, self = gl) => {
         const memo = {
                 ref(target: unknown) {
                         if (target) {
@@ -31,21 +32,21 @@ export function createGL(props?: any, self = gl) {
         return self(props)(memo)
 }
 
-export const createTF = (props: any, self = gl) => {
+export const onTF = (props?: Partial<GL>, self = gl) => {
         const tf = createTF(props, self)
         onMount(() => tf.mount())
         onCleanup(() => tf.clean())
         return tf
 }
 
-export function onFrame(fun: Fun, self = gl) {
+export const onFrame = (fun: Fun, self = gl) => {
         onMount(() => self('render', fun))
 }
 
-export function setTexture(props: any, self = gl) {
+export const setTexture = (props: any, self = gl) => {
         return self.texture(props)
 }
 
-export function setAttribute(props: any, self = gl) {
+export const setAttribute = (props: any, self = gl) => {
         return self.attribute(props)
 }

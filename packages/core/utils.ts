@@ -1,7 +1,7 @@
 /**
  * utils
  */
-export function uniformType(value: number | number[], isMatrix = false) {
+export const uniformType = (value: number | number[], isMatrix = false) => {
         let length = typeof value === 'number' ? 0 : value?.length
         if (!length) return `uniform1f`
         if (!isMatrix) return `uniform${length}fv`
@@ -9,11 +9,11 @@ export function uniformType(value: number | number[], isMatrix = false) {
         return `uniformMatrix${length}fv`
 }
 
-export function vertexStride(
+export const vertexStride = (
         count: number,
         value: number[],
         iboValue?: number[]
-) {
+) => {
         if (iboValue) count = Math.max(...iboValue) + 1
         const stride = value.length / count
         if (stride !== stride << 0)
@@ -24,7 +24,7 @@ export function vertexStride(
 /**
  * graphics
  */
-export function createShader(gl: any, source: string, type: unknown) {
+export const createShader = (gl: any, source: string, type: unknown) => {
         const shader = gl.createShader(type)
         gl.shaderSource(shader, source)
         gl.compileShader(shader)
@@ -33,7 +33,7 @@ export function createShader(gl: any, source: string, type: unknown) {
         } else throw 'Could not compile glsl\n\n' + gl.getShaderInfoLog(shader)
 }
 
-export function createProgram(gl: any, vs: any, fs: any) {
+export const createProgram = (gl: any, vs: any, fs: any) => {
         const program = gl.createProgram()
         gl.attachShader(program, vs)
         gl.attachShader(program, fs)
@@ -47,7 +47,7 @@ export function createProgram(gl: any, vs: any, fs: any) {
         }
 }
 
-export function createTfProgram(gl: any, vs: any, fs: any, varyings?: any) {
+export const createTfProgram = (gl: any, vs: any, fs: any, varyings?: any) => {
         const pg = gl.createProgram()
         gl.attachShader(pg, vs)
         gl.attachShader(pg, fs)
@@ -62,7 +62,7 @@ export function createTfProgram(gl: any, vs: any, fs: any, varyings?: any) {
         }
 }
 
-export function createVbo(gl: any, data: number[]) {
+export const createVbo = (gl: any, data: number[]) => {
         if (!data) return
         const vbo = gl.createBuffer()
         gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
@@ -71,7 +71,7 @@ export function createVbo(gl: any, data: number[]) {
         return vbo
 }
 
-export function createIbo(gl: any, data?: number[]) {
+export const createIbo = (gl: any, data?: number[]) => {
         if (!data) return
         const ibo = gl.createBuffer()
         gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
@@ -84,20 +84,20 @@ export function createIbo(gl: any, data?: number[]) {
         return ibo
 }
 
-export function createAttribute(
+export const createAttribute = (
         gl: any,
         stride: number,
         location: any,
         vbo: any,
         ibo: any
-) {
+) => {
         gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
         gl.enableVertexAttribArray(location)
         gl.vertexAttribPointer(location, stride, gl.FLOAT, false, 0, 0)
         if (ibo) gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo)
 }
 
-export function createFramebuffer(gl: any, width: number, height: number) {
+export const createFramebuffer = (gl: any, width: number, height: number) => {
         const frameBuffer = gl.createFramebuffer()
         gl.bindFramebuffer(gl.FRAMEBUFFER, frameBuffer)
         const renderBuffer = gl.createRenderbuffer()
@@ -144,12 +144,12 @@ export function createFramebuffer(gl: any, width: number, height: number) {
         return { frameBuffer, renderBuffer, texture }
 }
 
-export function createFramebufferFloat(
+export const createFramebufferFloat = (
         gl: any,
         ext: any,
         width: number,
         height: number
-) {
+) => {
         const flg =
                 ext.textureFloat != null
                         ? gl.FLOAT
@@ -185,7 +185,7 @@ export function createFramebufferFloat(
         return { frameBuffer, texture }
 }
 
-export function createTexture(gl: any, img: any) {
+export const createTexture = (gl: any, img: any) => {
         const texture = gl.createTexture()
         gl.bindTexture(gl.TEXTURE_2D, texture)
         gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img)
@@ -198,12 +198,12 @@ export function createTexture(gl: any, img: any) {
         return texture
 }
 
-export function activeTexture(
+export const activeTexture = (
         gl: any,
         location: any,
         activeUnit: any,
         texture: any
-) {
+) => {
         gl.uniform1i(location, activeUnit)
         gl.activeTexture(gl['TEXTURE' + activeUnit])
         gl.bindTexture(gl.TEXTURE_2D, texture)

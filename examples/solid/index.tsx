@@ -1,14 +1,15 @@
 import { render } from 'solid-js/web'
-import { createGL } from 'glre/solid'
+import { onGL } from 'glre/solid'
 
 const App = () => {
-        const self = createGL({
+        const self = onGL({
                 render() {
                         self.clear()
                         self.viewport()
                         self.drawArrays()
                 },
         })
+
         return (
                 <canvas
                         ref={self.ref}

@@ -1,10 +1,10 @@
-import { useSignal, useVisibleTask$, $ } from '@builder.io/qwik'
+import { useSignal, useTask$, useVisibleTask$ } from '@builder.io/qwik'
 import { gl } from './index'
 import { frame } from 'refr'
 import type { GL } from './types'
 import type { Fun } from 'reev/types'
 
-export function useGL(props?: any, self = $(gl) as unknown as GL) {
+export const useGL = (props?: any, self = gl as unknown as GL) => {
         const ref = useSignal<Element>()
         useVisibleTask$(({ cleanup }) => {
                 self(props)
@@ -24,19 +24,19 @@ export function useGL(props?: any, self = $(gl) as unknown as GL) {
         return self
 }
 
-export function useTexture(props: any, self = gl) {
+export const useTexture = (props: any, self = gl) => {
         return self?.texture(props)
 }
 
-export function useAttribute(props: any, self = gl) {
+export const useAttribute = (props: any, self = gl) => {
         return self.attribute(props)
 }
 
-export function useUniform(props: any, self = gl) {
+export const useUniform = (props: any, self = gl) => {
         return self.uniform(props)
 }
 
-export function useFrame(fun: Fun, self = gl) {
+export const useFrame = (fun: Fun, self = gl) => {
         useTask$(() => self.frame(fun))
         return self
 }

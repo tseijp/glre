@@ -1,15 +1,9 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { createTF, gl } from './index'
 import { frame } from 'refr'
-import { mutable } from 'reev'
+import { useMutable } from 'reev/react'
 import type { GL } from './types'
 import type { Fun } from 'refr'
-import type { MutableArgs } from 'reev/types'
-
-export const useMutable = <T extends object>(...args: MutableArgs<T>) => {
-        const [memo] = useState(() => mutable<T>())
-        return memo(...args)
-}
 
 export const useGL = (props: Partial<GL> = {}, self = gl) => {
         const memo1 = useMutable(props) as Partial<GL>
@@ -46,21 +40,20 @@ export const useTF = (props: Partial<GL>, self = gl) => {
         return tf
 }
 
-export function useTexture(props: any, self = gl) {
+export const useTexture = (props: any, self = gl) => {
         return self.texture(props)
 }
 
-export function useAttribute(props: any, self = gl) {
+export const useAttribute = (props: any, self = gl) => {
         return self.attribute(props)
 }
 
-export function useUniform(props: any, self = gl) {
+export const useUniform = (props: any, self = gl) => {
         return self.uniform(props)
 }
 
-export function useFrame(fun: Fun, self = gl) {
-        const ref = useMutable(fun)
-        useEffect(() => self.frame(fun), [])
-        useEffect(() => () => self.frame(ref), [])
+export const useFrame = (fun: Fun, self = gl) => {
+        useEffect(() => void self.frame(fun), [])
+        useEffect(() => () => self.frame(fun), [])
         return self
 }

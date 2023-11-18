@@ -44,19 +44,19 @@ export const useTF = (props: Partial<GL>, self = gl) => {
         return tf
 }
 
-export function useTexture(props: any, self = gl) {
+export const useTexture = (props: any, self = gl) => {
         return self.texture(props)
 }
 
-export function useAttribute(props: any, self = gl) {
+export const useAttribute = (props: any, self = gl) => {
         return self.attribute(props)
 }
 
-export function useUniform(props: any, self = gl) {
+export const useUniform = (props: any, self = gl) => {
         return self.uniform(props)
 }
 
-export function useFrame(fun: Fun, self = gl) {
+export const useFrame = (fun: Fun, self = gl) => {
         const ref = useMutable(fun)
         useEffect(() => self.frame(fun), [])
         useEffect(() => () => self.frame(ref), [])
