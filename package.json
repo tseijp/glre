@@ -9,7 +9,6 @@
                 "start": "cd examples/docs && npm run start",
                 "build": "cd examples/docs && npm run build",
                 "serve": "cd examples/docs && npm run serve",
-                "write": "cd examples/docs && docusaurus write-translations",
                 "tunnel": "cd examples/native && npm run tunnel",
                 "android": "cd examples/native && npm run android",
                 "ios": "cd examples/native && npm run ios",
