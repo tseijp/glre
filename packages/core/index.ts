@@ -199,4 +199,4 @@ export const createTF = (props?: Partial<GL>, self = gl) => {
         return tf
 }
 
-export default self
+export default gl
