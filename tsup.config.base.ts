@@ -43,7 +43,8 @@ export const defaultConfig = (override: Options, options: Options) => {
                                 'react',
                                 'react-dom',
                                 'react-native',
-                                'reev'
+                                'reev',
+                                'refr'
                         ],
                         moduleResolution: 'NodeNext',
                 }
