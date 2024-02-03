@@ -1,7 +1,7 @@
 import { onMount, onCleanup } from 'solid-js'
 import { frame } from 'refr'
 import { createTF, gl } from './index'
-import { GL } from './types'
+import { GL } from './types' // @ts-ignore
 import type { Fun } from 'reev/types'
 
 export const onGL = (props?: Partial<GL>, self = gl) => {

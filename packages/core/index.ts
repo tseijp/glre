@@ -97,21 +97,26 @@ export const createGL = (props?: Partial<GL>) => {
         }
 
         const clear = (key = 'COLOR_BUFFER_BIT') => {
-                self.gl.clear(self.gl[key])
+                self.frame(() => void self.gl.clear(self.gl[key]))
         }
 
         const viewport = (size: number[] = self.size) => {
-                self.gl.viewport(0, 0, ...size)
+                self.frame(() => void self.gl.viewport(0, 0, ...size))
         }
 
         const drawArrays = (mode = 'TRIANGLES') => {
-                self.gl.drawArrays(self.gl[mode], 0, self.count)
+                // self.gl.drawArrays(self.gl[mode], 0, self.count)
+                self.frame(() => {
+                        self.gl.drawArrays(self.gl[mode], 0, self.count)
+                })
         }
 
         const drawElements = (mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') => {
-                mode = self.gl[mode]
-                type = self.gl[type]
-                self.gl.drawElements(mode, self.count, type, 0)
+                self.frame(() => {
+                        mode = self.gl[mode]
+                        type = self.gl[type]
+                        self.gl.drawElements(mode, self.count, type, 0)
+                })
         }
 
         const self = event<Partial<GL>>({

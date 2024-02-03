@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react'
-import { Dimensions } from 'react-native'
+import { Dimensions } from 'react-native' // @ts-ignore
 import { useMutable } from 'reev/react'
 import { gl, createTF } from './index'
 import { frame } from 'refr'

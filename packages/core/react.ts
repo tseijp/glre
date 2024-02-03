@@ -1,7 +1,7 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect } from 'react'
 import { createTF, gl } from './index'
-import { frame } from 'refr'
-import { useMutable } from 'reev/react'
+import { frame } from 'refr' // @ts-ignore
+import { useOnce, useMutable } from 'reev/react'
 import type { GL } from './types'
 import type { Fun } from 'refr'
 
@@ -30,12 +30,12 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
                 },
         }) as Partial<GL>
 
-        return useMemo(() => self(memo2)(memo1), [self, memo1, memo2])
+        return useOnce(() => self(memo2)(memo1))
 }
 
 export const useTF = (props: Partial<GL>, self = gl) => {
         const memo = useMutable(props) as Partial<GL>
-        const tf = useMemo(() => createTF(memo, self), [memo, self])
+        const tf = useOnce(() => createTF(memo, self))
         useEffect(() => void tf.mount() || tf.clean, [self])
         return tf
 }

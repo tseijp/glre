@@ -93,7 +93,7 @@ npm install glre
 
 ###### ⛪️ [reev][reev]: reactive event state manager
 
-###### 🌃 [refr][refr]: request animation frame
+###### 🔮 [refr][refr]: request animation frame
 
 [reev]: https://github.com/tseijp/reev
 [refr]: https://github.com/tseijp/refr

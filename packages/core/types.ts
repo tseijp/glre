@@ -1,4 +1,4 @@
-import type { Queue } from 'refr/types'
+import type { Queue } from 'refr/types' // @ts-ignore
 import type { Nested, EventState } from 'reev/types'
 
 export type Uniform = number | number[]
