@@ -3148,6 +3148,11 @@
   resolved "https://registry.yarnpkg.com/@hono/node-server/-/node-server-1.8.2.tgz#940b3a0dbd7adbc510b79b626f3603258493354b"
   integrity sha512-h8l2TBLCPHZBUrrkosZ6L5CpBLj6zdESyF4B+zngiCDF7aZFQJ0alVbLx7jn8PCVi9EyoFf8a4hOZFi1tD95EA==
 
+"@hono/react-renderer@0.0.2":
+  version "0.0.2"
+  resolved "https://registry.yarnpkg.com/@hono/react-renderer/-/react-renderer-0.0.2.tgz#c2f6908195a626788dbf139f475b0597715d9fed"
+  integrity sha512-XaVfDma20lFDn+8lWIU+RywEVcoY/3WRiSyS6gCnr/HZW2QoTePaJM9163mzjClnceEf2ogQJGaEJ1Q67A4lfg==
+
 "@hono/vite-cloudflare-pages@^0.2.4":
   version "0.2.5"
   resolved "https://registry.yarnpkg.com/@hono/vite-cloudflare-pages/-/vite-cloudflare-pages-0.2.5.tgz#a231c7a41a114ee65a98d8757941693b824c7140"
