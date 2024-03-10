@@ -2,9 +2,10 @@ import pages from '@hono/vite-cloudflare-pages'
 import honox from 'honox/vite'
 import client from 'honox/vite/client'
 import { defineConfig } from 'vite'
+import { getPlatformProxy } from 'wrangler'
 
 // @ts-ignore
-export default defineConfig(({ mode }) => {
+export default defineConfig(async ({ mode }) => {
         if (mode === 'client') {
                 return {
                         build: {
@@ -19,11 +20,31 @@ export default defineConfig(({ mode }) => {
                         plugins: [client()],
                 }
         } else {
+                const { env, dispose } = await getPlatformProxy()
+
                 return {
+                        server: {
+                                watch: {
+                                        ignored: [/\.wrangler/, /\.mf/],
+                                },
+                        },
                         ssr: {
                                 external: ['react', 'react-dom'],
                         },
-                        plugins: [honox(), pages()],
+                        plugins: [
+                                honox({
+                                        devServer: {
+                                                env,
+                                                plugins: [
+                                                        {
+                                                                onServerClose:
+                                                                        dispose,
+                                                        },
+                                                ],
+                                        },
+                                }),
+                                pages(),
+                        ],
                 }
         }
 })
