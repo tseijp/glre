@@ -1,13 +1,17 @@
 import { createRoute } from 'honox/factory'
-import Counter from '../islands/counter'
+import { cors } from 'hono/cors'
+import Layout from '../containers/Container'
+import App from '../islands/home'
 
-export default createRoute((c) => {
-        const name = c.req.query('name') ?? 'Hono'
+export const GET = createRoute(cors(), async (c) => {
+        // @ts-ignore
+        const { results } = await c.env?.DB?.prepare?.(
+                `select * from creation`
+        ).all()
+
         return c.render(
-                <div className="font-sans">
-                        <h1>Hello, {name}!</h1>
-                        <Counter />
-                </div>,
-                { title: name }
+                <Layout>
+                        <App creationItems={results} />
+                </Layout>
         )
 })
