@@ -7,20 +7,13 @@ export interface MainProps {
 const Main = (props: MainProps) => {
         const { children } = props
         return (
-                <main
-                        className="
-                                flex
-                                flex-col
-                                font-sans
-                                bg-gradient-to-br from-blue-500 to-blue-400
-                                text-white
-                                min-h-screen
-                                p-4
-                                mt-16
-                        "
-                >
-                        {children}
-                </main>
+                <div className="flex flex-col w-full min-h-screen lg:grid-cols-[1fr_300px_400px]">
+                        <main className="flex-1 overflow-hidden">
+                                <div className="flex flex-col h-screen">
+                                        {children}
+                                </div>
+                        </main>
+                </div>
         )
 }
 

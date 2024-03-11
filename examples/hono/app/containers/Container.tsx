@@ -6,14 +6,8 @@ const Container = (props: ContainerProps) => {
         const { children } = props
         return (
                 <div
-                        className="
-                                flex
-                                font-sans
-                                bg-gradient-to-br from-blue-500 to-blue-400
-                                text-white
-                                min-h-screen
-                                p-4
-                        "
+                        key="1"
+                        className="grid min-h-screen w-full lg:grid-cols-[300px_1fr_400px] items-start gap-0 border-t border-gray-200 px-0.5 py-0.5 dark:border-gray-800"
                 >
                         {children}
                 </div>

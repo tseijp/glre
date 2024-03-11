@@ -1,3 +1,5 @@
+import Layout from '../containers/Layout'
+import MainItem from '../containers/MainItem'
 import Form from '../containers/Form'
 import Textarea from '../components/form/Textarea'
 import TitleInput from '../components/form/TitleInput'
@@ -12,24 +14,36 @@ const New = (props: NewProps) => {
         const { defaultFragmentShader } = props
         const event = useEventImpl()
         return (
-                <div className="flex">
-                        <canvas
-                                ref={event.gl.ref}
-                                width="540"
-                                height="400"
-                                color="red"
-                        />
-                        <Form>
-                                <TitleInput
-                                        onChange={event?.onChangeTitleInput}
+                <Layout>
+                        <MainItem>
+                                <canvas
+                                        ref={event.gl.ref}
+                                        width="540"
+                                        height="400"
+                                        color="red"
                                 />
-                                <Textarea
-                                        onChange={event?.onChangeTextarea}
-                                        defaultValue={defaultFragmentShader}
-                                />
-                                <SubmitButton children="New Create" />
-                        </Form>
-                </div>
+                        </MainItem>
+                        <MainItem>
+                                <Form>
+                                        <TitleInput
+                                                name="title"
+                                                onChange={
+                                                        event?.onChangeTitleInput
+                                                }
+                                        />
+                                        <Textarea
+                                                name="content"
+                                                onChange={
+                                                        event?.onChangeTextarea
+                                                }
+                                                defaultValue={
+                                                        defaultFragmentShader
+                                                }
+                                        />
+                                        <SubmitButton children="New Create" />
+                                </Form>
+                        </MainItem>
+                </Layout>
         )
 }
 

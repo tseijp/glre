@@ -1,30 +1,14 @@
-import React from 'react'
-
-export interface HeaderProps {
-        children: React.ReactNode
-}
-
-const Header = (props: HeaderProps) => {
-        const { children } = props
+const Header = () => {
         return (
-                <header
-                        className={`
-                                fixed
-                                flex
-                                justify-between
-                                items-center
-                                bg-gradient-to-br from-blue-500 to-blue-400
-                                text-white
-                                w-full
-                                p-4
-                                shadow
-                                top-0
-                                left-0
-                                min-[960px]:hidden
-                        `}
-                >
-                        {children}
-                </header>
+                <div className="grid gap-1">
+                        <h1 className="text-2xl font-bold">
+                                Welcome to Shaders: The Platform
+                        </h1>
+                        <p className="text-gray-500 dark:text-gray-400">
+                                A platform for showcasing the amazing effects
+                                you can create with shaders.
+                        </p>
+                </div>
         )
 }
 

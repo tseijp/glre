@@ -7,21 +7,10 @@ export interface SidebarProps {
 const Sidebar = (props: SidebarProps) => {
         const { children } = props
         return (
-                <div
-                        className={`
-                                bg-gradient-to-br from-blue-500 to-blue-400
-                                text-white
-                                p-4
-                                w-64
-                                h-full
-                                top-0
-                                left-0
-                                bottom-0
-                                pt-16
-                                max-[960px]:hidden
-                        `}
-                >
-                        {children}
+                <div className="hidden lg:flex h-screen w-full flex-col border-r border-gray-200 dark:border-gray-800">
+                        <div className="flex-1 flex flex-col justify-between max-h-full">
+                                {children}
+                        </div>
                 </div>
         )
 }
