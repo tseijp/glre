@@ -12,9 +12,9 @@ import {
         createIbo,
         activeTexture,
 } from './utils'
-import { GL, Fun } from './types'
+import type { GL, Fun } from './types'
 
-export { GL, Fun }
+export type { GL, Fun }
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 

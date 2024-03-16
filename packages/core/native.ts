@@ -2,9 +2,9 @@ import { useEffect, useMemo } from 'react'
 import { Dimensions } from 'react-native' // @ts-ignore
 import { useMutable } from 'reev/react'
 import { gl, createTF } from './index'
-import { GL, Fun } from './types'
+import type { GL, Fun } from './types'
 
-export { GL, Fun }
+export type { GL, Fun }
 
 export const useGL = (props: Partial<GL> = {}, self = gl) => {
         const change = () => {

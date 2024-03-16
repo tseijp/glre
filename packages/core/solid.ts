@@ -1,8 +1,8 @@
 import { onMount, onCleanup } from 'solid-js'
 import { createTF, gl } from './index'
-import { GL, Fun } from './types'
+import type { GL, Fun } from './types'
 
-export { GL, Fun }
+export type { GL, Fun }
 
 export const onGL = (props?: Partial<GL>, self = gl) => {
         const memo = {
