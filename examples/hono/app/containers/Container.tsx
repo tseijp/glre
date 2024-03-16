@@ -7,7 +7,7 @@ const Container = (props: ContainerProps) => {
         return (
                 <div
                         key="1"
-                        className="grid min-h-screen w-full lg:grid-cols-[300px_1fr] items-start gap-0 border-t border-gray-200 px-0.5 py-0.5 dark:border-gray-800"
+                        className="grid min-h-screen w-full lg:grid-cols-[300px_1fr] items-start gap-0 border-t border-gray-200 px-0.5 py-0.5 "
                 >
                         {children}
                 </div>

@@ -1,6 +1,5 @@
 import { useOnce } from 'reev/react'
-
-const _isDark = () => window.matchMedia('(prefers-color-scheme: dark)').matches
+import { getDarkThemeSnapshot } from './useDarkTheme'
 
 export const createCodemirror = <El extends Element>(
         defaultValue: string,
@@ -21,7 +20,7 @@ export const createCodemirror = <El extends Element>(
                         import('@uiw/codemirror-theme-github'),
                 ])
 
-                const dark = _isDark()
+                const dark = getDarkThemeSnapshot()
                 const myTheme = EditorView.theme(theme, { dark })
                 const listenner = EditorView.updateListener.of(({ state }) => {
                         handleChange(state)

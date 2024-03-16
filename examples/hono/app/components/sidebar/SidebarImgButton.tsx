@@ -14,7 +14,7 @@ const SidebarImgButton = (props: SidebarImgButtonProps) => {
                 >
                         <img
                                 alt="profile"
-                                src="/profile.jpg"
+                                src="https://github.com/tseijp/glre/blob/main/examples/hono/static/profile.jpg?raw=true"
                                 className="rounded-full"
                                 height="32"
                                 style={{

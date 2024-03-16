@@ -3,6 +3,7 @@ import createEvent from 'reev'
 import { useOnce } from 'reev/react'
 import { useEffect, useState } from 'react'
 import { DELAYED_COMPILE_MS } from '../constants'
+import { useWindowSize } from './useWindowSize'
 import type { EditorState } from '@codemirror/state'
 
 type OnChangeEvent = React.ChangeEvent<HTMLTextAreaElement>
@@ -21,6 +22,8 @@ export interface EventType {
 
 const mountGL = (gl: any) => {
         gl.gl = gl.el.getContext('webgl2')
+        gl.height = window.innerHeight - 32
+        gl.width = Math.min((gl.height / 1280) * 800, window.innerWidth - 32)
         gl.init()
         gl.resize()
         gl.frame.start()
@@ -45,7 +48,7 @@ const drawGL = (gl: any) => {
 const createEventImpl = (override: Partial<EventType>) => {
         let listener = () => {}
 
-        const onChangeTitleInput = (e: OnChangeEvent) => {
+        const onChangeTitleInput = (_e: OnChangeEvent) => {
                 console.log('HIHI')
         }
 
@@ -59,11 +62,7 @@ const createEventImpl = (override: Partial<EventType>) => {
         }
 
         const onChangeTextareaImpl = (e: EditorState) => {
-                const gl = createGL({
-                        // fs: e.target.value,
-                        width: 540,
-                        height: 400,
-                })
+                const gl = createGL()
                 try {
                         gl.el = event.gl.el
                         cleanGL(event.gl)
@@ -88,9 +87,10 @@ const createEventImpl = (override: Partial<EventType>) => {
 
 export const useEventImpl = () => {
         const [, setError] = useState<Error | null>(null)
-        const [gl, setGL] = useState(() =>
-                createGL({ width: 128, height: 128 })
-        )
+        const [, _height] = useWindowSize()
+        const [gl, setGL] = useState(() => {
+                return createGL()
+        })
 
         const event = useOnce(() => {
                 const ret = createEventImpl({

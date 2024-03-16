@@ -10,6 +10,8 @@ interface ViewportProps {
 const mountGL = (gl: any) => {
         gl.gl = gl.el.getContext('webgl2')
         gl.init()
+        gl.height = window.innerHeight - 32
+        gl.width = Math.min((gl.height / 1280) * 800, window.innerWidth - 32)
         gl.frame.start()
         window.addEventListener('resize', gl.resize)
         gl.el.addEventListener('mousemove', gl.mousemove)
@@ -26,7 +28,7 @@ const cleanGL = (gl: any) => {
         window.removeEventListener('resize', gl.resize)
 }
 
-const createGLImpl = (fs?: string) => {
+const createGLImpl = (fs = '') => {
         const ref = (el: HTMLCanvasElement | null) => {
                 if (el) {
                         gl.el = el
@@ -35,11 +37,8 @@ const createGLImpl = (fs?: string) => {
                         cleanGL(gl)
                 }
         }
-        const gl = createGL({
-                fs,
-                width: 540,
-                height: 400,
-        })
+
+        const gl = createGL({ fs })
 
         gl.ref = ref
 
@@ -53,7 +52,15 @@ const Viewport = (_props: ViewportProps) => {
                 return createGLImpl(DefaultFragmentShader)
         })
 
-        return <canvas ref={gl.ref} width="540" height="400" color="red" />
+        return (
+                <canvas
+                        ref={gl.ref}
+                        width="540"
+                        height="400"
+                        color="red"
+                        className="rounded"
+                />
+        )
 }
 
 export default Viewport

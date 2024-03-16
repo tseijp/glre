@@ -5,7 +5,7 @@ interface ToolbarItemProps {
 const ToolbarItem = (props: ToolbarItemProps) => {
         const { children } = props
         return (
-                <div className="border-t border-gray-200 py-4 px-4 dark:border-gray-800">
+                <div className="border-t w-full border-gray-200 py-4 px-4 dark:border-gray-800">
                         {children}
                 </div>
         )

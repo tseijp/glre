@@ -16,9 +16,13 @@ const SubmitButton = (props: SubmitButtonProps) => {
                 <button
                         disabled={isDisabled}
                         className="
-                                bg-blue-500 text-white
-                                rounded-full p-4
-                                shadow-lg
+                                bg-blue-500
+                                hover:bg-blue-700
+                                text-white
+                                font-bold
+                                py-2
+                                px-4
+                                rounded
                         "
                         onClick={handleCreate}
                 >

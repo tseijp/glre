@@ -1,11 +1,11 @@
 // import React from 'react'
 import Layout from '../containers/Layout'
-import MainItem from '../containers/MainItem'
-import Form from '../containers/Form'
-import TitleInput from '../components/form/TitleInput'
-import SubmitButton from '../components/form/SubmitButton'
+// import TitleInput from '../components/editor/TitleInput'
+// import SubmitButton from '../components/editor/SubmitButton'
 import { useEventImpl } from '../hooks/useEventImpl'
 import { useCodemirror } from '../hooks/useCodemirror'
+import Editor from '../containers/Editor'
+import EditorItem from '../containers/EditorItem'
 
 interface NewProps {
         defaultFragmentShader: string
@@ -17,35 +17,26 @@ const App = (props: NewProps) => {
         const ref = useCodemirror(defaultFragmentShader, event.onChangeTextarea)
         return (
                 <Layout>
-                        <MainItem>
-                                <canvas
-                                        ref={event.gl.ref}
-                                        width="540"
-                                        height="400"
-                                        color="red"
-                                />
-                        </MainItem>
-                        <MainItem>
-                                <Form>
-                                        <TitleInput
+                        <Editor>
+                                <EditorItem>
+                                        <canvas
+                                                ref={event.gl.ref}
+                                                width="540"
+                                                height="400"
+                                                color="red"
+                                        />
+                                </EditorItem>
+                                <EditorItem>
+                                        {/* <TitleInput
                                                 name="title"
                                                 onChange={
                                                         event?.onChangeTitleInput
                                                 }
                                         />
+                                        <SubmitButton children="Update" /> */}
                                         <div ref={ref} />
-                                        {/* <Textarea
-                                                name="content"
-                                                onChange={
-                                                        event?.onChangeTextarea
-                                                }
-                                                defaultValue={
-                                                        defaultFragmentShader
-                                                }
-                                        /> */}
-                                        <SubmitButton children="Update" />
-                                </Form>
-                        </MainItem>
+                                </EditorItem>
+                        </Editor>
                 </Layout>
         )
 }
