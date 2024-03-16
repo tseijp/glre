@@ -15,9 +15,13 @@
         },
         "devDependencies": {
                 "@cloudflare/workers-types": "^4.20240208.0",
+                "@codemirror/lang-cpp": "6.0.2",
+                "@codemirror/state": "6.4.1",
+                "@codemirror/view": "6.26.0",
                 "@hono/react-renderer": "0.0.2",
                 "@hono/vite-cloudflare-pages": "^0.2.4",
                 "@hono/zod-validator": "0.2.0",
+                "@uiw/codemirror-theme-github": "4.21.24",
                 "autoprefixer": "^10.4.17",
                 "postcss": "^8.4.35",
                 "react": "18.2.0",

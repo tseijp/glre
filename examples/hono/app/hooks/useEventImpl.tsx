@@ -1,8 +1,9 @@
-import { createGL } from '../../../packages/core'
+import { createGL } from 'glre'
 import createEvent from 'reev'
 import { useOnce } from 'reev/react'
 import { useEffect, useState } from 'react'
-import { DELAYED_COMPILE_MS } from './constants'
+import { DELAYED_COMPILE_MS } from '../constants'
+import type { EditorState } from '@codemirror/state'
 
 type OnChangeEvent = React.ChangeEvent<HTMLTextAreaElement>
 
@@ -12,8 +13,8 @@ export interface EventType {
         onClean(): void
         onSuccess(gl: any): void
         onError(error: any): void
-        onChangeTextarea: (e: OnChangeEvent) => void
-        onChangeTextareaImpl: (e: OnChangeEvent) => void
+        onChangeTextarea: (e: EditorState) => void
+        onChangeTextareaImpl: (e: EditorState) => void
         onChangeTitleInput(): void
         __listener?: () => void
 }
@@ -44,11 +45,11 @@ const drawGL = (gl: any) => {
 const createEventImpl = (override: Partial<EventType>) => {
         let listener = () => {}
 
-        const onChangeTitleInput = () => {
+        const onChangeTitleInput = (e: OnChangeEvent) => {
                 console.log('HIHI')
         }
 
-        const onChangeTextarea = (e: OnChangeEvent) => {
+        const onChangeTextarea = (e: EditorState) => {
                 listener()
                 const id = setTimeout(
                         () => event.onChangeTextareaImpl(e),
@@ -57,9 +58,9 @@ const createEventImpl = (override: Partial<EventType>) => {
                 listener = () => clearTimeout(id)
         }
 
-        const onChangeTextareaImpl = (e: OnChangeEvent) => {
+        const onChangeTextareaImpl = (e: EditorState) => {
                 const gl = createGL({
-                        fs: e.target.value,
+                        // fs: e.target.value,
                         width: 540,
                         height: 400,
                 })

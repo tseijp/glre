@@ -2,10 +2,10 @@
 import Layout from '../containers/Layout'
 import MainItem from '../containers/MainItem'
 import Form from '../containers/Form'
-import Textarea from '../components/form/Textarea'
 import TitleInput from '../components/form/TitleInput'
 import SubmitButton from '../components/form/SubmitButton'
-import { useEventImpl } from '../hooks'
+import { useEventImpl } from '../hooks/useEventImpl'
+import { useCodemirror } from '../hooks/useCodemirror'
 
 interface NewProps {
         defaultFragmentShader: string
@@ -14,6 +14,7 @@ interface NewProps {
 const App = (props: NewProps) => {
         const { defaultFragmentShader } = props
         const event = useEventImpl()
+        const ref = useCodemirror(defaultFragmentShader, event.onChangeTextarea)
         return (
                 <Layout>
                         <MainItem>
@@ -32,7 +33,8 @@ const App = (props: NewProps) => {
                                                         event?.onChangeTitleInput
                                                 }
                                         />
-                                        <Textarea
+                                        <div ref={ref} />
+                                        {/* <Textarea
                                                 name="content"
                                                 onChange={
                                                         event?.onChangeTextarea
@@ -40,7 +42,7 @@ const App = (props: NewProps) => {
                                                 defaultValue={
                                                         defaultFragmentShader
                                                 }
-                                        />
+                                        /> */}
                                         <SubmitButton children="Update" />
                                 </Form>
                         </MainItem>
