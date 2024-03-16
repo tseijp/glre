@@ -10,8 +10,15 @@ export default defineConfig(async ({ mode }) => {
                 return {
                         build: {
                                 rollupOptions: {
-                                        input: ['/app/style.css'],
+                                        input: [
+                                                // './app/style.css',
+                                                './app/client.ts',
+                                        ],
                                         output: {
+                                                entryFileNames:
+                                                        'static/client.js',
+                                                chunkFileNames:
+                                                        'static/assets/[name]-[hash].js',
                                                 assetFileNames:
                                                         'static/assets/[name].[ext]',
                                         },
@@ -33,15 +40,15 @@ export default defineConfig(async ({ mode }) => {
                         },
                         plugins: [
                                 honox({
-                                        devServer: {
-                                                env,
-                                                plugins: [
-                                                        {
-                                                                onServerClose:
-                                                                        dispose,
-                                                        },
-                                                ],
-                                        },
+                                        // devServer: {
+                                        //         env,
+                                        //         plugins: [
+                                        //                 {
+                                        //                         onServerClose:
+                                        //                                 dispose,
+                                        //                 },
+                                        //         ],
+                                        // },
                                 }),
                                 pages(),
                         ],
