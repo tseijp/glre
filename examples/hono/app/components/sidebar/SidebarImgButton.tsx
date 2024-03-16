@@ -13,10 +13,10 @@ const SidebarImgButton = (props: SidebarImgButtonProps) => {
                         // variant="outline"
                 >
                         <img
-                                alt="Avatar"
+                                alt="profile"
+                                src="/profile.jpg"
                                 className="rounded-full"
                                 height="32"
-                                src="/placeholder.svg"
                                 style={{
                                         aspectRatio: '32/32',
                                         objectFit: 'cover',

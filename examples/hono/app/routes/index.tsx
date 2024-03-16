@@ -1,6 +1,5 @@
 import { createRoute } from 'honox/factory'
 import { cors } from 'hono/cors'
-import Layout from '../containers/Container'
 import App from '../islands/home'
 
 export const GET = createRoute(cors(), async (c) => {
@@ -9,9 +8,5 @@ export const GET = createRoute(cors(), async (c) => {
                 `select * from creation`
         ).all()
 
-        return c.render(
-                <Layout>
-                        <App creationItems={results} />
-                </Layout>
-        )
+        return c.render(<App creationItems={results} />)
 })

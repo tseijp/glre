@@ -1,6 +1,7 @@
 import React from 'react'
 
-interface SidebarLinkButtonProps extends React.HTMLProps<HTMLLinkElement> {
+interface SidebarLinkButtonProps
+        extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
         children: React.ReactNode
 }
 
