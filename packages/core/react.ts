@@ -2,8 +2,9 @@ import { useEffect } from 'react'
 import { createTF, gl } from './index'
 // @ts-ignore
 import { useOnce, useMutable } from 'reev/react'
-import type { GL } from './types'
-import type { Fun } from 'refr'
+import { GL, Fun } from './types'
+
+export { GL, Fun }
 
 export const useGL = (props: Partial<GL> = {}, self = gl) => {
         const memo1 = useMutable(props) as Partial<GL>

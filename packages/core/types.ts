@@ -1,6 +1,8 @@
-import { Queue, Frame } from 'refr'
-
 import { Nested, EventState } from 'reev'
+
+import { Fun, Queue, Frame } from 'refr'
+
+export { Fun, Queue, Frame }
 
 export type Uniform = number | number[]
 

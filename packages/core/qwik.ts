@@ -1,7 +1,8 @@
 import { useSignal, useTask$, useVisibleTask$ } from '@builder.io/qwik'
 import { gl } from './index'
-import type { GL } from './types' // @ts-ignore
-import type { Fun } from 'reev/types'
+import { GL, Fun } from './types'
+
+export { GL, Fun }
 
 export const useGL = (props?: any, self = gl as unknown as GL) => {
         const ref = useSignal<Element>()
