@@ -7,6 +7,7 @@ export const GET = createRoute(cors(), async (c) => {
         const { results } = await c.env?.DB?.prepare?.(
                 `select * from creation`
         ).all()
+        const creationItems = results as any[]
 
-        return c.render(<App creationItems={results} />)
+        return c.render(<App creationItems={creationItems} />)
 })

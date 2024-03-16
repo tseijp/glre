@@ -4,9 +4,9 @@
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 import React from 'react'
-import Main from '../containers/Main'
-import Sidebar from '../containers/Sidebar'
-import Container from '../containers/Container'
+import Main from './Main'
+import Sidebar from './Sidebar'
+import Container from './Container'
 import SidebarLinkButton from '../components/sidebar/SidebarLinkButton'
 import SidebarIconButton from '../components/sidebar/SidebarIconButton'
 import SidebarImgButton from '../components/sidebar/SidebarImgButton'
@@ -14,7 +14,7 @@ import SidebarImgButton from '../components/sidebar/SidebarImgButton'
 // icons
 import BellIcon from '../icons/BellIcon'
 import SearchIcon from '../icons/SearchIcon'
-import SidebarItem from '../containers/SidebarItem'
+import SidebarItem from './SidebarItem'
 import MainItem from './MainItem'
 import Toolbar from './Toolbar'
 import ToolbarItem from './ToolbarItem'

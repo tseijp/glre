@@ -6,13 +6,14 @@ import { getPlatformProxy } from 'wrangler'
 
 // @ts-ignore
 export default defineConfig(async ({ mode }) => {
+        console.log(mode)
         if (mode === 'client') {
                 return {
                         build: {
                                 rollupOptions: {
                                         input: [
-                                                // './app/style.css',
                                                 './app/client.ts',
+                                                './app/style.css',
                                         ],
                                         output: {
                                                 entryFileNames:
@@ -24,7 +25,6 @@ export default defineConfig(async ({ mode }) => {
                                         },
                                 },
                         },
-                        plugins: [client()],
                 }
         } else {
                 const { env, dispose } = await getPlatformProxy()
@@ -40,18 +40,24 @@ export default defineConfig(async ({ mode }) => {
                         },
                         plugins: [
                                 honox({
-                                        // devServer: {
-                                        //         env,
-                                        //         plugins: [
-                                        //                 {
-                                        //                         onServerClose:
-                                        //                                 dispose,
-                                        //                 },
-                                        //         ],
-                                        // },
+                                        devServer: {
+                                                env,
+                                                plugins: [
+                                                        {
+                                                                onServerClose:
+                                                                        dispose,
+                                                        },
+                                                ],
+                                        },
                                 }),
                                 pages(),
                         ],
                 }
+                // return {
+                //         ssr: {
+                //                 external: ['react', 'react-dom'],
+                //         },
+                //         plugins: [honox(), pages()],
+                // }
         }
 })
