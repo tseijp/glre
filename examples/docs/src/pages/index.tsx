@@ -7,7 +7,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
 import { createGL } from 'glre'
 import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
 import { range, makePriority } from '../../helpers'
-import type { GL } from 'glre/types'
+import { GL } from 'glre'
 
 const WINDOW_DELAY_MS = 500
 
@@ -26,14 +26,7 @@ export default function Home() {
                                         url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
                                 </style>
                         </Head>
-                        <Canvas
-                                style={{
-                                        top: 0,
-                                        left: 0,
-                                        position: 'fixed',
-                                        zIndex: -1,
-                                }}
-                        />
+                        <Canvas />
                 </Layout>
         )
 }

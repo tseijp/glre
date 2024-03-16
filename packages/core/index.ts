@@ -1,5 +1,5 @@
 import { event, durable, nested } from 'reev'
-import { queue, frame } from 'refr'
+import { createQueue, createFrame } from 'refr'
 import {
         uniformType,
         vertexStride,
@@ -12,7 +12,9 @@ import {
         createIbo,
         activeTexture,
 } from './utils'
-import type { GL } from './types'
+import type { GL, Fun } from './types'
+
+export type { GL, Fun }
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
@@ -44,7 +46,7 @@ export const createGL = (props?: Partial<GL>) => {
                 const vs = createShader(gl, _v, gl.VERTEX_SHADER)
                 const fs = createShader(gl, _f, gl.FRAGMENT_SHADER)
                 if (self.count === 6) self.attribute({ a_position })
-                frame(() => void self.render() || 1)
+                self.frame(() => void self.render() || true)
                 self.pg = self.varying
                         ? createTfProgram(gl, vs, fs, self.varying)
                         : createProgram(gl, vs, fs)
@@ -59,7 +61,7 @@ export const createGL = (props?: Partial<GL>) => {
 
         const render = () => {
                 self.gl.useProgram(self.pg)
-                self.frame.flush()
+                self.queue.flush()
                 iPrevTime = iTime
                 iTime = performance.now() / 1000
                 iDeltaTime = iTime - iPrevTime
@@ -85,11 +87,11 @@ export const createGL = (props?: Partial<GL>) => {
         }
 
         const load = (_: any, image: any) => {
-                self.frame(() => {
+                self.queue(() => {
                         const loc = self.location(image.alt)
                         const unit = self.activeUnit(image.alt)
                         const tex = createTexture(self.gl, image)
-                        self.frame(() => {
+                        self.queue(() => {
                                 activeTexture(self.gl, loc, unit, tex)
                                 return true
                         })
@@ -97,26 +99,21 @@ export const createGL = (props?: Partial<GL>) => {
         }
 
         const clear = (key = 'COLOR_BUFFER_BIT') => {
-                self.frame(() => void self.gl.clear(self.gl[key]))
+                self.gl.clear(self.gl[key])
         }
 
         const viewport = (size: number[] = self.size) => {
-                self.frame(() => void self.gl.viewport(0, 0, ...size))
+                self.gl.viewport(0, 0, ...size)
         }
 
         const drawArrays = (mode = 'TRIANGLES') => {
-                // self.gl.drawArrays(self.gl[mode], 0, self.count)
-                self.frame(() => {
-                        self.gl.drawArrays(self.gl[mode], 0, self.count)
-                })
+                self.gl.drawArrays(self.gl[mode], 0, self.count)
         }
 
         const drawElements = (mode = 'TRIANGLES', type = 'UNSIGNED_SHORT') => {
-                self.frame(() => {
-                        mode = self.gl[mode]
-                        type = self.gl[type]
-                        self.gl.drawElements(mode, self.count, type, 0)
-                })
+                mode = self.gl[mode]
+                type = self.gl[type]
+                self.gl.drawElements(mode, self.count, type, 0)
         }
 
         const self = event<Partial<GL>>({
@@ -151,7 +148,7 @@ export const createGL = (props?: Partial<GL>) => {
 
         const _uniform = (key: string, value = 0, isMatrix = false) => {
                 const type = uniformType(value, isMatrix)
-                self.frame(() => {
+                self.queue(() => {
                         const loc = self.location(key)
                         if (isMatrix) self.gl[type](loc, false, value)
                         else self.gl[type](loc, value)
@@ -163,7 +160,7 @@ export const createGL = (props?: Partial<GL>) => {
                 value: number[],
                 iboValue?: number[]
         ) => {
-                self.frame(() => {
+                self.queue(() => {
                         const loc = self.location(key, true)
                         const vbo = createVbo(self.gl, value)
                         const ibo = createIbo(self.gl, iboValue)
@@ -173,7 +170,8 @@ export const createGL = (props?: Partial<GL>) => {
                 })
         }
 
-        self.frame = queue()
+        self.queue = createQueue()
+        self.frame = createFrame()
         self.texture = durable(_texture)
         self.uniform = durable(_uniform)
         self.attribute = durable(_attribute)
@@ -188,6 +186,7 @@ export const createTF = (props?: Partial<GL>, self = gl) => {
                 tf(props)
                 tf.el = self.el
                 tf.gl = self.gl
+                tf.queue = self.queue
                 tf.frame = self.frame
                 tf.init()
                 self({ resize: tf.resize, mousemove: tf.mousemove })

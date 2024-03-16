@@ -1,5 +1,4 @@
-import { frame } from 'refr'
-import { createGL } from 'glre'
+import { createGL } from '../../../packages/core'
 import createEvent from 'reev'
 import { useOnce } from 'reev/react'
 import { useEffect, useState } from 'react'
@@ -23,7 +22,7 @@ const mountGL = (gl: any) => {
         gl.gl = gl.el.getContext('webgl2')
         gl.init()
         gl.resize()
-        frame.start()
+        gl.frame.start()
         window.addEventListener('resize', gl.resize)
         gl.el.addEventListener('mousemove', gl.mousemove)
 }
@@ -35,9 +34,11 @@ const cleanGL = (gl: any) => {
 }
 
 const drawGL = (gl: any) => {
-        gl.clear()
-        gl.viewport()
-        gl.drawArrays()
+        gl.queue(() => {
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+        })
 }
 
 const createEventImpl = (override: Partial<EventType>) => {
@@ -87,7 +88,7 @@ const createEventImpl = (override: Partial<EventType>) => {
 export const useEventImpl = () => {
         const [, setError] = useState<Error | null>(null)
         const [gl, setGL] = useState(() =>
-                createGL({ width: 540, height: 400 })
+                createGL({ width: 128, height: 128 })
         )
 
         const event = useOnce(() => {

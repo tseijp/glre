@@ -1,4 +1,3 @@
-import { frame } from 'refr'
 import { createGL } from 'glre'
 import { useOnce } from 'reev/react'
 import { DefaultFragmentShader } from '../constants'
@@ -11,17 +10,19 @@ interface ViewportProps {
 const mountGL = (gl: any) => {
         gl.gl = gl.el.getContext('webgl2')
         gl.init()
-        frame.start()
+        gl.frame.start()
         window.addEventListener('resize', gl.resize)
         gl.el.addEventListener('mousemove', gl.mousemove)
-
         gl.resize()
-        gl.clear()
-        gl.viewport()
-        gl.drawArrays()
+        gl.queue(() => {
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+        })
 }
 
 const cleanGL = (gl: any) => {
+        gl.frame.stop()
         window.removeEventListener('resize', gl.resize)
 }
 

@@ -1,5 +1,8 @@
-import type { Queue } from 'refr/types' // @ts-ignore
-import type { Nested, EventState } from 'reev/types'
+import { Nested, EventState } from 'reev'
+
+import type { Fun, Queue, Frame } from 'refr'
+
+export type { Fun, Queue, Frame }
 
 export type Uniform = number | number[]
 
@@ -38,7 +41,8 @@ export type GL = EventState<{
         gl: any
         pg: any
         el: any
-        frame: Queue
+        queue: Queue
+        frame: Frame
         target: any
         stride: Nested<number>
         // @TODO Nested<(key: string, value: number: number[], ibo: number[]) => number>

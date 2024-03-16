@@ -1,9 +1,10 @@
 import { useEffect } from 'react'
 import { createTF, gl } from './index'
-import { frame } from 'refr' // @ts-ignore
+// @ts-ignore
 import { useOnce, useMutable } from 'reev/react'
-import type { GL } from './types'
-import type { Fun } from 'refr'
+import type { GL, Fun } from './types'
+
+export type { GL, Fun }
 
 export const useGL = (props: Partial<GL> = {}, self = gl) => {
         const memo1 = useMutable(props) as Partial<GL>
@@ -19,13 +20,13 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
                         self.gl = self.target.getContext('webgl2')
                         self.init()
                         self.resize()
-                        frame.start()
+                        self.frame.start()
                         window.addEventListener('resize', self.resize)
                         self.el.addEventListener('mousemove', self.mousemove)
                 },
                 clean() {
                         self(memo2)(memo1)
-                        frame.cancel()
+                        self.frame.stop()
                         window.removeEventListener('resize', self.resize)
                 },
         }) as Partial<GL>
@@ -53,7 +54,7 @@ export const useUniform = (props: any, self = gl) => {
 }
 
 export const useFrame = (fun: Fun, self = gl) => {
-        useEffect(() => void self.frame(fun), [])
-        useEffect(() => () => self.frame(fun), [])
+        useEffect(() => void self.queue(fun), [])
+        useEffect(() => () => self.queue(fun), [])
         return self
 }

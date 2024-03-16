@@ -1,8 +1,8 @@
 import { onMount, onCleanup } from 'solid-js'
-import { frame } from 'refr'
 import { createTF, gl } from './index'
-import { GL } from './types' // @ts-ignore
-import type { Fun } from 'reev/types'
+import type { GL, Fun } from './types'
+
+export type { GL, Fun }
 
 export const onGL = (props?: Partial<GL>, self = gl) => {
         const memo = {
@@ -17,13 +17,13 @@ export const onGL = (props?: Partial<GL>, self = gl) => {
                         self.gl = self.target.getContext('webgl2')
                         self.init()
                         self.resize()
-                        frame.start()
+                        self.frame.start()
                         window.addEventListener('resize', self.resize)
                         window.addEventListener('mousemove', self.mousemove)
                 },
                 clean() {
                         self(props)(memo)
-                        frame.cancel()
+                        self.frame.stop()
                         window.removeEventListener('resize', self.resize)
                         window.removeEventListener('mousemove', self.mousemove)
                 },
