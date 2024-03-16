@@ -14931,10 +14931,10 @@ refr@*:
   resolved "https://registry.yarnpkg.com/refr/-/refr-0.6.0.tgz#f2767bc26701b4ad2d2809204a6f7f487866cbe5"
   integrity sha512-ELrcA+gIsErOO8itCqYV90fxb6StpvcxQUrt3YL01xeA8y8tmmb9t5cRuA6mUnS/x7ZTEDLL55jmN6mqV2sZ7g==
 
-refr@0.3.0:
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/refr/-/refr-0.3.0.tgz#418bc219a2c6c2ee5de3fda34f320bff0fffa295"
-  integrity sha512-tlVFQK9sQAFPenz4GnojBRDCzNlMxPozOu4QK1fnyWliLYpmeC9sbTi8thm06Mh0EgVFOMnFSPUqd1SG+7zKMQ==
+refr@0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/refr/-/refr-0.7.0.tgz#c0c7e54d086ed8a875e24fd88ceee5e51cf76a75"
+  integrity sha512-WW3PX49biNxakw+S0okVmF4hEw/vk3vDE4lui6Txshpvok+Q+2f0UWnSl8wtqRO5Jd9CYcpRTO1wtZvzxljT0A==
 
 regenerate-unicode-properties@^10.1.0:
   version "10.1.1"

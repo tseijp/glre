@@ -1,6 +1,5 @@
 import { useSignal, useTask$, useVisibleTask$ } from '@builder.io/qwik'
 import { gl } from './index'
-import { frame } from 'refr'
 import type { GL } from './types' // @ts-ignore
 import type { Fun } from 'reev/types'
 
@@ -12,7 +11,7 @@ export const useGL = (props?: any, self = gl as unknown as GL) => {
                 self.gl = self.target.getContext('webgl2')
                 self.init()
                 self.resize()
-                frame.start()
+                self.frame.start()
                 window.addEventListener('resize', self.resize)
                 window.addEventListener('mousemove', self.mousemove)
                 cleanup(() => {

@@ -2,7 +2,6 @@ import { useEffect, useMemo } from 'react'
 import { Dimensions } from 'react-native' // @ts-ignore
 import { useMutable } from 'reev/react'
 import { gl, createTF } from './index'
-import { frame } from 'refr'
 import type { GL } from './types'
 import type { Fun } from 'refr'
 
@@ -24,12 +23,12 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
                 mount() {
                         self.init()
                         change()
-                        frame.start()
+                        self.frame.start()
                         Dimensions.addEventListener('change', change)
                 },
                 clean() {
                         self(memo2)(memo1)
-                        frame.cancel()
+                        self.frame.stop()
                 },
         }) as Partial<GL>
 
