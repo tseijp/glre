@@ -10,7 +10,7 @@ const SidebarLinkButton = (props: SidebarLinkButtonProps) => {
         return (
                 <button>
                         <a
-                                className="flex h-10 items-center justify-center px-4 text-sm font-medium border-b-2 dark:border-gray-950 text-gray-500 dark:text-gray-400"
+                                className="flex h-12 items-center justify-center px-4 text-sm font-medium border-b-2 dark:border-gray-950 text-gray-500 dark:text-gray-400"
                                 {...other}
                         >
                                 {children}

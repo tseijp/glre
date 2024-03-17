@@ -3,7 +3,7 @@
 // import SubmitButton from '../components/editor/SubmitButton'
 import { useEventImpl } from '../hooks/useEventImpl'
 import { useCodemirror } from '../hooks/useCodemirror'
-import Editor from '../containers/Editor'
+import EditorFlex from '../containers/EditorFlex'
 import EditorItem from '../containers/EditorItem'
 import Layout from '../layout'
 
@@ -17,7 +17,7 @@ const App = (props: NewProps) => {
         const ref = useCodemirror(defaultFragmentShader, event.onChangeTextarea)
         return (
                 <Layout>
-                        <Editor>
+                        <EditorFlex>
                                 <EditorItem>
                                         <canvas
                                                 ref={event.gl.ref}
@@ -36,7 +36,7 @@ const App = (props: NewProps) => {
                                         <SubmitButton children="Update" /> */}
                                         <div ref={ref} />
                                 </EditorItem>
-                        </Editor>
+                        </EditorFlex>
                 </Layout>
         )
 }

@@ -3,7 +3,7 @@
 import { useEventImpl } from '../hooks/useEventImpl'
 import { useCodemirror } from '../hooks/useCodemirror'
 import EditorItem from '../containers/EditorItem'
-import Editor from '../containers/Editor'
+import EditorFlex from '../containers/EditorFlex'
 import Layout from '../layout'
 
 interface NewProps {
@@ -16,7 +16,7 @@ const New = (props: NewProps) => {
         const ref = useCodemirror(defaultFragmentShader, event.onChangeTextarea)
         return (
                 <Layout>
-                        <Editor>
+                        <EditorFlex>
                                 <EditorItem>
                                         <canvas
                                                 ref={event.gl.ref}
@@ -35,7 +35,7 @@ const New = (props: NewProps) => {
                                         <SubmitButton children="Update" /> */}
                                         <div ref={ref} />
                                 </EditorItem>
-                        </Editor>
+                        </EditorFlex>
                 </Layout>
         )
 }

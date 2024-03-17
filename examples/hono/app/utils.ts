@@ -1,5 +1,5 @@
 export const resizeGL = (gl: any) => {
-        const gap = 32
+        const gap = 48
         let height = window.innerHeight - gap
         let width = window.innerWidth - gap
         width = Math.min((height / 1280) * 800, width)

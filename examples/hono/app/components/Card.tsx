@@ -1,6 +1,6 @@
 const Card = () => {
         return (
-                <div className="rounded-lg border border-gray-200 dark:border-gray-800">
+                <div className="rounded-lg border-2 border-gray-200 dark:border-gray-800">
                         <div className="grid w-full aspect-video overflow-hidden rounded-t-lg">
                                 <span className="object-cover w-full h-full rounded-md bg-muted" />
                         </div>

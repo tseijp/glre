@@ -64,7 +64,6 @@ const createEventImpl = (override: Partial<EventType>) => {
 
 export const useEventImpl = () => {
         const [, setError] = useState<Error | null>(null)
-        const [, _height] = useWindowSize()
         const [gl, setGL] = useState(() => {
                 return createGL()
         })

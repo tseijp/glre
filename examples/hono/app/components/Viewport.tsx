@@ -34,15 +34,7 @@ const Viewport = (_props: ViewportProps) => {
                 return createGLImpl(DefaultFragmentShader)
         })
 
-        return (
-                <canvas
-                        ref={gl.ref}
-                        width="540"
-                        height="400"
-                        color="red"
-                        className="rounded"
-                />
-        )
+        return <canvas ref={gl.ref} color="red" className="rounded" />
 }
 
 export default Viewport
