@@ -2,7 +2,7 @@ import { reactRenderer } from '@hono/react-renderer'
 
 export default reactRenderer(({ children, title }) => {
         const href = (import.meta as any).env.PROD
-                ? 'static/assets/style.css'
+                ? '/static/assets/style.css'
                 : '/app/style.css'
         const src = (import.meta as any).env.PROD
                 ? '/static/client.js'
