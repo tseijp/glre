@@ -1,10 +1,10 @@
-import Layout from '../containers/Layout'
 // import TitleInput from '../components/editor/TitleInput'
 // import SubmitButton from '../components/editor/SubmitButton'
 import { useEventImpl } from '../hooks/useEventImpl'
 import { useCodemirror } from '../hooks/useCodemirror'
 import EditorItem from '../containers/EditorItem'
 import Editor from '../containers/Editor'
+import Layout from '../layout'
 
 interface NewProps {
         defaultFragmentShader: string

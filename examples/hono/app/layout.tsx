@@ -4,25 +4,31 @@
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 import React from 'react'
-import Main from './Main'
-import Sidebar from './Sidebar'
-import Container from './Container'
-import SidebarLinkButton from '../components/sidebar/SidebarLinkButton'
-import SidebarIconButton from '../components/sidebar/SidebarIconButton'
-import SidebarImgButton from '../components/sidebar/SidebarImgButton'
+
+// compontents
+import SidebarLinkButton from './components/sidebar/SidebarLinkButton'
+import SidebarIconButton from './components/sidebar/SidebarIconButton'
+import SidebarImgButton from './components/sidebar/SidebarImgButton'
+import SidebarArrowButton from './components/sidebar/SidebarArrowButton'
+import ToolbarIconButton from './components/toolbar/ToolbarIconButton'
+
+// containers
+import Container from './containers/Container'
+import MainFlex from './containers/MainFlex'
+import MainItem from './containers/MainItem'
+import SidebarItem from './containers/SidebarItem'
+import ToolbarFlex from './containers/ToolbarFlex'
+import ToolbarItem from './containers/ToolbarItem'
+import SidebarFlex from './containers/SidebarFlex'
 
 // icons
-import BellIcon from '../icons/BellIcon'
-import SearchIcon from '../icons/SearchIcon'
-import SidebarItem from './SidebarItem'
-import MainItem from './MainItem'
-import Toolbar from './Toolbar'
-import ToolbarItem from './ToolbarItem'
-import ToolbarIconButton from '../components/toolbar/ToolbarIconButton'
-import HeartIcon from '../icons/HeartIcon'
-import RepeatIcon from '../icons/RepeartIcon'
-import MessageCircleIcon from '../icons/MessageCircleIcon'
-import BookmarkIcon from '../icons/BookmarkIcon'
+import ArrowIcon from './icons/ArrowIcon'
+import BellIcon from './icons/BellIcon'
+import BookmarkIcon from './icons/BookmarkIcon'
+import SearchIcon from './icons/SearchIcon'
+import HeartIcon from './icons/HeartIcon'
+import RepeatIcon from './icons/RepeartIcon'
+import MessageCircleIcon from './icons/MessageCircleIcon'
 
 interface LayoutProps {
         children: React.ReactNode
@@ -30,9 +36,11 @@ interface LayoutProps {
 
 const Layout = (props: LayoutProps) => {
         const { children } = props
+        const sidebarRef = React.useRef<HTMLDivElement>(null)
+
         return (
                 <Container>
-                        <Sidebar>
+                        <SidebarFlex ref={sidebarRef}>
                                 <SidebarItem>
                                         <SidebarLinkButton href="/">
                                                 Home
@@ -58,10 +66,10 @@ const Layout = (props: LayoutProps) => {
                                                 Toggle user menu
                                         </SidebarImgButton>
                                 </SidebarItem>
-                        </Sidebar>
-                        <Main>
+                        </SidebarFlex>
+                        <MainFlex>
                                 <MainItem>{children}</MainItem>
-                                <Toolbar>
+                                <ToolbarFlex>
                                         <ToolbarItem>
                                                 <ToolbarIconButton
                                                         Icon={HeartIcon}
@@ -71,7 +79,7 @@ const Layout = (props: LayoutProps) => {
                                                 <ToolbarIconButton
                                                         Icon={RepeatIcon}
                                                 >
-                                                        Retweet
+                                                        Share
                                                 </ToolbarIconButton>
                                                 <ToolbarIconButton
                                                         Icon={MessageCircleIcon}
@@ -87,8 +95,11 @@ const Layout = (props: LayoutProps) => {
                                         {/* <ToolbarItem>
                                                 <ToolbarForm />
                                         </ToolbarItem> */}
-                                </Toolbar>
-                        </Main>
+                                </ToolbarFlex>
+                        </MainFlex>
+                        <SidebarArrowButton sidebarRef={sidebarRef}>
+                                <ArrowIcon />
+                        </SidebarArrowButton>
                 </Container>
         )
 }

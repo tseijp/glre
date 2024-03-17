@@ -1,4 +1,4 @@
-import Layout from '../containers/Layout'
+import Layout from '../layout'
 import Viewport from '../components/Viewport'
 
 interface HomeProps {

@@ -1,38 +1,20 @@
 import { createGL } from 'glre'
 import { useOnce } from 'reev/react'
 import { DefaultFragmentShader } from '../constants'
+import { resizeGL, mountGL, cleanGL, drawGL } from '../utils'
 
 interface ViewportProps {
         event?: any
         fragmentShader?: string
 }
 
-const mountGL = (gl: any) => {
-        gl.gl = gl.el.getContext('webgl2')
-        gl.init()
-        gl.height = window.innerHeight - 32
-        gl.width = Math.min((gl.height / 1280) * 800, window.innerWidth - 32)
-        gl.frame.start()
-        window.addEventListener('resize', gl.resize)
-        gl.el.addEventListener('mousemove', gl.mousemove)
-        gl.resize()
-        gl.queue(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
-}
-
-const cleanGL = (gl: any) => {
-        gl.frame.stop()
-        window.removeEventListener('resize', gl.resize)
-}
-
 const createGLImpl = (fs = '') => {
         const ref = (el: HTMLCanvasElement | null) => {
                 if (el) {
                         gl.el = el
+                        resizeGL(gl)
                         mountGL(gl)
+                        drawGL(gl)
                 } else {
                         cleanGL(gl)
                 }

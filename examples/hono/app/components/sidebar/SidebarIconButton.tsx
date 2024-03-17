@@ -6,15 +6,15 @@ interface SidebarIconButtonProps {
 }
 
 const SidebarIconButton = (props: SidebarIconButtonProps) => {
-        const { Icon, children } = props
+        const { Icon } = props
         return (
                 <button
-                        className="m-3"
+                        className="flex items-center justify-center m-3 gap-3 w-10 h-10 text-sm font-medium rounded border-2 dark:border-gray-950 text-gray-500 dark:text-gray-400"
                         // size="icon"
                         // variant="outline"
                 >
                         <Icon className="h-6 w-6" />
-                        <span className="sr-only">{children}</span>
+                        {/* <span className="hidden lg:flex">{children}</span> */}
                 </button>
         )
 }

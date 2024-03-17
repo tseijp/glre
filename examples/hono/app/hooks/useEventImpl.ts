@@ -4,6 +4,7 @@ import { useOnce } from 'reev/react'
 import { useEffect, useState } from 'react'
 import { DELAYED_COMPILE_MS } from '../constants'
 import { useWindowSize } from './useWindowSize'
+import { drawGL, mountGL, cleanGL, resizeGL } from '../utils'
 import type { EditorState } from '@codemirror/state'
 
 type OnChangeEvent = React.ChangeEvent<HTMLTextAreaElement>
@@ -18,31 +19,6 @@ export interface EventType {
         onChangeTextareaImpl: (e: EditorState) => void
         onChangeTitleInput(): void
         __listener?: () => void
-}
-
-const mountGL = (gl: any) => {
-        gl.gl = gl.el.getContext('webgl2')
-        gl.height = window.innerHeight - 32
-        gl.width = Math.min((gl.height / 1280) * 800, window.innerWidth - 32)
-        gl.init()
-        gl.resize()
-        gl.frame.start()
-        window.addEventListener('resize', gl.resize)
-        gl.el.addEventListener('mousemove', gl.mousemove)
-}
-
-const cleanGL = (gl: any) => {
-        if (!gl || gl.gl || !gl.pg) return
-        gl.gl.deleteProgram?.(gl.pg)
-        window.removeEventListener('resize', gl.resize)
-}
-
-const drawGL = (gl: any) => {
-        gl.queue(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
 }
 
 const createEventImpl = (override: Partial<EventType>) => {
@@ -66,6 +42,7 @@ const createEventImpl = (override: Partial<EventType>) => {
                 try {
                         gl.el = event.gl.el
                         cleanGL(event.gl)
+                        resizeGL(gl)
                         mountGL(gl)
                         drawGL(gl)
                         event.onSuccess(gl)
@@ -108,6 +85,7 @@ export const useEventImpl = () => {
                 ret.gl.ref = (el: Element | null) => {
                         if (el) {
                                 gl.el = el
+                                resizeGL(gl)
                                 mountGL(gl)
                                 drawGL(gl)
                         } else {

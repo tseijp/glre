@@ -10,6 +10,7 @@
         },
         "private": true,
         "dependencies": {
+                "gsap": "*",
                 "hono": "4.1.0",
                 "honox": "0.1.6"
         },

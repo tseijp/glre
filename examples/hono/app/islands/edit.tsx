@@ -1,11 +1,11 @@
 // import React from 'react'
-import Layout from '../containers/Layout'
 // import TitleInput from '../components/editor/TitleInput'
 // import SubmitButton from '../components/editor/SubmitButton'
 import { useEventImpl } from '../hooks/useEventImpl'
 import { useCodemirror } from '../hooks/useCodemirror'
 import Editor from '../containers/Editor'
 import EditorItem from '../containers/EditorItem'
+import Layout from '../layout'
 
 interface NewProps {
         defaultFragmentShader: string

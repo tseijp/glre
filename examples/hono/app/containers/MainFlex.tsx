@@ -4,7 +4,7 @@ export interface MainProps {
         children: React.ReactNode
 }
 
-const Main = (props: MainProps) => {
+const MainFlex = (props: MainProps) => {
         const { children } = props
         return (
                 <div className="flex flex-col w-full min-h-screen lg:grid-cols-[1fr_300px_400px]">
@@ -17,4 +17,4 @@ const Main = (props: MainProps) => {
         )
 }
 
-export default Main
+export default MainFlex
