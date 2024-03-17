@@ -1,27 +1,52 @@
-import React from 'react'
-import {
-        SIDEBAR_FLEX_Z_INDEX_CLASS as z,
-        SIDEBAR_FLEX_WIDTH_CLASS as w,
-} from '../constants'
-
+/**
+ * w-80 is 320px
+ */
+import React, { useEffect, useRef } from 'react'
+import { gsap } from 'gsap'
+import { useOnce } from 'reev/react'
+import { useSidebarOpenEffect } from '../hooks/useSidebarOpen'
 export interface SidebarFlexProps {
         children: React.ReactNode
 }
 
-const SidebarFlex = React.forwardRef<HTMLDivElement, SidebarFlexProps>(
-        (props, forwardRef) => {
-                const { children } = props
-                return (
-                        <div
-                                ref={forwardRef}
-                                className={`fixed lg:relative z-10 w-${w} h-screen flex flex-col border-r border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm -translate-x-full lg:translate-x-0`}
-                        >
-                                <div className="flex-1 flex flex-col justify-between max-h-full">
-                                        {children}
-                                </div>
-                        </div>
-                )
+const SidebarFlex = (props: SidebarFlexProps) => {
+        const { children } = props
+        const tl = useOnce(() => gsap.timeline({ paused: true }))
+        const ref = useRef<HTMLDivElement | null>(null)
+
+        const handeOpen = (isOpen: boolean) => {
+                if (!ref.current) return
+                const mx = isOpen ? 0 : -320
+                tl.clear()
+                tl.to(ref.current, { x: mx, ease: 'Expo4.out' })
+                tl.play()
         }
-)
+        useSidebarOpenEffect((isOpen: boolean) => {
+                handeOpen(isOpen)
+        })
+
+        useEffect(() => {
+                const handleResize = () => {
+                        if (!ref.current) return
+                        const isOpen = window.innerWidth > 1024
+                        handeOpen(isOpen)
+                }
+                window.addEventListener('resize', handleResize)
+                return () => {
+                        window.removeEventListener('resize', handleResize)
+                }
+        }, [])
+
+        return (
+                <div
+                        ref={ref}
+                        className="fixed lg:relative z-10 w-80 h-screen z-20 flex flex-col border-r border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm -translate-x-full lg:translate-x-0"
+                >
+                        <div className="flex-1 flex flex-col justify-between max-h-full">
+                                {children}
+                        </div>
+                </div>
+        )
+}
 
 export default SidebarFlex

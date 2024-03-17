@@ -6,11 +6,12 @@
 import React from 'react'
 
 // compontents
-import SidebarLinkButton from './components/sidebar/SidebarLinkButton'
-import SidebarIconButton from './components/sidebar/SidebarIconButton'
-import SidebarImgButton from './components/sidebar/SidebarImgButton'
-import SidebarArrowButton from './components/sidebar/SidebarArrowButton'
-import ToolbarIconButton from './components/toolbar/ToolbarIconButton'
+import SidebarArrowButton from './components/SidebarArrowButton'
+import SidebarCloseOverlay from './components/SidebarCloseOverlay'
+import SidebarIconButton from './components/SidebarIconButton'
+import SidebarImgButton from './components/SidebarImgButton'
+import SidebarLinkButton from './components/SidebarLinkButton'
+import ToolbarIconButton from './components/ToolbarIconButton'
 
 // containers
 import Container from './containers/Container'
@@ -36,11 +37,11 @@ interface LayoutProps {
 
 const Layout = (props: LayoutProps) => {
         const { children } = props
-        const sidebarRef = React.useRef<HTMLDivElement>(null)
 
         return (
                 <Container>
-                        <SidebarFlex ref={sidebarRef}>
+                        <SidebarCloseOverlay />
+                        <SidebarFlex>
                                 <SidebarItem>
                                         <SidebarLinkButton href="/">
                                                 Home
@@ -97,9 +98,7 @@ const Layout = (props: LayoutProps) => {
                                         </ToolbarItem> */}
                                 </ToolbarFlex>
                         </MainFlex>
-                        <SidebarArrowButton sidebarRef={sidebarRef}>
-                                <ArrowIcon />
-                        </SidebarArrowButton>
+                        <SidebarArrowButton Icon={ArrowIcon} />
                 </Container>
         )
 }
