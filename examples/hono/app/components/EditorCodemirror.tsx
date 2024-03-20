@@ -9,7 +9,7 @@ const EditorCodemirror = React.forwardRef<HTMLDivElement | null>(
                         >
                                 <div
                                         ref={forwardedRef}
-                                        className="absolute py-6 w-full h-full overflow-scroll rounded overflow-hidden"
+                                        className="absolute py-12 w-full h-full overflow-scroll rounded overflow-hidden"
                                 ></div>
                         </div>
                 )

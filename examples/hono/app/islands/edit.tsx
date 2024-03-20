@@ -6,6 +6,8 @@ import { useCodemirror } from '../hooks/useCodemirror'
 import EditorFlex from '../containers/EditorFlex'
 import EditorItem from '../containers/EditorItem'
 import Layout from '../layout'
+import EditorAnchor from '../components/EditorAnchor'
+import EditorImage from '../components/EditorImage'
 import EditorViewport from '../components/EditorViewport'
 import EditorCodemirror from '../components/EditorCodemirror'
 
@@ -21,7 +23,12 @@ const App = (props: NewProps) => {
                 <Layout>
                         <EditorFlex>
                                 <EditorItem>
-                                        <EditorViewport ref={event.ref} />
+                                        <EditorViewport ref={event.ref}>
+                                                <EditorImage />
+                                                <EditorAnchor>
+                                                        HELLO WORLD
+                                                </EditorAnchor>
+                                        </EditorViewport>
                                 </EditorItem>
                                 <EditorItem>
                                         {/* <TitleInput

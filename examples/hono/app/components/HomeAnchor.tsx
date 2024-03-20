@@ -1,11 +1,11 @@
 import React from 'react'
 
-interface HomeLinkButtonProps
+interface HomeAnchorProps
         extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
         children?: React.ReactNode
 }
 
-const HomeLinkButton = (props: HomeLinkButtonProps) => {
+const HomeAnchor = (props: HomeAnchorProps) => {
         return (
                 <a
                         className="flex h-12 items-center justify-center text-sm font-medium border-b-2 dark:border-gray-950 text-gray-500 dark:text-gray-400"
@@ -14,4 +14,4 @@ const HomeLinkButton = (props: HomeLinkButtonProps) => {
         )
 }
 
-export default HomeLinkButton
+export default HomeAnchor

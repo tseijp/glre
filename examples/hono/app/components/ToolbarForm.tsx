@@ -5,7 +5,7 @@ const ToolbarForm = () => {
                                 alt="Avatar"
                                 className="rounded-full"
                                 height="32"
-                                src="/placeholder.svg"
+                                src="https://r.tsei.jp/profile.jpg"
                                 style={{
                                         aspectRatio: '32/32',
                                         objectFit: 'cover',

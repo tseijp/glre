@@ -46,7 +46,7 @@ const HomeViewport = (props: ViewportProps) => {
         }
 
         return (
-                <div className="relative px-6 pb-24 max-w-lg w-full h-full">
+                <div className="px-6 pb-24 max-w-lg w-full h-full">
                         <div ref={ref} className="flex h-12">
                                 {children}
                         </div>

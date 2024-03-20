@@ -1,10 +1,9 @@
 import Layout from '../layout'
-import Footer from '../components/Footer'
 import HomeFlex from '../containers/HomeFlex'
 import HomeItem from '../containers/HomeItem'
 import HomeViewport from '../components/HomeViewport'
-import HomeImgButton from '../components/HomeImgButton.tsx'
-import HomeLinkButton from '../components/HomeLinkButton'
+import HomeImage from '../components/HomeImage'
+import HomeAnchor from '../components/HomeAnchor'
 // import HomeViewportTitle from '../componets/HomeViewportTitle'
 
 interface HomeProps {
@@ -13,6 +12,7 @@ interface HomeProps {
 
 const Home = (props: HomeProps) => {
         const { creationItems } = props
+
         return (
                 <Layout>
                         <HomeFlex>
@@ -23,14 +23,15 @@ const Home = (props: HomeProps) => {
                                                                 item.content
                                                         }
                                                 >
-                                                        <HomeImgButton />
-                                                        <HomeLinkButton>
+                                                        <HomeImage />
+                                                        <HomeAnchor
+                                                                href={`hono/${item.id}`}
+                                                        >
                                                                 HELLO WORLD
-                                                        </HomeLinkButton>
+                                                        </HomeAnchor>
                                                 </HomeViewport>
                                         </HomeItem>
                                 ))}
-                                <Footer />
                         </HomeFlex>
                 </Layout>
         )
