@@ -44,7 +44,6 @@ const Layout = (props: LayoutProps) => {
                 <Container>
                         <SidebarCloseOverlay />
                         <SidebarFlex>
-                                <SidebarViewport />
                                 <SidebarItem>
                                         <SidebarLinkButton href="/">
                                                 Home
@@ -70,6 +69,7 @@ const Layout = (props: LayoutProps) => {
                                                 Toggle user menu
                                         </SidebarImgButton>
                                 </SidebarItem>
+                                <SidebarViewport />
                         </SidebarFlex>
                         <MainFlex>
                                 <MainItem>{children}</MainItem>

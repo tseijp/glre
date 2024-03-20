@@ -20,7 +20,7 @@ const New = (props: NewProps) => {
                 <Layout>
                         <EditorFlex>
                                 <EditorItem>
-                                        <EditorViewport ref={event.gl.ref} />
+                                        <EditorViewport ref={event.ref} />
                                 </EditorItem>
                                 <EditorItem>
                                         {/* <TitleInput
@@ -29,7 +29,7 @@ const New = (props: NewProps) => {
                                                         event?.onChangeTitleInput
                                                 }
                                         />
-                                        <SubmitButton children="Update" /> */}{' '}
+                                        <SubmitButton children="Update" /> */}
                                         <EditorCodemirror ref={ref} />
                                 </EditorItem>
                         </EditorFlex>

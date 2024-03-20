@@ -21,7 +21,7 @@ const App = (props: NewProps) => {
                 <Layout>
                         <EditorFlex>
                                 <EditorItem>
-                                        <EditorViewport ref={event.gl.ref} />
+                                        <EditorViewport ref={event.ref} />
                                 </EditorItem>
                                 <EditorItem>
                                         {/* <TitleInput

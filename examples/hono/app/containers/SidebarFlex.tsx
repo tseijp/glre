@@ -40,7 +40,13 @@ const SidebarFlex = (props: SidebarFlexProps) => {
         return (
                 <div
                         ref={ref}
-                        className="fixed lg:relative z-10 w-80 h-screen z-20 flex flex-col border-r border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm -translate-x-full lg:translate-x-0"
+                        className={[
+                                `fixed lg:relative z-10 w-80 h-screen z-20`,
+                                `flex flex-col`,
+                                `-translate-x-full lg:translate-x-0`, // click arrow
+                                `border-gray-200 dark:border-gray-800 `, // border
+                                // `shadow-sm backdrop-blur-lg`,
+                        ].join(' ')}
                 >
                         <div className="relative flex-1 flex flex-col justify-between max-h-full">
                                 {children}
