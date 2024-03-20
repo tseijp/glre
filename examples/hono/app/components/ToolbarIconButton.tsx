@@ -21,14 +21,14 @@ const ToolbarIconButton = (props: ToolbarIconButtonProps) => {
 
         return (
                 <button
-                        className="flex justify-center align-center h-12 md:mx-3 text-gray-500 dark:text-gray-400"
+                        className="flex justify-center align-center h-12 lg:mx-3 text-gray-500 dark:text-gray-400"
                         onPointerEnter={handleHover(1)}
                         onPointerLeave={handleHover(0)}
                 >
                         <span className="w-12 h-12 p-3">
                                 <Icon className="w-6 h-6" />
                         </span>
-                        <span className="hidden md:flex p-3 leading-6">
+                        <span className="hidden lg:flex p-3 leading-6">
                                 <span ref={ref} className="opacity-0">
                                         {children}
                                 </span>

@@ -14,7 +14,7 @@ const SidebarIconButton = (props: SidebarIconButtonProps) => {
                         // variant="outline"
                 >
                         <Icon className="h-6 w-6" />
-                        {/* <span className="hidden md:flex">{children}</span> */}
+                        {/* <span className="hidden lg:flex">{children}</span> */}
                 </button>
         )
 }

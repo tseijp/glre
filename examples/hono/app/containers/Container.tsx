@@ -11,7 +11,7 @@ const Container = (props: ContainerProps) => {
         return (
                 <div
                         key="1"
-                        className="grid min-h-screen w-full items-start gap-0 border-2 border-gray-200 md:grid-cols-[320px_1fr] dark:border-gray-950"
+                        className="grid min-h-screen w-full items-start gap-0 border-2 border-gray-200 lg:grid-cols-[320px_1fr] dark:border-gray-950"
                 >
                         {children}
                 </div>

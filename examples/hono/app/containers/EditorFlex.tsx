@@ -4,9 +4,13 @@ interface EditorProps {
         children: React.ReactNode
 }
 
-const Editor = (props: EditorProps) => {
+const EditorFlex = (props: EditorProps) => {
         const { children } = props
-        return <div className="flex overflow-hidden rounded">{children}</div>
+        return (
+                <div className="flex flex-row w-full h-full overflow-hidden rounded">
+                        {children}
+                </div>
+        )
 }
 
-export default Editor
+export default EditorFlex

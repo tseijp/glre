@@ -6,6 +6,7 @@
 import React from 'react'
 
 // compontents
+import Canvas from './components/Canvas'
 import SidebarArrowButton from './components/SidebarArrowButton'
 import SidebarCloseOverlay from './components/SidebarCloseOverlay'
 import SidebarIconButton from './components/SidebarIconButton'
@@ -30,6 +31,7 @@ import SearchIcon from './icons/SearchIcon'
 import HeartIcon from './icons/HeartIcon'
 import RepeatIcon from './icons/RepeartIcon'
 import MessageCircleIcon from './icons/MessageCircleIcon'
+import SidebarViewport from './components/SidebarViewport'
 
 interface LayoutProps {
         children: React.ReactNode
@@ -42,6 +44,7 @@ const Layout = (props: LayoutProps) => {
                 <Container>
                         <SidebarCloseOverlay />
                         <SidebarFlex>
+                                <SidebarViewport />
                                 <SidebarItem>
                                         <SidebarLinkButton href="/">
                                                 Home

@@ -2,6 +2,7 @@ import { createGL } from 'glre'
 import { useOnce } from 'reev/react'
 import { DefaultFragmentShader } from '../constants'
 import { resizeGL, mountGL, cleanGL, drawGL } from '../utils'
+import Canvas from './Canvas'
 
 interface ViewportProps {
         event?: any
@@ -27,14 +28,16 @@ const createGLImpl = (fs = '') => {
         return gl
 }
 
-const Viewport = (_props: ViewportProps) => {
-        // const { fragmentShader } = props
-        // eslint-disable-next-line
+const HomeViewport = (_props: ViewportProps) => {
         const gl = useOnce(() => {
                 return createGLImpl(DefaultFragmentShader)
         })
 
-        return <canvas ref={gl.ref} color="red" className="rounded" />
+        return (
+                <div className="p-8 max-w-lg w-full h-full">
+                        <Canvas ref={gl.ref} />
+                </div>
+        )
 }
 
-export default Viewport
+export default HomeViewport

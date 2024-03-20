@@ -1,5 +1,6 @@
 import Layout from '../layout'
-import Viewport from '../components/Viewport'
+import Footer from '../components/Footer'
+import HomeViewport from '../components/HomeViewport'
 
 interface HomeProps {
         creationItems: any[]
@@ -10,8 +11,12 @@ const Home = (props: HomeProps) => {
         return (
                 <Layout>
                         {creationItems?.map((item) => (
+                                // <HomeViewport
+                                //         key={item.id}
+                                //         fragmentShader={item.content}
+                                // />
                                 <div key={item.id}>
-                                        <Viewport
+                                        <HomeViewport
                                                 fragmentShader={item.content}
                                         />
                                         <a href={`/hono/${item.id}`}>
@@ -20,6 +25,7 @@ const Home = (props: HomeProps) => {
                                         </a>
                                 </div>
                         ))}
+                        <Footer />
                 </Layout>
         )
 }

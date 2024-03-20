@@ -3,7 +3,6 @@ import createEvent from 'reev'
 import { useOnce } from 'reev/react'
 import { useEffect, useState } from 'react'
 import { DELAYED_COMPILE_MS } from '../constants'
-import { useWindowSize } from './useWindowSize'
 import { drawGL, mountGL, cleanGL, resizeGL } from '../utils'
 import type { EditorState } from '@codemirror/state'
 
@@ -41,13 +40,14 @@ const createEventImpl = (override: Partial<EventType>) => {
                 const gl = createGL()
                 try {
                         gl.el = event.gl.el
+                        gl.fs = e.doc.toString()
                         cleanGL(event.gl)
                         resizeGL(gl)
                         mountGL(gl)
                         drawGL(gl)
                         event.onSuccess(gl)
                 } catch (error) {
-                        console.warn(error)
+                        console.warn('Event Error:', error)
                         event.onError(error)
                 }
         }

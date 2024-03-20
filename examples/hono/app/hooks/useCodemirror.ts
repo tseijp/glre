@@ -22,7 +22,9 @@ export const createCodemirror = <El extends Element>(
 
                 const dark = getDarkThemeSnapshot()
                 const myTheme = EditorView.theme(theme, { dark })
-                const listenner = EditorView.updateListener.of(({ state }) => {
+                const listenner = EditorView.updateListener.of((viewUpdate) => {
+                        const { docChanged, state } = viewUpdate
+                        if (!docChanged) return
                         handleChange(state)
                 })
 
@@ -65,17 +67,16 @@ export const useCodemirror = (defaultValue: string, handleChange: Function) => {
 
 const theme = {
         '&': {
-                width: '100%',
+                display: 'inline-block',
                 height: '100%',
+                overflow: 'scroll',
                 color: '#E5E5E5',
                 backgroundColor: '#303030',
         },
-        '.cm-content': {},
         '&.cm-focused .cm-selectionBackground, ::selection': {
                 backgroundColor: '#3A3A3A',
         },
         '.cm-gutters': {
-                backgroundColor: '#1D1D1D',
                 color: '#A8A8A8',
                 border: 'none',
         },

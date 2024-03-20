@@ -28,7 +28,7 @@ const SidebarFlex = (props: SidebarFlexProps) => {
         useEffect(() => {
                 const handleResize = () => {
                         if (!ref.current) return
-                        const isOpen = window.innerWidth > 768
+                        const isOpen = window.innerWidth > 1024 // lg
                         handeOpen(isOpen)
                 }
                 window.addEventListener('resize', handleResize)
@@ -40,9 +40,9 @@ const SidebarFlex = (props: SidebarFlexProps) => {
         return (
                 <div
                         ref={ref}
-                        className="fixed md:relative z-10 w-80 h-screen z-20 flex flex-col border-r border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm -translate-x-full md:translate-x-0"
+                        className="fixed lg:relative z-10 w-80 h-screen z-20 flex flex-col border-r border-gray-200 dark:border-gray-800 shadow-sm backdrop-blur-sm -translate-x-full lg:translate-x-0"
                 >
-                        <div className="flex-1 flex flex-col justify-between max-h-full">
+                        <div className="relative flex-1 flex flex-col justify-between max-h-full">
                                 {children}
                         </div>
                 </div>

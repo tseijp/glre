@@ -5,6 +5,8 @@ import { useCodemirror } from '../hooks/useCodemirror'
 import EditorItem from '../containers/EditorItem'
 import EditorFlex from '../containers/EditorFlex'
 import Layout from '../layout'
+import EditorCodemirror from '../components/EditorCodemirror'
+import EditorViewport from '../components/EditorViewport'
 
 interface NewProps {
         defaultFragmentShader: string
@@ -18,12 +20,7 @@ const New = (props: NewProps) => {
                 <Layout>
                         <EditorFlex>
                                 <EditorItem>
-                                        <canvas
-                                                ref={event.gl.ref}
-                                                width="540"
-                                                height="400"
-                                                color="red"
-                                        />
+                                        <EditorViewport ref={event.gl.ref} />
                                 </EditorItem>
                                 <EditorItem>
                                         {/* <TitleInput
@@ -32,8 +29,8 @@ const New = (props: NewProps) => {
                                                         event?.onChangeTitleInput
                                                 }
                                         />
-                                        <SubmitButton children="Update" /> */}
-                                        <div ref={ref} />
+                                        <SubmitButton children="Update" /> */}{' '}
+                                        <EditorCodemirror ref={ref} />
                                 </EditorItem>
                         </EditorFlex>
                 </Layout>
