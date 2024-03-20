@@ -50,7 +50,7 @@ export const POST = createRoute(
 
                 // @ts-ignore
                 const { success } = await c.env?.DB?.prepare?.(
-                        `update creation set title = ?, content = ? where id = ?`
+                        `UPDATE creation SET title = ?, content = ? WHERE id = ?`
                 )
                         .bind(title, content, id)
                         .run()

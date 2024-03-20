@@ -41,14 +41,17 @@ const SidebarAroowButton = (props: SidebarAroowButtonProps) => {
                         onPointerEnter={handleEnter(1)}
                         onPointerLeave={handleEnter(0)}
                         onClick={handleClick}
-                        className={`fixed m-3 w-12 h-12 flex justify-center items-center lg:hidden lg:pointer-events-none items-center justify-center gap-3 text-sm font-medium`}
+                        className={`fixed ml-6 mt-12 w-12 h-12 flex justify-center items-center lg:hidden lg:pointer-events-none items-center justify-center gap-3 text-sm font-medium`}
                 >
-                        <span ref={iconRef} className="w-12 h-12 p-3">
+                        <span
+                                ref={iconRef}
+                                className="w-12 h-12 p-3 text-gray-500 dark:text-gray-400"
+                        >
                                 <Icon />
                         </span>
                         <span
                                 ref={borderRef}
-                                className="absolute w-12 h-12 rounded opacity-0 border-2 dark:border-gray-950 text-gray-500 dark:text-gray-400"
+                                className="absolute w-12 h-12 rounded opacity-0 border-2 dark:border-gray-950"
                         />
                 </button>
         )

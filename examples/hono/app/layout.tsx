@@ -45,11 +45,11 @@ const Layout = (props: LayoutProps) => {
                         <SidebarCloseOverlay />
                         <SidebarFlex>
                                 <SidebarItem>
+                                        <SidebarLinkButton href="/new">
+                                                New Creation
+                                        </SidebarLinkButton>
                                         <SidebarLinkButton href="/">
                                                 Home
-                                        </SidebarLinkButton>
-                                        <SidebarLinkButton href="/new">
-                                                Creation
                                         </SidebarLinkButton>
                                         <SidebarLinkButton href="/">
                                                 Follow

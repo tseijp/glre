@@ -6,7 +6,7 @@ export const resizeGL = (gl: any) => {
 let ctx = null as any
 
 export const mountGL = (gl: any) => {
-        gl.gl = ctx ?? gl.el.getContext('webgl2')
+        gl.gl = ctx ?? gl.el.getContext('webgl2', { premultipliedAlpha: false })
         gl.init()
         gl.frame.start()
         gl._resize = () => resizeGL(gl)

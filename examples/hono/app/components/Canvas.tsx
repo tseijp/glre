@@ -45,48 +45,40 @@ const createCanvasResize = <
         return { onMount, onClean }
 }
 
-interface CanvasProps extends React.HTMLAttributes<HTMLDivElement> {
-        canvasId?: string
-}
+const Canvas = React.forwardRef<
+        HTMLCanvasElement | null,
+        React.HTMLAttributes<HTMLDivElement>
+>((props, forwardedRef) => {
+        const divRef = useRef<HTMLDivElement | null>(null)
+        const containerRef = useRef<HTMLDivElement | null>(null)
+        const canvasRef = useRef<HTMLCanvasElement | null>(null)
+        const canvasResize = useOnce(() => {
+                return createCanvasResize(containerRef, canvasRef)
+        })
 
-const Canvas = React.forwardRef<HTMLCanvasElement | null, CanvasProps>(
-        (props, forwardedRef) => {
-                const { canvasId, ...divProps } = props
-                const divRef = useRef<HTMLDivElement | null>(null)
-                const containerRef = useRef<HTMLDivElement | null>(null)
-                const canvasRef = useRef<HTMLCanvasElement | null>(null)
-                const canvasResize = useOnce(() => {
-                        return createCanvasResize(containerRef, canvasRef)
-                })
+        useImperativeHandle(forwardedRef, () => canvasRef.current!)
 
-                useImperativeHandle(forwardedRef, () => canvasRef.current!)
+        useEffect(() => {
+                canvasResize.onMount()
+                return () => {
+                        canvasResize.onClean()
+                }
+        }, [canvasResize])
 
-                useEffect(() => {
-                        canvasResize.onMount()
-                        return () => {
-                                canvasResize.onClean()
-                        }
-                }, [canvasResize])
-
-                return (
-                        <div
-                                ref={divRef}
-                                className="relative w-full h-full overflow-hidden rounded"
-                                {...divProps}
-                        >
-                                <div
-                                        ref={containerRef}
-                                        className="w-full h-full"
-                                >
-                                        <canvas
-                                                id={canvasId}
-                                                ref={canvasRef}
-                                                className="block rounded"
-                                        />
-                                </div>
+        return (
+                <div
+                        ref={divRef}
+                        className="relative w-full h-full overflow-hidden rounded"
+                        {...props}
+                >
+                        <div ref={containerRef} className="w-full h-full">
+                                <canvas
+                                        ref={canvasRef}
+                                        className="__canvas block rounded"
+                                />
                         </div>
-                )
-        }
-)
+                </div>
+        )
+})
 
 export default Canvas

@@ -1,16 +1,16 @@
 import React from 'react'
 
-interface EditorProps {
+interface HomeItemProps {
         children: React.ReactNode
 }
 
-const EditorFlex = (props: EditorProps) => {
+const HomeItem = (props: HomeItemProps) => {
         const { children } = props
         return (
-                <div className="flex flex-row items-center w-full h-full">
+                <div className="max-h-[800px] flex-1 w-full h-full min-h-0">
                         {children}
                 </div>
         )
 }
 
-export default EditorFlex
+export default HomeItem

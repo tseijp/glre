@@ -6,7 +6,11 @@ interface EditorItemProps {
 
 const EditorItem = (props: EditorItemProps) => {
         const { children } = props
-        return <div className="flex-1 w-full h-screen rounded">{children}</div>
+        return (
+                <div className="max-h-[800px] flex-1 w-full h-full min-h-0">
+                        {children}
+                </div>
+        )
 }
 
 export default EditorItem
