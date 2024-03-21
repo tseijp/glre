@@ -10,16 +10,17 @@ import EditorImageButton from '../components/EditorImageButton'
 import EditorInputTitle from '../components/EditorInputTitle'
 import EditorUpdateButton from '../components/EditorUpdateButton'
 import EditorViewport from '../components/EditorViewport'
+import { DEFAULT_CREATION_CONTENT, DEFAULT_CREATION_TITLE } from '../utils'
 
-interface NewProps {
-        defaultFragmentShader: string
-}
-
-const New = (props: NewProps) => {
-        const { defaultFragmentShader } = props
-        const event = useEventImpl(false)
+const New = () => {
+        const event = useEventImpl(
+                false,
+                '',
+                DEFAULT_CREATION_TITLE,
+                DEFAULT_CREATION_CONTENT
+        )
         const ref = useCodemirror(
-                defaultFragmentShader,
+                DEFAULT_CREATION_CONTENT,
                 event.onChangeTextarea,
                 event.onClickCreateButton
         )
@@ -51,8 +52,7 @@ const New = (props: NewProps) => {
                                         <SubmitButton children="Update" /> */}
                                         <EditorCodemirror ref={ref}>
                                                 <EditorUpdateButton
-                                                        // color="red"
-                                                        color="NONE"
+                                                        color={event._col}
                                                         onClick={
                                                                 event.onClickDeleteButton
                                                         }
@@ -62,7 +62,7 @@ const New = (props: NewProps) => {
                                                 <EditorUpdateButton
                                                         color={event.col}
                                                         onClick={
-                                                                event.onClickUpdateButton
+                                                                event.onClickCreateButton
                                                         }
                                                 >
                                                         {event.ui}

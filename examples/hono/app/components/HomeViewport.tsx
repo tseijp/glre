@@ -1,43 +1,22 @@
 import { gsap } from 'gsap'
 import { createGL } from 'glre'
 import { useOnce } from 'reev/react'
-import { DefaultFragmentShader } from '../constants'
-import { resizeGL, mountGL, cleanGL, drawGL } from '../utils'
+import { resizeGL, mountGL, cleanGL, drawGL, resolve } from '../utils'
 import Canvas from './Canvas'
-import { useRef } from 'react'
+import { useEffect, useRef } from 'react'
 
 interface ViewportProps {
         event?: any
+        content: string
         children?: React.ReactNode
-        fragmentShader?: string
-}
-
-const createGLImpl = (fs = '') => {
-        const ref = (el: HTMLCanvasElement | null) => {
-                if (el) {
-                        gl.el = el
-                        resizeGL(gl)
-                        mountGL(gl)
-                        drawGL(gl)
-                } else {
-                        cleanGL(gl)
-                }
-        }
-
-        const gl = createGL({ fs })
-
-        gl.ref = ref
-
-        return gl
 }
 
 const HomeViewport = (props: ViewportProps) => {
-        const { children } = props
+        const { children, content } = props
+        const canvasRef = useRef<HTMLCanvasElement | null>(null)
         const ref = useRef<HTMLDivElement | null>(null)
         const tl = useOnce(() => gsap.timeline({ paused: true }))
-        const gl = useOnce(() => {
-                return createGLImpl(DefaultFragmentShader)
-        })
+        const gl = useOnce(createGL)
 
         const handleEnter = (opacity: number) => () => {
                 tl.clear()
@@ -45,13 +24,38 @@ const HomeViewport = (props: ViewportProps) => {
                 tl.play()
         }
 
+        useEffect(() => {
+                ;(async () => {
+                        try {
+                                const el = canvasRef.current
+                                if (!el) return
+
+                                gl.el = el
+                                gl.fs = await resolve(content)
+                                resizeGL(gl)
+                                mountGL(gl)
+                                drawGL(gl)
+                                el.addEventListener('mousemove', gl.mousemove)
+                        } catch (error) {
+                                console.warn('GL Error:', error)
+                        }
+                })()
+                return () => {
+                        const el = canvasRef.current
+                        if (!el) return
+
+                        el.removeEventListener('mousemove', gl.mousemove)
+                        cleanGL(gl)
+                }
+        }, [content])
+
         return (
                 <div className="px-6 pb-24 max-w-lg w-full h-full">
                         <div ref={ref} className="flex h-12">
                                 {children}
                         </div>
                         <Canvas
-                                ref={gl.ref}
+                                ref={canvasRef}
                                 onPointerEnter={handleEnter(0.25)}
                                 onPointerLeave={handleEnter(1)}
                         />

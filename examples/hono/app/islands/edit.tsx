@@ -12,15 +12,23 @@ import EditorViewport from '../components/EditorViewport'
 import EditorCodemirror from '../components/EditorCodemirror'
 import EditorUpdateButton from '../components/EditorUpdateButton'
 
-interface NewProps {
-        defaultFragmentShader: string
+interface Props {
+        creationId: string
+        creationTitle: string
+        creationContent: string
 }
 
-const App = (props: NewProps) => {
-        const { defaultFragmentShader } = props
-        const event = useEventImpl(true)
+const App = (props: Props) => {
+        const { creationId, creationTitle, creationContent } = props
+        const event = useEventImpl(
+                true,
+                creationId,
+                creationTitle,
+                creationContent
+        )
+
         const ref = useCodemirror(
-                defaultFragmentShader,
+                creationContent,
                 event.onChangeTextarea,
                 event.onClickUpdateButton
         )
@@ -35,7 +43,9 @@ const App = (props: NewProps) => {
                                         >
                                                 <EditorImageButton />
                                                 <EditorInputTitle
-                                                        defaultValue="HELLO WORLD"
+                                                        defaultValue={
+                                                                creationTitle
+                                                        }
                                                         onChange={
                                                                 event.onChangeInputTitle
                                                         }
@@ -52,8 +62,7 @@ const App = (props: NewProps) => {
                                         <SubmitButton children="Update" /> */}
                                         <EditorCodemirror ref={ref}>
                                                 <EditorUpdateButton
-                                                        // color="red"
-                                                        color="NONE"
+                                                        color="red"
                                                         onClick={
                                                                 event.onClickDeleteButton
                                                         }

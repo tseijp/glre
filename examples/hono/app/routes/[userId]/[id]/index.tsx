@@ -4,7 +4,6 @@ import { basicAuth } from 'hono/basic-auth'
 import { zValidator } from '@hono/zod-validator'
 import { cors } from 'hono/cors'
 import App from '../../../islands/edit'
-import { DefaultFragmentShader } from '../../../constants'
 
 const AUTH = basicAuth({
         username: 'username',
@@ -12,19 +11,20 @@ const AUTH = basicAuth({
 })
 
 export const GET = createRoute(cors(), AUTH, async (c) => {
-        // const { id } = c.req.param()
+        const { id } = c.req.param()
         // @ts-ignore
-        // const { results } = await c.env?.DB?.prepare?.(
-        //         `select * from creation where id = ?`
-        // )
-        //         .bind(id)
-        //         .all()
-        // const item = results[0]
+        const { results } = await c.env?.DB?.prepare?.(
+                `select * from creation where id = ?`
+        )
+                .bind(id)
+                .all()
+        const item = results[0]
 
         return c.render(
                 <App
-                        // defaultFragmentShader={item.content}
-                        defaultFragmentShader={DefaultFragmentShader}
+                        creationId={id}
+                        creationTitle={item.title}
+                        creationContent={item.content}
                 />
         )
 })
@@ -34,9 +34,9 @@ const schema = z.object({
         content: z.string().min(1),
 })
 
-export const POST = createRoute(
+export const PUT = createRoute(
         cors(),
-        zValidator('form', schema, (result, c) => {
+        zValidator('json', schema, (result, c) => {
                 if (!result.success) {
                         return c.render('Error', {
                                 hasScript: true,
@@ -46,7 +46,7 @@ export const POST = createRoute(
         async (c) => {
                 // const name = c.req.query('name') ?? 'hono'
                 const { id } = c.req.param()
-                const { title, content } = c.req.valid('form')
+                const { title, content } = c.req.valid('json')
 
                 // @ts-ignore
                 const { success } = await c.env?.DB?.prepare?.(
@@ -56,12 +56,34 @@ export const POST = createRoute(
                         .run()
                 if (success) {
                         c.status(201)
+                        return c.json({ id })
                 } else {
                         c.status(500)
-                        return c.text('Something went wrong')
+                        return c.json({ message: 'Something went wrong' })
                 }
         }
 )
+
+export type UpdateAppType = typeof PUT
+
+export const DELETE = createRoute(cors(), async (c) => {
+        const { id } = c.req.param()
+        // @ts-ignore
+        const { success } = await c.env?.DB?.prepare?.(
+                `DELETE FROM creation WHERE id = ?`
+        )
+                .bind(id)
+                .run()
+        if (success) {
+                c.status(201)
+                return c.json({ message: 'Deleted' })
+        } else {
+                c.status(500)
+                return c.json({ message: 'Something went wrong' })
+        }
+})
+
+export type DeleteAppType = typeof PUT
 
 // import { createRoute } from 'honox/factory'
 // import Layout from '../../../containers/Container'

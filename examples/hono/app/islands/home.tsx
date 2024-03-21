@@ -19,15 +19,13 @@ const Home = (props: HomeProps) => {
                                 {creationItems?.map((item) => (
                                         <HomeItem key={item.id}>
                                                 <HomeViewport
-                                                        fragmentShader={
-                                                                item.content
-                                                        }
+                                                        content={item.content}
                                                 >
                                                         <HomeImageButton />
                                                         <HomeLinkAnchor
                                                                 href={`hono/${item.id}`}
                                                         >
-                                                                HELLO WORLD
+                                                                {item.title}
                                                         </HomeLinkAnchor>
                                                 </HomeViewport>
                                         </HomeItem>

@@ -44,11 +44,11 @@ const Layout = (props: LayoutProps) => {
                         <SidebarCloseOverlay />
                         <SidebarFlex>
                                 <SidebarItem>
-                                        <SidebarLinkAnchor href="/new">
-                                                New Creation
-                                        </SidebarLinkAnchor>
                                         <SidebarLinkAnchor href="/">
                                                 Home
+                                        </SidebarLinkAnchor>
+                                        <SidebarLinkAnchor href="/new">
+                                                New Creation
                                         </SidebarLinkAnchor>
                                         <SidebarLinkAnchor href="#">
                                                 Follow
@@ -68,7 +68,7 @@ const Layout = (props: LayoutProps) => {
                                                 Toggle user menu
                                         </SidebarImageButton>
                                 </SidebarItem>
-                                <SidebarViewport />
+                                {/* <SidebarViewport /> */}
                         </SidebarFlex>
                         <MainFlex>
                                 <MainItem>{children}</MainItem>

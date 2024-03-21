@@ -4,7 +4,6 @@ import { basicAuth } from 'hono/basic-auth'
 import { zValidator } from '@hono/zod-validator'
 import { cors } from 'hono/cors'
 import App from '../islands/new'
-import { DefaultFragmentShader } from '../constants'
 
 const AUTH = basicAuth({
         username: 'username',
@@ -12,7 +11,7 @@ const AUTH = basicAuth({
 })
 
 export const GET = createRoute(cors(), AUTH, async (c) => {
-        return c.render(<App defaultFragmentShader={DefaultFragmentShader} />)
+        return c.render(<App />)
 })
 
 const schema = z.object({
@@ -22,28 +21,26 @@ const schema = z.object({
 
 export const POST = createRoute(
         cors(),
-        zValidator('form', schema, (result, c) => {
-                if (!result.success) {
-                        return c.render('Error', {
-                                hasScript: true,
-                        })
-                }
+        zValidator('json', schema, (result, c) => {
+                if (!result.success) return c.render('Error')
         }),
         async (c) => {
-                const name = c.req.query('name') ?? 'hono'
-                const { title, content } = c.req.valid('form')
+                // const name = c.req.query('name') ?? 'hono'
+                const { title, content } = c.req.valid('json')
                 const id = crypto.randomUUID()
                 const { success } = await c.env?.DB?.prepare?.(
-                        `insert into creation (id, title, content) values (?, ?, ?)`
+                        `INSERT INTO creation (id, title, content) VALUES (?, ?, ?)`
                 )
                         .bind(id, title, content)
                         .run()
                 if (success) {
                         c.status(201)
-                        return c.redirect(`/${name}/${id}`, 303)
+                        return c.json({ id })
                 } else {
                         c.status(500)
-                        return c.text('Something went wrong')
+                        return c.json({ message: 'Something went wrong' })
                 }
         }
 )
+
+export type CreateAppType = typeof POST
