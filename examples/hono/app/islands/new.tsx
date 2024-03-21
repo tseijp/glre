@@ -5,9 +5,9 @@ import { useCodemirror } from '../hooks/useCodemirror'
 import EditorItem from '../containers/EditorItem'
 import EditorFlex from '../containers/EditorFlex'
 import Layout from '../layout'
-import EditorAnchor from '../components/EditorAnchor'
+import EditorLinkAnchor from '../components/EditorLinkAnchor'
 import EditorCodemirror from '../components/EditorCodemirror'
-import EditorImage from '../components/EditorImage'
+import EditorImageButton from '../components/EditorImageButton'
 import EditorViewport from '../components/EditorViewport'
 
 interface NewProps {
@@ -23,10 +23,10 @@ const New = (props: NewProps) => {
                         <EditorFlex>
                                 <EditorItem>
                                         <EditorViewport ref={event.ref}>
-                                                <EditorImage />
-                                                <EditorAnchor>
+                                                <EditorImageButton />
+                                                <EditorLinkAnchor>
                                                         HELLO WORLD
-                                                </EditorAnchor>
+                                                </EditorLinkAnchor>
                                         </EditorViewport>
                                 </EditorItem>
                                 <EditorItem>

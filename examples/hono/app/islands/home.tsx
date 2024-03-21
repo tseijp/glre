@@ -2,8 +2,8 @@ import Layout from '../layout'
 import HomeFlex from '../containers/HomeFlex'
 import HomeItem from '../containers/HomeItem'
 import HomeViewport from '../components/HomeViewport'
-import HomeImage from '../components/HomeImage'
-import HomeAnchor from '../components/HomeAnchor'
+import HomeImageButton from '../components/HomeImageButton'
+import HomeLinkAnchor from '../components/HomeLinkAnchor'
 // import HomeViewportTitle from '../componets/HomeViewportTitle'
 
 interface HomeProps {
@@ -23,12 +23,12 @@ const Home = (props: HomeProps) => {
                                                                 item.content
                                                         }
                                                 >
-                                                        <HomeImage />
-                                                        <HomeAnchor
+                                                        <HomeImageButton />
+                                                        <HomeLinkAnchor
                                                                 href={`hono/${item.id}`}
                                                         >
                                                                 HELLO WORLD
-                                                        </HomeAnchor>
+                                                        </HomeLinkAnchor>
                                                 </HomeViewport>
                                         </HomeItem>
                                 ))}

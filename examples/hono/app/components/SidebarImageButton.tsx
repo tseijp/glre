@@ -1,12 +1,13 @@
 import React from 'react'
 
-interface EditorImageProps {
-        children?: React.ReactNode
+interface SidebarImageButtonProps {
+        children: React.ReactNode
 }
 
-const EditorImage = (_props: EditorImageProps) => {
+const SidebarImageButton = (props: SidebarImageButtonProps) => {
+        const { children } = props
         return (
-                <button className="flex items-center justify-center w-12 h-12 font-medium text-gray-500 dark:text-gray-400">
+                <button className="flex items-center justify-center m-3 w-12 h-12 font-medium rounded border-2 dark:border-gray-950 text-gray-500 dark:text-gray-400">
                         <img
                                 alt="profile"
                                 src="https://r.tsei.jp/profile.jpg"
@@ -18,8 +19,9 @@ const EditorImage = (_props: EditorImageProps) => {
                                 }}
                                 width="32"
                         />
+                        <span className="sr-only">{children}</span>
                 </button>
         )
 }
 
-export default EditorImage
+export default SidebarImageButton

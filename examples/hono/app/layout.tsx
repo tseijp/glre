@@ -6,13 +6,12 @@
 import React from 'react'
 
 // compontents
-import Canvas from './components/Canvas'
 import SidebarArrowButton from './components/SidebarArrowButton'
 import SidebarCloseOverlay from './components/SidebarCloseOverlay'
 import SidebarIconButton from './components/SidebarIconButton'
-import SidebarImgButton from './components/SidebarImgButton'
-import SidebarLinkButton from './components/SidebarLinkButton'
+import SidebarImageButton from './components/SidebarImageButton'
 import ToolbarIconButton from './components/ToolbarIconButton'
+import SidebarLinkAnchor from './components/SidebarLinkAnchor'
 
 // containers
 import Container from './containers/Container'
@@ -45,18 +44,18 @@ const Layout = (props: LayoutProps) => {
                         <SidebarCloseOverlay />
                         <SidebarFlex>
                                 <SidebarItem>
-                                        <SidebarLinkButton href="/new">
+                                        <SidebarLinkAnchor href="/new">
                                                 New Creation
-                                        </SidebarLinkButton>
-                                        <SidebarLinkButton href="/">
+                                        </SidebarLinkAnchor>
+                                        <SidebarLinkAnchor href="/">
                                                 Home
-                                        </SidebarLinkButton>
-                                        <SidebarLinkButton href="/">
+                                        </SidebarLinkAnchor>
+                                        <SidebarLinkAnchor href="/">
                                                 Follow
-                                        </SidebarLinkButton>
-                                        <SidebarLinkButton href="/">
+                                        </SidebarLinkAnchor>
+                                        <SidebarLinkAnchor href="/">
                                                 Settings
-                                        </SidebarLinkButton>
+                                        </SidebarLinkAnchor>
                                 </SidebarItem>
                                 <SidebarItem>
                                         <SidebarIconButton Icon={SearchIcon}>
@@ -65,9 +64,9 @@ const Layout = (props: LayoutProps) => {
                                         <SidebarIconButton Icon={BellIcon}>
                                                 Notifications
                                         </SidebarIconButton>
-                                        <SidebarImgButton>
+                                        <SidebarImageButton>
                                                 Toggle user menu
-                                        </SidebarImgButton>
+                                        </SidebarImageButton>
                                 </SidebarItem>
                                 <SidebarViewport />
                         </SidebarFlex>

@@ -1,11 +1,11 @@
 import React from 'react'
 
-interface EditorAnchorProps
+interface EditorLinkAnchorProps
         extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
         children?: React.ReactNode
 }
 
-const EditorAnchor = (props: EditorAnchorProps) => {
+const EditorLinkAnchor = (props: EditorLinkAnchorProps) => {
         return (
                 <a
                         className="flex h-12 items-center justify-center text-sm font-medium text-gray-500 dark:text-gray-400"
@@ -14,4 +14,4 @@ const EditorAnchor = (props: EditorAnchorProps) => {
         )
 }
 
-export default EditorAnchor
+export default EditorLinkAnchor
