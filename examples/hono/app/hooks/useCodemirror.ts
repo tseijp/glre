@@ -3,7 +3,8 @@ import { getDarkThemeSnapshot } from './useDarkTheme'
 
 export const createCodemirror = <El extends Element>(
         defaultValue: string,
-        handleChange: Function
+        handleChange: Function,
+        handleSave: Function
 ) => {
         let target = null as null | El
 
@@ -60,8 +61,8 @@ export const createCodemirror = <El extends Element>(
         return ret
 }
 
-export const useCodemirror = (defaultValue: string, handleChange: Function) => {
-        const ref = useOnce(() => createCodemirror(defaultValue, handleChange))
+export const useCodemirror = (...args: Parameters<typeof createCodemirror>) => {
+        const ref = useOnce(() => createCodemirror(...args))
         return ref
 }
 

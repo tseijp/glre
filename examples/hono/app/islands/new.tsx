@@ -5,9 +5,10 @@ import { useCodemirror } from '../hooks/useCodemirror'
 import EditorItem from '../containers/EditorItem'
 import EditorFlex from '../containers/EditorFlex'
 import Layout from '../layout'
-import EditorLinkAnchor from '../components/EditorLinkAnchor'
 import EditorCodemirror from '../components/EditorCodemirror'
 import EditorImageButton from '../components/EditorImageButton'
+import EditorInputTitle from '../components/EditorInputTitle'
+import EditorUpdateButton from '../components/EditorUpdateButton'
 import EditorViewport from '../components/EditorViewport'
 
 interface NewProps {
@@ -16,17 +17,28 @@ interface NewProps {
 
 const New = (props: NewProps) => {
         const { defaultFragmentShader } = props
-        const event = useEventImpl()
-        const ref = useCodemirror(defaultFragmentShader, event.onChangeTextarea)
+        const event = useEventImpl(false)
+        const ref = useCodemirror(
+                defaultFragmentShader,
+                event.onChangeTextarea,
+                event.onClickCreateButton
+        )
+
         return (
                 <Layout>
                         <EditorFlex>
                                 <EditorItem>
-                                        <EditorViewport ref={event.ref}>
+                                        <EditorViewport
+                                                ref={event.ref}
+                                                err={event.err}
+                                        >
                                                 <EditorImageButton />
-                                                <EditorLinkAnchor>
-                                                        HELLO WORLD
-                                                </EditorLinkAnchor>
+                                                <EditorInputTitle
+                                                        defaultValue="HELLO WORLD"
+                                                        onChange={
+                                                                event.onChangeInputTitle
+                                                        }
+                                                />
                                         </EditorViewport>
                                 </EditorItem>
                                 <EditorItem>
@@ -37,7 +49,25 @@ const New = (props: NewProps) => {
                                                 }
                                         />
                                         <SubmitButton children="Update" /> */}
-                                        <EditorCodemirror ref={ref} />
+                                        <EditorCodemirror ref={ref}>
+                                                <EditorUpdateButton
+                                                        // color="red"
+                                                        color="NONE"
+                                                        onClick={
+                                                                event.onClickDeleteButton
+                                                        }
+                                                >
+                                                        Delete
+                                                </EditorUpdateButton>
+                                                <EditorUpdateButton
+                                                        color={event.col}
+                                                        onClick={
+                                                                event.onClickUpdateButton
+                                                        }
+                                                >
+                                                        {event.ui}
+                                                </EditorUpdateButton>
+                                        </EditorCodemirror>
                                 </EditorItem>
                         </EditorFlex>
                 </Layout>

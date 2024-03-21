@@ -6,10 +6,11 @@ import { useCodemirror } from '../hooks/useCodemirror'
 import EditorFlex from '../containers/EditorFlex'
 import EditorItem from '../containers/EditorItem'
 import Layout from '../layout'
-import EditorLinkAnchor from '../components/EditorLinkAnchor'
 import EditorImageButton from '../components/EditorImageButton'
+import EditorInputTitle from '../components/EditorInputTitle'
 import EditorViewport from '../components/EditorViewport'
 import EditorCodemirror from '../components/EditorCodemirror'
+import EditorUpdateButton from '../components/EditorUpdateButton'
 
 interface NewProps {
         defaultFragmentShader: string
@@ -17,17 +18,28 @@ interface NewProps {
 
 const App = (props: NewProps) => {
         const { defaultFragmentShader } = props
-        const event = useEventImpl()
-        const ref = useCodemirror(defaultFragmentShader, event.onChangeTextarea)
+        const event = useEventImpl(true)
+        const ref = useCodemirror(
+                defaultFragmentShader,
+                event.onChangeTextarea,
+                event.onClickUpdateButton
+        )
+
         return (
                 <Layout>
                         <EditorFlex>
                                 <EditorItem>
-                                        <EditorViewport ref={event.ref}>
+                                        <EditorViewport
+                                                ref={event.ref}
+                                                err={event.err}
+                                        >
                                                 <EditorImageButton />
-                                                <EditorLinkAnchor>
-                                                        HELLO WORLD
-                                                </EditorLinkAnchor>
+                                                <EditorInputTitle
+                                                        defaultValue="HELLO WORLD"
+                                                        onChange={
+                                                                event.onChangeInputTitle
+                                                        }
+                                                />
                                         </EditorViewport>
                                 </EditorItem>
                                 <EditorItem>
@@ -38,7 +50,25 @@ const App = (props: NewProps) => {
                                                 }
                                         />
                                         <SubmitButton children="Update" /> */}
-                                        <EditorCodemirror ref={ref} />
+                                        <EditorCodemirror ref={ref}>
+                                                <EditorUpdateButton
+                                                        // color="red"
+                                                        color="NONE"
+                                                        onClick={
+                                                                event.onClickDeleteButton
+                                                        }
+                                                >
+                                                        Delete
+                                                </EditorUpdateButton>
+                                                <EditorUpdateButton
+                                                        color={event.col}
+                                                        onClick={
+                                                                event.onClickUpdateButton
+                                                        }
+                                                >
+                                                        {event.ui}
+                                                </EditorUpdateButton>
+                                        </EditorCodemirror>
                                 </EditorItem>
                         </EditorFlex>
                 </Layout>

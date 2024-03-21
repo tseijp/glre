@@ -50,10 +50,10 @@ const Layout = (props: LayoutProps) => {
                                         <SidebarLinkAnchor href="/">
                                                 Home
                                         </SidebarLinkAnchor>
-                                        <SidebarLinkAnchor href="/">
+                                        <SidebarLinkAnchor href="#">
                                                 Follow
                                         </SidebarLinkAnchor>
-                                        <SidebarLinkAnchor href="/">
+                                        <SidebarLinkAnchor href="#">
                                                 Settings
                                         </SidebarLinkAnchor>
                                 </SidebarItem>
