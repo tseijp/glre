@@ -7,7 +7,7 @@ interface EditorProps {
 const EditorFlex = (props: EditorProps) => {
         const { children } = props
         return (
-                <div className="flex flex-row items-center w-full h-full">
+                <div className="flex flex-row w-full h-full max-w-[1280px]">
                         {children}
                 </div>
         )

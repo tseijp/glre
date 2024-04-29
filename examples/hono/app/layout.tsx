@@ -30,7 +30,6 @@ import SearchIcon from './icons/SearchIcon'
 import HeartIcon from './icons/HeartIcon'
 import RepeatIcon from './icons/RepeartIcon'
 import MessageCircleIcon from './icons/MessageCircleIcon'
-import SidebarViewport from './components/SidebarViewport'
 
 interface LayoutProps {
         children: React.ReactNode

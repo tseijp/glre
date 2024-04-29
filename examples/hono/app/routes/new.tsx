@@ -1,18 +1,20 @@
 import { z } from 'zod'
 import { createRoute } from 'honox/factory'
-import { basicAuth } from 'hono/basic-auth'
+// import { basicAuth } from 'hono/basic-auth'
 import { zValidator } from '@hono/zod-validator'
 import { cors } from 'hono/cors'
 import App from '../islands/new'
 
-const AUTH = basicAuth({
-        username: 'username',
-        password: 'password',
-})
-
-export const GET = createRoute(cors(), AUTH, async (c) => {
-        return c.render(<App />)
-})
+export const GET = createRoute(
+        cors(),
+        // basicAuth({
+        //         username: 'username',
+        //         password: 'password',
+        // }),
+        async (c) => {
+                return c.render(<App />)
+        }
+)
 
 const schema = z.object({
         title: z.string().min(1),

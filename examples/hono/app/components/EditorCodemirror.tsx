@@ -15,8 +15,8 @@ const EditorCodemirror = React.forwardRef<
                         </div>
                         <div
                                 ref={forwardedRef}
-                                className="absolute pb-24 w-full h-full overflow-scroll rounded overflow-hidden"
-                        ></div>
+                                className="absolute pb-24 w-full h-full rounded overflow-hidden hidden-scrollbar"
+                        />
                 </div>
         )
 })

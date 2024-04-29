@@ -32,7 +32,7 @@ const EditorViewport = React.forwardRef<
                 <div className="px-6 pb-24 max-w-lg w-full h-full" {...other}>
                         <div
                                 ref={ref}
-                                className="flex justify-start items-center h-12 overflow-scroll"
+                                className="flex justify-start items-center h-12 overflow-hidden"
                         >
                                 {children}
                         </div>

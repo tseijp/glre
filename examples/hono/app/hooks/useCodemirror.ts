@@ -70,9 +70,11 @@ const theme = {
         '&': {
                 display: 'inline-block',
                 height: '100%',
-                overflow: 'scroll',
                 color: '#E5E5E5',
                 backgroundColor: '#303030',
+        },
+        '.cm-scroller': {
+                overflow: 'scroll',
         },
         '&.cm-focused .cm-selectionBackground, ::selection': {
                 backgroundColor: '#3A3A3A',

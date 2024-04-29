@@ -1,6 +1,3 @@
-// import React from 'react'
-// import TitleInput from '../components/editor/TitleInput'
-// import SubmitButton from '../components/editor/SubmitButton'
 import { useEventImpl } from '../hooks/useEventImpl'
 import { useCodemirror } from '../hooks/useCodemirror'
 import EditorFlex from '../containers/EditorFlex'
@@ -53,13 +50,6 @@ const App = (props: Props) => {
                                         </EditorViewport>
                                 </EditorItem>
                                 <EditorItem>
-                                        {/* <TitleInput
-                                                name="title"
-                                                onChange={
-                                                        event?.onChangeTitleInput
-                                                }
-                                        />
-                                        <SubmitButton children="Update" /> */}
                                         <EditorCodemirror ref={ref}>
                                                 <EditorUpdateButton
                                                         color="red"
