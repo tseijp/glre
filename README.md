@@ -1,7 +1,5 @@
 # 🌇 glre
 
-<!-- 202403161516 -->
-
 <strong>
 <samp>
 
@@ -97,10 +95,6 @@ npm install glre
 </td>
 </table>
 
-## PRs
-
-###### welcome✨
-
 ## What does it look like?
 
 <table>
@@ -119,6 +113,11 @@ npm install glre
 ```ts
 import { createRoot } from 'react-dom/client'
 import { useGL, useFrame } from 'glre/react'
+import { vec4, fract, gl_FragCoord, iResolution } from 'glre/node'
+
+const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
+
+// or
 
 const fragment = `
 precision highp float;
@@ -152,14 +151,9 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 import { GLView } from 'expo-gl'
 import { useGL, useFrame } from 'glre/native'
 import { registerRootComponent } from 'expo'
+import { vec4, fract, fragCoord, iResolution } from 'glre/node'
 
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const self = useGL({ fragment })
@@ -187,14 +181,9 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 ```ts
 import { render } from 'solid-js/web'
 import { onGL, onFrame } from 'glre/solid'
+import { vec4, fract, fragCoord, iResolution } from 'glre/node'
 
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = onGL({ fragment })
@@ -221,13 +210,10 @@ pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
         import self from 'https://cdn.skypack.dev/glre@latest'
-        const fragment = `
-          precision highp float;
-          uniform vec2 iResolution;
-          void main() {
-            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-          }
-        `
+        import { vec4, fract, fragCoord, iResolution } from 'glre/node'
+
+        const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+
         function setup() {
                 const el = document.getElementById('id')
                 const gl = el.getContext('webgl2')
@@ -250,3 +236,194 @@ pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-
 </details>
 </samp>
 </strong>
+
+## Node System
+
+glre now features a powerful node-based shader system inspired by Three.js Shading Language (TSL). This system allows you to write shaders using TypeScript-like syntax and automatically handles the conversion to both WebGL and WebGPU shaders.
+
+The node system provides a declarative approach to shader creation, making your code more readable, maintainable, and portable across different rendering backends.
+
+### Basic Usage
+
+```ts
+import { vec4, fract, gl_FragCoord, iResolution } from 'glre/node'
+
+// Create a fragment shader using the node system
+const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
+
+// Use it with your preferred framework
+const gl = useGL({ fragment })
+```
+
+### Node Types and Functions
+
+The node system provides various types and functions that mirror GLSL functionality:
+
+```ts
+// Basic types
+import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre/node'
+
+// Built-in variables
+import { gl_FragCoord, gl_Position, iResolution, iTime } from 'glre/node'
+
+// Math functions
+import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre/node'
+
+// Texture functions
+import { texture, textureCube, sampler2D } from 'glre/node'
+```
+
+### Creating Custom Functions
+
+You can define reusable shader functions using the `Fn` constructor:
+
+```ts
+import { Fn, vec3, sin, cos, float } from 'glre/node'
+
+// Define a function that creates a rotation matrix
+const rotateY = Fn(([angle = float(0)]) => {
+        const s = sin(angle)
+        const c = cos(angle)
+        return mat3(c, 0, s, 0, 1, 0, -s, 0, c)
+})
+
+// Use the function in your shader
+const rotatedPosition = rotateY(iTime).mul(position)
+```
+
+### Conditional Logic
+
+The node system supports conditional operations:
+
+```ts
+import { If, vec4, lessThan } from 'glre/node'
+
+// Create a conditional color output
+const color = vec4(1, 0, 0, 1).toVar()
+
+If(position.y.lessThan(0.5), () => {
+        color.assign(vec4(0, 1, 0, 1))
+})
+
+// Use the color in your shader
+const fragment = color
+```
+
+### Uniforms
+
+The node system provides a powerful way to define and manage uniform values in your shaders:
+
+```ts
+import { createRoot } from 'react-dom/client'
+import { useGL, useFrame } from 'glre/react'
+import { uniform, vec3, vec4, sin, time } from 'glre/node'
+
+// Simple uniform with initial value
+const color = uniform(vec3(1.0, 0.5, 0.0))
+
+// Uniform with dynamic updates
+const pulse = uniform(1.0)
+
+// Create a simple pulsing color shader
+const App = () => {
+        const gl = useGL({
+                fragment: vec4(color.mul(pulse), 1.0),
+        })
+
+        useFrame(() => {
+                // Update uniform value each frame
+                pulse.set(0.5 + 0.5 * sin(time))
+
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+        })
+
+        return <canvas ref={gl.ref} />
+}
+
+createRoot(document.getElementById('root')).render(<App />)
+```
+
+Uniforms can be updated in various ways to create dynamic effects:
+
+```ts
+// Update with explicit value
+color.set(vec3(0.0, 1.0, 0.5))
+
+// Update based on object properties
+const objectColor = uniform(vec3(1.0, 0.0, 0.0)).onObjectUpdate(
+        ({ object }) => object.color
+)
+
+// Update based on render context
+const viewPosition = uniform(vec3(0.0, 0.0, 5.0)).onRenderUpdate(
+        ({ camera }) => camera.position
+)
+```
+
+### Attributes
+
+Attributes allow you to define per-vertex data for your shaders:
+
+```ts
+import { createRoot } from 'react-dom/client'
+import { useGL, useFrame } from 'glre/react'
+import { attribute, vec3, vec4 } from 'glre/node'
+
+// Define vertex positions
+const positions = attribute(
+        new Float32Array([
+                -1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0,
+        ])
+)
+
+// Define vertex colors
+const colors = attribute(
+        new Float32Array([
+                1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
+        ])
+)
+
+// Create a shader that uses attributes
+const App = () => {
+        const gl = useGL({
+                vertex: positions,
+                fragment: vec4(colors, 1.0),
+        })
+
+        useFrame(() => {
+                gl.clear()
+                gl.viewport()
+                gl.drawArrays()
+        })
+
+        return <canvas ref={gl.ref} />
+}
+
+createRoot(document.getElementById('root')).render(<App />)
+```
+
+For instanced rendering, you can use the instanced method:
+
+```ts
+// Define per-instance transformation matrices
+const instanceMatrix = attribute(new Float32Array([...]))
+  .instanced(1)
+
+// Define per-instance colors
+const instanceColor = attribute(new Float32Array([...]))
+  .instanced(1)
+```
+
+### WebGPU Support
+
+The node system is designed to work with both WebGL and WebGPU, providing a seamless transition path as browsers adopt the new standard. Your shader code written with the node system will automatically compile to the appropriate shading language based on the available renderer.
+
+## PRs
+
+###### welcome✨
+
+## LICENSE
+
+###### MIT⚾️
