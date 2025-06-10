@@ -1,5 +1,5 @@
-import { webgl } from './src/webgl/index'
-import { webgpu } from './src/webgpu/index'
+import { webgl } from './webgl/index'
+import { webgpu } from './webgpu/index'
 import type { GL, Fun } from './types'
 export type { GL, Fun }
 
@@ -12,8 +12,8 @@ export const createGL = async (props?: Partial<GL>) => {
 export const gl = await createGL()
 export default gl
 
-export * from './src/code/glsl'
-export * from './src/code/wgsl'
-export * from './src/node'
-export * from './src/webgl'
-export * from './src/webgpu'
+export * from './code/glsl'
+export * from './code/wgsl'
+export * from './node'
+export * from './webgl'
+export * from './webgpu'

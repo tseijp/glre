@@ -7,7 +7,6 @@ import { glsl } from '../code/glsl'
 import { updateUniforms } from '../node'
 import type { NodeProxy } from '../node'
 import type { GL } from '../../types'
-
 export * from './buffer'
 export * from './program'
 export * from './shader'

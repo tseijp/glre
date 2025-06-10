@@ -9,7 +9,6 @@ import { wgsl } from '../code/wgsl'
 import { updateUniforms } from '../node'
 import type { NodeProxy } from '../node'
 import type { GL } from '../../types'
-
 export * from './buffer'
 export * from './device'
 export * from './pipeline'

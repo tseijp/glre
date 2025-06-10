@@ -2,11 +2,13 @@ import { node } from './node'
 import { uniform } from './uniform'
 import { float } from './conv'
 import type { NodeProxy, FunctionNode, ConditionalNode } from './types'
-
-export { uniform }
-
 export type { NodeProxy, FunctionNode, ConditionalNode }
-export { node }
+export * from './cache'
+export * from './const'
+export * from './conv'
+export * from './node'
+export * from './types'
+export * from './uniform'
 
 // 関数定義
 export const Fn = (jsFunc: Function): FunctionNode => {
@@ -99,9 +101,3 @@ export const clamp = (x: NodeProxy, min: NodeProxy, max: NodeProxy) => {
         })
 }
 */
-
-export * from './const'
-export * from './conv'
-export * from './node'
-export * from './types'
-export * from './uniform'
