@@ -27,32 +27,15 @@ export const base = (props?: Partial<GL>) => {
                 // WebGL/WebGPU共通のテクスチャ処理
         }
 
-        const clear = (key = 'COLOR_BUFFER_BIT') => {
-                if (self.renderer === 'webgl') self.gl.clear(self.gl[key])
-        }
-
-        const viewport = (size: number[] = self.size) => {
-                if (self.renderer === 'webgl') self.gl.viewport(0, 0, ...size)
-        }
-
-        const drawArrays = (mode = 'TRIANGLES') => {
-                if (self.renderer === 'webgl') {
-                        self.gl.drawArrays(self.gl[mode], 0, self.count)
-                }
-        }
-
         const self = event<Partial<GL>>({
                 ...props,
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,
                 counter: 0,
+                load,
                 resize,
                 mousemove,
-                load,
-                clear,
-                viewport,
-                drawArrays,
         }) as GL
 
         return self

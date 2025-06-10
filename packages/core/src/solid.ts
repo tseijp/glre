@@ -40,7 +40,7 @@ export const onTF = (props?: Partial<GL>, self = gl) => {
 }
 
 export const onFrame = (fun: Fun, self = gl) => {
-        onMount(() => self('render', fun))
+        onMount(() => self('loop', fun))
 }
 
 export const setTexture = (props: any, self = gl) => {

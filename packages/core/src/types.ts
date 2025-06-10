@@ -55,9 +55,9 @@ export type GL = EventState<{
          */
         ref?: any
         init(varying?: string[]): void
+        loop(): void
         mount(): void
         clean(): void
-        render(): void
         mousemove(e: Event): void
         resize(e?: Event, width?: number, height?: number): void
         load(e?: Event, image?: HTMLImageElement): void
