@@ -117,23 +117,9 @@ import { vec4, fract, gl_FragCoord, iResolution } from 'glre/node'
 
 const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
 
-// or
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
-
 const App = () => {
         const gl = useGL({ fragment })
-        useFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
+        useFrame(gl.loop)
         return <canvas ref={gl.ref} />
 }
 
