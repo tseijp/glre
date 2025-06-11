@@ -1,6 +1,6 @@
 import { Nested, EventState } from 'reev'
-import type { Fun, Queue, Frame } from 'refr'
 import { X } from './node'
+import type { Fun, Queue, Frame } from 'refr'
 export type { Fun, Queue, Frame }
 export type Uniform = number | number[]
 export type Attribute = number[]
@@ -8,10 +8,7 @@ export type Attributes = Record<string, Attribute>
 export type Uniforms = Record<string, Uniform>
 export type PrecisionMode = 'highp' | 'mediump' | 'lowp'
 
-export type GLClearMode =
-        | 'COLOR_BUFFER_BIT'
-        | 'DEPTH_BUFFER_BIT'
-        | 'STENCIL_BUFFER_BIT'
+export type GLClearMode = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFER_BIT'
 
 export type GLDrawMode =
         | 'POINTS'
@@ -31,6 +28,7 @@ export type GL = EventState<{
         isNative: boolean
         isWebGL: boolean
         isLoop: boolean
+        isGL: true
         width: number
         height: number
         size: [number, number]
@@ -69,6 +67,8 @@ export type GL = EventState<{
          * events
          */
         ref?: any
+        init(): void
+        loop(): void
         mount(): void
         clean(): void
         render(): void
@@ -78,10 +78,13 @@ export type GL = EventState<{
         /**
          * setter
          */
-        uniform(key: string, value: Uniform): GL
+        _uniform?(key: string, value: Uniform, isMatrix?: boolean): GL
+        uniform(key: string, value: Uniform, isMatrix?: boolean): GL
         uniform(target: { [key: string]: Uniform }): GL
+        _texture?(key: string, value: string): GL
         texture(key: string, value: string): GL
         texture(target: { [key: string]: string }): GL
+        _attribute?(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(target: { [key: string]: Attribute }): GL
 }>

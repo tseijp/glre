@@ -4,18 +4,7 @@ hide_table_of_contents: true
 title: 'Event API'
 description: 'Event API'
 image: https://github.com/tseijp.png
-keywords:
-        [
-                glsl,
-                webgl,
-                hooks,
-                react,
-                reactjs,
-                reactive,
-                solid,
-                solidjs,
-                typescript,
-        ]
+keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
 date: 2023-01-01
 ---
 
@@ -28,23 +17,23 @@ gl({
         // init
         init() {},
 
-        // mount
+        // Schedule before rendering
+        loop()
+
+        // run when mount phase
         mount() {},
 
-        // clean
+        // run when clean phase
         clean() {},
 
-        // render
+        // Schedule on rendering
         render() {},
 
-        // mousemove
+        // mousemove event
         mousemove() {},
 
-        // resize
+        // resize event
         resize() {},
-
-        // scroll
-        scroll() {},
 })
 ```
 

@@ -1,6 +1,6 @@
-import { durable, nested } from 'reev'
+import { nested } from 'reev'
 import { createAttribute, createIbo, createVbo, vertexStride } from './buffer'
-import { createProgram, getUniformType } from './program'
+import { createProgram, deleteProgram, getUniformType } from './program'
 import { createFragmentShader, createVertexShader } from './shader'
 import { activeTexture, createTexture } from './texture'
 import { glsl } from '../code/glsl'
@@ -14,85 +14,66 @@ export * from './texture'
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
-export const webgl = (self: GL) => {
-        // public method
-        self('mount', () => {
-                const c = self.gl
-                let vs = self.vs || self.vert || self.vertex
-                let fs = self.fs || self.frag || self.fragment
+export const webgl = (gl: GL) => {
+        gl('init', () => {
+                const c = gl.gl
+                let vs = gl.vs || gl.vert || gl.vertex
+                let fs = gl.fs || gl.frag || gl.fragment
                 if (is.obj(fs)) fs = glsl(fs as X)
                 if (is.obj(vs)) vs = glsl(vs as X)
-                if (self.count === 6) self.attribute({ a_position })
-                self.pg = createProgram(
-                        c,
-                        createVertexShader(c, vs),
-                        createFragmentShader(c, fs)
-                )
-                self.location = nested((key, isAttribute = false) => {
-                        return isAttribute
-                                ? c.getAttribLocation(self.pg, key)
-                                : c.getUniformLocation(self.pg, key)
+                if (gl.count === 6) gl.attribute({ a_position })
+                gl.pg = createProgram(c, createVertexShader(c, vs), createFragmentShader(c, fs))
+                gl.location = nested((key, isAttribute = false) => {
+                        return isAttribute ? c.getAttribLocation(gl.pg, key) : c.getUniformLocation(gl.pg, key)
                 })
         })
 
-        self('render', () => {
-                const c = self.gl
-                c.useProgram(self.pg)
-                self.queue.flush()
+        gl('clean', () => {
+                const c = gl.gl
+                deleteProgram(c, gl.pg)
+        })
+
+        gl('render', () => {
+                const c = gl.gl
+                c.useProgram(gl.pg)
+                gl.queue.flush()
                 c.clear(c.COLOR_BUFFER_BIT)
-                c.viewport(0, 0, ...self.size)
-                c.drawArrays(c.TRIANGLES, 0, self.count)
+                c.viewport(0, 0, ...gl.size)
+                c.drawArrays(c.TRIANGLES, 0, gl.count)
         })
 
-        // private method
-        const _attribute = (
-                key: string,
-                value: number[],
-                iboValue: number[]
-        ) => {
-                self.queue(() => {
-                        const c = self.gl
-                        const n = self.count
-                        const loc = self.location(key, true)
-                        const vbo = createVbo(c, value)
-                        const ibo = createIbo(c, iboValue)
-                        const stride = vertexStride(n, value, iboValue)
-                        createAttribute(c, stride, loc, vbo, ibo)
-                })
-        }
+        gl('_attribute', (key = '', value: number[], iboValue: number[]) => {
+                const c = gl.gl
+                const n = gl.count
+                const loc = gl.location(key, true)
+                const vbo = createVbo(c, value)
+                const ibo = createIbo(c, iboValue)
+                const stride = vertexStride(n, value, iboValue)
+                createAttribute(c, stride, loc, vbo, ibo)
+        })
 
-        const _uniform = (key: string, value = 0, isMatrix = false) => {
+        gl('_uniform', (key: string, value = 0, isMatrix = false) => {
                 const type = getUniformType(value, isMatrix)
-                self.queue(() => {
-                        const c = self.gl
-                        const loc = self.location(key)
-                        if (isMatrix) c[type](loc, false, value)
-                        else c[type](loc, value)
-                })
-        }
+                const c = gl.gl
+                const loc = gl.location(key)
+                if (isMatrix) c[type](loc, false, value)
+                else c[type](loc, value)
+        })
 
         const _loadFn = (image: HTMLImageElement) => {
-                self.queue(() => {
-                        const loc = self.location(image.alt)
-                        const unit = self.activeUnit(image.alt)
-                        const tex = createTexture(self.gl, image)
-                        self.queue(() => {
-                                activeTexture(self.gl, loc, unit, tex)
-                                return true
-                        })
-                })
+                const loc = gl.location(image.alt)
+                const unit = gl.activeUnit(image.alt)
+                const tex = createTexture(gl.gl, image)
+                activeTexture(gl.gl, loc, unit, tex)
         }
 
-        const _texture = (alt: string, src: string) => {
+        gl('_texture', (alt: string, src: string) => {
                 const image = new Image()
                 image.addEventListener('load', _loadFn.bind(null, image), false)
                 Object.assign(image, { src, alt, crossOrigin: 'anonymous' })
-        }
+        })
 
         let _activeUnit = 0
-        self.activeUnit = nested(() => _activeUnit++)
-        self.attribute = durable(_attribute)
-        self.uniform = durable(_uniform)
-        self.texture = durable(_texture)
-        return self
+        gl.activeUnit = nested(() => _activeUnit++)
+        return gl
 }

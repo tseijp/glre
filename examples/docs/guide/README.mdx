@@ -3,33 +3,16 @@ hide_table_of_contents: true
 title: 'Creating a scene'
 description: 'Creating a scene'
 image: https://github.com/tseijp.png
-keywords:
-        [
-                glsl,
-                webgl,
-                hooks,
-                react,
-                reactjs,
-                reactive,
-                solid,
-                solidjs,
-                typescript,
-        ]
+keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
 date: 2023-01-01
 ---
 
 # Creating a scene
 
-<App />
+<Result />
 
 The goal of this section is to give a brief introduction to glre.js.
 We will start by setting up a scene, with a spinning cube.
-
-- Based on: [Ray marching cube minus sphere][ref]
-- Result: [glre rotate cube test2 - CodeSandbox][demo]
-
-[ref]: https://www.shadertoy.com/view/4tBGDt
-[demo]: https://codesandbox.io/s/glre-rotate-cube-test2-8kycuh
 
 ## Before we started
 
@@ -43,17 +26,14 @@ Save the following HTML to a file on your computer.
 
         // Our GLSL and Javascript will go here.
         const frag = `
-                ...
+                // ...
         `
 
-        document.addEventListener('DOMContentLoaded', setup)
+        function App() {
+                // ...
+        }
 
-        function setup() {
-                // ...
-        }
-        function draw() {
-                // ...
-        }
+        document.addEventListener('DOMContentLoaded', App)
 </script>
 ```
 
@@ -117,38 +97,35 @@ void main() {
 ## Setup glre
 
 ```ts
-document.addEventListener('DOMContentLoaded', setup)
-
-function setup() {
-        self.el = document.getElementById('id')
-        self.gl = self.el.getContext('webgl2')
-        self.frag = frag
-        self.init()
-        self.resize()
-        self.uniform({
+function App() {
+        const el = document.getElementById('canvas')
+        const { mount, size, uniform } = createGL({
+                el,
+                gl: el.getContext('webgl2'),
+                frag,
+                isWebGL: true,
+                resize() {
+                        const { clientWidth: w } = el.parentNode
+                        size[0] = el.width = w
+                        size[1] = el.height = w / 2
+                },
+                render() {
+                        const t = performance.now() / 1000
+                        const x = 200 * Math.cos(t)
+                        const z = 200 * Math.sin(t)
+                        uniform({ eye: [x, 0, z] })
+                },
+        })
+        mount()
+        uniform({
                 up: [0, 1, 0],
                 focus: [0, 0, 0],
                 focal: 500,
                 size: 50,
         })
-        draw()
 }
-```
 
-## Rendering the scene
-
-```ts
-function draw() {
-        requestAnimationFrame(draw)
-        const t = performance.now() / 1000
-        const x = 200 * Math.cos(t)
-        const z = 200 * Math.sin(t)
-        self.uniform({ eye: [x, 0, z] })
-        self.render()
-        self.viewport()
-        self.clear()
-        self.drawArrays()
-}
+document.addEventListener('DOMContentLoaded', App)
 ```
 
 ## The result
@@ -157,6 +134,7 @@ function draw() {
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
         import self from 'https://cdn.skypack.dev/glre@0.15.0'
+
         const frag = `
                 precision highp float;
                 uniform vec2 iResolution; // canvas size
@@ -204,53 +182,42 @@ function draw() {
                 }
         `
 
-        document.addEventListener('DOMContentLoaded', setup)
-
-        function setup() {
-                self.el = document.getElementById('id')
-                self.gl = self.el.getContext('webgl2')
-                self.frag = frag
-                self.init()
-                self.resize()
-                self.uniform({
+        export function App() {
+                const el = document.getElementById('canvas')
+                const { mount, size, uniform } = createGL({
+                        el,
+                        gl: el.getContext('webgl2'),
+                        frag,
+                        isWebGL: true,
+                        resize() {
+                                const { clientWidth: w } = el.parentNode
+                                size[0] = el.width = w
+                                size[1] = el.height = w / 2
+                        },
+                        render() {
+                                const t = performance.now() / 1000
+                                const x = 200 * Math.cos(t)
+                                const z = 200 * Math.sin(t)
+                                uniform({ eye: [x, 0, z] })
+                        },
+                })
+                mount()
+                uniform({
                         up: [0, 1, 0],
                         focus: [0, 0, 0],
                         focal: 500,
                         size: 50,
                 })
-                draw()
         }
 
-        function draw() {
-                requestAnimationFrame(draw)
-                const t = performance.now() / 1000
-                const x = 200 * Math.cos(t)
-                const z = 200 * Math.sin(t)
-                self.uniform({ eye: [x, 0, z] })
-                self.render()
-                self.viewport()
-                self.clear()
-                self.drawArrays()
-        }
+        document.addEventListener('DOMContentLoaded', App)
 </script>
 ```
 
-import { createGL } from 'glre'
+import { createGL } from 'glre/src/index'
 import { useRef, useEffect } from 'react'
 
-export const App = () => {
-        const ref = useResizeRef(self)
-        useEffect(() => setup(), [])
-        return (
-                <div ref={ref} style={{ textAlign: 'center' }}>
-                        <canvas id="id" />
-                </div>
-        )
-}
-
-export const self = createGL()
-
-export const frag = `
+export const frag = /* CPP */ `
         precision highp float;
         uniform vec2 iResolution; // canvas size
         uniform vec3 up;          // camera up direction
@@ -297,47 +264,39 @@ export const frag = `
         }
 `
 
-export function setup() {
-        self.el = document.getElementById('id')
-        self.gl = self.el.getContext('webgl2')
-        self.frag = frag
-        self.init()
-        self.resize()
-        self.uniform({
+export function App() {
+        const el = document.getElementById('canvas')
+        const { mount, size, uniform } = createGL({
+                el,
+                gl: el.getContext('webgl2'),
+                frag,
+                isWebGL: true,
+                resize() {
+                        const { clientWidth: w } = el.parentNode
+                        size[0] = el.width = w
+                        size[1] = el.height = w / 2
+                },
+                render() {
+                        const t = performance.now() / 1000
+                        const x = 200 * Math.cos(t)
+                        const z = 200 * Math.sin(t)
+                        uniform({ eye: [x, 0, z] })
+                },
+        })
+        mount()
+        uniform({
                 up: [0, 1, 0],
                 focus: [0, 0, 0],
                 focal: 500,
                 size: 50,
         })
-        draw()
 }
 
-export function draw() {
-        requestAnimationFrame(draw)
-        const t = performance.now() / 1000
-        const x = 200 * Math.cos(t)
-        const z = 200 * Math.sin(t)
-        self.uniform({ eye: [x, 0, z] })
-        self.render()
-        self.viewport()
-        self.clear()
-        self.drawArrays()
-}
-
-export function useResizeRef(self) {
-        const ref = useRef(null)
-        useEffect(() => {
-                const callback = () => {
-                        const w = ref.current?.clientWidth
-                        if (!w || w >= self.width) return
-                        self.size[0] = self.el.width = w
-                        self.size[1] = self.el.height = w
-                        self.uniform({ iResolution: [w, w] })
-                }
-                self({ width: 512, height: 512 })
-                self.frame(callback)
-                window.addEventListener('resize', callback)
-                return () => window.removeEventListener('resize', callback)
-        }, [self])
-        return ref
+export const Result = () => {
+        useEffect(() => App(), [])
+        return (
+                <div style={{ position: 'relative' }}>
+                        <canvas id="canvas" />
+                </div>
+        )
 }

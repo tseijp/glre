@@ -98,28 +98,27 @@ npm install glre
 ## What does it look like?
 
 <table>
-  <tr>
-    <td width="7500px" align="center" valign="center">
-      glre simplifies glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
-    </td>
-    <td width="2500px" valign="top">
-      <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
-        <img alt="4" src="https://i.imgur.com/Lb3h9fs.jpg"></img>
-      </a>
-    </td>
-  </tr>
+  <tbody>
+    <tr>
+      <td width="7500px" align="center" valign="center">
+        glre simplifies glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
+      </td>
+      <td width="2500px" valign="top">
+        <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
+          <img alt="4" src="https://i.imgur.com/Lb3h9fs.jpg"></img>
+        </a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, useFrame } from 'glre/react'
-import { vec4, fract, gl_FragCoord, iResolution } from 'glre/node'
-
+import { useGL, vec4, fract, gl_FragCoord, iResolution } from 'glre/react'
 const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = useGL({ fragment })
-        useFrame(gl.loop)
         return <canvas ref={gl.ref} />
 }
 
@@ -135,22 +134,19 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 
 ```ts
 import { GLView } from 'expo-gl'
-import { useGL, useFrame } from 'glre/native'
 import { registerRootComponent } from 'expo'
-import { vec4, fract, fragCoord, iResolution } from 'glre/node'
-
+import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
 const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const self = useGL({ fragment })
-        useFrame(() => {
-                self.clear()
-                self.viewport()
-                self.drawArrays()
-                self.gl.flush()
-                self.gl.endFrameEXP()
+        const { gl, ref } = useGL({
+                fragment,
+                render() {
+                        gl.flush()
+                        gl.endFrameEXP()
+                },
         })
-        return <GLView style={{ flex: 1 }} onContextCreate={self.ref} />
+        return <GLView style={{ flex: 1 }} onContextCreate={ref} />
 }
 
 registerRootComponent(App)
@@ -166,18 +162,11 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 
 ```ts
 import { render } from 'solid-js/web'
-import { onGL, onFrame } from 'glre/solid'
-import { vec4, fract, fragCoord, iResolution } from 'glre/node'
-
+import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
 const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = onGL({ fragment })
-        onFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
         return <canvas ref={gl.ref} />
 }
 
@@ -195,27 +184,16 @@ pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@latest'
-        import { vec4, fract, fragCoord, iResolution } from 'glre/node'
-
+        import createGL from 'https://cdn.skypack.dev/glre@latest'
+        import { vec4, fract, fragCoord, iResolution } from 'glre'
         const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
-        function setup() {
+        function App() {
                 const el = document.getElementById('id')
                 const gl = el.getContext('webgl2')
-                self({ el, gl, fragment })
-                self.init()
-                self.resize()
-                draw()
+                createGL({ el, gl, fragment }).mount()
         }
-        function draw() {
-                requestAnimationFrame(draw)
-                self.render()
-                self.clear()
-                self.viewport()
-                self.drawArrays()
-        }
-        document.addEventListener('DOMContentLoaded', setup)
+        document.addEventListener('DOMContentLoaded', App)
 </script>
 ```
 
@@ -229,34 +207,22 @@ glre now features a powerful node-based shader system inspired by Three.js Shadi
 
 The node system provides a declarative approach to shader creation, making your code more readable, maintainable, and portable across different rendering backends.
 
-### Basic Usage
-
-```ts
-import { vec4, fract, gl_FragCoord, iResolution } from 'glre/node'
-
-// Create a fragment shader using the node system
-const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
-
-// Use it with your preferred framework
-const gl = useGL({ fragment })
-```
-
 ### Node Types and Functions
 
 The node system provides various types and functions that mirror GLSL functionality:
 
 ```ts
 // Basic types
-import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre/node'
+import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre'
 
 // Built-in variables
-import { gl_FragCoord, gl_Position, iResolution, iTime } from 'glre/node'
+import { gl_FragCoord, gl_Position, iResolution, iTime } from 'glre'
 
 // Math functions
-import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre/node'
+import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre'
 
 // Texture functions
-import { texture, textureCube, sampler2D } from 'glre/node'
+import { texture, textureCube, sampler2D } from 'glre'
 ```
 
 ### Creating Custom Functions
@@ -264,7 +230,7 @@ import { texture, textureCube, sampler2D } from 'glre/node'
 You can define reusable shader functions using the `Fn` constructor:
 
 ```ts
-import { Fn, vec3, sin, cos, float } from 'glre/node'
+import { Fn, vec3, sin, cos, float } from 'glre'
 
 // Define a function that creates a rotation matrix
 const rotateY = Fn(([angle = float(0)]) => {
@@ -282,7 +248,7 @@ const rotatedPosition = rotateY(iTime).mul(position)
 The node system supports conditional operations:
 
 ```ts
-import { If, vec4, lessThan } from 'glre/node'
+import { If, vec4, lessThan } from 'glre'
 
 // Create a conditional color output
 const color = vec4(1, 0, 0, 1).toVar()
@@ -301,51 +267,23 @@ The node system provides a powerful way to define and manage uniform values in y
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, useFrame } from 'glre/react'
-import { uniform, vec3, vec4, sin, time } from 'glre/node'
+import { useGL } from 'glre/react'
+import { uniform, vec3, vec4 } from 'glre'
 
-// Simple uniform with initial value
-const color = uniform(vec3(1.0, 0.5, 0.0))
-
-// Uniform with dynamic updates
-const pulse = uniform(1.0)
+const uRand = uniform(1.0)
 
 // Create a simple pulsing color shader
 const App = () => {
         const gl = useGL({
-                fragment: vec4(color.mul(pulse), 1.0),
+                fragment: vec4(vec3(uRand), 1.0),
+                loop() {
+                        pulse.set(0.5 + 0.5 * Math.random())
+                },
         })
-
-        useFrame(() => {
-                // Update uniform value each frame
-                pulse.set(0.5 + 0.5 * sin(time))
-
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
-
         return <canvas ref={gl.ref} />
 }
 
 createRoot(document.getElementById('root')).render(<App />)
-```
-
-Uniforms can be updated in various ways to create dynamic effects:
-
-```ts
-// Update with explicit value
-color.set(vec3(0.0, 1.0, 0.5))
-
-// Update based on object properties
-const objectColor = uniform(vec3(1.0, 0.0, 0.0)).onObjectUpdate(
-        ({ object }) => object.color
-)
-
-// Update based on render context
-const viewPosition = uniform(vec3(0.0, 0.0, 5.0)).onRenderUpdate(
-        ({ camera }) => camera.position
-)
 ```
 
 ### Attributes
@@ -354,52 +292,19 @@ Attributes allow you to define per-vertex data for your shaders:
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, useFrame } from 'glre/react'
-import { attribute, vec3, vec4 } from 'glre/node'
+import { useGL } from 'glre/react'
+import { attribute, vec3, vec4 } from 'glre'
 
 // Define vertex positions
-const positions = attribute(
-        new Float32Array([
-                -1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0,
-        ])
-)
-
-// Define vertex colors
-const colors = attribute(
-        new Float32Array([
-                1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 0.0,
-        ])
-)
+const positions = attribute(-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0)
 
 // Create a shader that uses attributes
 const App = () => {
-        const gl = useGL({
-                vertex: positions,
-                fragment: vec4(colors, 1.0),
-        })
-
-        useFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
-
+        const gl = useGL({ vertex: positions })
         return <canvas ref={gl.ref} />
 }
 
 createRoot(document.getElementById('root')).render(<App />)
-```
-
-For instanced rendering, you can use the instanced method:
-
-```ts
-// Define per-instance transformation matrices
-const instanceMatrix = attribute(new Float32Array([...]))
-  .instanced(1)
-
-// Define per-instance colors
-const instanceColor = attribute(new Float32Array([...]))
-  .instanced(1)
 ```
 
 ### WebGPU Support

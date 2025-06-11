@@ -1,14 +1,3 @@
-export type Merge<T extends object> = Partial<{
-        [K in keyof T]: T[K] extends object ? Merge<T[K]> : T[K]
-}>
-
-export function merge<T extends object>(a: Merge<T>, b: Merge<T>) {
-        for (const key in b) {
-                if (is.obj(a[key]) && is.obj(b[key])) merge(a[key], b[key])
-                else a[key] = b[key]
-        }
-}
-
 export const is = {
         arr: Array.isArray,
         bol: (a: unknown): a is boolean => typeof a === 'boolean',
@@ -20,10 +9,8 @@ export const is = {
         nul: (a: unknown): a is null => a === null,
         set: (a: unknown): a is Set<unknown> => a instanceof Set,
         map: (a: unknown): a is Map<unknown, unknown> => a instanceof Map,
-        obj: (a: unknown): a is object =>
-                !!a && a.constructor.name === 'Object',
-        nan: (a: unknown): a is number =>
-                typeof a === 'number' && Number.isNaN(a),
+        obj: (a: unknown): a is object => !!a && a.constructor.name === 'Object',
+        nan: (a: unknown): a is number => typeof a === 'number' && Number.isNaN(a),
 }
 
 export const isServer = () => {
@@ -43,15 +30,9 @@ type Eachable<Value = any, Key = any, This = any> = {
         forEach(cb: EachFn<Value, Key, This>, ctx?: This): void
 }
 
-export const each = <Value, Key, This>(
-        obj: Eachable<Value, Key, This>,
-        fn: EachFn<Value, Key, This>
-) => obj.forEach(fn)
+export const each = <Value, Key, This>(obj: Eachable<Value, Key, This>, fn: EachFn<Value, Key, This>) => obj.forEach(fn)
 
-export const flush = <Value extends Function, Key, This>(
-        obj: Eachable<Value, Key, This>,
-        ...args: any[]
-) => {
+export const flush = <Value extends Function, Key, This>(obj: Eachable<Value, Key, This>, ...args: any[]) => {
         each(obj, (f) => f(...args))
 }
 

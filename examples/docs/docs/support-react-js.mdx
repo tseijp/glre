@@ -4,18 +4,7 @@ hide_table_of_contents: true
 title: 'Support React.js'
 description: 'Support React.js'
 image: https://github.com/tseijp.png
-keywords:
-        [
-                glsl,
-                webgl,
-                hooks,
-                react,
-                reactjs,
-                reactive,
-                solid,
-                solidjs,
-                typescript,
-        ]
+keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
 date: 2023-01-01
 ---
 
@@ -27,7 +16,7 @@ date: 2023-01-01
 
 ```tsx
 import { useMemo } from 'react'
-import { useGL, useFrame } from 'glre/react'
+import { useGL } from 'glre/react'
 
 export const frag = `
 precision mediump float;
@@ -57,23 +46,14 @@ void main() {
 
 export const Canvas = () => {
         const gl = useGL({ frag })
-
-        useFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-                return true
-        })
-
         return <canvas ref={gl.ref} />
 }
 ```
 
 import useBaseUrl from '@docusaurus/useBaseUrl'
+import { useControls } from 'leva'
 import { useMemo } from 'react'
-import { createGL } from 'glre/src'
-import { useGL, useFrame } from 'glre/src/react'
-import { useGLRender, useUniformControls, useResizeRef } from './hooks'
+import { useGL } from 'glre/src/react'
 
 export const frag = `
 precision mediump float;
@@ -102,32 +82,25 @@ void main() {
 `
 
 export const Canvas = () => {
-        // const src = useBaseUrl('/img/memo/react.png')
-        const self = useGLRender(frag, 1920 / 2, 1080 / 2)
-        const ref = useResizeRef(self)
-        useUniformControls(
-                {
+        const gl = useGL({
+                frag,
+                resize() {
+                        const { clientWidth: w } = gl.el.parentNode
+                        gl.size[0] = gl.el.width = w
+                        gl.size[1] = gl.el.height = w
+                },
+        })
+        gl.uniform(
+                useControls({
                         ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
                         ellipseXCoord: { min: 0, value: 2.2, max: 4.4 },
                         ellipseYCoord: { min: 0, value: 5.4, max: 10.8 },
                         ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
-                },
-                self
+                })
         )
         return (
-                <div ref={ref} style={{ position: 'relative' }}>
-                        <canvas ref={self.ref} />
-                        {/*<img
-                                src={src}
-                                style={{
-                                        width: 1024,
-                                        height: 890,
-                                        position: 'absolute',
-                                        left: 0,
-                                        zIndex: -1,
-                                        display: 'none',
-                                }}
-                        />*/}
+                <div style={{ position: 'relative' }}>
+                        <canvas ref={gl.ref} />
                 </div>
         )
 }

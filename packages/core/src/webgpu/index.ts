@@ -1,9 +1,5 @@
 import { requestWebGPUDevice } from './device'
-import {
-        createCommandEncoder,
-        createRenderPass,
-        createRenderPipeline,
-} from './pipeline'
+import { createCommandEncoder, createRenderPass, createRenderPipeline } from './pipeline'
 import { wgsl } from '../code/wgsl'
 import { is } from '../utils'
 import type { X } from '../node'
@@ -13,19 +9,19 @@ export * from './device'
 export * from './pipeline'
 export * from './texture'
 
-export const webgpu = (self: GL) => {
+export const webgpu = (gl: GL) => {
         const init = async () => {
                 const { device } = await requestWebGPUDevice()
-                self.gl = { device }
-                let vs = self.vs || self.vert || self.vertex
-                let fs = self.fs || self.frag || self.fragment
+                gl.gl = { device }
+                let vs = gl.vs || gl.vert || gl.vertex
+                let fs = gl.fs || gl.frag || gl.fragment
                 if (is.obj(vs)) vs = wgsl(fs as X)
                 if (is.obj(fs)) fs = wgsl(fs as X)
-                self.gl.pipeline = createRenderPipeline(device, vs, fs)
+                gl.gl.pipeline = createRenderPipeline(device, vs, fs)
         }
 
         const loop = () => {
-                const { device, context, pipeline } = self.gl
+                const { device, context, pipeline } = gl.gl
                 const encoder = createCommandEncoder(device)
                 const pass = createRenderPass(encoder, {
                         view: context.getCurrentTexture().createView(),
@@ -34,11 +30,11 @@ export const webgpu = (self: GL) => {
                         storeOp: 'store',
                 })
                 pass.setPipeline(pipeline)
-                pass.draw(self.count)
+                pass.draw(gl.count)
                 pass.end()
                 device.queue.submit([encoder.finish()])
         }
 
         // @TODO add uniform and attribute
-        return self({ init, loop })
+        return gl({ init, loop })
 }

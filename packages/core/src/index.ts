@@ -1,8 +1,9 @@
-import { event } from 'reev'
+import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
 import { webgl } from './webgl/index'
 import { webgpu } from './webgpu/index'
-import { isWebGPUSupported } from './utils'
+import { is, isWebGPUSupported } from './utils'
+import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './code/glsl'
 export * from './code/wgsl'
@@ -16,71 +17,89 @@ let iTime = performance.now(),
         iPrevTime = 0,
         iDeltaTime = 0
 
-// 共通レンダラーベース
+export const isGL = (a: unknown): a is EventState<GL> => {
+        if (!is.obj(a)) return false
+        if ('isGL' in a) return true
+        return false
+}
+
 export const createGL = (props?: Partial<GL>) => {
-        const self = event<Partial<GL>>({
+        const gl = event<Partial<GL>>({
                 isNative: false,
                 isWebGL: true,
                 isLoop: true,
+                isGL: true,
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,
                 counter: 0,
-                ...props,
-        }) as GL
+        }) as EventState<GL>
 
-        self.queue = createQueue()
-        self.frame = createFrame()
-
-        self('mount', () => {
-                if (!isWebGPUSupported()) self.isWebGL = true
-                if (self.isWebGL) {
-                        webgl(self)
-                } else webgpu(self)
-                self.resize()
-                self.frame(() => {
-                        self.render()
-                        return self.isLoop
+        gl('mount', () => {
+                if (!isWebGPUSupported()) gl.isWebGL = true
+                if (gl.isWebGL) {
+                        webgl(gl)
+                } else webgpu(gl)
+                gl.init()
+                gl.resize()
+                gl.frame(() => {
+                        gl.loop()
+                        gl.render()
+                        return gl.isLoop
                 })
-                if (self.isNative) return
-                window.addEventListener('resize', self.resize)
-                self.el.addEventListener('mousemove', self.mousemove)
+                if (gl.isNative) return
+                window.addEventListener('resize', gl.resize)
+                gl.el.addEventListener('mousemove', gl.mousemove)
         })
 
-        self('clean', () => {
-                self.frame.stop()
-                self.frame.clean(self.render)
-                if (self.isNative) return
-                window.removeEventListener('resize', self.resize)
-                self.el.removeEventListener('mousemove', self.mousemove)
+        gl('clean', () => {
+                gl.frame.stop()
+                gl.frame.clean(gl.render)
+                if (gl.isNative) return
+                window.removeEventListener('resize', gl.resize)
+                gl.el.removeEventListener('mousemove', gl.mousemove)
         })
 
-        self('render', () => {
+        gl('loop', () => {
                 iPrevTime = iTime
                 iTime = performance.now() / 1000
                 iDeltaTime = iTime - iPrevTime
-                self.uniform({ iPrevTime, iTime, iDeltaTime })
-                // if (self.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
+                gl.uniform({ iPrevTime, iTime, iDeltaTime })
+                // if (gl.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
         })
 
-        self('resize', () => {
-                const w = self.width || window.innerWidth
-                const h = self.height || window.innerHeight
-                self.size[0] = self.el.width = w
-                self.size[1] = self.el.height = h
-                self.uniform('iResolution', self.size)
+        gl('resize', () => {
+                const w = gl.width || window.innerWidth
+                const h = gl.height || window.innerHeight
+                gl.size[0] = gl.el.width = w
+                gl.size[1] = gl.el.height = h
+                gl.uniform('iResolution', gl.size)
         })
 
-        self('mousemove', (_e: any, x = _e.clientX, y = _e.clientY) => {
-                const [w, h] = self.size
-                const { top, left } = self.el.getBoundingClientRect()
-                self.mouse[0] = (x - top - w / 2) / (w / 2)
-                self.mouse[1] = -(y - left - h / 2) / (h / 2)
-                self.uniform('iMouse', self.mouse)
+        gl('mousemove', (_e: any, x = _e.clientX, y = _e.clientY) => {
+                const [w, h] = gl.size
+                const { top, left } = gl.el.getBoundingClientRect()
+                gl.mouse[0] = (x - top - w / 2) / (w / 2)
+                gl.mouse[1] = -(y - left - h / 2) / (h / 2)
+                gl.uniform('iMouse', gl.mouse)
         })
 
-        return self
+        gl.queue = createQueue()
+        gl.frame = createFrame()
+
+        gl.attribute = durable((key, value, iboValue) => {
+                gl.queue(() => void gl._attribute?.(key, value, iboValue))
+        })
+
+        gl.uniform = durable((key, value, isMatrix) => {
+                gl.queue(() => void gl._uniform?.(key, value, isMatrix))
+        })
+
+        gl.texture = durable((key, value) => {
+                gl.queue(() => void gl._texture?.(key, value))
+        })
+
+        return gl(props)
 }
 
-export const defaultGL = createGL()
-export default defaultGL
+export default createGL

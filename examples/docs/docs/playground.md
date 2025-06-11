@@ -4,18 +4,7 @@ hide_table_of_contents: true
 title: 'Playground'
 description: 'Playground'
 image: https://github.com/tseijp.png
-keywords:
-        [
-                glsl,
-                webgl,
-                hooks,
-                react,
-                reactjs,
-                reactive,
-                solid,
-                solidjs,
-                typescript,
-        ]
+keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
 date: 2023-01-01
 ---
 
@@ -23,10 +12,7 @@ date: 2023-01-01
 
 Playgrounds allow you to run glre in your browser, without installing anything!
 
-They are mostly useful for:
-
-Testing glre
-Reporting bugs
+They are mostly useful for: [play.glre.dev](https://play.glre.dev)
 
 ## CodeSandbox
 
