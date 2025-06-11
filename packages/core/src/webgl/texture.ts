@@ -2,7 +2,7 @@
 export const createTexture = (
         c: WebGLRenderingContext,
         img: HTMLImageElement
-): WebGLTexture => {
+) => {
         const texture = c.createTexture()
         if (!texture) throw new Error('Failed to create texture')
         c.bindTexture(c.TEXTURE_2D, texture)
@@ -44,7 +44,7 @@ export const createEmptyTexture = (
         h = 800,
         format = c.RGBA,
         type = c.UNSIGNED_BYTE
-): WebGLTexture => {
+) => {
         const texture = c.createTexture()
         if (!texture) throw new Error('Failed to create empty texture')
         c.bindTexture(c.TEXTURE_2D, texture)
@@ -55,7 +55,6 @@ export const createEmptyTexture = (
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
         c.bindTexture(c.TEXTURE_2D, null)
-
         return texture
 }
 
@@ -63,13 +62,12 @@ export const createEmptyTexture = (
 export const createCubeTexture = (
         c: WebGLRenderingContext,
         imgs: HTMLImageElement[]
-): WebGLTexture => {
+) => {
         if (imgs.length !== 6)
                 throw new Error('Cube texture requires exactly 6 imgs')
         const texture = c.createTexture()
         if (!texture) throw new Error('Failed to create cube texture')
         c.bindTexture(c.TEXTURE_CUBE_MAP, texture)
-
         const faces = [
                 c.TEXTURE_CUBE_MAP_POSITIVE_X,
                 c.TEXTURE_CUBE_MAP_NEGATIVE_X,
@@ -78,12 +76,10 @@ export const createCubeTexture = (
                 c.TEXTURE_CUBE_MAP_POSITIVE_Z,
                 c.TEXTURE_CUBE_MAP_NEGATIVE_Z,
         ]
-
         // prettier-ignore
         faces.forEach((face, index) => {
                 c.texImage2D( face, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, imgs[index])
         })
-
         c.generateMipmap(c.TEXTURE_CUBE_MAP)
         // prettier-ignore
         c.texParameteri(c.TEXTURE_CUBE_MAP, c.TEXTURE_MIN_FILTER, c.LINEAR_MIPMAP_LINEAR)

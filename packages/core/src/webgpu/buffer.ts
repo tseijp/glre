@@ -1,10 +1,12 @@
+import { is } from '../utils'
+
 // WebGPUバッファー管理
 export const createBuffer = (
         device: any,
         data: Float32Array | Uint32Array | number[],
         usage: number
-): any => {
-        const array = Array.isArray(data) ? new Float32Array(data) : data
+) => {
+        const array = is.arr(data) ? new Float32Array(data) : data
         const buffer = device.createBuffer({
                 size: array.byteLength,
                 usage,
@@ -19,17 +21,17 @@ export const createBuffer = (
 }
 
 // 頂点バッファー作成
-export const createVertexBuffer = (device: any, data: number[]): any => {
+export const createVertexBuffer = (device: any, data: number[]) => {
         return createBuffer(device, data, 0x20) // GPUBufferUsage.VERTEX
 }
 
 // インデックスバッファー作成
-export const createIndexBuffer = (device: any, data: number[]): any => {
+export const createIndexBuffer = (device: any, data: number[]) => {
         return createBuffer(device, new Uint32Array(data), 0x40) // GPUBufferUsage.INDEX
 }
 
 // ユニフォームバッファー作成
-export const createUniformBuffer = (device: any, size: number): any => {
+export const createUniformBuffer = (device: any, size: number) => {
         return device.createBuffer({
                 size,
                 usage: 0x40 | 0x4, // GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
@@ -38,7 +40,7 @@ export const createUniformBuffer = (device: any, size: number): any => {
 }
 
 // ストレージバッファー作成
-export const createStorageBuffer = (device: any, size: number): any => {
+export const createStorageBuffer = (device: any, size: number) => {
         return device.createBuffer({
                 size,
                 usage: 0x80 | 0x4, // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
@@ -53,7 +55,7 @@ export const updateBuffer = (
         data: Float32Array | Uint32Array | number[],
         offset = 0
 ) => {
-        const array = Array.isArray(data) ? new Float32Array(data) : data
+        const array = is.arr(data) ? new Float32Array(data) : data
         device.queue.writeBuffer(buffer, offset, array)
 }
 

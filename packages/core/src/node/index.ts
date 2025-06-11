@@ -1,8 +1,9 @@
 import { node } from './node'
 import { uniform } from './uniform'
 import { float } from './conv'
-import type { NodeProxy, FunctionNode, ConditionalNode } from './types'
-export type { NodeProxy, FunctionNode, ConditionalNode }
+import type { X, FunctionNode, ConditionalNode } from './types'
+import { is } from '../utils'
+export type { X, FunctionNode, ConditionalNode }
 export * from './cache'
 export * from './const'
 export * from './conv'
@@ -14,31 +15,23 @@ export * from './uniform'
 export const Fn = (jsFunc: Function): FunctionNode => {
         const functionNode = (...args: any[]) => {
                 const inputs = args.map((arg) => {
-                        if (typeof arg === 'object' && arg.type) return arg
+                        if (is.obj(arg) && 'type' in arg && arg.type) return arg
                         return float(arg)
                 })
-
                 const result = jsFunc(inputs)
                 return result || float(0)
         }
-
-        functionNode.call = (inputs: NodeProxy[]) => {
-                return jsFunc(inputs)
-        }
-
+        functionNode.call = (inputs: X[]) => jsFunc(inputs)
         return functionNode as FunctionNode
 }
 
 // 条件分岐
-export const If = (
-        condition: NodeProxy,
-        callback: () => void
-): ConditionalNode => {
+export const If = (condition: X, callback: () => void): ConditionalNode => {
         callback()
 
         const conditionalNode = {
                 ElseIf(
-                        newCondition: NodeProxy,
+                        newCondition: X,
                         newCallback: () => void
                 ): ConditionalNode {
                         newCallback()
@@ -60,41 +53,41 @@ export const iResolution = uniform([1920, 1080])
 export const iMouse = uniform([0, 0])
 
 // 数学関数
-export const abs = (x: NodeProxy) => x.abs()
-export const sin = (x: NodeProxy) => x.sin()
-export const cos = (x: NodeProxy) => x.cos()
-export const tan = (x: NodeProxy) => x.tan()
-export const sqrt = (x: NodeProxy) => x.sqrt()
-export const floor = (x: NodeProxy) => x.floor()
-export const ceil = (x: NodeProxy) => x.ceil()
-export const fract = (x: NodeProxy) => x.fract()
-export const normalize = (x: NodeProxy) => x.normalize()
-export const length = (x: NodeProxy) => x.length()
+export const abs = (x: X) => x.abs()
+export const sin = (x: X) => x.sin()
+export const cos = (x: X) => x.cos()
+export const tan = (x: X) => x.tan()
+export const sqrt = (x: X) => x.sqrt()
+export const floor = (x: X) => x.floor()
+export const ceil = (x: X) => x.ceil()
+export const fract = (x: X) => x.fract()
+export const normalize = (x: X) => x.normalize()
+export const length = (x: X) => x.length()
 
 /**
  * @TODO FIX
-export const min = (a: NodeProxy, b: NodeProxy) => {
+export const min = (a: X, b: X) => {
         return node('float', undefined, {
                 mathFunction: 'min',
                 children: [a as any, b as any],
         })
 }
 
-export const max = (a: NodeProxy, b: NodeProxy) => {
+export const max = (a: X, b: X) => {
         return node('float', undefined, {
                 mathFunction: 'max',
                 children: [a as any, b as any],
         })
 }
 
-export const mix = (a: NodeProxy, b: NodeProxy, t: NodeProxy) => {
+export const mix = (a: X, b: X, t: X) => {
         return node('float', undefined, {
                 mathFunction: 'mix',
                 children: [a as any, b as any, t as any],
         })
 }
 
-export const clamp = (x: NodeProxy, min: NodeProxy, max: NodeProxy) => {
+export const clamp = (x: X, min: X, max: X) => {
         return node('float', undefined, {
                 mathFunction: 'clamp',
                 children: [x as any, min as any, max as any],

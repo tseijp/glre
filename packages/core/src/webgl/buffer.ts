@@ -1,8 +1,5 @@
 // WebGLバッファー作成と管理
-export const createVbo = (
-        c: WebGLRenderingContext,
-        data: number[]
-): WebGLBuffer => {
+export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
         const buffer = c.createBuffer()
         if (!buffer) throw new Error('Failed to create VBO')
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
@@ -12,10 +9,7 @@ export const createVbo = (
 }
 
 // インデックスバッファーオブジェクト作成
-export const createIbo = (
-        c: WebGLRenderingContext,
-        data: number[]
-): WebGLBuffer => {
+export const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         const buffer = c.createBuffer()
         if (!buffer) throw new Error('Failed to create IBO')
         c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buffer)

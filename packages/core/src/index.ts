@@ -9,10 +9,10 @@ export * from './webgl'
 export * from './webgpu'
 
 export const isWebGPUSupported = (): boolean => 'gpu' in navigator
-export const createGL = async (props?: Partial<GL>) => {
-        if (isWebGPUSupported()) return await webgpu(props)
-        return webgl(props)
+export const createGL = (props?: Partial<GL>) => {
+        if (props?.webgl || !isWebGPUSupported()) return webgl(props)
+        return webgpu(props)
 }
 
-export const gl = await createGL()
+export const gl = createGL()
 export default gl

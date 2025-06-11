@@ -16,12 +16,13 @@ void main() {
 export const deleteShader = (c: WebGLRenderingContext, shader: WebGLShader) => {
         c.deleteShader(shader)
 }
+
 // WebGLシェーダー作成と管理
 const createShader = (
         c: WebGLRenderingContext,
         source: string,
         type: number
-): WebGLShader => {
+) => {
         const shader = c.createShader(type)
         if (!shader) throw new Error('Failed to create shader')
         c.shaderSource(shader, source)
@@ -35,12 +36,17 @@ const createShader = (
 export const createVertexShader = (
         c: WebGLRenderingContext,
         source = defaultVertexShader
-) => createShader(c, source, c.VERTEX_SHADER)
+) => {
+        return createShader(c, source, c.VERTEX_SHADER)
+}
 
 export const createFragmentShader = (
         c: WebGLRenderingContext,
         source = defaultFragmentShader
-) => createShader(c, source, c.FRAGMENT_SHADER)
+) => {
+        return createShader(c, source, c.FRAGMENT_SHADER)
+}
+
 // シェーダーの情報を取得
 export const getShaderInfo = (
         c: WebGLRenderingContext,

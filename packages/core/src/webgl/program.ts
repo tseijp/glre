@@ -3,7 +3,7 @@ export const createProgram = (
         c: WebGLRenderingContext,
         vs: WebGLShader,
         fs: WebGLShader
-): WebGLProgram => {
+) => {
         const pg = c.createProgram()
         if (!pg) throw new Error('Failed to create pg')
         c.attachShader(pg, vs)
@@ -13,25 +13,6 @@ export const createProgram = (
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
         throw new Error(`Could not link pg: ${error}`)
-}
-
-// Transform Feedbackプログラムの作成
-export const createTfProgram = (
-        c: WebGL2RenderingContext,
-        vs: WebGLShader,
-        fs: WebGLShader,
-        varyings: string[]
-): WebGLProgram => {
-        const pg = c.createProgram()
-        if (!pg) throw new Error('Failed to create pg')
-        c.attachShader(pg, vs)
-        c.attachShader(pg, fs)
-        c.transformFeedbackVaryings(pg, varyings, c.SEPARATE_ATTRIBS)
-        c.linkProgram(pg)
-        if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
-        const error = c.getProgramInfoLog(pg)
-        c.deleteProgram(pg)
-        throw new Error(`Could not link transform feedback pg: ${error}`)
 }
 
 // プログラムの削除
@@ -57,7 +38,7 @@ export const getUniformLocation = (
         c: WebGLRenderingContext,
         pg: WebGLProgram,
         name: string
-): WebGLUniformLocation | null => {
+) => {
         return c.getUniformLocation(pg, name)
 }
 

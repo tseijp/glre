@@ -1,70 +1,61 @@
 import { describe, expect, it } from '@jest/globals'
-import { vec3, vec4 } from '../../index'
+import { vec3, vec4 } from '../../src/index'
 
 describe('スウィズル操作テスト', () => {
         it('ベクトルコンポーネントアクセス', () => {
-                const vec = vec3(1, 2, 3)
-
-                const x = vec.x
+                const xyz = vec3(1, 2, 3)
+                const x = xyz.x
                 expect(x.type).toBe('float')
-                expect(x.source).toBe(vec)
+                expect(x.source).toBe(xyz)
                 expect(x.component).toBe('x')
 
-                const y = vec.y
+                const y = xyz.y
                 expect(y.type).toBe('float')
                 expect(y.component).toBe('y')
 
-                const z = vec.z
+                const z = xyz.z
                 expect(z.type).toBe('float')
                 expect(z.component).toBe('z')
         })
 
         it('スウィズル操作の型確認', () => {
-                const vec4Node = vec4(1, 2, 3, 4)
-
-                const xy = vec4Node.xy
+                const xyzw = vec4(1, 2, 3, 4)
+                const xy = xyz.xy
                 expect(xy.type).toBe('vec2')
                 expect(xy.swizzle).toBe('xy')
-
-                const xyz = vec4Node.xyz
+                const xyz = xyzw.xyz
                 expect(xyz.type).toBe('vec3')
                 expect(xyz.swizzle).toBe('xyz')
-
-                const rgba = vec4Node.rgba
+                const rgba = xyzw.rgba
                 expect(rgba.type).toBe('vec4')
                 expect(rgba.swizzle).toBe('rgba')
         })
 
         it('複雑なスウィズル操作', () => {
-                const vec = vec3(1, 2, 3)
-
-                const yx = vec.yx
+                const xyz = vec3(1, 2, 3)
+                const yx = xyz.yx
                 expect(yx.type).toBe('vec2')
                 expect(yx.swizzle).toBe('yx')
-
-                const zxy = vec.zxy
+                const zxy = xyz.zxy
                 expect(zxy.type).toBe('vec3')
                 expect(zxy.swizzle).toBe('zxy')
         })
 
         it('色成分でのスウィズル', () => {
-                const vec = vec3(1, 2, 3)
-
-                const r = vec.r
+                const xyz = vec3(1, 2, 3)
+                const r = xyz.r
                 expect(r.type).toBe('float')
                 expect(r.component).toBe('r')
-
-                const gb = vec.gb
+                const gb = xyz.gb
                 expect(gb.type).toBe('vec2')
                 expect(gb.swizzle).toBe('gb')
         })
 
         it('スウィズル後のノード生成', () => {
-                const original = vec3(1, 2, 3)
-                const swizzled = original.xy
-
-                expect(swizzled.source).toBe(original)
-                expect(swizzled.type).toBe('vec2')
-                expect(swizzled.id).not.toBe(original.id)
+                const xyz = vec3(1, 2, 3)
+                const xy = xyz.xy
+                expect(xy.source).toBe(xyz)
+                expect(xy.type).toBe('vec2')
+                expect(xy.id).not.toBe(xyz.id)
         })
 })

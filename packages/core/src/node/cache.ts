@@ -1,10 +1,10 @@
 import { CACHE_BOOLS, CACHE_INTS, CACHE_FLOATS } from './const'
 import { node } from '.'
-import type { NodeProxy } from './types'
+import type { X } from './types'
 
-const boolCache = new Map<boolean, NodeProxy>()
-const intCache = new Map<number, NodeProxy>()
-const floatCache = new Map<number, NodeProxy>()
+const boolCache = new Map<boolean, X>()
+const intCache = new Map<number, X>()
+const floatCache = new Map<number, X>()
 
 const initializeCache = () => {
         CACHE_BOOLS.forEach((value) => {
@@ -18,29 +18,27 @@ const initializeCache = () => {
         })
 }
 
-export const getCachedBool = (value: boolean): NodeProxy => {
-        if (!boolCache.has(value)) initializeCache()
-        return boolCache.get(value) || node('bool', value)
+export const getCachedBool = (x: boolean): X => {
+        if (!boolCache.has(x)) initializeCache()
+        return boolCache.get(x) || node('bool', x)
 }
 
 // キャッシュされたintノードを取得
-export const getCachedInt = (value: number): NodeProxy => {
-        if (intCache.has(value)) return intCache.get(value)!
-        return node('int', value)
+export const getCachedInt = (x: number): X => {
+        if (intCache.has(x)) return intCache.get(x)!
+        return node('int', x)
 }
 
 // キャッシュされたfloatノードを取得
-export const getCachedFloat = (value: number): NodeProxy => {
-        if (floatCache.has(value)) return floatCache.get(value)!
-        return node('float', value)
+export const getCachedFloat = (x: number): X => {
+        if (floatCache.has(x)) return floatCache.get(x)!
+        return node('float', x)
 }
 
 // ノードの重複を検出
-export const findDuplicateNodes = (
-        nodes: NodeProxy[]
-): Map<string, NodeProxy[]> => {
-        const duplicates = new Map<string, NodeProxy[]>()
-        const signatures = new Map<string, NodeProxy>()
+export const findDuplicateNodes = (nodes: X[]): Map<string, X[]> => {
+        const duplicates = new Map<string, X[]>()
+        const signatures = new Map<string, X>()
 
         nodes.forEach((nodeProxy) => {
                 const signature = generateNodeSignature(nodeProxy)
@@ -56,7 +54,7 @@ export const findDuplicateNodes = (
 }
 
 // ノードのシグネチャを生成
-const generateNodeSignature = (nodeProxy: NodeProxy): string => {
+const generateNodeSignature = (nodeProxy: X): string => {
         const parts = [
                 nodeProxy.type,
                 `${nodeProxy.value}`,

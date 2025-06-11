@@ -1,12 +1,12 @@
 import { durable, nested } from 'reev'
 import { createAttribute, createIbo, createVbo, vertexStride } from './buffer'
-import { createProgram, createTfProgram } from './program'
+import { createProgram } from './program'
 import { createFragmentShader, createVertexShader } from './shader'
 import { base } from '../base'
 import { glsl } from '../code/glsl'
-import { updateUniforms } from '../node'
-import type { NodeProxy } from '../node'
+import type { X } from '../node'
 import type { GL } from '../types'
+import { is } from '../utils'
 export * from './buffer'
 export * from './program'
 export * from './shader'
@@ -22,16 +22,10 @@ export const webgl = (props?: Partial<GL>) => {
         const init = () => {
                 self(props)
                 const c = self.gl
-                let vertexSource = self.vs || self.vert || self.vertex
-                let fragmentSource = self.fs || self.frag || self.fragment
-                if (self.fragmentNode)
-                        fragmentSource = glsl(self.fragmentNode as NodeProxy)
-                const vs = createVertexShader(c, vertexSource)
-                const fs = createFragmentShader(c, fragmentSource)
+                let vs = self.vs || self.vert || self.vertex
+                let fs = self.fs || self.frag || self.fragment
+                if (is.obj(fs)) fs = glsl(fs as X)
                 if (self.count === 6) self.attribute({ a_position })
-                self.pg = self.varying
-                        ? createTfProgram(c, vs, fs, self.varying)
-                        : createProgram(c, vs, fs)
                 self.lastActiveUnit = 0
                 self.activeUnit = nested(() => self.lastActiveUnit++)
                 self.location = nested((key, isAttribute = false) => {
@@ -39,6 +33,11 @@ export const webgl = (props?: Partial<GL>) => {
                                 ? c?.getAttribLocation(self.pg, key)
                                 : c?.getUniformLocation(self.pg, key)
                 })
+                self.pg = createProgram(
+                        c,
+                        createVertexShader(c, vs),
+                        createFragmentShader(c, fs)
+                )
         }
 
         const loop = () => {
@@ -49,7 +48,7 @@ export const webgl = (props?: Partial<GL>) => {
                 iTime = performance.now() / 1000
                 iDeltaTime = iTime - iPrevTime
                 self.uniform({ iTime, iPrevTime, iDeltaTime })
-                if (self.fragmentNode) updateUniforms({ time: iTime })
+                // if (self.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
                 c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...self.size)
                 c.drawArrays(c.TRIANGLES, 0, self.count)

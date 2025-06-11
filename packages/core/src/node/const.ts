@@ -38,22 +38,19 @@ export const SWIZZLES = [
         't',
         'p',
         'q',
-        'xy',
-        'xz',
-        'xw',
-        'yz',
-        'yw',
-        'zw',
-        'xyz',
-        'xyw',
-        'xzw',
-        'yzw',
-        'xyzw',
-        'rgba',
-        'stpq',
 ] as const
 
-export type Swizzle = (typeof SWIZZLES)[number]
+type AllSwizzles<T extends string> =
+        | T
+        | `${T}${T}`
+        | `${T}${T}${T}`
+        | `${T}${T}${T}${T}`
+
+export type Swillzes =
+        | AllSwizzles<'x' | 'y' | 'z' | 'w'>
+        | AllSwizzles<'r' | 'g' | 'b' | 'a'>
+        | AllSwizzles<'p' | 'q'>
+        | AllSwizzles<'s' | 't'>
 
 // 演算子定数
 export const OPERATORS = [

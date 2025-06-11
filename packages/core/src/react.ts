@@ -1,9 +1,8 @@
+/*
 import { useEffect } from 'react'
-import { createTF, gl } from './index'
-// @ts-ignore
+import { gl } from './index'
 import { useOnce, useMutable } from 'reev/react'
 import type { GL, Fun } from './types'
-
 export type { GL, Fun }
 
 export const useGL = (props: Partial<GL> = {}, self = gl) => {
@@ -34,13 +33,6 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
         return useOnce(() => self(memo2)(memo1))
 }
 
-export const useTF = (props: Partial<GL>, self = gl) => {
-        const memo = useMutable(props) as Partial<GL>
-        const tf = useOnce(() => createTF(memo, self))
-        useEffect(() => void tf.mount() || tf.clean, [self])
-        return tf
-}
-
 export const useTexture = (props: any, self = gl) => {
         return self.texture(props)
 }
@@ -58,3 +50,4 @@ export const useFrame = (fun: Fun, self = gl) => {
         useEffect(() => () => self.queue(fun), [])
         return self
 }
+*/

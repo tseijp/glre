@@ -28,7 +28,7 @@ export const createRenderPipeline = (
         vertexShader = defaultVertexShader,
         fragmentShader = defaultFragmentShader,
         format = 'bgra8unorm'
-): any => {
+) => {
         const v = device.createShaderModule({ code: vertexShader })
         const f = device.createShaderModule({ code: fragmentShader })
         return device.createRenderPipeline({
@@ -53,10 +53,7 @@ export const createRenderPipeline = (
 }
 
 // コンピュートパイプライン作成
-export const createComputePipeline = (
-        device: any,
-        computeShader: string
-): any => {
+export const createComputePipeline = (device: any, computeShader: string) => {
         const computeModule = device.createShaderModule({ code: computeShader })
         return device.createComputePipeline({
                 layout: 'auto',
@@ -65,21 +62,17 @@ export const createComputePipeline = (
 }
 
 // シェーダーモジュール作成
-export const createShaderModule = (device: any, code: string): any => {
+export const createShaderModule = (device: any, code: string) => {
         return device.createShaderModule({ code })
 }
 
 // バインドグループレイアウト作成
-export const createBindGroupLayout = (device: any, entries: any[]): any => {
+export const createBindGroupLayout = (device: any, entries: any[]) => {
         return device.createBindGroupLayout({ entries })
 }
 
 // バインドグループ作成
-export const createBindGroup = (
-        device: any,
-        layout: any,
-        entries: any[]
-): any => {
+export const createBindGroup = (device: any, layout: any, entries: any[]) => {
         return device.createBindGroup({ layout, entries })
 }
 
@@ -88,7 +81,7 @@ export const createRenderPass = (
         encoder: any,
         colorAttachment: any,
         depthStencilAttachment?: any
-): any => {
+) => {
         const descriptor: any = { colorAttachments: [colorAttachment] }
         if (depthStencilAttachment)
                 descriptor.depthStencilAttachment = depthStencilAttachment
@@ -96,6 +89,6 @@ export const createRenderPass = (
 }
 
 // コマンドエンコーダー作成
-export const createCommandEncoder = (device: any): any => {
+export const createCommandEncoder = (device: any) => {
         return device.createCommandEncoder()
 }

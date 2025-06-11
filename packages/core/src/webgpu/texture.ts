@@ -5,7 +5,7 @@ const createTexture = (
         h = 800,
         format = 'rgba8unorm',
         usage = 0x14 // GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST
-): any => {
+) => {
         return device.createTexture({
                 size: { width: w, height: h, depthOrArrayLayers: 1 },
                 format,
@@ -18,7 +18,7 @@ export const createTextureFromImage = (
         device: any,
         image: HTMLImageElement | ImageBitmap,
         format = 'rgba8unorm'
-): any => {
+) => {
         const texture = createTexture(
                 device,
                 image.width,
@@ -41,7 +41,7 @@ const createCubeTexture = (
         device: any,
         size: number,
         format = 'rgba8unorm'
-): any => {
+) => {
         return device.createTexture({
                 size: { width: size, height: size, depthOrArrayLayers: 6 },
                 format,
@@ -56,7 +56,7 @@ export const createDepthTexture = (
         w = 1280,
         h = 800,
         format = 'depth24plus'
-): any => {
+) => {
         return device.createTexture({
                 size: { width: w, height: h, depthOrArrayLayers: 1 },
                 format,
@@ -74,7 +74,7 @@ export const createSampler = (
                 addressModeV?: string
                 addressModeW?: string
         } = {}
-): any => {
+) => {
         return device.createSampler({
                 magFilter: options.magFilter || 'linear',
                 minFilter: options.minFilter || 'linear',
@@ -96,7 +96,7 @@ export const createTextureView = (
                 baseArrayLayer?: number
                 arrayLayerCount?: number
         } = {}
-): any => {
+) => {
         return texture.createView(options)
 }
 

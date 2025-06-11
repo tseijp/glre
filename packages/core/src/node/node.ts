@@ -1,5 +1,6 @@
+import { is } from '../utils'
 import { OPERATORS, FUNCTIONS, SWIZZLES, NodeType } from './const'
-import type { Node, NodeProxy, ProxyCallback } from './types'
+import type { Node, ProxyCallback, X } from './types'
 
 let nodeIdCounter = 0
 
@@ -26,12 +27,9 @@ const isOperatorMethod = (key = '') => OPERATORS.includes(key as any)
 const isMathMethod = (key = '') => FUNCTIONS.includes(key as any)
 
 // Proxyハンドラーを作成
-const createNodeProxy = (
-        node: Node,
-        callback?: (info: ProxyCallback) => NodeProxy
-) => {
+const createNodeProxy = (node: Node, callback?: (info: ProxyCallback) => X) => {
         const get = (_target: unknown, key: unknown) => {
-                if (typeof key !== 'string' || key === 'then') return undefined
+                if (!is.str(key) || key === 'then') return void 0
 
                 if (key === 'id') return node.id
                 if (key === 'type') return node.type
@@ -89,7 +87,7 @@ const createNodeProxy = (
                 return callback?.({ path: [], args })
         }
 
-        return new Proxy(() => {}, { get, apply }) as NodeProxy
+        return new Proxy(() => {}, { get, apply }) as X
 }
 
 // スウィズルの戻り値型を取得
@@ -110,11 +108,7 @@ const getMathReturnType = (func: string, inputType: NodeType): NodeType => {
 }
 
 // 公開API
-export const node = (
-        type: NodeType,
-        value?: any,
-        options?: Partial<Node>
-): NodeProxy => {
+export const node = (type: NodeType, value?: any, options?: Partial<Node>) => {
         const nodeInstance = createNode(type, value, options)
         return createNodeProxy(nodeInstance)
 }

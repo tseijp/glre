@@ -65,8 +65,8 @@ export const getDeviceLimits = (device: any) => {
 }
 
 // デバイスエラーハンドリング
-export const setupDeviceErrorHandling = (device: GPUDevice) => {
-        device.addEventListener('uncapturederror', (event) => {
+export const setupDeviceErrorHandling = (device: any) => {
+        device.addEventListener('uncapturederror', (event: any) => {
                 console.error('WebGPU uncaptured error:', event.error)
         })
 }
@@ -76,7 +76,7 @@ export const configureCanvasContext = (
         canvas: HTMLCanvasElement,
         device: any,
         format: any = 'bgra8unorm'
-): any => {
+) => {
         const context = canvas.getContext('webgpu')
         if (!context) throw new Error('Failed to get WebGPU canvas context')
 

@@ -1,3 +1,4 @@
+/*
 import { useEffect, useMemo } from 'react'
 import { Dimensions } from 'react-native' // @ts-ignore
 import { useMutable } from 'reev/react'
@@ -56,3 +57,4 @@ export const useFrame = (fun: Fun, self = gl) => {
         useEffect(() => () => self.frame(ref), [])
         return self
 }
+*/

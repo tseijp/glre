@@ -6,11 +6,11 @@ export type { GL, Fun }
 export const base = (props?: Partial<GL>) => {
         const resize = (
                 _e: any,
-                width = self.width || window.innerWidth,
-                height = self.height || window.innerHeight
+                w = self.width || window.innerWidth,
+                h = self.height || window.innerHeight
         ) => {
-                self.size[0] = self.el.width = width
-                self.size[1] = self.el.height = height
+                self.size[0] = self.el.width = w
+                self.size[1] = self.el.height = h
                 self.uniform('iResolution', self.size)
         }
 
@@ -29,6 +29,7 @@ export const base = (props?: Partial<GL>) => {
 
         const self = event<Partial<GL>>({
                 ...props,
+                webgl: false,
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,

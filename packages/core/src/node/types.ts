@@ -1,4 +1,4 @@
-import type { NodeType, Operator, MathFunction } from './const'
+import type { NodeType, Operator, MathFunction, Swillzes } from './const'
 
 // ノードの基本インターフェース
 export interface Node {
@@ -19,96 +19,77 @@ export interface ProxyCallback {
 }
 
 // ノード作成関数の型
-export type NodeCreator = (value?: any) => NodeProxy
+export type NodeCreator = (value?: any) => X
 
 // 演算子メソッドの型
 export interface OperatorMethods {
-        add(other: NodeProxy | number): NodeProxy
-        sub(other: NodeProxy | number): NodeProxy
-        mul(other: NodeProxy | number): NodeProxy
-        div(other: NodeProxy | number): NodeProxy
-        mod(other: NodeProxy | number): NodeProxy
-        equal(other: NodeProxy | number): NodeProxy
-        notEqual(other: NodeProxy | number): NodeProxy
-        lessThan(other: NodeProxy | number): NodeProxy
-        lessThanEqual(other: NodeProxy | number): NodeProxy
-        greaterThan(other: NodeProxy | number): NodeProxy
-        greaterThanEqual(other: NodeProxy | number): NodeProxy
-        and(other: NodeProxy): NodeProxy
-        or(other: NodeProxy): NodeProxy
-        not(): NodeProxy
+        add(x: X | number): X
+        sub(x: X | number): X
+        mul(x: X | number): X
+        div(x: X | number): X
+        mod(x: X | number): X
+        equal(x: X | number): X
+        notEqual(x: X | number): X
+        lessThan(x: X | number): X
+        lessThanEqual(x: X | number): X
+        greaterThan(x: X | number): X
+        greaterThanEqual(x: X | number): X
+        and(x: X): X
+        or(x: X): X
+        not(): X
 }
 
 // 数学関数メソッドの型
 export interface MathMethods {
-        abs(): NodeProxy
-        acos(): NodeProxy
-        asin(): NodeProxy
-        atan(): NodeProxy
-        ceil(): NodeProxy
-        cos(): NodeProxy
-        floor(): NodeProxy
-        fract(): NodeProxy
-        length(): NodeProxy
-        normalize(): NodeProxy
-        sin(): NodeProxy
-        sqrt(): NodeProxy
-        tan(): NodeProxy
-        toVar(): NodeProxy
+        abs(): X
+        acos(): X
+        asin(): X
+        atan(): X
+        ceil(): X
+        cos(): X
+        floor(): X
+        fract(): X
+        length(): X
+        normalize(): X
+        sin(): X
+        sqrt(): X
+        tan(): X
+        toVar(): X
 }
 
+// 全てのswizzleパターンをまとめる型
+
 // スウィズルプロパティの型
-export interface SwizzleProperties {
-        x: NodeProxy
-        y: NodeProxy
-        z: NodeProxy
-        w: NodeProxy
-        r: NodeProxy
-        g: NodeProxy
-        b: NodeProxy
-        a: NodeProxy
-        xy: NodeProxy
-        xyz: NodeProxy
-        rgba: NodeProxy
+export type SwizzleProperties = {
+        [k in Swillzes]: X
 }
 
 // ノードProxy型
-export interface NodeProxy
-        extends OperatorMethods,
-                MathMethods,
-                Partial<SwizzleProperties> {
+export interface X extends MathMethods, OperatorMethods, SwizzleProperties {
         readonly id: string
         readonly type: NodeType
-        readonly value?: any
-        readonly property?: string
-        (...args: any[]): NodeProxy
+        readonly value: any
+        readonly property: string
+        (...args: any[]): X
 }
 
 // ユニフォーム変数の型
-export interface UniformNode extends NodeProxy {
-        set(value: any)
+export interface UniformNode extends X {
+        set(value: any): void
         onObjectUpdate(callback: (context: any) => any): UniformNode
         onRenderUpdate(callback: (context: any) => any): UniformNode
 }
 
 // 関数定義の型
 export interface FunctionNode {
-        (...args: any[]): NodeProxy
-        call(inputs: NodeProxy[]): NodeProxy
+        (...args: any[]): X
+        call(x: X[]): X
 }
 
 // 条件分岐の型
 export interface ConditionalNode {
-        ElseIf(condition: NodeProxy, callback: () => void): ConditionalNode
-        Else(callback: () => void)
-}
-
-// シェーダーコード生成の型
-export interface ShaderCode {
-        vertex?: string
-        fragment?: string
-        uniforms?: Record<string, any>
-        attributes?: Record<string, any>
+        ElseIf(condition: X, callback: () => void): ConditionalNode
+        Else(callback: () => void): void
 }
 
 // WebGL/WebGPU変換コンテキスト

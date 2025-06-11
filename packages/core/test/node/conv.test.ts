@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { float, vec2, vec3, color } from '../../node/index'
+import { float, vec2, vec3, color } from '../../src/index'
 
 describe('型変換テスト', () => {
         it('JavaScript値からノードへの変換', () => {

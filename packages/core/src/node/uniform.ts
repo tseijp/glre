@@ -1,6 +1,7 @@
 import { node } from './node'
 import type { UniformNode } from './types'
 import type { NodeType } from './const'
+import { is } from '../utils'
 
 // ユニフォーム更新コンテキスト
 interface UpdateContext {
@@ -13,9 +14,9 @@ interface UpdateContext {
 
 // ユニフォーム値の型を推定
 const inferUniformType = (value: any): NodeType => {
-        if (typeof value === 'number') return 'float'
-        if (typeof value === 'boolean') return 'bool'
-        if (Array.isArray(value)) {
+        if (is.num(value)) return 'float'
+        if (is.bol(value)) return 'bool'
+        if (is.arr(value)) {
                 const len = value.length
                 if (len === 2) return 'vec2'
                 if (len === 3) return 'vec3'
@@ -23,10 +24,8 @@ const inferUniformType = (value: any): NodeType => {
                 if (len === 9) return 'mat3'
                 if (len === 16) return 'mat4'
         }
-        if (value && typeof value === 'object') {
-                if ('r' in value && 'g' in value && 'b' in value) return 'color'
-        }
-
+        if (is.obj(value) && 'r' in value && 'g' in value && 'b' in value)
+                return 'color'
         return 'float'
 }
 
@@ -46,7 +45,6 @@ export const uniform = (initialValue: any): UniformNode => {
                 currentValue = value
                 baseNode.value = value
         }
-
         // オブジェクト更新時のコールバックを設定
         const onObjectUpdate = (
                 callback: (context: UpdateContext) => any
@@ -54,7 +52,6 @@ export const uniform = (initialValue: any): UniformNode => {
                 objectUpdateCallback = callback
                 return uniformNode
         }
-
         // レンダー更新時のコールバックを設定
         const onRenderUpdate = (
                 callback: (context: UpdateContext) => any
@@ -62,7 +59,6 @@ export const uniform = (initialValue: any): UniformNode => {
                 renderUpdateCallback = callback
                 return uniformNode
         }
-
         // 内部更新関数（外部から呼び出される）
         const _updateFromContext = (context: UpdateContext) => {
                 if (objectUpdateCallback) {
@@ -74,7 +70,6 @@ export const uniform = (initialValue: any): UniformNode => {
                         if (newValue !== undefined) set(newValue)
                 }
         }
-
         // UniformNodeインターフェースを実装
         const uniformNode = Object.create(baseNode)
         uniformNode.set = set
@@ -82,7 +77,6 @@ export const uniform = (initialValue: any): UniformNode => {
         uniformNode.onRenderUpdate = onRenderUpdate
         uniformNode._updateFromContext = _updateFromContext
         uniformNode.isUniform = true
-
         return uniformNode as UniformNode
 }
 

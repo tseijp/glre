@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { float, vec2 } from '../../index'
+import { float, vec2 } from '../../src/index'
 
 describe('演算子テスト', () => {
         it('算術演算子が正しく動作すること', () => {

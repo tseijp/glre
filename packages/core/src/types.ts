@@ -1,6 +1,7 @@
 import { Nested, EventState } from 'reev'
 
 import type { Fun, Queue, Frame } from 'refr'
+import { X } from './node'
 
 export type { Fun, Queue, Frame }
 
@@ -17,18 +18,22 @@ export type GL = EventState<{
          * initial value
          */
         id: string
+        webgl: boolean
         width: number
         height: number
         size: [number, number]
         mouse: [number, number]
         count: number
-        vs: string
-        fs: string
-        vert: string
-        frag: string
-        vertex: string
-        fragment: string
-        varying: string
+        vs: string | X
+        fs: string | X
+        vert: string | X
+        frag: string | X
+        vertex: string | X
+        fragment: string | X
+
+        /**
+         * for webgl
+         */
         int: PrecisionMode
         float: PrecisionMode
         sampler2D: PrecisionMode
@@ -45,8 +50,7 @@ export type GL = EventState<{
         frame: Frame
         target: any
         stride: Nested<number>
-        // @TODO Nested<(key: string, value: number: number[], ibo: number[]) => number>
-        location: Nested<any>
+        location: Nested<any> // @TODO Nested<(key: string, value: number: number[], ibo: number[]) => number>
         activeUnit: Nested<number>
         default: any
 
@@ -54,13 +58,13 @@ export type GL = EventState<{
          * events
          */
         ref?: any
-        init(varying?: string[]): void
+        init(): void
         loop(): void
         mount(): void
         clean(): void
-        mousemove(e: Event): void
-        resize(e?: Event, width?: number, height?: number): void
         load(e?: Event, image?: HTMLImageElement): void
+        resize(e?: Event, width?: number, height?: number): void
+        mousemove(e: Event): void
 
         /**
          * setter
@@ -71,16 +75,6 @@ export type GL = EventState<{
         texture(target: { [key: string]: string }): GL
         attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(target: { [key: string]: Attribute }): GL
-        // config(key?: keyof GL, value?: GL[keyof GL]): GL
-        // config(target?: Partial<GL>): GL
-
-        /**
-         * short hands
-         */
-        clear(key?: GLClearMode): void
-        viewport(size?: [number, number]): void
-        drawArrays(key?: GLDrawMode): void
-        drawElements(key?: GLDrawMode): void
 }>
 
 export type PrecisionMode = 'highp' | 'mediump' | 'lowp'

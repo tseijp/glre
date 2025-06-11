@@ -24,11 +24,11 @@
                 "pub": "yarn tsup && yarn changeset publish"
         },
         "devDependencies": {
-                "@changesets/cli": "2.26.2",
-                "jest": "29.3.1",
-                "tsup": "7.2.0",
-                "ts-jest": "29.0.3",
-                "typescript": "4.7.4"
+                "@changesets/cli": "*",
+                "jest": "*",
+                "tsup": "*",
+                "ts-jest": "*",
+                "typescript": "*"
         },
         "engines": {
                 "node": ">=14"
