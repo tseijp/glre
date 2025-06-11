@@ -4,18 +4,7 @@ hide_table_of_contents: true
 title: 'Installation'
 description: 'Installation'
 image: https://github.com/tseijp.png
-keywords:
-        [
-                glsl,
-                webgl,
-                hooks,
-                react,
-                reactjs,
-                reactive,
-                solid,
-                solidjs,
-                typescript,
-        ]
+keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
 date: 2023-01-01
 ---
 
@@ -44,21 +33,11 @@ yaan add glre
             gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
           }
         `
-        function setup() {
+        function App() {
                 const el = document.getElementById('id')
                 const gl = el.getContext('webgl2')
-                self({ el, gl, fragment })
-                self.init()
-                self.resize()
-                draw()
+                self({ el, gl, fragment }).mount()
         }
-        function draw() {
-                requestAnimationFrame(draw)
-                self.render()
-                self.clear()
-                self.viewport()
-                self.drawArrays()
-        }
-        document.addEventListener('DOMContentLoaded', setup)
+        document.addEventListener('DOMContentLoaded', App)
 </script>
 ```

@@ -5,10 +5,10 @@ export default defineConfig((options) => {
         return defaultConfig(
                 {
                         entry: [
-                                'index.ts',
-                                'native.ts',
-                                'react.ts',
-                                'solid.ts',
+                                'src/index.ts',
+                                // 'src/native.ts',
+                                'src/react.ts',
+                                // 'src/solid.ts',
                         ],
                 },
                 options

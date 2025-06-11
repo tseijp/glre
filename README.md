@@ -1,7 +1,5 @@
 # 🌇 glre
 
-<!-- 202403161516 -->
-
 <strong>
 <samp>
 
@@ -97,44 +95,30 @@ npm install glre
 </td>
 </table>
 
-## PRs
-
-###### welcome✨
-
 ## What does it look like?
 
 <table>
-  <tr>
-    <td width="7500px" align="center" valign="center">
-      glre simplifies glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
-    </td>
-    <td width="2500px" valign="top">
-      <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
-        <img alt="4" src="https://i.imgur.com/Lb3h9fs.jpg"></img>
-      </a>
-    </td>
-  </tr>
+  <tbody>
+    <tr>
+      <td width="7500px" align="center" valign="center">
+        glre simplifies glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
+      </td>
+      <td width="2500px" valign="top">
+        <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
+          <img alt="4" src="https://i.imgur.com/Lb3h9fs.jpg"></img>
+        </a>
+      </td>
+    </tr>
+  </tbody>
 </table>
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, useFrame } from 'glre/react'
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { useGL, vec4, fract, gl_FragCoord, iResolution } from 'glre/react'
+const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = useGL({ fragment })
-        useFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
         return <canvas ref={gl.ref} />
 }
 
@@ -150,27 +134,19 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 
 ```ts
 import { GLView } from 'expo-gl'
-import { useGL, useFrame } from 'glre/native'
 import { registerRootComponent } from 'expo'
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
+const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const self = useGL({ fragment })
-        useFrame(() => {
-                self.clear()
-                self.viewport()
-                self.drawArrays()
-                self.gl.flush()
-                self.gl.endFrameEXP()
+        const { gl, ref } = useGL({
+                fragment,
+                render() {
+                        gl.flush()
+                        gl.endFrameEXP()
+                },
         })
-        return <GLView style={{ flex: 1 }} onContextCreate={self.ref} />
+        return <GLView style={{ flex: 1 }} onContextCreate={ref} />
 }
 
 registerRootComponent(App)
@@ -186,23 +162,11 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 
 ```ts
 import { render } from 'solid-js/web'
-import { onGL, onFrame } from 'glre/solid'
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
+const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = onGL({ fragment })
-        onFrame(() => {
-                gl.clear()
-                gl.viewport()
-                gl.drawArrays()
-        })
         return <canvas ref={gl.ref} />
 }
 
@@ -220,33 +184,137 @@ pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@latest'
-        const fragment = `
-          precision highp float;
-          uniform vec2 iResolution;
-          void main() {
-            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-          }
-        `
-        function setup() {
+        import createGL from 'https://cdn.skypack.dev/glre@latest'
+        import { vec4, fract, fragCoord, iResolution } from 'glre'
+        const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+
+        function App() {
                 const el = document.getElementById('id')
                 const gl = el.getContext('webgl2')
-                self({ el, gl, fragment })
-                self.init()
-                self.resize()
-                draw()
+                createGL({ el, gl, fragment }).mount()
         }
-        function draw() {
-                requestAnimationFrame(draw)
-                self.render()
-                self.clear()
-                self.viewport()
-                self.drawArrays()
-        }
-        document.addEventListener('DOMContentLoaded', setup)
+        document.addEventListener('DOMContentLoaded', App)
 </script>
 ```
 
 </details>
 </samp>
 </strong>
+
+## Node System
+
+glre now features a powerful node-based shader system inspired by Three.js Shading Language (TSL). This system allows you to write shaders using TypeScript-like syntax and automatically handles the conversion to both WebGL and WebGPU shaders.
+
+The node system provides a declarative approach to shader creation, making your code more readable, maintainable, and portable across different rendering backends.
+
+### Node Types and Functions
+
+The node system provides various types and functions that mirror GLSL functionality:
+
+```ts
+// Basic types
+import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre'
+
+// Built-in variables
+import { gl_FragCoord, gl_Position, iResolution, iTime } from 'glre'
+
+// Math functions
+import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre'
+
+// Texture functions
+import { texture, textureCube, sampler2D } from 'glre'
+```
+
+### Creating Custom Functions
+
+You can define reusable shader functions using the `Fn` constructor:
+
+```ts
+import { Fn, vec3, sin, cos, float } from 'glre'
+
+// Define a function that creates a rotation matrix
+const rotateY = Fn(([angle = float(0)]) => {
+        const s = sin(angle)
+        const c = cos(angle)
+        return mat3(c, 0, s, 0, 1, 0, -s, 0, c)
+})
+
+// Use the function in your shader
+const rotatedPosition = rotateY(iTime).mul(position)
+```
+
+### Conditional Logic
+
+The node system supports conditional operations:
+
+```ts
+import { If, vec4, lessThan } from 'glre'
+
+// Create a conditional color output
+const color = vec4(1, 0, 0, 1).toVar()
+
+If(position.y.lessThan(0.5), () => {
+        color.assign(vec4(0, 1, 0, 1))
+})
+
+// Use the color in your shader
+const fragment = color
+```
+
+### Uniforms
+
+The node system provides a powerful way to define and manage uniform values in your shaders:
+
+```ts
+import { createRoot } from 'react-dom/client'
+import { useGL } from 'glre/react'
+import { uniform, vec3, vec4 } from 'glre'
+
+const uRand = uniform(1.0)
+
+// Create a simple pulsing color shader
+const App = () => {
+        const gl = useGL({
+                fragment: vec4(vec3(uRand), 1.0),
+                loop() {
+                        pulse.set(0.5 + 0.5 * Math.random())
+                },
+        })
+        return <canvas ref={gl.ref} />
+}
+
+createRoot(document.getElementById('root')).render(<App />)
+```
+
+### Attributes
+
+Attributes allow you to define per-vertex data for your shaders:
+
+```ts
+import { createRoot } from 'react-dom/client'
+import { useGL } from 'glre/react'
+import { attribute, vec3, vec4 } from 'glre'
+
+// Define vertex positions
+const positions = attribute(-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0)
+
+// Create a shader that uses attributes
+const App = () => {
+        const gl = useGL({ vertex: positions })
+        return <canvas ref={gl.ref} />
+}
+
+createRoot(document.getElementById('root')).render(<App />)
+```
+
+### WebGPU Support
+
+The node system is designed to work with both WebGL and WebGPU, providing a seamless transition path as browsers adopt the new standard. Your shader code written with the node system will automatically compile to the appropriate shading language based on the available renderer.
+
+## PRs
+
+###### welcome✨
+
+## LICENSE
+
+###### MIT⚾️

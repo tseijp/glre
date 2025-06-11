@@ -1,0 +1,24 @@
+import { useState } from 'react'
+import { Dimensions } from 'react-native'
+import { createGL, isGL } from './index'
+import type { GL } from './types'
+export * from './index'
+
+export const useGL = (props: Partial<GL> = {}) => {
+        return useState(() => {
+                const gl = isGL(props) ? props : createGL(props)
+                gl.ref = (ctx: any) => {
+                        gl.el = {}
+                        gl.gl = ctx
+                        gl.mount()
+                        const resize = () => {
+                                gl.width = ctx.drawingBufferWidth
+                                gl.height = ctx.drawingBufferHeight
+                                gl.resize()
+                        }
+                        resize()
+                        Dimensions.addEventListener('change', resize)
+                }
+                return gl
+        })[0]
+}

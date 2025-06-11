@@ -54,11 +54,7 @@ const HomeViewport = (props: ViewportProps) => {
                         <div ref={ref} className="flex h-12">
                                 {children}
                         </div>
-                        <Canvas
-                                ref={canvasRef}
-                                onPointerEnter={handleEnter(0.25)}
-                                onPointerLeave={handleEnter(1)}
-                        />
+                        <Canvas ref={canvasRef} onPointerEnter={handleEnter(0.25)} onPointerLeave={handleEnter(1)} />
                         <div className="left-0 bottom-0 w-full h-6 border-b-2 dark:border-gray-950"></div>
                 </div>
         )

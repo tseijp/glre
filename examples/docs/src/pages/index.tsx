@@ -1,13 +1,11 @@
 import React, { useMemo } from 'react'
 import Head from '@docusaurus/Head'
 import Layout from '@theme/Layout'
-import StatsImpl from 'stats.js'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { createGL } from 'glre'
-import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
+import StatsImpl from 'stats.js'
+import { useGL } from 'glre/src/react'
 import { range, makePriority } from '../../helpers'
-import { GL } from 'glre'
 
 const WINDOW_DELAY_MS = 500
 
@@ -17,9 +15,7 @@ export default function Home() {
                 <Layout noFooter>
                         <Head>
                                 <title>
-                                        {siteConfig.title}{' '}
-                                        {siteConfig.titleDelimiter}{' '}
-                                        {siteConfig.tagline}
+                                        {siteConfig.title} {siteConfig.titleDelimiter} {siteConfig.tagline}
                                 </title>
                                 <style>
                                         @import
@@ -31,83 +27,59 @@ export default function Home() {
         )
 }
 
-function useLevaUniform(gl: GL) {
-        return useUniform(
-                // useControls(
-                {
-                        imageSize: 0.8,
-                        riverBankHeight: 0.01,
-                        holeDiameter: 0.1,
-                        shaftDiameter: 0.2,
-                        spongeScale: 16,
-                        windowThreshold: 0.75,
-                        blueColorWeight: 0.04,
-                        windowShaftWeight: 0.1,
-                        reflectionUVWeight: 0.01,
-                        reflectionPWeight: 0.1,
-                        moonHeight: 2.6,
-                        moonRadius: 0.59,
-                },
-                gl
-                // )
-        )
-}
-
 function Canvas() {
-        const gl = useMemo(createGL, [])
-
-        useGL(
-                {
-                        frag,
-                        render() {
-                                gl.clear()
-                                gl.viewport()
-                                gl.drawArrays()
-                        },
+        const gl = useGL({
+                isWebGL: true,
+                frag,
+                loop() {
+                        {
+                                range(8).forEach((i) => gl.uniform(`windowLightWeight${i}`, 1))
+                                const memo = [1, 1, 1, 1, 1, 1, 1]
+                                const priority = makePriority()
+                                gl('mousemove', () => {
+                                        if (Math.abs(gl.mouse[1]) > 0.5) return
+                                        const i = ((gl.mouse[0] + 1) * 4) << 0 // 0 ~ 7
+                                        if (memo[i] == 0) return
+                                        gl.uniform(`windowLightWeight${i}`, (memo[i] = 0))
+                                        priority.then(async () => {
+                                                await new Promise((_) => setTimeout(_, WINDOW_DELAY_MS))
+                                                gl.uniform(`windowLightWeight${i}`, 1)
+                                                memo[i] = 1
+                                        }, i)
+                                })
+                        }
                 },
-                gl
-        )
+        })
 
-        useUniform(
-                {
-                        focal: 5000,
-                        eye: [0, 0, -100],
-                        up: [0, -1, 0],
-                        focus: [0, 0, 0],
-                        baseColor: [48 / 256, 43 / 256, 49 / 256, 1],
-                        lightColor: [1, 185 / 255, 0, 1],
-                        topSkyColor: [5 / 255, 6 / 255, 7 / 255, 1],
-                        btmSkyColor: [44 / 255, 45 / 255, 47 / 255, 1],
-                        topSeaColor: [21 / 255, 22 / 255, 27 / 255, 1],
-                        btmSeaColor: [26 / 255, 31 / 255, 42 / 255, 1],
-                },
-                gl
-        )
+        gl.uniform({
+                focal: 5000,
+                eye: [0, 0, -100],
+                up: [0, -1, 0],
+                focus: [0, 0, 0],
+                baseColor: [48 / 256, 43 / 256, 49 / 256, 1],
+                lightColor: [1, 185 / 255, 0, 1],
+                topSkyColor: [5 / 255, 6 / 255, 7 / 255, 1],
+                btmSkyColor: [44 / 255, 45 / 255, 47 / 255, 1],
+                topSeaColor: [21 / 255, 22 / 255, 27 / 255, 1],
+                btmSeaColor: [26 / 255, 31 / 255, 42 / 255, 1],
+        })
 
-        useTexture({ GLRE: useBaseUrl('/img/GLRE.webp') }, gl)
+        gl.texture({ GLRE: useBaseUrl('/img/GLRE.webp') })
 
-        // useStats();
-
-        useLevaUniform(gl)
-
-        useFrame(() => {
-                range(8).forEach((i) => gl.uniform(`windowLightWeight${i}`, 1))
-                const memo = [1, 1, 1, 1, 1, 1, 1]
-                const priority = makePriority()
-                gl('mousemove', () => {
-                        if (Math.abs(gl.mouse[1]) > 0.5) return
-                        const i = ((gl.mouse[0] + 1) * 4) << 0 // 0 ~ 7
-                        if (memo[i] == 0) return
-                        gl.uniform(`windowLightWeight${i}`, (memo[i] = 0))
-                        priority.then(async () => {
-                                await new Promise((_) =>
-                                        setTimeout(_, WINDOW_DELAY_MS)
-                                )
-                                gl.uniform(`windowLightWeight${i}`, 1)
-                                memo[i] = 1
-                        }, i)
-                })
-        }, gl)
+        gl.uniform({
+                imageSize: 0.8,
+                riverBankHeight: 0.01,
+                holeDiameter: 0.1,
+                shaftDiameter: 0.2,
+                spongeScale: 16,
+                windowThreshold: 0.75,
+                blueColorWeight: 0.04,
+                windowShaftWeight: 0.1,
+                reflectionUVWeight: 0.01,
+                reflectionPWeight: 0.1,
+                moonHeight: 2.6,
+                moonRadius: 0.59,
+        })
 
         return (
                 <canvas
@@ -120,23 +92,6 @@ function Canvas() {
                         }}
                 />
         )
-}
-
-export function useStats() {
-        const stats = React.useMemo(() => new StatsImpl(), [])
-        React.useEffect(() => {
-                stats.showPanel(0)
-                stats.domElement.style.cssText =
-                        'position:absolute;bottom:0px;left:0px;'
-                document.body.appendChild(stats.dom)
-                return () => document.body.removeChild(stats.dom)
-        }, [stats])
-
-        useFrame(() => {
-                stats.end()
-                stats.begin()
-                return true
-        })
 }
 
 // ref: https://qiita.com/aa_debdeb/items/bffe5b7a33f5bf65d25b
