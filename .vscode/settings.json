@@ -4,5 +4,6 @@
         "editor.insertSpaces": true,
         "prettier.singleQuote": true,
         "prettier.tabWidth": 8,
+        "prettier.printWidth": 120,
         "prettier.semi": false
 }

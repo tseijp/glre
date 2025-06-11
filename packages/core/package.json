@@ -1,6 +1,6 @@
 {
         "name": "glre",
-        "version": "0.20.0",
+        "version": "0.21.0",
         "author": "tseijp",
         "license": "MIT",
         "private": false,
@@ -29,46 +29,10 @@
         "module": "./dist/index.mjs",
         "exports": {
                 "./packages.json": "./packages.json",
-                ".": {
-                        "types": "./dist/index.d.ts",
-                        "import": {
-                                "types": "./dist/index.d.ts",
-                                "default": "./dist/index.mjs"
-                        },
-                        "module": {
-                                "types": "./dist/index.d.ts",
-                                "default": "./dist/index.mjs"
-                        },
-                        "require": "./dist/index.js",
-                        "default": "./dist/index.js"
-                },
-                "./*": {
-                        "types": "./dist/index.d.ts",
-                        "import": {
-                                "types": "./dist/index.d.ts",
-                                "default": "./dist/index.mjs"
-                        },
-                        "module": {
-                                "types": "./dist/index.d.ts",
-                                "default": "./dist/index.mjs"
-                        },
-                        "require": "./dist/index.js",
-                        "default": "./dist/index.js"
+                "./src/*": {
+                        "default": "./src/*.ts"
                 },
                 "./react": {
-                        "types": "./dist/react.d.ts",
-                        "import": {
-                                "types": "./dist/react.d.ts",
-                                "default": "./dist/react.mjs"
-                        },
-                        "module": {
-                                "types": "./dist/react.d.ts",
-                                "default": "./dist/react.mjs"
-                        },
-                        "require": "./dist/react.js",
-                        "default": "./dist/react.js"
-                },
-                "./react/*": {
                         "types": "./dist/react.d.ts",
                         "import": {
                                 "types": "./dist/react.d.ts",
@@ -94,19 +58,6 @@
                         "require": "./dist/native.js",
                         "default": "./dist/native.js"
                 },
-                "./native/*": {
-                        "types": "./dist/native.d.ts",
-                        "import": {
-                                "types": "./dist/native.d.ts",
-                                "default": "./dist/native.mjs"
-                        },
-                        "module": {
-                                "types": "./dist/native.d.ts",
-                                "default": "./dist/native.mjs"
-                        },
-                        "require": "./dist/native.js",
-                        "default": "./dist/native.js"
-                },
                 "./solid": {
                         "types": "./dist/solid.d.ts",
                         "import": {
@@ -120,28 +71,42 @@
                         "require": "./dist/solid.js",
                         "default": "./dist/solid.js"
                 },
-                "./solid/*": {
-                        "types": "./dist/solid.d.ts",
+                ".": {
+                        "types": "./dist/index.d.ts",
                         "import": {
-                                "types": "./dist/solid.d.ts",
-                                "default": "./dist/solid.mjs"
+                                "types": "./dist/index.d.ts",
+                                "default": "./dist/index.mjs"
                         },
                         "module": {
-                                "types": "./dist/solid.d.ts",
-                                "default": "./dist/solid.mjs"
+                                "types": "./dist/index.d.ts",
+                                "default": "./dist/index.mjs"
                         },
-                        "require": "./dist/solid.js",
-                        "default": "./dist/solid.js"
+                        "require": "./dist/index.js",
+                        "default": "./dist/index.js"
+                },
+                "./*": {
+                        "types": "./dist/index.d.ts",
+                        "import": {
+                                "types": "./dist/index.d.ts",
+                                "default": "./dist/index.mjs"
+                        },
+                        "module": {
+                                "types": "./dist/index.d.ts",
+                                "default": "./dist/index.mjs"
+                        },
+                        "require": "./dist/index.js",
+                        "default": "./dist/index.js"
                 }
         },
         "files": [
                 "dist/**/*",
+                "src/**/*",
                 "packages.json",
                 "README.md"
         ],
         "dependencies": {
                 "reev": "0.12.0",
-                "refr": "0.3.0"
+                "refr": "0.7.0"
         },
         "peerDependencies": {
                 "expo": "*",

@@ -1,49 +1,75 @@
-// import React from 'react'
-import Layout from '../containers/Layout'
-import MainItem from '../containers/MainItem'
-import Form from '../containers/Form'
-import Textarea from '../components/form/Textarea'
-import TitleInput from '../components/form/TitleInput'
-import SubmitButton from '../components/form/SubmitButton'
-import { useEventImpl } from '../hooks'
+import { useEventImpl } from '../hooks/useEventImpl'
+import { useCodemirror } from '../hooks/useCodemirror'
+import EditorFlex from '../containers/EditorFlex'
+import EditorItem from '../containers/EditorItem'
+import Layout from '../layout'
+import EditorImageButton from '../components/EditorImageButton'
+import EditorInputTitle from '../components/EditorInputTitle'
+import EditorViewport from '../components/EditorViewport'
+import EditorCodemirror from '../components/EditorCodemirror'
+import EditorUpdateButton from '../components/EditorUpdateButton'
 
-interface NewProps {
-        defaultFragmentShader: string
+interface Props {
+        creationId: string
+        creationTitle: string
+        creationContent: string
 }
 
-const App = (props: NewProps) => {
-        const { defaultFragmentShader } = props
-        const event = useEventImpl()
+const App = (props: Props) => {
+        const { creationId, creationTitle, creationContent } = props
+        const event = useEventImpl(
+                true,
+                creationId,
+                creationTitle,
+                creationContent
+        )
+
+        const ref = useCodemirror(
+                creationContent,
+                event.onChangeTextarea,
+                event.onClickUpdateButton
+        )
+
         return (
                 <Layout>
-                        <MainItem>
-                                <canvas
-                                        ref={event.gl.ref}
-                                        width="540"
-                                        height="400"
-                                        color="red"
-                                />
-                        </MainItem>
-                        <MainItem>
-                                <Form>
-                                        <TitleInput
-                                                name="title"
-                                                onChange={
-                                                        event?.onChangeTitleInput
-                                                }
-                                        />
-                                        <Textarea
-                                                name="content"
-                                                onChange={
-                                                        event?.onChangeTextarea
-                                                }
-                                                defaultValue={
-                                                        defaultFragmentShader
-                                                }
-                                        />
-                                        <SubmitButton children="Update" />
-                                </Form>
-                        </MainItem>
+                        <EditorFlex>
+                                <EditorItem>
+                                        <EditorViewport
+                                                ref={event.ref}
+                                                err={event.err}
+                                        >
+                                                <EditorImageButton />
+                                                <EditorInputTitle
+                                                        defaultValue={
+                                                                creationTitle
+                                                        }
+                                                        onChange={
+                                                                event.onChangeInputTitle
+                                                        }
+                                                />
+                                        </EditorViewport>
+                                </EditorItem>
+                                <EditorItem>
+                                        <EditorCodemirror ref={ref}>
+                                                <EditorUpdateButton
+                                                        color="red"
+                                                        onClick={
+                                                                event.onClickDeleteButton
+                                                        }
+                                                >
+                                                        Delete
+                                                </EditorUpdateButton>
+                                                <EditorUpdateButton
+                                                        color={event.col}
+                                                        onClick={
+                                                                event.onClickUpdateButton
+                                                        }
+                                                >
+                                                        {event.ui}
+                                                </EditorUpdateButton>
+                                        </EditorCodemirror>
+                                </EditorItem>
+                        </EditorFlex>
                 </Layout>
         )
 }

@@ -52,15 +52,16 @@ const config = {
                                 editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                         },
                 ],
-                [
-                        '@docusaurus/plugin-content-docs',
-                        {
-                                id: 'primitives',
-                                path: 'primitives/',
-                                routeBasePath: 'primitives',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
-                        },
-                ],
+                // @TODO FIX primitives
+                // [
+                //         '@docusaurus/plugin-content-docs',
+                //         {
+                //                 id: 'primitives',
+                //                 path: 'primitives/',
+                //                 routeBasePath: 'primitives',
+                //                 editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
+                //         },
+                // ],
         ],
         themeConfig: {
                 colorMode: {
@@ -89,11 +90,12 @@ const config = {
                                         to: '/guide',
                                         label: 'Guide',
                                 },
-                                {
-                                        position: 'left',
-                                        to: '/primitives',
-                                        label: 'Primitives',
-                                },
+                                // @TODO FIX primitives
+                                // {
+                                //         position: 'left',
+                                //         to: '/primitives',
+                                //         label: 'Primitives',
+                                // },
                                 { position: 'right', type: 'localeDropdown' },
                                 {
                                         position: 'right',

@@ -6,24 +6,29 @@
                 "dev": "vite",
                 "build": "vite build --mode client && vite build",
                 "preview": "wrangler pages dev ./dist",
-                "deploy": "$npm_execpath run build && wrangler pages deploy ./dist"
+                "deploy": "wrangler pages deploy ./dist"
         },
         "private": true,
         "dependencies": {
-                "hono": "^4.0.8",
-                "honox": "^0.1.4"
+                "gsap": "*",
+                "hono": "4.7.11",
+                "honox": "0.1.42"
         },
         "devDependencies": {
-                "@cloudflare/workers-types": "^4.20240208.0",
-                "@hono/react-renderer": "0.0.2",
-                "@hono/vite-cloudflare-pages": "^0.2.4",
-                "@hono/zod-validator": "0.2.0",
-                "autoprefixer": "^10.4.17",
-                "postcss": "^8.4.35",
-                "react": "18.2.0",
-                "react-dom": "18.2.0",
-                "tailwindcss": "^3.4.1",
-                "vite": "^5.0.12",
-                "wrangler": "^3.27.0"
+                "@cloudflare/workers-types": "*",
+                "@codemirror/lang-cpp": "6.0.2",
+                "@codemirror/state": "6.5.2",
+                "@codemirror/view": "6.37.1",
+                "@hono/react-renderer": "1.0.1",
+                "@hono/vite-cloudflare-pages": "^0.4.2",
+                "@hono/zod-validator": "0.7.0",
+                "@uiw/codemirror-theme-github": "*",
+                "autoprefixer": "*",
+                "postcss": "*",
+                "react": "19.1.0",
+                "react-dom": "19.1.0",
+                "tailwindcss": "*",
+                "vite": "*",
+                "wrangler": "*"
         }
 }

@@ -18,6 +18,7 @@
 
 body {
         color: rgb(var(--foreground-rgb));
+        overflow: hidden;
         background: linear-gradient(
                         to bottom,
                         transparent,
@@ -30,4 +31,22 @@ body {
         .text-balance {
                 text-wrap: balance;
         }
+        .hidden-scrollbar {
+                -ms-overflow-style: none; /* IE, Edge 対応 */
+                scrollbar-width: none; /* Firefox 対応 */
+        }
+        .hidden-scrollbar::-webkit-scrollbar {
+                /* Chrome, Safari 対応 */
+                display: none;
+        }
+}
+
+.cm-scroller {
+        -ms-overflow-style: none; /* IE, Edge 対応 */
+        scrollbar-width: none; /* Firefox 対応 */
+}
+
+.cm-scroller::-webkit-scrollbar {
+        /* Chrome, Safari 対応 */
+        display: none;
 }

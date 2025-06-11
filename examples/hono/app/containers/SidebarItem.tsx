@@ -6,7 +6,7 @@ interface SidebarItemProps {
 
 const SidebarItem = (props: SidebarItemProps) => {
         const { children } = props
-        return <div className="flex flex-col gap-1">{children}</div>
+        return <div className="flex flex-col">{children}</div>
 }
 
 export default SidebarItem

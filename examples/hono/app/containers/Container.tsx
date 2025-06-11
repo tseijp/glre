@@ -1,3 +1,7 @@
+/**
+ * w-80 is 320px
+ */
+
 interface ContainerProps {
         children: React.ReactNode
 }
@@ -7,7 +11,7 @@ const Container = (props: ContainerProps) => {
         return (
                 <div
                         key="1"
-                        className="grid min-h-screen w-full lg:grid-cols-[300px_1fr_400px] items-start gap-0 border-t border-gray-200 px-0.5 py-0.5 dark:border-gray-800"
+                        className="grid min-h-screen w-screen h-[100dvh] items-start gap-0 border-2 border-gray-200 lg:grid-cols-[320px_1fr] dark:border-gray-950 overflow-hidden"
                 >
                         {children}
                 </div>
