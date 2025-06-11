@@ -19,9 +19,9 @@
                 "watch": "cd packages/core && npx jest --watch --runInBand",
                 "cov": "cd packages/core && npx jest --coverage",
                 "ls": "cd packages/core && npm publish --dry-run",
-                "tsup": "cd packages/core && yarn tsup",
-                "vers": "yarn changeset version",
-                "pub": "yarn tsup && yarn changeset publish"
+                "tsup": "cd packages/core && npx tsup",
+                "vers": "npx changeset version",
+                "pub": "npx tsup && npx changeset publish"
         },
         "devDependencies": {
                 "@changesets/cli": "*",
