@@ -1,7 +1,7 @@
 import { node } from './node'
+import { is } from '../utils'
 import type { UniformNode } from './types'
 import type { NodeType } from './const'
-import { is } from '../utils'
 
 // ユニフォーム更新コンテキスト
 interface UpdateContext {

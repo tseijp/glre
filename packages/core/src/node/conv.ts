@@ -1,6 +1,6 @@
 import { node } from '.'
-import { is } from '../utils'
 import { getCachedBool, getCachedInt, getCachedFloat } from './cache'
+import { is } from '../utils'
 import type { X } from './types'
 
 // JavaScript値をノードに変換

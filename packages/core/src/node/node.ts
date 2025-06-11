@@ -1,5 +1,5 @@
-import { is } from '../utils'
 import { OPERATORS, FUNCTIONS, SWIZZLES, NodeType } from './const'
+import { is } from '../utils'
 import type { Node, ProxyCallback, X } from './types'
 
 let nodeIdCounter = 0

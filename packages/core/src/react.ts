@@ -1,53 +1,42 @@
-/*
-import { useEffect } from 'react'
-import { gl } from './index'
+import { useEffect } from 'react' // @ts-ignore
 import { useOnce, useMutable } from 'reev/react'
+import { defaultGL } from './index'
 import type { GL, Fun } from './types'
-export type { GL, Fun }
+export * from './index'
 
-export const useGL = (props: Partial<GL> = {}, self = gl) => {
+export const useGL = (props: Partial<GL> = {}, self = defaultGL) => {
         const memo1 = useMutable(props) as Partial<GL>
         const memo2 = useMutable({
-                ref(target: unknown) {
-                        if (target) {
-                                self.target = target
+                ref(el: HTMLCanvasElement | null) {
+                        if (el) {
+                                self.el = el
+                                self.gl = el.getContext('webgl2')
                                 self.mount()
                         } else self.clean()
-                },
-                mount() {
-                        self.el = self.target
-                        self.gl = self.target.getContext('webgl2')
-                        self.init()
-                        self.resize()
-                        self.frame.start()
-                        window.addEventListener('resize', self.resize)
-                        self.el.addEventListener('mousemove', self.mousemove)
-                },
-                clean() {
-                        self(memo2)(memo1)
-                        self.frame.stop()
-                        window.removeEventListener('resize', self.resize)
                 },
         }) as Partial<GL>
 
         return useOnce(() => self(memo2)(memo1))
 }
 
-export const useTexture = (props: any, self = gl) => {
+export const useQueue = (fn: Fun, self = defaultGL) => {
+        return self.queue(fn)
+}
+
+export const useTexture = (props: any, self = defaultGL) => {
         return self.texture(props)
 }
 
-export const useAttribute = (props: any, self = gl) => {
+export const useAttribute = (props: any, self = defaultGL) => {
         return self.attribute(props)
 }
 
-export const useUniform = (props: any, self = gl) => {
+export const useUniform = (props: any, self = defaultGL) => {
         return self.uniform(props)
 }
 
-export const useFrame = (fun: Fun, self = gl) => {
+export const useFrame = (fun: Fun, self = defaultGL) => {
         useEffect(() => void self.queue(fun), [])
         useEffect(() => () => self.queue(fun), [])
         return self
 }
-*/

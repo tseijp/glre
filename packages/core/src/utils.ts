@@ -30,6 +30,11 @@ export const isServer = () => {
         return typeof window === 'undefined'
 }
 
+export const isWebGPUSupported = () => {
+        if (isServer()) return false
+        return 'gpu' in navigator
+}
+
 /**
  * each
  */

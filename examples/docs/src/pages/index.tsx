@@ -1,13 +1,18 @@
 import React, { useMemo } from 'react'
 import Head from '@docusaurus/Head'
 import Layout from '@theme/Layout'
-import StatsImpl from 'stats.js'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import { createGL } from 'glre'
-import { useGL, useTexture, useFrame, useUniform } from 'glre/react'
+import StatsImpl from 'stats.js'
+import {
+        createGL,
+        GL,
+        useGL,
+        useTexture,
+        useFrame,
+        useUniform,
+} from 'glre/src/react'
 import { range, makePriority } from '../../helpers'
-import { GL } from 'glre'
 
 const WINDOW_DELAY_MS = 500
 
@@ -54,16 +59,11 @@ function useLevaUniform(gl: GL) {
 }
 
 function Canvas() {
-        const gl = useMemo(createGL, [])
+        const gl = useMemo(() => createGL({ isWebGL: true }), [])
 
         useGL(
                 {
                         frag,
-                        render() {
-                                gl.clear()
-                                gl.viewport()
-                                gl.drawArrays()
-                        },
                 },
                 gl
         )

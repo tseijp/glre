@@ -1,13 +1,11 @@
-/*
 import { useEffect, useMemo } from 'react'
 import { Dimensions } from 'react-native' // @ts-ignore
 import { useMutable } from 'reev/react'
-import { gl } from './index'
+import { defaultGL } from './index'
 import type { GL, Fun } from './types'
+export * from './index'
 
-export type { GL, Fun }
-
-export const useGL = (props: Partial<GL> = {}, self = gl) => {
+export const useGL = (props: Partial<GL> = {}, self = defaultGL) => {
         const change = () => {
                 self.resize(
                         void 0,
@@ -21,16 +19,8 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
                         self.el = {}
                         self.gl = gl
                         self.mount()
-                },
-                mount() {
-                        self.init()
                         change()
-                        self.frame.start()
                         Dimensions.addEventListener('change', change)
-                },
-                clean() {
-                        self(memo2)(memo1)
-                        self.frame.stop()
                 },
         }) as Partial<GL>
 
@@ -39,22 +29,21 @@ export const useGL = (props: Partial<GL> = {}, self = gl) => {
         return useMemo(() => self(memo2)(memo1), [self, memo2, memo1])
 }
 
-export const useTexture = (props: any, self = gl) => {
+export const useTexture = (props: any, self = defaultGL) => {
         return self.texture(props)
 }
 
-export const useAttribute = (props: any, self = gl) => {
+export const useAttribute = (props: any, self = defaultGL) => {
         return self.attribute(props)
 }
 
-export const useUniform = (props: any, self = gl) => {
+export const useUniform = (props: any, self = defaultGL) => {
         return self.uniform(props)
 }
 
-export const useFrame = (fun: Fun, self = gl) => {
+export const useFrame = (fun: Fun, self = defaultGL) => {
         const ref = useMutable(fun)
         useEffect(() => self.frame(fun), [])
         useEffect(() => () => self.frame(ref), [])
         return self
 }
-*/

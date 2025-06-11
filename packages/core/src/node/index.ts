@@ -1,8 +1,8 @@
 import { node } from './node'
 import { uniform } from './uniform'
 import { float } from './conv'
-import type { X, FunctionNode, ConditionalNode } from './types'
 import { is } from '../utils'
+import type { X, FunctionNode, ConditionalNode } from './types'
 export type { X, FunctionNode, ConditionalNode }
 export * from './cache'
 export * from './const'

@@ -1,5 +1,5 @@
-import type { Node, NodeType, ConversionContext, X } from '../node'
 import { is } from '../utils'
+import type { Node, NodeType, ConversionContext, X } from '../node'
 
 // WGSLコード生成コンテキスト
 interface WGSLContext extends ConversionContext {

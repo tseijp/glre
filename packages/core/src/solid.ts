@@ -1,21 +1,17 @@
-/*
 import { onMount, onCleanup } from 'solid-js'
-import { gl } from './index'
+import { defaultGL } from './index'
 import type { GL, Fun } from './types'
+export * from './index'
 
-export type { GL, Fun }
-
-export const onGL = (props?: Partial<GL>, self = gl) => {
+export const onGL = (props?: Partial<GL>, self = defaultGL) => {
         const memo = {
-                ref(target: unknown) {
-                        if (target) {
-                                self.target = target
-                                self.mount()
-                        }
+                ref(el: HTMLCanvasElement | null) {
+                        if (!el) return
+                        self.el = el
+                        self.gl = el.getContext('webgl2')
+                        self.mount()
                 },
                 mount() {
-                        self.el = self.target
-                        self.gl = self.target.getContext('webgl2')
                         self.init()
                         self.resize()
                         self.frame.start()
@@ -33,15 +29,14 @@ export const onGL = (props?: Partial<GL>, self = gl) => {
         return self(props)(memo)
 }
 
-export const onFrame = (fun: Fun, self = gl) => {
+export const onFrame = (fun: Fun, self = defaultGL) => {
         onMount(() => self('loop', fun))
 }
 
-export const setTexture = (props: any, self = gl) => {
+export const setTexture = (props: any, self = defaultGL) => {
         return self.texture(props)
 }
 
-export const setAttribute = (props: any, self = gl) => {
+export const setAttribute = (props: any, self = defaultGL) => {
         return self.attribute(props)
 }
-*/

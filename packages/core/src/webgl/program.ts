@@ -33,6 +33,15 @@ export const getProgramInfo = (c: WebGLRenderingContext, pg: WebGLProgram) => {
         }
 }
 
+//  ユニフォームタイプの取得
+export const getUniformType = (value: number | number[], isMatrix = false) => {
+        let length = typeof value === 'number' ? 0 : value?.length
+        if (!length) return `uniform1f`
+        if (!isMatrix) return `uniform${length}fv`
+        length = Math.sqrt(length) << 0
+        return `uniformMatrix${length}fv`
+}
+
 // ユニフォーム位置を取得
 export const getUniformLocation = (
         c: WebGLRenderingContext,

@@ -4,24 +4,17 @@ import {
         createRenderPass,
         createRenderPipeline,
 } from './pipeline'
-import { base } from '../base'
 import { wgsl } from '../code/wgsl'
+import { is } from '../utils'
 import type { X } from '../node'
 import type { GL } from '../types'
-import { is } from '../utils'
 export * from './buffer'
 export * from './device'
 export * from './pipeline'
 export * from './texture'
 
-let iTime = performance.now(),
-        iPrevTime = 0,
-        iDeltaTime = 0
-
-// WebGPU実装
-export const webgpu = (props?: Partial<GL>) => {
+export const webgpu = (self: GL) => {
         const init = async () => {
-                self(props)
                 const { device } = await requestWebGPUDevice()
                 self.gl = { device }
                 let vs = self.vs || self.vert || self.vertex
@@ -41,20 +34,11 @@ export const webgpu = (props?: Partial<GL>) => {
                         storeOp: 'store',
                 })
                 pass.setPipeline(pipeline)
-                pass.draw(6)
+                pass.draw(self.count)
                 pass.end()
                 device.queue.submit([encoder.finish()])
-                iPrevTime = iTime
-                iTime = performance.now() / 1000
-                iDeltaTime = iTime - iPrevTime
-                // if (self.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
         }
 
         // @TODO add uniform and attribute
-
-        const self = base(props)
-        self.webgl = false
-        self.init = init
-        self.loop = loop
-        return self
+        return self({ init, loop })
 }
