@@ -5,6 +5,7 @@ import { webgpu } from './webgpu'
 import { is } from './utils/helpers'
 import type { EventState } from 'reev'
 import type { GL } from './types'
+import { initWebGPUDevice } from './utils/webgpu'
 export * from './code/glsl'
 export * from './code/wgsl'
 export * from './node'
@@ -51,11 +52,15 @@ export const createGL = (props?: Partial<GL>) => {
         gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
 
-        gl('mount', () => {
+        gl('mount', async () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
+                        gl.gl = gl.el.getContext('webgpu')
                         webgl(gl)
-                } else webgpu(gl)
+                } else {
+                        gl.gl = await initWebGPUDevice(gl.el)
+                        webgpu(gl)
+                }
                 gl.init()
                 gl.resize()
                 gl.frame(() => {

@@ -16,7 +16,6 @@ import type { GL } from './types'
 
 export const webgpu = (gl: GL) => {
         gl('init', async () => {
-                gl.gl = await initWebGPUDevice(gl.el)
                 let vs = gl.vs || gl.vert || gl.vertex
                 let fs = gl.fs || gl.frag || gl.fragment
                 if (is.obj(vs)) vs = wgsl(vs as X)

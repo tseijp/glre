@@ -69,18 +69,24 @@ export const createBindGroup = (device: Device, pipeline: Pipeline, entries: any
         })
 }
 
-export const updateBindGroup = (device: Device, pipeline: Pipeline, uniformBuffer: Buffer, textures: any = {}, sampler: any = null) => {
+export const updateBindGroup = (
+        device: Device,
+        pipeline: Pipeline,
+        uniformBuffer: Buffer,
+        textures: any = {},
+        sampler: any = null
+) => {
         const entries = [{ binding: 0, resource: { buffer: uniformBuffer } }]
-        
+
         let binding = 1
         Object.values(textures).forEach((texture: any) => {
                 entries.push({ binding: binding++, resource: texture.createView() })
         })
-        
+
         if (sampler && Object.keys(textures).length > 0) {
                 entries.push({ binding: binding++, resource: sampler })
         }
-        
+
         return createBindGroup(device, pipeline, entries)
 }
 
