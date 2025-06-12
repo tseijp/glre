@@ -1,16 +1,18 @@
 import { nested } from 'reev'
-import { createAttribute, createIbo, createVbo, vertexStride } from './buffer'
-import { createProgram, deleteProgram, getUniformType } from './program'
-import { createFragmentShader, createVertexShader } from './shader'
-import { activeTexture, createTexture } from './texture'
-import { glsl } from '../code/glsl'
-import { is } from '../utils'
-import type { X } from '../node'
-import type { GL } from '../types'
-export * from './buffer'
-export * from './program'
-export * from './shader'
-export * from './texture'
+import { glsl } from './code/glsl'
+import { is } from './utils/helpers'
+import type { X } from './node'
+import type { GL } from './types'
+import {
+        activeTexture,
+        createAttribute,
+        createIbo,
+        createProgram,
+        createTexture,
+        createVbo,
+        getUniformType,
+        vertexStride,
+} from './utils/webgl'
 
 const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
@@ -22,7 +24,7 @@ export const webgl = (gl: GL) => {
                 if (is.obj(fs)) fs = glsl(fs as X)
                 if (is.obj(vs)) vs = glsl(vs as X)
                 if (gl.count === 6) gl.attribute({ a_position })
-                gl.pg = createProgram(c, createVertexShader(c, vs), createFragmentShader(c, fs))
+                gl.pg = createProgram(c, vs, fs)
                 gl.location = nested((key, isAttribute = false) => {
                         return isAttribute ? c.getAttribLocation(gl.pg, key) : c.getUniformLocation(gl.pg, key)
                 })
@@ -30,7 +32,7 @@ export const webgl = (gl: GL) => {
 
         gl('clean', () => {
                 const c = gl.gl
-                deleteProgram(c, gl.pg)
+                c.deleteProgram(gl.pg)
         })
 
         gl('render', () => {

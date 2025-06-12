@@ -13,15 +13,6 @@ export const is = {
         nan: (a: unknown): a is number => typeof a === 'number' && Number.isNaN(a),
 }
 
-export const isServer = () => {
-        return typeof window === 'undefined'
-}
-
-export const isWebGPUSupported = () => {
-        if (isServer()) return false
-        return 'gpu' in navigator
-}
-
 /**
  * each
  */

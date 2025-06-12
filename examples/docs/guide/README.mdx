@@ -4,7 +4,7 @@ title: 'Creating a scene'
 description: 'Creating a scene'
 image: https://github.com/tseijp.png
 keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
-date: 2023-01-01
+date: 2025-05-12
 ---
 
 # Creating a scene
@@ -22,7 +22,7 @@ Save the following HTML to a file on your computer.
 ```html
 <canvas id="myCanvas"></canvas>
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@0.15.0'
+        import createGL from 'https://esm.sh/glre'
 
         // Our GLSL and Javascript will go here.
         const frag = `
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', App)
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@0.15.0'
+        import createGL from 'https://esm.sh/glre'
 
         const frag = `
                 precision highp float;

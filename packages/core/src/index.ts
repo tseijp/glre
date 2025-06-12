@@ -1,15 +1,16 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
-import { webgl } from './webgl/index'
-import { webgpu } from './webgpu/index'
-import { is, isWebGPUSupported } from './utils'
+import { webgl } from './webgl'
+import { webgpu } from './webgpu'
+import { is } from './utils/helpers'
 import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './code/glsl'
 export * from './code/wgsl'
 export * from './node'
 export * from './types'
-export * from './utils'
+export * from './utils/helpers'
+export * from './utils/webgl'
 export * from './webgl'
 export * from './webgpu'
 
@@ -21,6 +22,14 @@ export const isGL = (a: unknown): a is EventState<GL> => {
         if (!is.obj(a)) return false
         if ('isGL' in a) return true
         return false
+}
+export const isServer = () => {
+        return typeof window === 'undefined'
+}
+
+export const isWebGPUSupported = () => {
+        if (isServer()) return false
+        return 'gpu' in navigator
 }
 
 export const createGL = (props?: Partial<GL>) => {

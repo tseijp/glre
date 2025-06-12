@@ -25,26 +25,9 @@ export const TYPES = [
 export type NodeType = (typeof TYPES)[number]
 
 // スウィズル定数
-export const SWIZZLES = [
-        'x',
-        'y',
-        'z',
-        'w',
-        'r',
-        'g',
-        'b',
-        'a',
-        's',
-        't',
-        'p',
-        'q',
-] as const
+export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
-type AllSwizzles<T extends string> =
-        | T
-        | `${T}${T}`
-        | `${T}${T}${T}`
-        | `${T}${T}${T}${T}`
+type AllSwizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
 
 export type Swillzes =
         | AllSwizzles<'x' | 'y' | 'z' | 'w'>

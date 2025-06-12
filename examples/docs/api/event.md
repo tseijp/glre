@@ -5,7 +5,7 @@ title: 'Event API'
 description: 'Event API'
 image: https://github.com/tseijp.png
 keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
-date: 2023-01-01
+date: 2025-06-12
 ---
 
 # Event API

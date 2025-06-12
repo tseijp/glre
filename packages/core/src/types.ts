@@ -1,6 +1,6 @@
 import { Nested, EventState } from 'reev'
-import { X } from './node'
 import type { Fun, Queue, Frame } from 'refr'
+import type { X } from './node'
 export type { Fun, Queue, Frame }
 export type Uniform = number | number[]
 export type Attribute = number[]

@@ -43,10 +43,7 @@ export const findDuplicateNodes = (nodes: X[]): Map<string, X[]> => {
         nodes.forEach((nodeProxy) => {
                 const signature = generateNodeSignature(nodeProxy)
                 if (signatures.has(signature)) {
-                        if (!duplicates.has(signature))
-                                duplicates.set(signature, [
-                                        signatures.get(signature)!,
-                                ])
+                        if (!duplicates.has(signature)) duplicates.set(signature, [signatures.get(signature)!])
                         duplicates.get(signature)!.push(nodeProxy)
                 } else signatures.set(signature, nodeProxy)
         })
@@ -55,13 +52,9 @@ export const findDuplicateNodes = (nodes: X[]): Map<string, X[]> => {
 
 // ノードのシグネチャを生成
 const generateNodeSignature = (nodeProxy: X): string => {
-        const parts = [
-                nodeProxy.type,
-                `${nodeProxy.value}`,
-                nodeProxy.property || '',
-        ]
+        const parts = [nodeProxy.type, `${nodeProxy.value}`, nodeProxy.property || '']
         return parts.join('|')
 }
 
 // 初期化を実行
-initializeCache()
+// initializeCache()

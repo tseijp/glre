@@ -13,7 +13,6 @@ export const resize = (gl: GL) => {
         let a = W / H
         a = Math.min(a, 1)
         w = Math.min(640, w)
-        console.log({ ...gl }, '\n', w, a)
         gl.size[0] = gl.el.width = w
         gl.size[1] = gl.el.height = w / a
 }

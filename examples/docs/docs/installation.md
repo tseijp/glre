@@ -17,7 +17,7 @@ npm i glre
 or
 
 ```ruby
-yaan add glre
+yarn add glre
 ```
 
 ## Install from CDN or static hosting
@@ -25,7 +25,7 @@ yaan add glre
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@latest'
+        import self from 'https://esm.sh/glre'
         const fragment = `
           precision highp float;
           uniform vec2 iResolution;
