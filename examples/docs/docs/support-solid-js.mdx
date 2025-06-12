@@ -15,8 +15,7 @@ date: 2023-01-01
 ## Code Example
 
 ```tsx
-import { useMemo } from 'react'
-import { createGL } from 'glre/solid'
+import { onGL } from 'glre/solid'
 
 const frag = `
 precision highp float;
@@ -88,15 +87,10 @@ void main() {
 }`
 
 export const Canvas = () => {
-        const gl = createGL()
+        const gl = onGL({ frag })
         return <canvas ref={gl.ref} />
 }
 ```
-
-import useBaseUrl from '@docusaurus/useBaseUrl'
-import { useControls } from 'leva'
-import { useMemo } from 'react'
-import { useGL } from 'glre/src/react'
 
 export const frag = `
 precision highp float;
@@ -167,13 +161,16 @@ void main() {
         }
 }`
 
+import { useGL } from 'glre/src/react'
+import { Leva, useControls } from 'leva'
+import { useMemo } from 'react'
+import { resize } from '../utils'
+
 export const Canvas = () => {
         const gl = useGL({
                 frag,
                 resize() {
-                        const { clientWidth: w } = gl.el.parentNode
-                        gl.size[0] = gl.el.width = w
-                        gl.size[1] = gl.el.height = w / 2
+                        resize(gl)
                 },
         })
         gl.uniform(
@@ -197,6 +194,7 @@ export const Canvas = () => {
         return (
                 <div style={{ position: 'relative' }}>
                         <canvas ref={gl.ref} />
+                        <Leva collapsed />
                 </div>
         )
 }

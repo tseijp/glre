@@ -50,11 +50,6 @@ export const Canvas = () => {
 }
 ```
 
-import useBaseUrl from '@docusaurus/useBaseUrl'
-import { useControls } from 'leva'
-import { useMemo } from 'react'
-import { useGL } from 'glre/src/react'
-
 export const frag = `
 precision mediump float;
 uniform vec2 iResolution;
@@ -81,13 +76,16 @@ void main() {
 }
 `
 
+import { useGL } from 'glre/src/react'
+import { useControls, Leva } from 'leva'
+import { useMemo } from 'react'
+import { resize } from '../utils'
+
 export const Canvas = () => {
         const gl = useGL({
                 frag,
                 resize() {
-                        const { clientWidth: w } = gl.el.parentNode
-                        gl.size[0] = gl.el.width = w
-                        gl.size[1] = gl.el.height = w
+                        resize(gl)
                 },
         })
         gl.uniform(
@@ -101,6 +99,7 @@ export const Canvas = () => {
         return (
                 <div style={{ position: 'relative' }}>
                         <canvas ref={gl.ref} />
+                        <Leva collapsed />
                 </div>
         )
 }

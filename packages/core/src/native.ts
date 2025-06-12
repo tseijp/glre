@@ -10,6 +10,12 @@ export const useGL = (props: Partial<GL> = {}) => {
                 gl.ref = (ctx: any) => {
                         gl.el = {}
                         gl.gl = ctx
+                        gl({
+                                render() {
+                                        ctx.flush()
+                                        ctx.endFrameEXP()
+                                },
+                        })
                         gl.mount()
                         const resize = () => {
                                 gl.width = ctx.drawingBufferWidth
@@ -19,6 +25,6 @@ export const useGL = (props: Partial<GL> = {}) => {
                         resize()
                         Dimensions.addEventListener('change', resize)
                 }
-                return gl
+                return gl({ isNative: true })
         })[0]
 }

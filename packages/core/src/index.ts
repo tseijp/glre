@@ -35,6 +35,13 @@ export const createGL = (props?: Partial<GL>) => {
                 counter: 0,
         }) as EventState<GL>
 
+        gl.queue = createQueue()
+        gl.frame = createFrame()
+
+        gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
+        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
+        gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
+
         gl('mount', () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
@@ -82,21 +89,6 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.mouse[0] = (x - top - w / 2) / (w / 2)
                 gl.mouse[1] = -(y - left - h / 2) / (h / 2)
                 gl.uniform('iMouse', gl.mouse)
-        })
-
-        gl.queue = createQueue()
-        gl.frame = createFrame()
-
-        gl.attribute = durable((key, value, iboValue) => {
-                gl.queue(() => void gl._attribute?.(key, value, iboValue))
-        })
-
-        gl.uniform = durable((key, value, isMatrix) => {
-                gl.queue(() => void gl._uniform?.(key, value, isMatrix))
-        })
-
-        gl.texture = durable((key, value) => {
-                gl.queue(() => void gl._texture?.(key, value))
         })
 
         return gl(props)
