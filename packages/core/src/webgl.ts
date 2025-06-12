@@ -28,12 +28,13 @@ export const webgl = async (gl: GL) => {
                 return Math.floor(stride)
         })
 
-        const uniformTypes = nested((_, value: number | number[], isMatrix = false) => {
-                let length = typeof value === 'number' ? 0 : value?.length
-                if (!length) return `uniform1f`
-                if (!isMatrix) return `uniform${length}fv`
-                length = Math.sqrt(length) << 0
-                return `uniformMatrix${length}fv`
+        const uniforms = nested((key, value: number | number[]) => {
+                const loc = locations(key)
+                if (is.num(value)) return (value: any) => c.uniform1f(loc, value)
+                let l = value.length as 3
+                if (l <= 4) return (value: any) => c[`uniform${l}fv`](loc, value)
+                l = (Math.sqrt(l) << 0) as 3
+                return (value: any) => c[`uniformMatrix${l}fv`](loc, false, value)
         })
 
         gl('clean', () => c.deleteProgram(pg))
@@ -54,11 +55,8 @@ export const webgl = async (gl: GL) => {
                 createAttrib(c, str, loc, vbo, ibo)
         })
 
-        gl('_uniform', (key: string, value = 0, isMatrix = false) => {
-                const type = uniformTypes(key, value, isMatrix)
-                const loc = locations(key)
-                if (isMatrix) (c as any)[type]?.(loc, false, value)
-                else (c as any)[type]?.(loc, value)
+        gl('_uniform', (key: string, value: number | number[]) => {
+                uniforms(key, value)(value)
         })
 
         const _loadFn = (image: HTMLImageElement) => {

@@ -26,7 +26,6 @@ export const createShader = (c: WebGLRenderingContext, source: string, type: num
 
 export const createProgram = (c: WebGLRenderingContext, vs = defaultVertexGLSL, fs = defaultFragmentGLSL) => {
         const pg = c.createProgram()
-        if (!pg) throw new Error('Failed to create pg')
         c.attachShader(pg, createShader(c, vs, c.VERTEX_SHADER))
         c.attachShader(pg, createShader(c, fs, c.FRAGMENT_SHADER))
         c.linkProgram(pg)
@@ -38,7 +37,6 @@ export const createProgram = (c: WebGLRenderingContext, vs = defaultVertexGLSL, 
 
 export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
         const buffer = c.createBuffer()
-        if (!buffer) throw new Error('Failed to create VBO')
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, new Float32Array(data), c.STATIC_DRAW)
         c.bindBuffer(c.ARRAY_BUFFER, null)
@@ -47,7 +45,6 @@ export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
 
 export const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         const buffer = c.createBuffer()
-        if (!buffer) throw new Error('Failed to create IBO')
         c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buffer)
         c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Int16Array(data), c.STATIC_DRAW)
         c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, null)
@@ -69,7 +66,6 @@ export const createAttrib = (
 
 export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement) => {
         const texture = c.createTexture()
-        if (!texture) throw new Error('Failed to create texture')
         c.bindTexture(c.TEXTURE_2D, texture)
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img)
         c.generateMipmap(c.TEXTURE_2D)

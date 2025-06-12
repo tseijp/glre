@@ -1,3 +1,5 @@
+import { GPUContext } from '../types'
+
 type Device = any
 type Buffer = any
 type Context = any
@@ -16,6 +18,7 @@ export const initWebGPUDevice = async (el: HTMLCanvasElement) => {
         return { device, context, format }
 }
 
+/**
 const defaultVertexWGSL = `
 @vertex
 fn vs_main(@location(0) position: vec2f) -> @builtin(position) vec4f {
@@ -32,39 +35,70 @@ fn fs_main(@builtin(position) coord: vec4f) -> @location(0) vec4f {
   return vec4f(uv, 0.0, 1.0);
 }
 `
+*/
+const defaultVertexWGSL = `
+struct VertexOutput {
+  @builtin(position) Position : vec4<f32>,
+  @location(0) fragColor : vec4<f32>,
+}
+
+@vertex
+fn main(
+  @location(0) position: vec4<f32>,
+  @location(1) color: vec4<f32>
+) -> VertexOutput {
+
+	var output : VertexOutput;
+  output.Position = position;
+  output.fragColor = color;
+  return output;
+}
+`
+
+const defaultFragmentWGSL = `
+@fragment
+fn main(
+  @location(0) fragColor: vec4<f32>,
+) -> @location(0) vec4<f32> {
+  return fragColor;
+}
+`
 
 export const createRenderPipeline = (
         device: Device,
+        format: string,
         vs = defaultVertexWGSL,
         fs = defaultFragmentWGSL,
-        format: string
+        buffers: any[]
 ) => {
-        const vertexModule = device.createShaderModule({ code: vs })
-        const fragmentModule = device.createShaderModule({ code: fs })
         return device.createRenderPipeline({
-                layout: 'auto',
                 vertex: {
-                        module: vertexModule,
-                        entryPoint: 'vs_main',
-                        buffers: [
-                                {
-                                        // ← 追加
-                                        arrayStride: 8, // vec2f = 8 bytes
-                                        attributes: [
-                                                {
-                                                        format: 'float32x2',
-                                                        offset: 0,
-                                                        shaderLocation: 0,
-                                                },
-                                        ],
-                                },
-                        ],
+                        module: device.createShaderModule({ code: vs }),
+                        entryPoint: 'main',
+                        buffers,
                 },
-                fragment: { module: fragmentModule, entryPoint: 'fs_main', targets: [{ format }] },
+                fragment: {
+                        module: device.createShaderModule({ code: fs }),
+                        entryPoint: 'main',
+                        targets: [{ format }],
+                },
+                layout: 'auto',
                 primitive: { topology: 'triangle-list' },
         }) as Pipeline
 }
 
+export const createDescriptor = (c: GPUContext) => {
+        return {
+                colorAttachments: [
+                        {
+                                view: c.getCurrentTexture().createView(),
+                                clearValue: { r: 0, g: 0, b: 0, a: 1 },
+                                loadOp: 'clear',
+                                storeOp: 'store',
+                        },
+                ],
+        }
+}
 export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
 
 export const createUniformBuffer = (device: Device, size: number) => {
