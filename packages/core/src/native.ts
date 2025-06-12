@@ -8,8 +8,7 @@ export const useGL = (props: Partial<GL> = {}) => {
         return useState(() => {
                 const gl = isGL(props) ? props : createGL(props)
                 gl.ref = (ctx: any) => {
-                        gl.el = {}
-                        gl.gl = ctx
+                        gl.el = {} as any
                         gl({
                                 render() {
                                         ctx.flush()

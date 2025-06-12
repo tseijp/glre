@@ -3,41 +3,43 @@ import { glsl } from './code/glsl'
 import { is } from './utils/helpers'
 import type { X } from './node'
 import type { GL } from './types'
-import {
-        activeTexture,
-        createAttribute,
-        createIbo,
-        createProgram,
-        createTexture,
-        createVbo,
-        getUniformType,
-        vertexStride,
-} from './utils/webgl'
+import { activeTexture, createAttrib, createIbo, createProgram, createTexture, createVbo } from './utils/program'
 
-const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
+export const webgl = async (gl: GL) => {
+        let vs = gl.vs || gl.vert || gl.vertex
+        let fs = gl.fs || gl.frag || gl.fragment
+        if (is.obj(fs)) fs = glsl(fs as X)
+        if (is.obj(vs)) vs = glsl(vs as X)
+        const c = gl.el.getContext('webgl2')!
+        const pg = createProgram(c, vs, fs)
 
-export const webgl = (gl: GL) => {
-        gl('init', () => {
-                const c = gl.gl
-                let vs = gl.vs || gl.vert || gl.vertex
-                let fs = gl.fs || gl.frag || gl.fragment
-                if (is.obj(fs)) fs = glsl(fs as X)
-                if (is.obj(vs)) vs = glsl(vs as X)
-                if (gl.count === 6) gl.attribute({ a_position })
-                gl.pg = createProgram(c, vs, fs)
-                gl.location = nested((key, isAttribute = false) => {
-                        return isAttribute ? c.getAttribLocation(gl.pg, key) : c.getUniformLocation(gl.pg, key)
-                })
+        let _activeUnit = 0
+        const activeUnits = nested(() => _activeUnit++)
+
+        const locations = nested((key, bool = false) => {
+                if (bool) return c.getAttribLocation(pg, key)
+                return c.getUniformLocation(pg, key) as WebGLUniformLocation
         })
 
-        gl('clean', () => {
-                const c = gl.gl
-                c.deleteProgram(gl.pg)
+        const strides = nested((_, count: number, value: number[], iboValue?: number[]) => {
+                if (iboValue) count = Math.max(...iboValue) + 1
+                const stride = value.length / count
+                if (stride !== Math.floor(stride)) console.warn(`Vertex Stride Error: count ${count} is mismatch`)
+                return Math.floor(stride)
         })
+
+        const uniformTypes = nested((_, value: number | number[], isMatrix = false) => {
+                let length = typeof value === 'number' ? 0 : value?.length
+                if (!length) return `uniform1f`
+                if (!isMatrix) return `uniform${length}fv`
+                length = Math.sqrt(length) << 0
+                return `uniformMatrix${length}fv`
+        })
+
+        gl('clean', () => c.deleteProgram(pg))
 
         gl('render', () => {
-                const c = gl.gl
-                c.useProgram(gl.pg)
+                c.useProgram(pg)
                 gl.queue.flush()
                 c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...gl.size)
@@ -45,28 +47,25 @@ export const webgl = (gl: GL) => {
         })
 
         gl('_attribute', (key = '', value: number[], iboValue: number[]) => {
-                const c = gl.gl
-                const n = gl.count
-                const loc = gl.location(key, true)
+                const loc = locations(key, true)
                 const vbo = createVbo(c, value)
                 const ibo = createIbo(c, iboValue)
-                const stride = vertexStride(n, value, iboValue)
-                createAttribute(c, stride, loc, vbo, ibo)
+                const str = strides(key, gl.count, value, iboValue)
+                createAttrib(c, str, loc, vbo, ibo)
         })
 
         gl('_uniform', (key: string, value = 0, isMatrix = false) => {
-                const type = getUniformType(value, isMatrix)
-                const c = gl.gl
-                const loc = gl.location(key)
-                if (isMatrix) c[type](loc, false, value)
-                else c[type](loc, value)
+                const type = uniformTypes(key, value, isMatrix)
+                const loc = locations(key)
+                if (isMatrix) (c as any)[type]?.(loc, false, value)
+                else (c as any)[type]?.(loc, value)
         })
 
         const _loadFn = (image: HTMLImageElement) => {
-                const loc = gl.location(image.alt)
-                const unit = gl.activeUnit(image.alt)
-                const tex = createTexture(gl.gl, image)
-                activeTexture(gl.gl, loc, unit, tex)
+                const loc = locations(image.alt)
+                const unit = activeUnits(image.alt)
+                const tex = createTexture(c, image)
+                activeTexture(c, loc, unit, tex)
         }
 
         gl('_texture', (alt: string, src: string) => {
@@ -75,7 +74,7 @@ export const webgl = (gl: GL) => {
                 Object.assign(image, { src, alt, crossOrigin: 'anonymous' })
         })
 
-        let _activeUnit = 0
-        gl.activeUnit = nested(() => _activeUnit++)
+        gl.webgl = { context: c, program: pg }
+
         return gl
 }

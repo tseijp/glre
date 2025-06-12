@@ -1,11 +1,11 @@
-const defaultVertexShader = /* cpp */ `
+export const defaultVertexGLSL = /* cpp */ `
 attribute vec4 a_position;
 void main() {
   gl_Position = a_position;
 }
 `
 
-const defaultFragmentShader = /* cpp */ `
+export const defaultFragmentGLSL = /* cpp */ `
 precision mediump float;
 uniform vec2 iResolution;
 void main() {
@@ -24,7 +24,7 @@ export const createShader = (c: WebGLRenderingContext, source: string, type: num
         throw new Error(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vs = defaultVertexShader, fs = defaultFragmentShader) => {
+export const createProgram = (c: WebGLRenderingContext, vs = defaultVertexGLSL, fs = defaultFragmentGLSL) => {
         const pg = c.createProgram()
         if (!pg) throw new Error('Failed to create pg')
         c.attachShader(pg, createShader(c, vs, c.VERTEX_SHADER))
@@ -54,10 +54,10 @@ export const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         return buffer
 }
 
-export const createAttribute = (
+export const createAttrib = (
         c: WebGLRenderingContext,
         stride: number,
-        location: number,
+        location: any,
         vbo: WebGLBuffer,
         ibo?: WebGLBuffer
 ) => {
@@ -91,19 +91,4 @@ export const activeTexture = (
         c.uniform1i(location, unit)
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, texture)
-}
-
-export const vertexStride = (count: number, value: number[], iboValue?: number[]) => {
-        if (iboValue) count = Math.max(...iboValue) + 1
-        const stride = value.length / count
-        if (stride !== Math.floor(stride)) console.warn(`Vertex Stride Error: count ${count} is mismatch`)
-        return Math.floor(stride)
-}
-
-export const getUniformType = (value: number | number[], isMatrix = false) => {
-        let length = typeof value === 'number' ? 0 : value?.length
-        if (!length) return `uniform1f`
-        if (!isMatrix) return `uniform${length}fv`
-        length = Math.sqrt(length) << 0
-        return `uniformMatrix${length}fv`
 }

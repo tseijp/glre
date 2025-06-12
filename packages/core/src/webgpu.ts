@@ -1,46 +1,45 @@
 import { wgsl } from './code/wgsl'
 import { is } from './utils/helpers'
 import {
-        initWebGPUDevice,
         createRenderPipeline,
         createUniformBuffer,
-        createBindGroup,
         updateBindGroup,
-        updateUniform,
+        createUniform,
         createVertexBuffer,
-        createTexture,
+        createDeviceTexture,
         createSampler,
-} from './utils/webgpu'
+} from './utils/pipeline'
 import type { X } from './node'
 import type { GL } from './types'
+import { nested } from 'reev'
 
-export const webgpu = (gl: GL) => {
-        gl('init', async () => {
-                let vs = gl.vs || gl.vert || gl.vertex
-                let fs = gl.fs || gl.frag || gl.fragment
-                if (is.obj(vs)) vs = wgsl(vs as X)
-                if (is.obj(fs)) fs = wgsl(fs as X)
+export const webgpu = async (gl: GL) => {
+        let vs = gl.vs || gl.vert || gl.vertex
+        let fs = gl.fs || gl.frag || gl.fragment
+        if (is.obj(vs)) vs = wgsl(vs as X)
+        if (is.obj(fs)) fs = wgsl(fs as X)
+        // if (gl.count === 6) gl._attribute('a_position', a_position)
+        const c = gl.el.getContext('webgpu') as any
+        const gpu = (navigator as any).gpu
+        const adapter = await gpu.requestAdapter()
+        const device = await adapter.requestDevice()
+        const format = gpu.getPreferredCanvasFormat()
+        c.configure({ device, format })
 
-                const { device, format } = gl.gl
-                const pipeline = createRenderPipeline(device, vs, fs, format)
-                const uniformBuffer = createUniformBuffer(device, 256)
-                const bindGroup = updateBindGroup(device, pipeline, uniformBuffer)
-                gl.gl.pipeline = pipeline
-                gl.gl.uniformBuffer = uniformBuffer
-                gl.gl.bindGroup = bindGroup
-                gl.gl.uniforms = {}
-                gl.gl.textures = {}
-                gl.gl.sampler = createSampler(device)
-        })
+        const pipeline = createRenderPipeline(device, vs, fs, format)
+        const uniformBuffer = createUniformBuffer(device, 256)
+        const vertexBuffers = nested((_, value) => createVertexBuffer(device, value))
+        const uniforms = {} as any // @TODO FIX
+        const sampler = createSampler(device)
+        let bindGroup = updateBindGroup(device, pipeline, uniformBuffer)
 
         gl('clean', () => {})
 
         gl('render', () => {
-                const { device, context, pipeline, bindGroup, vertexBuffers } = gl.gl
                 const encoder = device.createCommandEncoder()
                 const colorAttachments = [
                         {
-                                view: context.getCurrentTexture().createView(),
+                                view: c.getCurrentTexture().createView(),
                                 clearValue: { r: 0, g: 0, b: 0, a: 1 },
                                 loadOp: 'clear',
                                 storeOp: 'store',
@@ -49,32 +48,28 @@ export const webgpu = (gl: GL) => {
                 const pass = encoder.beginRenderPass({ colorAttachments })
                 pass.setPipeline(pipeline)
                 pass.setBindGroup(0, bindGroup)
-                if (vertexBuffers?.a_position) pass.setVertexBuffer(0, vertexBuffers.a_position)
-                pass.draw(gl.count)
+                // if (buffers?.a_position) {
+                //         pass.setVertexBuffer(0, buffers.a_position)
+                //         pass.draw(6)
+                // }
                 pass.end()
                 device.queue.submit([encoder.finish()])
         })
 
         gl('_attribute', (key = '', value: number[]) => {
-                const { device } = gl.gl
-                const vertexBuffer = createVertexBuffer(device, value)
-                if (!gl.gl.vertexBuffers) gl.gl.vertexBuffers = {}
-                gl.gl.vertexBuffers[key] = vertexBuffer
+                vertexBuffers(key, value)
         })
 
-        gl('_uniform', (key: string, value = 0, isMatrix = false) => {
-                const { device, uniformBuffer, uniforms } = gl.gl
+        gl('_uniform', (key: string, value = 0) => {
                 if (!device || !uniformBuffer) return
                 uniforms[key] = value
                 const uniformData = new Float32Array(Object.values(uniforms))
-                updateUniform(device, uniformBuffer, uniformData)
+                createUniform(device, uniformBuffer, uniformData)
         })
 
         const _loadFun = (image: HTMLImageElement, gl: GL) => {
-                const { device, textures, pipeline, uniformBuffer, sampler } = gl.gl
-                const texture = createTexture(device, image)
-                textures[image.alt] = texture
-                gl.gl.bindGroup = updateBindGroup(device, pipeline, uniformBuffer, textures, sampler)
+                const texture = createDeviceTexture(device, image)
+                // bindGroup = updateBindGroup(device, pipeline, uniformBuffer, textures, sampler)
         }
 
         gl('_texture', (alt: string, src: string) => {

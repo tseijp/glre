@@ -18,8 +18,8 @@ export const initWebGPUDevice = async (el: HTMLCanvasElement) => {
 
 const defaultVertexWGSL = `
 @vertex
-fn vs_main(@location(0) position: vec4f) -> @builtin(position) vec4f {
-  return position;
+fn vs_main(@location(0) position: vec2f) -> @builtin(position) vec4f {
+  return vec4f(position, 0.0, 1.0);
 }
 `
 
@@ -43,7 +43,23 @@ export const createRenderPipeline = (
         const fragmentModule = device.createShaderModule({ code: fs })
         return device.createRenderPipeline({
                 layout: 'auto',
-                vertex: { module: vertexModule, entryPoint: 'vs_main' },
+                vertex: {
+                        module: vertexModule,
+                        entryPoint: 'vs_main',
+                        buffers: [
+                                {
+                                        // ← 追加
+                                        arrayStride: 8, // vec2f = 8 bytes
+                                        attributes: [
+                                                {
+                                                        format: 'float32x2',
+                                                        offset: 0,
+                                                        shaderLocation: 0,
+                                                },
+                                        ],
+                                },
+                        ],
+                },
                 fragment: { module: fragmentModule, entryPoint: 'fs_main', targets: [{ format }] },
                 primitive: { topology: 'triangle-list' },
         }) as Pipeline
@@ -63,10 +79,8 @@ export const createVertexBuffer = (device: Device, value: number[]) => {
 }
 
 export const createBindGroup = (device: Device, pipeline: Pipeline, entries: any[]) => {
-        return device.createBindGroup({
-                layout: pipeline.getBindGroupLayout(0),
-                entries,
-        })
+        const layout = pipeline.getBindGroupLayout(0)
+        return device.createBindGroup({ layout, entries })
 }
 
 export const updateBindGroup = (
@@ -77,24 +91,19 @@ export const updateBindGroup = (
         sampler: any = null
 ) => {
         const entries = [{ binding: 0, resource: { buffer: uniformBuffer } }]
-
         let binding = 1
         Object.values(textures).forEach((texture: any) => {
                 entries.push({ binding: binding++, resource: texture.createView() })
         })
-
-        if (sampler && Object.keys(textures).length > 0) {
-                entries.push({ binding: binding++, resource: sampler })
-        }
-
+        if (sampler && Object.keys(textures).length > 0) entries.push({ binding: binding++, resource: sampler })
         return createBindGroup(device, pipeline, entries)
 }
 
-export const updateUniform = (device: Device, buffer: any, data: Float32Array, offset = 0) => {
+export const createUniform = (device: Device, buffer: any, data: Float32Array, offset = 0) => {
         device.queue.writeBuffer(buffer, offset, data)
 }
 
-export const createTexture = (device: Device, image: HTMLImageElement) => {
+export const createDeviceTexture = (device: Device, image: HTMLImageElement) => {
         const texture = device.createTexture({
                 size: { width: image.width, height: image.height },
                 format: 'rgba8unorm',

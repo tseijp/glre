@@ -5,19 +5,21 @@ import { webgpu } from './webgpu'
 import { is } from './utils/helpers'
 import type { EventState } from 'reev'
 import type { GL } from './types'
-import { initWebGPUDevice } from './utils/webgpu'
 export * from './code/glsl'
 export * from './code/wgsl'
 export * from './node'
 export * from './types'
 export * from './utils/helpers'
-export * from './utils/webgl'
+export * from './utils/pipeline'
+export * from './utils/program'
 export * from './webgl'
 export * from './webgpu'
 
 let iTime = performance.now(),
         iPrevTime = 0,
         iDeltaTime = 0
+
+const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
 
 export const isGL = (a: unknown): a is EventState<GL> => {
         if (!is.obj(a)) return false
@@ -42,7 +44,8 @@ export const createGL = (props?: Partial<GL>) => {
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,
-                counter: 0,
+                webgl: {},
+                webgpu: {},
         }) as EventState<GL>
 
         gl.queue = createQueue()
@@ -55,13 +58,9 @@ export const createGL = (props?: Partial<GL>) => {
         gl('mount', async () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
-                        gl.gl = gl.el.getContext('webgpu')
-                        webgl(gl)
-                } else {
-                        gl.gl = await initWebGPUDevice(gl.el)
-                        webgpu(gl)
-                }
-                gl.init()
+                        await webgl(gl)
+                } else await webgpu(gl)
+                if (gl.count === 6) gl.attribute({ a_position })
                 gl.resize()
                 gl.frame(() => {
                         gl.loop()

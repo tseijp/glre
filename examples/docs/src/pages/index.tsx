@@ -3,7 +3,6 @@ import Head from '@docusaurus/Head'
 import Layout from '@theme/Layout'
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext'
-import StatsImpl from 'stats.js'
 import { useGL } from 'glre/src/react'
 import { range, makePriority } from '../../helpers'
 
