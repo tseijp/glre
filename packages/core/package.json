@@ -113,6 +113,7 @@
                 "expo-gl": "*",
                 "react": ">=16.8",
                 "react-dom": ">=16.8",
+                "react-native": "*",
                 "solid-js": "*"
         },
         "peerDependenciesMeta": {
@@ -126,6 +127,9 @@
                         "optional": true
                 },
                 "react-dom": {
+                        "optional": true
+                },
+                "react-native": {
                         "optional": true
                 },
                 "solid-js": {

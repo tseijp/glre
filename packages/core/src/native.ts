@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from 'react' // @ts-ignore
 import { Dimensions } from 'react-native'
 import { createGL, isGL } from './index'
 import type { GL } from './types'
