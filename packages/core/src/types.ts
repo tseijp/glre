@@ -6,6 +6,7 @@ export type GPUContext = any // GPUCanvasContext https://developer.mozilla.org/e
 export type GPUDevice = any //
 export type GPUBuffer = any //
 export type GPUPipeline = any //
+export type GPUBindGroup = any
 export type Uniform = number | number[]
 export type Attribute = number[]
 export type Attributes = Record<string, Attribute>

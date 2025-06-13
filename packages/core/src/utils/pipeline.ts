@@ -11,20 +11,16 @@ fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
 
 const defaultFragmentWGSL = `
 struct Uniforms {
-//   _padding1: f32,
-//   iMouse: vec2f,
-//   iPrevTime: f32,
-//   iDeltaTime: f32,
-//   _padding2: vec2f,
   iResolution: vec2f,
+  iMouse: vec2f,
   iTime: f32,
 }
 
-@group(0) @binding(0) var<uniform> uniforms: Uniforms;
+@group(0) @binding(0) var<uniform> u: Uniforms;
 
 @fragment
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-  return vec4f(position.xy / uniforms.iResolution, sin(uniforms.iTime * 2.), 1.0);
+  return vec4f(position.xy / iResolution, 0.0, 1.0);
 }
 `
 
