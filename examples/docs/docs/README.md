@@ -29,11 +29,11 @@ date: 2023-01-01
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, vec4, fract, gl_FragCoord, iResolution } from 'glre/react'
-const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
+import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/react'
+const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const gl = useGL({ fragment })
+        const gl = useGL({ frag })
         return <canvas ref={gl.ref} />
 }
 
@@ -46,10 +46,10 @@ createRoot(document.getElementById('root')).render(<App />)
 import { GLView } from 'expo-gl'
 import { registerRootComponent } from 'expo'
 import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
-const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const { gl, ref } = useGL({ fragment })
+        const { gl, ref } = useGL({ frag })
         return <GLView style={{ flex: 1 }} onContextCreate={ref} />
 }
 
@@ -61,10 +61,10 @@ registerRootComponent(App)
 ```ts
 import { render } from 'solid-js/web'
 import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
-const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const gl = onGL({ fragment })
+        const gl = onGL({ frag })
         return <canvas ref={gl.ref} />
 }
 
@@ -77,11 +77,10 @@ render(() => <App />, document.getElementById('root'))
 <script type="module">
         import createGL from 'https://esm.sh/glre'
         import { vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
-        const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+        const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
         function App() {
                 const el = document.createElement('canvas')
-                const gl = el.getContext('webgl2')
-                createGL({ el, gl, fragment }).mount()
+                createGL({ el, frag }).mount()
                 document.body.append(el)
         }
         document.addEventListener('DOMContentLoaded', App)

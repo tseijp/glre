@@ -25,8 +25,8 @@ yarn add glre
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://esm.sh/glre'
-        const fragment = `
+        import { createGL } from 'https://esm.sh/glre'
+        const frag = `
           #version 300 es
           precision highp float;
           uniform vec2 iResolution;
@@ -37,8 +37,7 @@ yarn add glre
         `
         function App() {
                 const el = document.getElementById('id')
-                const gl = el.getContext('webgl2')
-                self({ el, gl, fragment }).mount()
+                createGL({ el, frag }).mount()
         }
         document.addEventListener('DOMContentLoaded', App)
 </script>

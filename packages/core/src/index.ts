@@ -29,9 +29,7 @@ export const isWebGPUSupported = () => {
         return 'gpu' in navigator
 }
 
-let iTime = performance.now(),
-        iPrevTime = 0,
-        iDeltaTime = 0
+let iTime = performance.now()
 
 export const createGL = (props?: Partial<GL>) => {
         const gl = event<Partial<GL>>({
@@ -50,8 +48,9 @@ export const createGL = (props?: Partial<GL>) => {
         gl.frame = createFrame()
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
-        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
+        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
+        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime: 0 }) // default uniform
 
         gl('mount', async () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
@@ -61,6 +60,7 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.resize()
                 gl.frame(() => {
                         gl.loop()
+                        gl.queue.flush()
                         gl.render()
                         return gl.isLoop
                 })
@@ -77,14 +77,6 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.el.removeEventListener('mousemove', gl.mousemove)
         })
 
-        gl('loop', () => {
-                iPrevTime = iTime
-                iTime = performance.now() / 1000
-                iDeltaTime = iTime - iPrevTime
-                gl.uniform({ iPrevTime, iTime, iDeltaTime })
-                // if (gl.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
-        })
-
         gl('resize', () => {
                 const w = gl.width || window.innerWidth
                 const h = gl.height || window.innerHeight
@@ -99,6 +91,11 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.mouse[0] = (x - top - w / 2) / (w / 2)
                 gl.mouse[1] = -(y - left - h / 2) / (h / 2)
                 gl.uniform('iMouse', gl.mouse)
+        })
+
+        gl('loop', () => {
+                iTime = performance.now() / 1000
+                gl.uniform('iTime', iTime)
         })
 
         return gl(props)

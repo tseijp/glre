@@ -1,18 +1,5 @@
 import { GPUContext, GPUDevice, GPUPipeline } from '../types'
 
-export const initWebGPUDevice = async (el: HTMLCanvasElement) => {
-        const gpu = (navigator as any).gpu
-        if (!gpu) return null
-        const adapter = await gpu.requestAdapter()
-        if (!adapter) return null
-        const device = await adapter.requestDevice()
-        const context = el.getContext('webgpu') as GPUContext
-        if (!context) return null
-        const format = gpu.getPreferredCanvasFormat()
-        context.configure({ device, format })
-        return { device, context, format }
-}
-
 const defaultVertexWGSL = `
 @vertex
 fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
@@ -23,13 +10,21 @@ fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
 `
 
 const defaultFragmentWGSL = `
+struct Uniforms {
+  iResolution: vec2f,
+  iMouse: vec2f,
+  iTime: f32,
+}
+
+@group(0) @binding(0) var<uniform> u: Uniforms;
+
 @fragment
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-  return vec4f(position.xy / vec2f(1280, 800), 0.0, 1.0);
+  return vec4f(position.xy / iResolution, 0.0, 1.0);
 }
 `
 
-export const createRenderPipeline = (
+export const createPipeline = (
         device: GPUDevice,
         format: string,
         vs = defaultVertexWGSL,
@@ -64,65 +59,66 @@ export const createDescriptor = (c: GPUContext) => {
                 ],
         }
 }
-export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
 
-export const createUniformBuffer = (device: GPUDevice, size: number) => {
-        return device.createBuffer({ size: alignTo256(size), usage: 0x40 | 0x4 }) as Buffer
-}
-
-export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const buffer = device.createBuffer({ size: array.byteLength, usage: 0x20 | 0x4 })
-        device.queue.writeBuffer(buffer, 0, array)
-        return buffer as Buffer
-}
-
-export const createBindGroup = (device: GPUDevice, pipeline: GPUPipeline, entries: any[]) => {
-        const layout = pipeline.getBindGroupLayout(0)
-        return device.createBindGroup({ layout, entries })
-}
-
-export const updateBindGroup = (
-        device: GPUDevice,
-        pipeline: GPUPipeline,
-        uniformBuffer: Buffer,
-        textures: any = {},
-        sampler: any = null
-) => {
-        const entries = [{ binding: 0, resource: { buffer: uniformBuffer } }]
-        let binding = 1
-        Object.values(textures).forEach((texture: any) => {
-                entries.push({ binding: binding++, resource: texture.createView() })
-        })
-        if (sampler && Object.keys(textures).length > 0) entries.push({ binding: binding++, resource: sampler })
-        return createBindGroup(device, pipeline, entries)
-}
-
-export const createUniform = (device: GPUDevice, buffer: any, data: Float32Array, offset = 0) => {
-        device.queue.writeBuffer(buffer, offset, data)
-}
-
-export const createDeviceTexture = (device: GPUDevice, image: HTMLImageElement) => {
-        const texture = device.createTexture({
-                size: { width: image.width, height: image.height },
-                format: 'rgba8unorm',
-                usage: 0x4 | 0x2,
-        })
-        device.queue.copyExternalImageToTexture(
-                { source: image },
-                { texture },
-                { width: image.width, height: image.height }
-        )
-        return texture
-}
-
-export const createSampler = (device: GPUDevice) => {
-        return device.createSampler({
-                magFilter: 'linear',
-                minFilter: 'linear',
-                addressModeU: 'clamp-to-edge',
-                addressModeV: 'clamp-to-edge',
-        })
-}
-
-export const getDefaultVertices = () => new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])
+// export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
+//
+// export const createUniformBuffer = (device: GPUDevice, size: number) => {
+//         return device.createBuffer({ size: alignTo256(size), usage: 0x40 | 0x4 }) as Buffer
+// }
+//
+// export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
+//         const array = new Float32Array(value)
+//         const buffer = device.createBuffer({ size: array.byteLength, usage: 0x20 | 0x4 })
+//         device.queue.writeBuffer(buffer, 0, array)
+//         return buffer as Buffer
+// }
+//
+// export const createBindGroup = (device: GPUDevice, pipeline: GPUPipeline, entries: any[]) => {
+//         const layout = pipeline.getBindGroupLayout(0)
+//         return device.createBindGroup({ layout, entries })
+// }
+//
+// export const updateBindGroup = (
+//         device: GPUDevice,
+//         pipeline: GPUPipeline,
+//         uniformBuffer: Buffer,
+//         textures: any = {},
+//         sampler: any = null
+// ) => {
+//         const entries = [{ binding: 0, resource: { buffer: uniformBuffer } }]
+//         let binding = 1
+//         Object.values(textures).forEach((texture: any) => {
+//                 entries.push({ binding: binding++, resource: texture.createView() })
+//         })
+//         if (sampler && Object.keys(textures).length > 0) entries.push({ binding: binding++, resource: sampler })
+//         return createBindGroup(device, pipeline, entries)
+// }
+//
+// export const createUniform = (device: GPUDevice, buffer: any, data: Float32Array, offset = 0) => {
+//         device.queue.writeBuffer(buffer, offset, data)
+// }
+//
+// export const createDeviceTexture = (device: GPUDevice, image: HTMLImageElement) => {
+//         const texture = device.createTexture({
+//                 size: { width: image.width, height: image.height },
+//                 format: 'rgba8unorm',
+//                 usage: 0x4 | 0x2,
+//         })
+//         device.queue.copyExternalImageToTexture(
+//                 { source: image },
+//                 { texture },
+//                 { width: image.width, height: image.height }
+//         )
+//         return texture
+// }
+//
+// export const createSampler = (device: GPUDevice) => {
+//         return device.createSampler({
+//                 magFilter: 'linear',
+//                 minFilter: 'linear',
+//                 addressModeU: 'clamp-to-edge',
+//                 addressModeV: 'clamp-to-edge',
+//         })
+// }
+//
+// export const getDefaultVertices = () => new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])

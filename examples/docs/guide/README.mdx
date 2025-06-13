@@ -99,10 +99,8 @@ void main() {
 
 ```ts
 function App() {
-        const el = document.getElementById('canvas')
         const { mount, size, uniform } = createGL({
-                el,
-                gl: el.getContext('webgl2'),
+                el: document.getElementById('canvas'),
                 frag,
                 isWebGL: true,
                 render() {
@@ -181,10 +179,8 @@ document.addEventListener('DOMContentLoaded', App)
         `
 
         export function App() {
-                const el = document.getElementById('canvas')
                 const { mount, size, uniform } = createGL({
-                        el,
-                        gl: el.getContext('webgl2'),
+                        el: document.getElementById('canvas'),
                         frag,
                         isWebGL: true,
                         render() {
@@ -264,7 +260,6 @@ export function App() {
         const el = document.getElementById('canvas')
         const gl = createGL({
                 el,
-                gl: el.getContext('webgl2'),
                 frag,
                 isWebGL: true,
                 resize() {
