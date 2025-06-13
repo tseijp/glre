@@ -11,7 +11,7 @@
 [![ docs available ](https://img.shields.io/badge/docs-available-000.svg?style=flat&colorA=000)](https://glre.tsei.jp/>)
 [![ bundle size ](https://img.shields.io/bundlephobia/minzip/glre?style=flat&colorA=000&colorB=000)](https://bundlephobia.com/package/glre@latest)
 
-glre is a simple WebGL2 glsl Reactive Engine on the web and native via TypeScript, React, Solid and more.
+glre is a simple glsl and wgsl Reactive Engine on the web and native via TypeScript, React, Solid and more.
 
 </p>
 <p align="center" valign="top">
@@ -101,7 +101,7 @@ npm install glre
   <tbody>
     <tr>
       <td width="7500px" align="center" valign="center">
-        glre simplifies WebGL2 glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
+        glre simplifies WebGl2 / WebGPU programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
       </td>
       <td width="2500px" valign="top">
         <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
@@ -196,7 +196,7 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 
 ## Node System
 
-glre now features a powerful node-based shader system inspired by Three.js Shading Language (TSL). This system allows you to write shaders using TypeScript-like syntax and automatically handles the conversion to both WebGL and WebGPU shaders.
+glre now features a powerful node-based shader system inspired by Three.js Shading Language (TSL). This system allows you to write shaders using TypeScript-like syntax and automatically handles the conversion to both WebGL2 and WebGPU shaders.
 
 The node system provides a declarative approach to shader creation, making your code more readable, maintainable, and portable across different rendering backends.
 

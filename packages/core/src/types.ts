@@ -1,4 +1,4 @@
-import { Nested, EventState } from 'reev'
+import { EventState } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
 import type { X } from './node'
 export type { Fun, Queue, Frame }

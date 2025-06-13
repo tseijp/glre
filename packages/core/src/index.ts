@@ -15,10 +15,6 @@ export * from './utils/program'
 export * from './webgl'
 export * from './webgpu'
 
-let iTime = performance.now(),
-        iPrevTime = 0,
-        iDeltaTime = 0
-
 export const isGL = (a: unknown): a is EventState<GL> => {
         if (!is.obj(a)) return false
         if ('isGL' in a) return true
@@ -32,6 +28,10 @@ export const isWebGPUSupported = () => {
         if (isServer()) return false
         return 'gpu' in navigator
 }
+
+let iTime = performance.now(),
+        iPrevTime = 0,
+        iDeltaTime = 0
 
 export const createGL = (props?: Partial<GL>) => {
         const gl = event<Partial<GL>>({
