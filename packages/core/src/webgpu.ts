@@ -13,7 +13,6 @@ import {
 import type { X } from './node'
 import type { GL, GPUBindGroup, GPUPipeline } from './types'
 import { nested } from 'reev'
-import { createQueue } from 'refr'
 
 const quadVertexCount = 3
 
@@ -27,11 +26,8 @@ export const webgpu = async (gl: GL) => {
         const adapter = await gpu.requestAdapter()
         const device = await adapter.requestDevice()
         const format = gpu.getPreferredCanvasFormat()
-        const queue = createQueue()
         c.configure({ device, format, alphaMode: 'opaque' })
 
-        // Uniform buffer setup
-        // WebGPU 16-byte alignment requirement: iTime(4) + padding(12) + iMouse(8) + iPrevTime(4) + iDeltaTime(4) + iResolution(8) = 40 bytes, rounded to 48
         let _bindIndex = 0
         const bindEntries = [] as any
         const uniforms = nested((key, value: number | number[]) => {
@@ -54,10 +50,8 @@ export const webgpu = async (gl: GL) => {
 
         gl('clean', () => {})
 
-        // const activeUnit = nested((_, size) => (_activeUnit += size))
         let bindGroup: GPUBindGroup
         let pipeline: GPUPipeline
-        // let uniformData = new Float32Array(0)
 
         gl('render', () => {
                 if (!pipeline) {
@@ -84,16 +78,6 @@ export const webgpu = async (gl: GL) => {
 
         gl('_uniform', (key: string, value: number | number[]) => {
                 uniforms(key, value)(value)
-                // if (is.num(value)) value = [value]
-                // const size = value.length
-                // const unit = activeUnit(key, size)
-                // if (unit === _activeUnit) {
-                //         const array = new Float32Array(_activeUnit)
-                //         if (uniformData) array.set(uniformData)
-                //         uniformData = array
-                // }
-                // for (let i = 0; i < size; i++) uniformData[unit - size + i] = value[i]
-                // device.queue.writeBuffer(buffer, 0, data)
         })
 
         // const _loadFun = (image: HTMLImageElement, gl: GL) => {
