@@ -43,8 +43,8 @@ export const If = (condition: X, callback: () => void): ConditionalNode => {
 }
 
 // 組み込み変数
-export const gl_FragCoord = node('vec4', undefined)
-export const gl_Position = node('vec4', undefined)
+export const fragCoord = node('vec4', undefined)
+export const position = node('vec4', undefined)
 export const iTime = uniform(0.0)
 export const iResolution = uniform([1920, 1080])
 export const iMouse = uniform([0, 0])

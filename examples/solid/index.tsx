@@ -1,18 +1,12 @@
-import { render } from 'solid-js/web'
+import { render } from 'solid-js/web' // @ts-ignore
 import { onGL } from 'glre/solid'
 
 const App = () => {
-        const self = onGL({
-                render() {
-                        self.clear()
-                        self.viewport()
-                        self.drawArrays()
-                },
-        })
+        const gl = onGL()
 
         return (
                 <canvas
-                        ref={self.ref}
+                        ref={gl.ref}
                         style={{
                                 top: 0,
                                 left: 0,

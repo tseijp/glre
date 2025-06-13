@@ -50,7 +50,9 @@ export const createGL = (props?: Partial<GL>) => {
         gl.frame = createFrame()
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
+
         gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
+
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
 
         gl('mount', async () => {
@@ -82,6 +84,7 @@ export const createGL = (props?: Partial<GL>) => {
                 iTime = performance.now() / 1000
                 iDeltaTime = iTime - iPrevTime
                 gl.uniform({ iPrevTime, iTime, iDeltaTime })
+                gl.queue.flush()
                 // if (gl.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
         })
 

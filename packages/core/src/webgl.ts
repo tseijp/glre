@@ -41,7 +41,6 @@ export const webgl = async (gl: GL) => {
 
         gl('render', () => {
                 c.useProgram(pg)
-                gl.queue.flush()
                 c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...gl.size)
                 c.drawArrays(c.TRIANGLES, 0, 3)
