@@ -40,6 +40,7 @@ Save the following HTML to a file on your computer.
 ## Creating Fragment Shader
 
 ```c
+#version 300 es
 precision highp float;
 uniform vec2 iResolution; // canvas size
 uniform vec3 up;          // camera up direction
@@ -85,7 +86,7 @@ void main() {
                         float dy = boxSDF(p + e.yxx, size) - d;
                         float dz = boxSDF(p + e.yyx, size) - d;
                         vec3 norm = normalize(vec3(dx, dy, dz));
-                        gl_FragColor = vec4(norm * .5 + .5, 1.);
+                        fragColor = vec4(norm * .5 + .5, 1.);
                         return;
                 }
                 p = p + d * dir;
@@ -131,6 +132,7 @@ document.addEventListener('DOMContentLoaded', App)
         import createGL from 'https://esm.sh/glre'
 
         const frag = `
+                #version 300 es
                 precision highp float;
                 uniform vec2 iResolution; // canvas size
                 uniform vec3 up;          // camera up direction
@@ -138,6 +140,7 @@ document.addEventListener('DOMContentLoaded', App)
                 uniform vec3 focus;       // camera focus point
                 uniform float focal;      // camera focal length
                 uniform float size;       // object size
+                out vec4 fragColor;
                 /**
                  * boxSDF
                  */
@@ -168,7 +171,7 @@ document.addEventListener('DOMContentLoaded', App)
                                         float dy = boxSDF(p + e.yxx, size) - d;
                                         float dz = boxSDF(p + e.yyx, size) - d;
                                         vec3 norm = normalize(vec3(dx, dy, dz));
-                                        gl_FragColor = vec4(norm * .5 + .5, 1.);
+                                        fragColor = vec4(norm * .5 + .5, 1.);
                                         return;
                                 }
                                 p = p + d * dir;
@@ -205,6 +208,7 @@ document.addEventListener('DOMContentLoaded', App)
 ```
 
 export const frag = /* CPP */ `
+        #version 300 es
         precision highp float;
         uniform vec2 iResolution; // canvas size
         uniform vec3 up;          // camera up direction
@@ -212,6 +216,7 @@ export const frag = /* CPP */ `
         uniform vec3 focus;       // camera focus point
         uniform float focal;      // camera focal length
         uniform float size;       // object size
+        out vec4 fragColor;
         /**
          * boxSDF
          */
@@ -242,7 +247,7 @@ export const frag = /* CPP */ `
                                 float dy = boxSDF(p + e.yxx, size) - d;
                                 float dz = boxSDF(p + e.yyx, size) - d;
                                 vec3 norm = normalize(vec3(dx, dy, dz));
-                                gl_FragColor = vec4(norm * .5 + .5, 1.);
+                                fragColor = vec4(norm * .5 + .5, 1.);
                                 return;
                         }
                         p = p + d * dir;

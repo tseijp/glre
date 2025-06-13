@@ -44,7 +44,7 @@ export const webgl = async (gl: GL) => {
                 gl.queue.flush()
                 c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...gl.size)
-                c.drawArrays(c.TRIANGLES, 0, gl.count)
+                c.drawArrays(c.TRIANGLES, 0, 3)
         })
 
         gl('_attribute', (key = '', value: number[], iboValue: number[]) => {

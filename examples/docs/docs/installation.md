@@ -27,10 +27,12 @@ yarn add glre
 <script type="module">
         import self from 'https://esm.sh/glre'
         const fragment = `
+          #version 300 es
           precision highp float;
           uniform vec2 iResolution;
+          out vec4 fragColor;
           void main() {
-            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+            fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
           }
         `
         function App() {

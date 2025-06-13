@@ -1,123 +1,131 @@
-# WebGPU実装の問題分析と解決プラン
+# WebGL1 から WebGL2 への移行調査結果
 
-## 問題の概要
+## 調査対象
+- .search/tsl/README.md (Three.js TSL関連)
+- ./README.md (glreライブラリ概要)
+- packages/core/src/index.ts (メインエントリポイント)
+- packages/core/src/webgl.ts (WebGL実装)
+- packages/core/src/utils/webgpu.ts (存在せず)
 
-`useGL({ isWebGL: false })` でWebGPU実装をテストした際、以下の問題が発生:
+## 主要な変更点
 
-1. **頂点属性検証エラー**: `Vertex attribute slot 0 used in shader is not present in the VertexState`
-2. **描画失敗**: エラーは修正されたが画面が真っ暗（黒画面）
-3. **シェーダー受け渡し問題**: vertex/fragment間の適切なデータ渡しができていない
+### 1. GLSLバージョンと構文変更
 
-## 根本原因分析
-
-### 1. 頂点バッファーレイアウト設定の不備
-
-現在の `createRenderPipeline` では以下の問題:
-
-```typescript
-// 現在の実装（/packages/core/src/utils/pipeline.ts:44-65）
-vertex: {
-    module: vertexModule,
-    entryPoint: 'vs_main',
-    buffers: [{
-        arrayStride: 8, // vec2f = 8 bytes
-        attributes: [{
-            format: 'float32x2',
-            offset: 0,
-            shaderLocation: 0, // @location(0)に対応
-        }],
-    }],
+#### WebGL1 (GLSL 100 ES)
+```glsl
+attribute vec4 a_position;
+void main() {
+  gl_Position = a_position;
 }
 ```
 
-問題点:
-- 頂点バッファーレイアウトは定義されているが、実際の描画時に頂点バッファーがバインドされていない
-- `webgpu.ts`の`render`関数でvertexBufferの設定が不完全
-
-### 2. 頂点バッファーバインドの欠如
-
-`/packages/core/src/webgpu.ts:38-57` の描画処理:
-
-```typescript
-gl('render', () => {
-    // ...
-    pass.setPipeline(pipeline)
-    pass.setBindGroup(0, bindGroup)
-    // 頂点バッファーのバインドが欠如
-    // pass.setVertexBuffer(0, vertexBuffer) ← 実行されていない
-    pass.end()
-    device.queue.submit([encoder.finish()])
-})
-```
-
-### 3. シェーダーとの整合性問題
-
-デフォルトシェーダー（`/packages/core/src/utils/pipeline.ts:19-34`）:
-
-```wgsl
-@vertex
-fn vs_main(@location(0) position: vec2f) -> @builtin(position) vec4f {
-  return vec4f(position, 0.0, 1.0);
+#### WebGL2 (GLSL 300 ES)
+```glsl
+#version 300 es
+in vec4 a_position;
+void main() {
+  gl_Position = a_position;
 }
 ```
 
-この実装では:
-- `a_position`データが適切に渡されていない
-- `index.ts:22`の`[-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]`データが活用されていない
+### 2. gl_VertexIDを使用したattributeフリー実装
 
-## 解決プラン
+#### 基本概念
+- WebGL2では`gl_VertexID`変数が利用可能
+- 頂点インデックスから直接頂点位置を計算可能
+- バッファなしでジオメトリ生成が可能
 
-### Phase 1: 頂点バッファー管理の修正
+#### フルスクリーン三角形の実装例
+```glsl
+#version 300 es
+out vec2 v_texCoord;
 
-1. **頂点バッファー追跡システム**
-   - `webgpu.ts`に頂点バッファー管理機能を追加
-   - `_attribute`コールバック内で`a_position`を適切に保存
+void main() {
+    vec2 position = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
+    v_texCoord = position;
+    gl_Position = vec4(position * 2.0 - 1.0, 0.0, 1.0);
+}
+```
 
-2. **描画時の頂点バッファーバインド**
-   - `render`関数内で`pass.setVertexBuffer(0, vertexBuffer)`を実装
-   - `pass.draw(vertexCount)`で正しい頂点数を指定
+#### 二つの三角形による平面の実装
+```glsl
+#version 300 es
+void main() {
+    float x = float(gl_VertexID % 2) * 2.0 - 1.0;
+    float y = float(gl_VertexID / 2) * 2.0 - 1.0;
+    gl_Position = vec4(x, y, 0.0, 1.0);
+}
+```
 
-### Phase 2: データフロー整合性確保
+### 3. glreライブラリの現在の実装
 
-1. **attribute関数の修正**
-   - `gl.attribute({ a_position })`が呼ばれた時の処理改善
-   - 頂点データを適切にバッファーに書き込み、描画用に保存
+#### a_positionのデフォルト値
+```ts
+const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
+```
+- 6頂点で2つの三角形を形成
+- フルスクリーンクワッドを表現
 
-2. **uniform関数の統合**
-   - `iResolution`等のuniformが適切にシェーダーに渡されることを確認
-   - バインドグループの更新タイミング調整
+#### WebGL初期化処理
+```ts
+if (gl.count === 6) gl.attribute({ a_position })
+```
 
-### Phase 3: デバッグ・検証機能
+### 4. 実装要件
 
-1. **WebGPUバリデーション活用**
-   - デバイス作成時のvalidation有効化
-   - シェーダーコンパイルエラーのハンドリング
+#### デフォルトvertexシェーダーの変更
+現在:
+```ts
+export const defaultVertexGLSL = /* cpp */ `
+attribute vec4 a_position;
+void main() {
+  gl_Position = a_position;
+}
+`
+```
 
-2. **ログ出力強化**
-   - 各ステップの成功/失敗状況を確認できる仕組み
+変更後:
+```ts
+export const defaultVertexGLSL = /* cpp */ `
+#version 300 es
+void main() {
+  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
+  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
+  gl_Position = vec4(x, y, 0.0, 1.0);
+}
+`
+```
 
-## 実装詳細
+#### 必要な変更箇所
+1. packages/core/src/webgl.ts - シェーダー生成ロジック
+2. packages/core/src/code/glsl.ts - デフォルトシェーダー定義
+3. packages/core/src/index.ts - attribute設定ロジック（条件分岐追加）
 
-### 修正対象ファイル
+### 5. Three.js TSLとの比較
 
-1. `/packages/core/src/webgpu.ts`
-   - 頂点バッファー保存変数の追加
-   - `render`関数内の頂点バッファーバインド実装
+#### TSLの特徴
+- TypeScriptライクな構文でシェーダー記述
+- WebGLとWebGPU両対応
+- ノードベースのシェーダー抽象化
+- 自動最適化機能
 
-2. `/packages/core/src/utils/pipeline.ts`
-   - 必要に応じてシェーダーやパイプライン設定の調整
+#### glreとの違い
+- glre: 軽量なWebGLライブラリ、最小限の機能
+- TSL: Three.js内の包括的なシェーダー言語システム
+- glreはよりシンプルな実装でWebGL2対応が可能
 
-### 実装手順
+### 6. WebGPU対応の準備
 
-1. `webgpu.ts`に`vertexBuffer`変数を追加
-2. `_attribute`でバッファー作成と保存を実装
-3. `render`で`setVertexBuffer`と`draw`を適切に実行
-4. 動作確認とデバッグ
+#### 現在の実装
+- webgpu.ts ファイルは存在
+- isWebGPUSupported() 関数で対応判定
+- WebGPU利用時の分岐処理は実装済み
 
-## 期待される結果
+#### 今後の拡張
+- TSL類似のノードシステム実装可能
+- WebGLとWebGPU共通のシェーダー抽象化
 
-修正後は以下が実現される:
-- `useGL({ isWebGL: false })`でWebGPU描画が正常動作
-- デフォルトシェーダーによる矩形描画表示
-- WebGL実装との対称性確保
-- uniform/attribute機能の正常動作
+## 実装の優先度
+1. **高**: デフォルトvertexシェーダーのgl_VertexID対応
+2. **中**: WebGL2の#version 300 es対応
+3. **低**: その他のWebGL2新機能活用

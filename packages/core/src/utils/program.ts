@@ -1,22 +1,26 @@
 export const defaultVertexGLSL = /* cpp */ `
-attribute vec4 a_position;
+#version 300 es
 void main() {
-  gl_Position = a_position;
+  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
+  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
+  gl_Position = vec4(x, y, 0.0, 1.0);
 }
 `
 
 export const defaultFragmentGLSL = /* cpp */ `
+#version 300 es
 precision mediump float;
 uniform vec2 iResolution;
+out vec4 fragColor;
 void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+  fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
 }
 `
 
 export const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
         if (!shader) throw new Error('Failed to create shader')
-        c.shaderSource(shader, source)
+        c.shaderSource(shader, source.trim())
         c.compileShader(shader)
         if (c.getShaderParameter(shader, c.COMPILE_STATUS)) return shader
         const error = c.getShaderInfoLog(shader)

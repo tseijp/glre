@@ -211,6 +211,7 @@ float fbm(vec2 st) {
 `
 
 const frag = `
+#version 300 es
 precision mediump float;
 
 // Uniforms
@@ -251,6 +252,7 @@ uniform float moonHeight;
 uniform float moonRadius;
 uniform vec4 baseColor;
 uniform vec4 lightColor;
+out vec4 fragColor;
 
 // Helper macros
 #define ITERATIONS 8
@@ -283,11 +285,11 @@ void main() {
         vec2 uv = 2. * scr / max(iResolution.y, iResolution.x); // -1 ~ 1
         float noise = fbm(uv * 0.5 + 1.);
         vec2 textureUV = uv / imageSize + 0.5;
-        vec4 textureColor = texture2D(GLRE, textureUV);
+        vec4 textureColor = texture(GLRE, textureUV);
 
         // River bank
         if (abs(uv.y) < riverBankHeight) {
-                gl_FragColor = mix(btmSkyColor, topSeaColor, 1. - (uv.y + riverBankHeight));
+                fragColor = mix(btmSkyColor, topSeaColor, 1. - (uv.y + riverBankHeight));
                 return;
         }
 
@@ -317,7 +319,7 @@ void main() {
                 p = p + d * dir;
                 d = de(p, textureColor, building, spongeScale, shaftDiameter);
                 if(d <= e.x) {
-                        gl_FragColor = max(baseColor, textureColor) * windowLightWeight;
+                        fragColor = max(baseColor, textureColor) * windowLightWeight;
                         return;
                 }
         }
@@ -326,7 +328,7 @@ void main() {
                 p = p + d * dir;
                 d = de(p, textureColor, building, spongeScale, diameter);
                 if(d <= e.x) {
-                        gl_FragColor = max(lightColor * noise, textureColor) * windowLightWeight;
+                        fragColor = max(lightColor * noise, textureColor) * windowLightWeight;
                         return;
                 }
         }
@@ -335,7 +337,7 @@ void main() {
                 p = p + d * dir;
                 d = de(p, textureColor, building, spongeScale, diameter);
                 if(d <= e.x) {
-                        gl_FragColor = max(lightColor * noise, textureColor) * windowLightWeight;
+                        fragColor = max(lightColor * noise, textureColor) * windowLightWeight;
                         return;
                 }
         }
@@ -359,20 +361,20 @@ void main() {
                                         moon(p + e.yyx, moonPos, moonRadius) - d
                                 ));
                                 float lighting = dot(normalize(eye + lightPos), norm);
-                                gl_FragColor = lightColor * lighting / noise;
+                                fragColor = lightColor * lighting / noise;
                                 return;
                         }
                 }
 
         // Sky color
         if (uv.y < 0.) {
-                gl_FragColor = mix(topSkyColor, btmSkyColor, -uv.y);
-                gl_FragColor += vec4(vec3(pow(noise, 4.)) * 0.05, 1.);
+                fragColor = mix(topSkyColor, btmSkyColor, -uv.y);
+                fragColor += vec4(vec3(pow(noise, 4.)) * 0.05, 1.);
         } else {
-                gl_FragColor = mix(topSeaColor, btmSeaColor, uv.y);
-                gl_FragColor += vec4(vec3(pow(noise, 4.)) * 0.25, 1.);
+                fragColor = mix(topSeaColor, btmSeaColor, uv.y);
+                fragColor += vec4(vec3(pow(noise, 4.)) * 0.25, 1.);
         }
-        gl_FragColor.b += abs(uv.y) * blueColorWeight;
+        fragColor.b += abs(uv.y) * blueColorWeight;
 }
 `.trim()
 

@@ -11,7 +11,7 @@
 [![ docs available ](https://img.shields.io/badge/docs-available-000.svg?style=flat&colorA=000)](https://glre.tsei.jp/>)
 [![ bundle size ](https://img.shields.io/bundlephobia/minzip/glre?style=flat&colorA=000&colorB=000)](https://bundlephobia.com/package/glre@latest)
 
-glre is a simple glsl Reactive Engine on the web and native via TypeScript, React, Solid and more.
+glre is a simple WebGL2 glsl Reactive Engine on the web and native via TypeScript, React, Solid and more.
 
 </p>
 <p align="center" valign="top">
@@ -101,7 +101,7 @@ npm install glre
   <tbody>
     <tr>
       <td width="7500px" align="center" valign="center">
-        glre simplifies glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
+        glre simplifies WebGL2 glsl programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
       </td>
       <td width="2500px" valign="top">
         <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
@@ -300,9 +300,9 @@ const App = () => {
 createRoot(document.getElementById('root')).render(<App />)
 ```
 
-### WebGPU Support
+### WebGL2 and WebGPU Support
 
-The node system is designed to work with both WebGL and WebGPU, providing a seamless transition path as browsers adopt the new standard. Your shader code written with the node system will automatically compile to the appropriate shading language based on the available renderer.
+The node system is designed to work with both WebGL2 and WebGPU, providing a seamless transition path as browsers adopt the new standard. Your shader code written with the node system will automatically compile to the appropriate shading language (GLSL ES 3.0 for WebGL2, WGSL for WebGPU) based on the available renderer.
 
 ## PRs
 

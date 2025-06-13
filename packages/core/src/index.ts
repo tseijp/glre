@@ -19,8 +19,6 @@ let iTime = performance.now(),
         iPrevTime = 0,
         iDeltaTime = 0
 
-const a_position = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1]
-
 export const isGL = (a: unknown): a is EventState<GL> => {
         if (!is.obj(a)) return false
         if ('isGL' in a) return true
@@ -43,7 +41,7 @@ export const createGL = (props?: Partial<GL>) => {
                 isGL: true,
                 size: [0, 0],
                 mouse: [0, 0],
-                count: 6,
+                count: 3,
                 webgl: {},
                 webgpu: {},
         }) as EventState<GL>
@@ -60,7 +58,6 @@ export const createGL = (props?: Partial<GL>) => {
                 if (gl.isWebGL) {
                         await webgl(gl)
                 } else await webgpu(gl)
-                if (gl.count === 6) gl.attribute({ a_position })
                 gl.resize()
                 gl.frame(() => {
                         gl.loop()
