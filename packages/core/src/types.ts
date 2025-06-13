@@ -22,12 +22,12 @@ export type GLDrawMode =
         | 'TRIANGLE_FAN'
         | 'TRIANGLES'
 
-interface WebGLState {
+export interface WebGLState {
         context: WebGLRenderingContext
         program: WebGLProgram
 }
 
-interface WebGPUState {
+export interface WebGPUState {
         device: GPUDevice
         context: GPUContext
         pipeline: GPUPipeline
