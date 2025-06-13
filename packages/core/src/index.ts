@@ -29,9 +29,7 @@ export const isWebGPUSupported = () => {
         return 'gpu' in navigator
 }
 
-let iTime = performance.now(),
-        iPrevTime = 0,
-        iDeltaTime = 0
+let iTime = performance.now()
 
 export const createGL = (props?: Partial<GL>) => {
         const gl = event<Partial<GL>>({
@@ -96,10 +94,8 @@ export const createGL = (props?: Partial<GL>) => {
         })
 
         gl('loop', () => {
-                // iPrevTime = iTime
-                // iTime = performance.now() / 1000
-                // iDeltaTime = iTime - iPrevTime
-                // gl.uniform({ iPrevTime, iTime, iDeltaTime })
+                iTime = performance.now() / 1000
+                gl.uniform('iTime', iTime)
         })
 
         return gl(props)
