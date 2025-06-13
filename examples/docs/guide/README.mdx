@@ -4,7 +4,7 @@ title: 'Creating a scene'
 description: 'Creating a scene'
 image: https://github.com/tseijp.png
 keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
-date: 2023-01-01
+date: 2025-05-12
 ---
 
 # Creating a scene
@@ -22,7 +22,7 @@ Save the following HTML to a file on your computer.
 ```html
 <canvas id="myCanvas"></canvas>
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@0.15.0'
+        import createGL from 'https://esm.sh/glre'
 
         // Our GLSL and Javascript will go here.
         const frag = `
@@ -40,6 +40,7 @@ Save the following HTML to a file on your computer.
 ## Creating Fragment Shader
 
 ```c
+#version 300 es
 precision highp float;
 uniform vec2 iResolution; // canvas size
 uniform vec3 up;          // camera up direction
@@ -85,7 +86,7 @@ void main() {
                         float dy = boxSDF(p + e.yxx, size) - d;
                         float dz = boxSDF(p + e.yyx, size) - d;
                         vec3 norm = normalize(vec3(dx, dy, dz));
-                        gl_FragColor = vec4(norm * .5 + .5, 1.);
+                        fragColor = vec4(norm * .5 + .5, 1.);
                         return;
                 }
                 p = p + d * dir;
@@ -104,11 +105,6 @@ function App() {
                 gl: el.getContext('webgl2'),
                 frag,
                 isWebGL: true,
-                resize() {
-                        const { clientWidth: w } = el.parentNode
-                        size[0] = el.width = w
-                        size[1] = el.height = w / 2
-                },
                 render() {
                         const t = performance.now() / 1000
                         const x = 200 * Math.cos(t)
@@ -133,9 +129,10 @@ document.addEventListener('DOMContentLoaded', App)
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@0.15.0'
+        import createGL from 'https://esm.sh/glre'
 
         const frag = `
+                #version 300 es
                 precision highp float;
                 uniform vec2 iResolution; // canvas size
                 uniform vec3 up;          // camera up direction
@@ -143,6 +140,7 @@ document.addEventListener('DOMContentLoaded', App)
                 uniform vec3 focus;       // camera focus point
                 uniform float focal;      // camera focal length
                 uniform float size;       // object size
+                out vec4 fragColor;
                 /**
                  * boxSDF
                  */
@@ -173,7 +171,7 @@ document.addEventListener('DOMContentLoaded', App)
                                         float dy = boxSDF(p + e.yxx, size) - d;
                                         float dz = boxSDF(p + e.yyx, size) - d;
                                         vec3 norm = normalize(vec3(dx, dy, dz));
-                                        gl_FragColor = vec4(norm * .5 + .5, 1.);
+                                        fragColor = vec4(norm * .5 + .5, 1.);
                                         return;
                                 }
                                 p = p + d * dir;
@@ -189,11 +187,6 @@ document.addEventListener('DOMContentLoaded', App)
                         gl: el.getContext('webgl2'),
                         frag,
                         isWebGL: true,
-                        resize() {
-                                const { clientWidth: w } = el.parentNode
-                                size[0] = el.width = w
-                                size[1] = el.height = w / 2
-                        },
                         render() {
                                 const t = performance.now() / 1000
                                 const x = 200 * Math.cos(t)
@@ -214,10 +207,8 @@ document.addEventListener('DOMContentLoaded', App)
 </script>
 ```
 
-import { createGL } from 'glre/src/index'
-import { useRef, useEffect } from 'react'
-
 export const frag = /* CPP */ `
+        #version 300 es
         precision highp float;
         uniform vec2 iResolution; // canvas size
         uniform vec3 up;          // camera up direction
@@ -225,6 +216,7 @@ export const frag = /* CPP */ `
         uniform vec3 focus;       // camera focus point
         uniform float focal;      // camera focal length
         uniform float size;       // object size
+        out vec4 fragColor;
         /**
          * boxSDF
          */
@@ -255,7 +247,7 @@ export const frag = /* CPP */ `
                                 float dy = boxSDF(p + e.yxx, size) - d;
                                 float dz = boxSDF(p + e.yyx, size) - d;
                                 vec3 norm = normalize(vec3(dx, dy, dz));
-                                gl_FragColor = vec4(norm * .5 + .5, 1.);
+                                fragColor = vec4(norm * .5 + .5, 1.);
                                 return;
                         }
                         p = p + d * dir;
@@ -264,27 +256,29 @@ export const frag = /* CPP */ `
         }
 `
 
+import { createGL } from 'glre/src/index'
+import { useRef, useEffect } from 'react'
+import { resize } from '../utils'
+
 export function App() {
         const el = document.getElementById('canvas')
-        const { mount, size, uniform } = createGL({
+        const gl = createGL({
                 el,
                 gl: el.getContext('webgl2'),
                 frag,
                 isWebGL: true,
                 resize() {
-                        const { clientWidth: w } = el.parentNode
-                        size[0] = el.width = w
-                        size[1] = el.height = w / 2
+                        resize(gl)
                 },
                 render() {
                         const t = performance.now() / 1000
                         const x = 200 * Math.cos(t)
                         const z = 200 * Math.sin(t)
-                        uniform({ eye: [x, 0, z] })
+                        gl.uniform({ eye: [x, 0, z] })
                 },
         })
-        mount()
-        uniform({
+        gl.mount()
+        gl.uniform({
                 up: [0, 1, 0],
                 focus: [0, 0, 0],
                 focal: 500,

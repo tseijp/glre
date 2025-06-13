@@ -1,5 +1,5 @@
 import { node } from './node'
-import { is } from '../utils'
+import { is } from '../utils/helpers'
 import type { UniformNode } from './types'
 import type { NodeType } from './const'
 
@@ -24,8 +24,7 @@ const inferUniformType = (value: any): NodeType => {
                 if (len === 9) return 'mat3'
                 if (len === 16) return 'mat4'
         }
-        if (is.obj(value) && 'r' in value && 'g' in value && 'b' in value)
-                return 'color'
+        if (is.obj(value) && 'r' in value && 'g' in value && 'b' in value) return 'color'
         return 'float'
 }
 
@@ -33,10 +32,8 @@ const inferUniformType = (value: any): NodeType => {
 export const uniform = (initialValue: any): UniformNode => {
         const type = inferUniformType(initialValue)
         let currentValue = initialValue
-        let objectUpdateCallback: ((context: UpdateContext) => any) | null =
-                null
-        let renderUpdateCallback: ((context: UpdateContext) => any) | null =
-                null
+        let objectUpdateCallback: ((context: UpdateContext) => any) | null = null
+        let renderUpdateCallback: ((context: UpdateContext) => any) | null = null
 
         const baseNode = node(type, currentValue) as any
 
@@ -46,16 +43,12 @@ export const uniform = (initialValue: any): UniformNode => {
                 baseNode.value = value
         }
         // オブジェクト更新時のコールバックを設定
-        const onObjectUpdate = (
-                callback: (context: UpdateContext) => any
-        ): UniformNode => {
+        const onObjectUpdate = (callback: (context: UpdateContext) => any): UniformNode => {
                 objectUpdateCallback = callback
                 return uniformNode
         }
         // レンダー更新時のコールバックを設定
-        const onRenderUpdate = (
-                callback: (context: UpdateContext) => any
-        ): UniformNode => {
+        const onRenderUpdate = (callback: (context: UpdateContext) => any): UniformNode => {
                 renderUpdateCallback = callback
                 return uniformNode
         }

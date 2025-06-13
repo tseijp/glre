@@ -21,7 +21,7 @@
                 "ls": "cd packages/core && npm publish --dry-run",
                 "tsup": "cd packages/core && npx tsup",
                 "vers": "npx changeset version",
-                "pub": "npx tsup && npx changeset publish"
+                "pub": "npm run tsup && npx changeset publish"
         },
         "devDependencies": {
                 "@changesets/cli": "*",

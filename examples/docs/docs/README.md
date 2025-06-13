@@ -29,15 +29,8 @@ date: 2023-01-01
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL } from 'glre/react'
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { useGL, vec4, fract, gl_FragCoord, iResolution } from 'glre/react'
+const fragment = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = useGL({ fragment })
@@ -51,25 +44,12 @@ createRoot(document.getElementById('root')).render(<App />)
 
 ```ts
 import { GLView } from 'expo-gl'
-import { useGL } from 'glre/native'
 import { registerRootComponent } from 'expo'
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
+const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const { gl, ref } = useGL({
-                fragment,
-                render() {
-                        gl.flush()
-                        gl.endFrameEXP()
-                },
-        })
+        const { gl, ref } = useGL({ fragment })
         return <GLView style={{ flex: 1 }} onContextCreate={ref} />
 }
 
@@ -80,15 +60,8 @@ registerRootComponent(App)
 
 ```ts
 import { render } from 'solid-js/web'
-import { onGL } from 'glre/solid'
-
-const fragment = `
-precision highp float;
-uniform vec2 iResolution;
-void main() {
-  gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
+const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
         const gl = onGL({ fragment })
@@ -98,23 +71,18 @@ const App = () => {
 render(() => <App />, document.getElementById('root'))
 ```
 
-## pure js supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr3y))
+## esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr3y))
 
 ```html
-<canvas id="canvas" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@latest'
-        const fragment = `
-          precision highp float;
-          uniform vec2 iResolution;
-          void main() {
-            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-          }
-        `
+        import createGL from 'https://esm.sh/glre'
+        import { vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
+        const fragment = vec4(fract(fragCoord.xy / iResolution), 0, 1)
         function App() {
-                const el = document.getElementById('canvas')
+                const el = document.createElement('canvas')
                 const gl = el.getContext('webgl2')
-                self({ el, gl, fragment }).mount
+                createGL({ el, gl, fragment }).mount()
+                document.body.append(el)
         }
         document.addEventListener('DOMContentLoaded', App)
 </script>

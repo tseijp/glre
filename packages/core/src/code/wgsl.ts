@@ -1,4 +1,4 @@
-import { is } from '../utils'
+import { is } from '../utils/helpers'
 import type { Node, NodeType, ConversionContext, X } from '../node'
 
 // WGSLコード生成コンテキスト
@@ -7,10 +7,7 @@ interface WGSLContext extends ConversionContext {
 }
 
 // ノードからWGSLコードを生成
-export const nodeToWGSL = (
-        nodeProxy: X,
-        context?: Partial<WGSLContext>
-): string => {
+export const nodeToWGSL = (nodeProxy: X, context?: Partial<WGSLContext>): string => {
         const ctx: WGSLContext = {
                 target: 'webgpu',
                 nodes: new Map(),
@@ -25,16 +22,14 @@ export const nodeToWGSL = (
 const generateWGSLExpression = (node: Node, context: WGSLContext): string => {
         if (!node) return '0.0'
         // 値ノード
-        if (node.value !== undefined)
-                return formatWGSLValue(node.value, node.type)
+        if (node.value !== undefined) return formatWGSLValue(node.value, node.type)
         // プロパティアクセス（スウィズル）
         if (node.property && node.parent) {
                 const parentExpr = generateWGSLExpression(node.parent, context)
                 return `${parentExpr}.${node.property}`
         }
         // 演算子ノード
-        if (node.operator && node.children && node.children.length >= 2)
-                return generateWGSLOperator(node, context)
+        if (node.operator && node.children && node.children.length >= 2) return generateWGSLOperator(node, context)
         // 数学関数ノード
         if (node.mathFunction && node.children && node.children.length >= 1)
                 return generateWGSLMathFunction(node, context)
@@ -90,44 +85,13 @@ const generateWGSLOperator = (node: Node, context: WGSLContext): string => {
 const generateWGSLMathFunction = (node: Node, context: WGSLContext): string => {
         if (!node.children || node.children.length < 1) return '0.0'
         const fun = node.mathFunction
-        const args = node.children.map((child) =>
-                generateWGSLExpression(child, context)
-        )
+        const args = node.children.map((child) => generateWGSLExpression(child, context))
         const [x, y, z] = args
-        // 単項関数
-        if (args.length === 1) {
-                if (fun === 'abs') return `abs(${x})`
-                if (fun === 'acos') return `acos(${x})`
-                if (fun === 'asin') return `asin(${x})`
-                if (fun === 'atan') return `atan(${x})`
-                if (fun === 'ceil') return `ceil(${x})`
-                if (fun === 'cos') return `cos(${x})`
-                if (fun === 'floor') return `floor(${x})`
-                if (fun === 'fract') return `fract(${x})`
-                if (fun === 'length') return `length(${x})`
-                if (fun === 'normalize') return `normalize(${x})`
-                if (fun === 'sin') return `sin(${x})`
-                if (fun === 'sqrt') return `sqrt(${x})`
-                if (fun === 'tan') return `tan(${x})`
-        }
-        // 二項関数
-        if (args.length === 2) {
-                if (fun === 'atan2') return `atan2(${x}, ${y})`
-                if (fun === 'pow') return `pow(${x}, ${y})`
-                if (fun === 'min') return `min(${x}, ${y})`
-                if (fun === 'max') return `max(${x}, ${y})`
-                if (fun === 'dot') return `dot(${x}, ${y})`
-                if (fun === 'cross') return `cross(${x}, ${y})`
-                if (fun === 'distance') return `distance(${x}, ${y})`
-                if (fun === 'reflect') return `reflect(${x}, ${y})`
-        }
-        // 三項関数
-        if (args.length === 3) {
-                if (fun === 'mix') return `mix(${x}, ${y}, ${z})`
-                if (fun === 'clamp') return `clamp(${x}, ${y}, ${z})`
-                if (fun === 'smoothstep') return `smoothstep(${x}, ${y}, ${z})`
-                return x
-        }
+        // @TODO FIX
+        // if (fun === 'toVar') return x // toVarは変数化のヒントなので、そのまま返す
+        if (args.length === 1) return `${fun}(${x})`
+        if (args.length === 2) return `${fun}(${x}, ${y})`
+        if (args.length === 3) return `${fun}(${x}, ${y}, ${z})`
         return x || '0.0'
 }
 
