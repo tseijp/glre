@@ -43,6 +43,10 @@ export const createPipeline = (
         }) as GPUPipeline
 }
 
+export const createBindGroup = (device: GPUDevice) => {
+        return
+}
+
 export const createDescriptor = (c: GPUContext) => {
         return {
                 colorAttachments: [

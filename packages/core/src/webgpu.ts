@@ -1,6 +1,6 @@
 import { nested as cached } from 'reev'
 import { wgsl } from './code/wgsl'
-import { is } from './utils/helpers'
+import { flush, is } from './utils/helpers'
 import {
         createPipeline,
         createDescriptor,
@@ -30,12 +30,15 @@ export const webgpu = async (gl: GL) => {
         c.configure({ device, format, alphaMode: 'opaque' })
 
         let pipeline: GPUPipeline
-        let bindGroup: GPUBindGroup
+        let bindGroups: GPUBindGroup[]
         let lastActive = 0
         let needsUpdate = true
+        let hasTexture = false
 
         const entries0 = [] as any[]
         const entries1 = [] as any[]
+        const textureEntries0 = [] as any[]
+        const textureEntries1 = [] as any[]
 
         const uniformBuffers = cached((_: string, value: number[]) => {
                 needsUpdate = true
@@ -48,15 +51,24 @@ export const webgpu = async (gl: GL) => {
 
         gl('render', () => {
                 if (needsUpdate) {
+                        bindGroups = []
                         needsUpdate = false
-                        const layout = device.createBindGroupLayout({ entries: entries0 })
-                        bindGroup = device.createBindGroup({ layout, entries: entries1 })
-                        pipeline = createPipeline(device, format, vs, fs, [], [layout])
+                        const layout0 = device.createBindGroupLayout({ entries: entries0 })
+                        bindGroups.push(device.createBindGroup({ layout: layout0, entries: entries1 }))
+                        const layouts = [layout0]
+
+                        if (hasTexture) {
+                                const layout1 = device.createBindGroupLayout({ entries: textureEntries0 })
+                                bindGroups.push(device.createBindGroup({ layout: layout1, entries: textureEntries1 }))
+                                layouts.push(layout1)
+                        }
+
+                        pipeline = createPipeline(device, format, vs, fs, [], layouts)
                 }
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(pipeline)
-                pass.setBindGroup(0, bindGroup)
+                bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                 pass.draw(quadVertexCount, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
@@ -76,16 +88,27 @@ export const webgpu = async (gl: GL) => {
                 device.queue.writeBuffer(buffer, 0, array)
         })
 
-        // const _loadFun = (image: HTMLImageElement, gl: GL) => {
-        //         const texture = createDeviceTexture(device, image)
+        // const _loadFun = (source: HTMLImageElement, gl: GL) => {
+        //         const texture = createDeviceTexture(device, source)
         //         // bindGroup = updateBindGroup(device, pipeline, buffer, textures, sampler)
         // }
 
-        gl('_texture', (alt: string, src: string) => {
-                // @TODO FIX
-                // const image = new Image()
-                // image.addEventListener('load', _loadFun.bind(null, image, gl), false)
-                // Object.assign(image, { src, alt, crossOrigin: 'anonymous' })
+        gl('_texture', async (_: string, src: string) => {
+                const source = new Image()
+                source.crossOrigin = 'anonymous'
+                source.src = src
+                await source.decode()
+                const { width, height } = source
+
+                const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 })
+                const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
+
+                hasTexture = true
+                needsUpdate = true
+                textureEntries0.push({ binding: 0, sampler: {}, visibility: 2 })
+                textureEntries0.push({ binding: 1, texture: {}, visibility: 2 })
+                textureEntries1.push({ binding: 0, resource: sampler }, { binding: 1, resource: texture.createView() })
+                device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
         })
 
         return gl
