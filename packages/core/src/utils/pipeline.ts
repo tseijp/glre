@@ -43,8 +43,10 @@ export const createPipeline = (
         }) as GPUPipeline
 }
 
-export const createBindGroup = (device: GPUDevice) => {
-        return
+export const createBindGroup = (device: GPUDevice, entries0: any[], entries1: any[], isTexture = false) => {
+        const layout = device.createBindGroupLayout({ entries: entries0 })
+        const bindGroup = device.createBindGroup({ layout, entries: entries1 })
+        return [layout, bindGroup]
 }
 
 export const createDescriptor = (c: GPUContext) => {
@@ -69,33 +71,15 @@ export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
         return { array, buffer }
 }
 
-//
+export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
+        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 })
+        const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
+        return [texture, sampler] as const
+}
+
 // export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
 //         const array = new Float32Array(value)
 //         const buffer = device.createBuffer({ size: array.byteLength, usage: 0x20 | 0x4 })
 //         device.queue.writeBuffer(buffer, 0, array)
 //         return buffer as Buffer
-// }
-//
-// export const createDeviceTexture = (device: GPUDevice, image: HTMLImageElement) => {
-//         const texture = device.createTexture({
-//                 size: { width: image.width, height: image.height },
-//                 format: 'rgba8unorm',
-//                 usage: 0x4 | 0x2,
-//         })
-//         device.queue.copyExternalImageToTexture(
-//                 { source: image },
-//                 { texture },
-//                 { width: image.width, height: image.height }
-//         )
-//         return texture
-// }
-//
-// export const createSampler = (device: GPUDevice) => {
-//         return device.createSampler({
-//                 magFilter: 'linear',
-//                 minFilter: 'linear',
-//                 addressModeU: 'clamp-to-edge',
-//                 addressModeV: 'clamp-to-edge',
-//         })
 // }
