@@ -29,9 +29,15 @@ export interface WebGLState {
 }
 
 export interface WebGPUState {
+        uniforms: any
+        textures: any
         device: GPUDevice
         context: GPUContext
+        groups: any[]
         pipeline: GPUPipeline
+        resources: any[]
+        stopRender: boolean
+        needsUpdate: boolean
 }
 
 export type GL = EventState<{

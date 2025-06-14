@@ -53,10 +53,12 @@ export const createGL = (props?: Partial<GL>) => {
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {
+                gl.vs = gl.vs || gl.vert || gl.vertex
+                gl.fs = gl.fs || gl.frag || gl.fragment
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
-                        await webgl(gl)
-                } else await webgpu(gl)
+                        gl((await webgl(gl)) as GL)
+                } else gl((await webgpu(gl)) as GL)
                 gl.resize()
                 gl.frame(() => {
                         gl.loop()

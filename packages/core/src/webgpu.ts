@@ -1,92 +1,89 @@
-import { nested as cached } from 'reev'
-import { wgsl } from './code/wgsl'
 import { is } from './utils/helpers'
 import {
+        createDevive,
         createPipeline,
         createDescriptor,
         createUniformBuffer,
-        // createUniformBuffer,
-        // updateBindGroup,
-        // createVertexBuffer,
-        // createUniform,
-        // createDeviceTexture,
-        // createSampler,
+        createBindGroup,
+        createTextureSampler,
 } from './utils/pipeline'
-import type { X } from './node'
-import type { GL, GPUBindGroup, GPUPipeline } from './types'
+import type { GL, WebGPUState } from './types'
 
-const quadVertexCount = 3
+export const webgpu = async (gl: Partial<GL>) => {
+        const c = gl.el!.getContext('webgpu') as any
+        const { device, format } = await createDevive(c)
+        const state = { context: c, device } as WebGPUState
+        state.uniforms = {}
+        state.textures = {}
+        state.resources = [[], []] as any[] // group(0) and group(1)
+        state.needsUpdate = true
+        state.stopRender = false
 
-export const webgpu = async (gl: GL) => {
-        let vs = gl.vs || gl.vert || gl.vertex
-        let fs = gl.fs || gl.frag || gl.fragment
-        if (is.obj(vs)) vs = wgsl(vs as X)
-        if (is.obj(fs)) fs = wgsl(fs as X)
-        const c = gl.el.getContext('webgpu') as any
-        const gpu = (navigator as any).gpu
-        const adapter = await gpu.requestAdapter()
-        const device = await adapter.requestDevice()
-        const format = gpu.getPreferredCanvasFormat()
-        c.configure({ device, format, alphaMode: 'opaque' })
-
-        let pipeline: GPUPipeline
-        let bindGroup: GPUBindGroup
-        let lastActive = 0
-        let needsUpdate = true
-
-        const entries0 = [] as any[]
-        const entries1 = [] as any[]
-
-        const uniformBuffers = cached((_: string, value: number[]) => {
-                needsUpdate = true
-                const binding = lastActive++
+        const initUniform = (value: number[]) => {
                 const { array, buffer } = createUniformBuffer(device, value)
-                entries0.push({ binding, buffer: { type: 'uniform' }, visibility: 3 })
-                entries1.push({ binding, resource: { buffer } })
+                state.resources[0].push({ buffer })
+                state.needsUpdate = true
                 return { array, buffer }
-        })
+        }
 
-        gl('render', () => {
-                if (needsUpdate) {
-                        needsUpdate = false
-                        const layout = device.createBindGroupLayout({ entries: entries0 })
-                        bindGroup = device.createBindGroup({ layout, entries: entries1 })
-                        pipeline = createPipeline(device, format, vs, fs, [], [layout])
-                }
+        const initTexutre = (source: HTMLImageElement) => {
+                const { width, height } = source
+                const [texture, sampler] = createTextureSampler(device, width, height)
+                state.resources[1].push(sampler, texture.createView())
+                state.needsUpdate = true
+                return { texture, width, height }
+        }
+
+        const update = () => {
+                const layouts = [] as any
+                state.groups = []
+                state.resources.forEach((resource) => {
+                        if (!resource.length) return
+                        const [layout, group] = createBindGroup(device, resource)
+                        layouts.push(layout)
+                        state.groups.push(group)
+                })
+                state.pipeline = createPipeline(device, format, [], layouts, gl.vs, gl.fs)
+        }
+
+        const render = () => {
+                if (state.stopRender) return // ignore if loading img
+                if (state.needsUpdate) update() // first rendering
+                state.needsUpdate = false
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
-                pass.setPipeline(pipeline)
-                pass.setBindGroup(0, bindGroup)
-                pass.draw(quadVertexCount, 1, 0, 0)
+                pass.setPipeline(state.pipeline)
+                state.groups.forEach((v, i) => pass.setBindGroup(i, v))
+                pass.draw(gl.count, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
-        })
+        }
 
-        gl('clean', () => {})
+        const clean = () => {}
 
-        gl('_attribute', (key = '', value: number[]) => {
+        const _attribute = (key = '', value: number[]) => {
                 // @TODO FIX
                 // vertexBuffers(key, value)
-        })
+        }
 
-        gl('_uniform', (key: string, value: number | number[]) => {
+        const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
-                const { array, buffer } = uniformBuffers(key, value)
+                if (!state.uniforms[key]) state.uniforms[key] = initUniform(value)
+                const { array, buffer } = state.uniforms[key]
                 array.set(value)
                 device.queue.writeBuffer(buffer, 0, array)
-        })
+        }
 
-        // const _loadFun = (image: HTMLImageElement, gl: GL) => {
-        //         const texture = createDeviceTexture(device, image)
-        //         // bindGroup = updateBindGroup(device, pipeline, buffer, textures, sampler)
-        // }
+        const _texture = (key: string, src: string) => {
+                state.stopRender = true
+                const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
+                source.decode().then(() => {
+                        if (!state.textures[key]) state.textures[key] = initTexutre(source)
+                        const { texture, width, height } = state.textures[key]
+                        device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
+                        state.stopRender = false
+                })
+        }
 
-        gl('_texture', (alt: string, src: string) => {
-                // @TODO FIX
-                // const image = new Image()
-                // image.addEventListener('load', _loadFun.bind(null, image, gl), false)
-                // Object.assign(image, { src, alt, crossOrigin: 'anonymous' })
-        })
-
-        return gl
+        return { webgpu: state, render, clean, _attribute, _uniform, _texture }
 }

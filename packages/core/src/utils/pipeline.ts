@@ -1,4 +1,7 @@
-import { GPUContext, GPUDevice, GPUPipeline } from '../types'
+import { wgsl } from '../code/wgsl'
+import { X } from '../node'
+import { is } from './helpers'
+import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
 
 const defaultVertexWGSL = `
 @vertex
@@ -18,14 +21,25 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 }
 `
 
+export const createDevive = async (c: GPUContext) => {
+        const gpu = (navigator as any).gpu
+        const format = gpu.getPreferredCanvasFormat()
+        const adapter = await gpu.requestAdapter()
+        const device = await adapter.requestDevice()
+        c.configure({ device, format, alphaMode: 'opaque' })
+        return { device, format }
+}
+
 export const createPipeline = (
         device: GPUDevice,
         format: string,
-        vs = defaultVertexWGSL,
-        fs = defaultFragmentWGSL,
         buffers: any[],
-        layouts: any[]
+        layouts: any[],
+        vs: string | X = defaultVertexWGSL,
+        fs: string | X = defaultFragmentWGSL
 ) => {
+        if (is.obj(fs)) fs = wgsl(fs)
+        if (is.obj(vs)) vs = wgsl(vs)
         const layout = device.createPipelineLayout({ bindGroupLayouts: layouts })
         return device.createRenderPipeline({
                 vertex: {
@@ -41,6 +55,25 @@ export const createPipeline = (
                 layout,
                 primitive: { topology: 'triangle-list' },
         }) as GPUPipeline
+}
+
+export const createBindGroup = (device: GPUDevice, resources: any[]) => {
+        const entries0 = [] as any[]
+        const entries1 = [] as any[]
+        resources.forEach((resource, binding) => {
+                if (!resource) return
+                const isUniform = 'buffer' in resource // @ts-ignore
+                const isTexture = resource instanceof GPUTextureView // @ts-ignore
+                const isSampler = resource instanceof GPUSampler // @ts-ignore
+                if (isUniform) entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
+                else if (isTexture) entries0.push({ binding, visibility: 2, texture: {} })
+                else if (isSampler) entries0.push({ binding, visibility: 2, sampler: {} })
+                else return
+                entries1.push({ binding, resource })
+        })
+        const layout = device.createBindGroupLayout({ entries: entries0 })
+        const bindGroup = device.createBindGroup({ layout, entries: entries1 })
+        return [layout, bindGroup]
 }
 
 export const createDescriptor = (c: GPUContext) => {
@@ -65,33 +98,15 @@ export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
         return { array, buffer }
 }
 
-//
+export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
+        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 })
+        const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
+        return [texture, sampler] as const
+}
+
 // export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
 //         const array = new Float32Array(value)
 //         const buffer = device.createBuffer({ size: array.byteLength, usage: 0x20 | 0x4 })
 //         device.queue.writeBuffer(buffer, 0, array)
 //         return buffer as Buffer
-// }
-//
-// export const createDeviceTexture = (device: GPUDevice, image: HTMLImageElement) => {
-//         const texture = device.createTexture({
-//                 size: { width: image.width, height: image.height },
-//                 format: 'rgba8unorm',
-//                 usage: 0x4 | 0x2,
-//         })
-//         device.queue.copyExternalImageToTexture(
-//                 { source: image },
-//                 { texture },
-//                 { width: image.width, height: image.height }
-//         )
-//         return texture
-// }
-//
-// export const createSampler = (device: GPUDevice) => {
-//         return device.createSampler({
-//                 magFilter: 'linear',
-//                 minFilter: 'linear',
-//                 addressModeU: 'clamp-to-edge',
-//                 addressModeV: 'clamp-to-edge',
-//         })
 // }
