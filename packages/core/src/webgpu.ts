@@ -1,8 +1,10 @@
+import { nested as cached } from 'reev'
 import { wgsl } from './code/wgsl'
 import { is } from './utils/helpers'
 import {
         createPipeline,
         createDescriptor,
+        createUniformBuffer,
         // createUniformBuffer,
         // updateBindGroup,
         // createVertexBuffer,
@@ -12,7 +14,6 @@ import {
 } from './utils/pipeline'
 import type { X } from './node'
 import type { GL, GPUBindGroup, GPUPipeline } from './types'
-import { nested } from 'reev'
 
 const quadVertexCount = 3
 
@@ -28,36 +29,30 @@ export const webgpu = async (gl: GL) => {
         const format = gpu.getPreferredCanvasFormat()
         c.configure({ device, format, alphaMode: 'opaque' })
 
-        // Uniform buffer setup
-        // WebGPU 16-byte alignment requirement: iTime(4) + padding(12) + iMouse(8) + iPrevTime(4) + iDeltaTime(4) + iResolution(8) = 40 bytes, rounded to 48
-
-        const buffer = device.createBuffer({
-                size: 64, // @ts-ignore
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        })
-
-        gl('clean', () => {})
-
-        const activeUnit = nested((_, size) => (_activeUnit += size))
-        let _activeUnit = 0
         let pipeline: GPUPipeline
         let bindGroup: GPUBindGroup
-        let uniformData = new Float32Array(0)
+        let lastActive = 0
+        let needsUpdate = true
+
+        const entries0 = [] as any[]
+        const entries1 = [] as any[]
+
+        const uniformBuffers = cached((_: string, value: number[]) => {
+                needsUpdate = true
+                const binding = lastActive++
+                const { array, buffer } = createUniformBuffer(device, value)
+                entries0.push({ binding, buffer: { type: 'uniform' }, visibility: 3 })
+                entries1.push({ binding, resource: { buffer } })
+                return { array, buffer }
+        })
 
         gl('render', () => {
-                if (!pipeline) {
-                        pipeline = createPipeline(device, format, vs, fs, [])
-                        bindGroup = device.createBindGroup({
-                                layout: pipeline.getBindGroupLayout(0),
-                                entries: [
-                                        {
-                                                binding: 0,
-                                                resource: { buffer },
-                                        },
-                                ],
-                        })
+                if (needsUpdate) {
+                        needsUpdate = false
+                        const layout = device.createBindGroupLayout({ entries: entries0 })
+                        bindGroup = device.createBindGroup({ layout, entries: entries1 })
+                        pipeline = createPipeline(device, format, vs, fs, [], [layout])
                 }
-
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(pipeline)
@@ -65,8 +60,9 @@ export const webgpu = async (gl: GL) => {
                 pass.draw(quadVertexCount, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
-                return true
         })
+
+        gl('clean', () => {})
 
         gl('_attribute', (key = '', value: number[]) => {
                 // @TODO FIX
@@ -75,15 +71,9 @@ export const webgpu = async (gl: GL) => {
 
         gl('_uniform', (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
-                const size = value.length
-                const unit = activeUnit(key, size)
-                if (unit === _activeUnit) {
-                        const array = new Float32Array(_activeUnit)
-                        if (uniformData) array.set(uniformData)
-                        uniformData = array
-                }
-                for (let i = 0; i < size; i++) uniformData[unit - size + i] = value[i]
-                device.queue.writeBuffer(buffer, 0, uniformData)
+                const { array, buffer } = uniformBuffers(key, value)
+                array.set(value)
+                device.queue.writeBuffer(buffer, 0, array)
         })
 
         // const _loadFun = (image: HTMLImageElement, gl: GL) => {

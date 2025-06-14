@@ -50,7 +50,7 @@ export const createGL = (props?: Partial<GL>) => {
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
         gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
-        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime: 0 }) // default uniform
+        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
