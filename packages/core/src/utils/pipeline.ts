@@ -9,21 +9,6 @@ fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
 }
 `
 
-// const defaultFragmentWGSL = `
-// struct Uniforms {
-//   iResolution: vec2f,
-//   iMouse: vec2f,
-//   iTime: f32,
-// }
-//
-// @group(0) @binding(0) var<uniform> u: Uniforms;
-//
-// @fragment
-// fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-//   return vec4f(position.xy / u.iResolution, 0.0, 1.0);
-// }
-// `
-
 const defaultFragmentWGSL = `
 @group(0) @binding(0) var<uniform> iResolution: vec2f;
 
@@ -88,31 +73,6 @@ export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
 //         return buffer as Buffer
 // }
 //
-// export const createBindGroup = (device: GPUDevice, pipeline: GPUPipeline, entries: any[]) => {
-//         const layout = pipeline.getBindGroupLayout(0)
-//         return device.createBindGroup({ layout, entries })
-// }
-//
-// export const updateBindGroup = (
-//         device: GPUDevice,
-//         pipeline: GPUPipeline,
-//         uniformBuffer: Buffer,
-//         textures: any = {},
-//         sampler: any = null
-// ) => {
-//         const entries = [{ binding: 0, resource: { buffer: uniformBuffer } }]
-//         let binding = 1
-//         Object.values(textures).forEach((texture: any) => {
-//                 entries.push({ binding: binding++, resource: texture.createView() })
-//         })
-//         if (sampler && Object.keys(textures).length > 0) entries.push({ binding: binding++, resource: sampler })
-//         return createBindGroup(device, pipeline, entries)
-// }
-//
-// export const createUniform = (device: GPUDevice, buffer: any, data: Float32Array, offset = 0) => {
-//         device.queue.writeBuffer(buffer, offset, data)
-// }
-//
 // export const createDeviceTexture = (device: GPUDevice, image: HTMLImageElement) => {
 //         const texture = device.createTexture({
 //                 size: { width: image.width, height: image.height },
@@ -135,5 +95,3 @@ export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
 //                 addressModeV: 'clamp-to-edge',
 //         })
 // }
-//
-// export const getDefaultVertices = () => new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])

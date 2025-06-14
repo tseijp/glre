@@ -16,10 +16,8 @@ export const webgl = async (gl: GL) => {
         let _activeUnit = 0
         const activeUnits = cached(() => _activeUnit++)
 
-        const locations = cached((key, bool = false) => {
-                if (bool) return c.getAttribLocation(pg, key)
-                return c.getUniformLocation(pg, key) as WebGLUniformLocation
-        })
+        const uniformLocations = cached((key) => c.getUniformLocation(pg, key))
+        const attribLocations = cached((key) => c.getAttribLocation(pg, key))
 
         const strides = cached((_, count: number, value: number[], iboValue?: number[]) => {
                 if (iboValue) count = Math.max(...iboValue) + 1
@@ -29,7 +27,8 @@ export const webgl = async (gl: GL) => {
         })
 
         const uniforms = cached((key, value: number | number[]) => {
-                const loc = locations(key)
+                const loc = uniformLocations(key)
+                console.log(loc)
                 if (is.num(value)) return (value: any) => c.uniform1f(loc, value)
                 let l = value.length as 3
                 if (l <= 4) return (value: any) => c[`uniform${l}fv`](loc, value)
@@ -47,7 +46,7 @@ export const webgl = async (gl: GL) => {
         })
 
         gl('_attribute', (key = '', value: number[], iboValue: number[]) => {
-                const loc = locations(key, true)
+                const loc = attribLocations(key, true)
                 const vbo = createVbo(c, value)
                 const ibo = createIbo(c, iboValue)
                 const str = strides(key, gl.count, value, iboValue)
@@ -59,7 +58,7 @@ export const webgl = async (gl: GL) => {
         })
 
         const _loadFn = (image: HTMLImageElement) => {
-                const loc = locations(image.alt)
+                const loc = uniformLocations(image.alt)
                 const unit = activeUnits(image.alt)
                 const tex = createTexture(c, image)
                 activeTexture(c, loc, unit, tex)
