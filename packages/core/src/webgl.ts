@@ -1,17 +1,12 @@
 import { nested as cached } from 'reev'
-import { glsl } from './code/glsl'
 import { is } from './utils/helpers'
-import type { X } from './node'
-import type { GL } from './types'
 import { activeTexture, createAttrib, createIbo, createProgram, createTexture, createVbo } from './utils/program'
+import type { GL, WebGLState } from './types'
 
-export const webgl = async (gl: GL) => {
-        let vs = gl.vs || gl.vert || gl.vertex
-        let fs = gl.fs || gl.frag || gl.fragment
-        if (is.obj(fs)) fs = glsl(fs as X)
-        if (is.obj(vs)) vs = glsl(vs as X)
-        const c = gl.el.getContext('webgl2')!
-        const pg = createProgram(c, vs, fs)
+export const webgl = async (gl: Partial<GL>) => {
+        const c = gl.el!.getContext('webgl2')!
+        const pg = createProgram(c, gl.vs, gl.fs)
+        const state = { context: c, program: pg } as WebGLState
 
         let _activeUnit = 0
         const activeUnits = cached(() => _activeUnit++)
@@ -35,41 +30,37 @@ export const webgl = async (gl: GL) => {
                 return (value: any) => c[`uniformMatrix${l}fv`](loc, false, value)
         })
 
-        gl('clean', () => c.deleteProgram(pg))
+        const clean = () => c.deleteProgram(pg)
 
-        gl('render', () => {
+        const render = () => {
                 c.useProgram(pg)
                 c.clear(c.COLOR_BUFFER_BIT)
-                c.viewport(0, 0, ...gl.size)
+                c.viewport(0, 0, ...gl.size!)
                 c.drawArrays(c.TRIANGLES, 0, 3)
-        })
+        }
 
-        gl('_attribute', (key = '', value: number[], iboValue: number[]) => {
+        const _attribute = (key = '', value: number[], iboValue: number[]) => {
                 const loc = attribLocations(key, true)
                 const vbo = createVbo(c, value)
                 const ibo = createIbo(c, iboValue)
                 const str = strides(key, gl.count, value, iboValue)
                 createAttrib(c, str, loc, vbo, ibo)
-        })
-
-        gl('_uniform', (key: string, value: number | number[]) => {
-                uniforms(key, value)(value)
-        })
-
-        const _loadFn = (image: HTMLImageElement) => {
-                const loc = uniformLocations(image.alt)
-                const unit = activeUnits(image.alt)
-                const tex = createTexture(c, image)
-                activeTexture(c, loc, unit, tex)
         }
 
-        gl('_texture', (alt: string, src: string) => {
+        const _uniform = (key: string, value: number | number[]) => {
+                uniforms(key, value)(value)
+        }
+
+        const _texture = (alt: string, src: string) => {
                 const image = new Image()
-                image.addEventListener('load', _loadFn.bind(null, image), false)
                 Object.assign(image, { src, alt, crossOrigin: 'anonymous' })
-        })
+                image.decode().then(() => {
+                        const loc = uniformLocations(image.alt)
+                        const unit = activeUnits(image.alt)
+                        const tex = createTexture(c, image)
+                        activeTexture(c, loc, unit, tex)
+                })
+        }
 
-        gl.webgl = { context: c, program: pg }
-
-        return gl
+        return { webgl: state, render, clean, _attribute, _uniform, _texture }
 }

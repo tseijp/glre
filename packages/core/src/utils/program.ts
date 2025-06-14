@@ -1,3 +1,7 @@
+import { glsl } from '../code/glsl'
+import { X } from '../node'
+import { is } from './helpers'
+
 export const defaultVertexGLSL = /* cpp */ `
 #version 300 es
 void main() {
@@ -17,7 +21,7 @@ void main() {
 }
 `
 
-export const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
+const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
         if (!shader) throw new Error('Failed to create shader')
         c.shaderSource(shader, source.trim())
@@ -28,7 +32,13 @@ export const createShader = (c: WebGLRenderingContext, source: string, type: num
         throw new Error(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vs = defaultVertexGLSL, fs = defaultFragmentGLSL) => {
+export const createProgram = (
+        c: WebGLRenderingContext,
+        vs: string | X = defaultVertexGLSL,
+        fs: string | X = defaultFragmentGLSL
+) => {
+        if (is.obj(fs)) fs = glsl(fs as X)
+        if (is.obj(vs)) vs = glsl(vs as X)
         const pg = c.createProgram()
         c.attachShader(pg, createShader(c, vs, c.VERTEX_SHADER))
         c.attachShader(pg, createShader(c, fs, c.FRAGMENT_SHADER))

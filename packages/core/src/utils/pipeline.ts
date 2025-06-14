@@ -1,4 +1,7 @@
-import { GPUContext, GPUDevice, GPUPipeline } from '../types'
+import { wgsl } from '../code/wgsl'
+import { X } from '../node'
+import { is } from './helpers'
+import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
 
 const defaultVertexWGSL = `
 @vertex
@@ -18,14 +21,25 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 }
 `
 
+export const createDevive = async (c: GPUContext) => {
+        const gpu = (navigator as any).gpu
+        const format = gpu.getPreferredCanvasFormat()
+        const adapter = await gpu.requestAdapter()
+        const device = await adapter.requestDevice()
+        c.configure({ device, format, alphaMode: 'opaque' })
+        return { device, format }
+}
+
 export const createPipeline = (
         device: GPUDevice,
         format: string,
-        vs = defaultVertexWGSL,
-        fs = defaultFragmentWGSL,
         buffers: any[],
-        layouts: any[]
+        layouts: any[],
+        vs: string | X = defaultVertexWGSL,
+        fs: string | X = defaultFragmentWGSL
 ) => {
+        if (is.obj(fs)) fs = wgsl(fs)
+        if (is.obj(vs)) vs = wgsl(vs)
         const layout = device.createPipelineLayout({ bindGroupLayouts: layouts })
         return device.createRenderPipeline({
                 vertex: {
@@ -43,7 +57,20 @@ export const createPipeline = (
         }) as GPUPipeline
 }
 
-export const createBindGroup = (device: GPUDevice, entries0: any[], entries1: any[], isTexture = false) => {
+export const createBindGroup = (device: GPUDevice, resources: any[]) => {
+        const entries0 = [] as any[]
+        const entries1 = [] as any[]
+        resources.forEach((resource, binding) => {
+                if (!resource) return
+                const isUniform = 'buffer' in resource // @ts-ignore
+                const isTexture = resource instanceof GPUTextureView // @ts-ignore
+                const isSampler = resource instanceof GPUSampler // @ts-ignore
+                if (isUniform) entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
+                else if (isTexture) entries0.push({ binding, visibility: 2, texture: {} })
+                else if (isSampler) entries0.push({ binding, visibility: 2, sampler: {} })
+                else return
+                entries1.push({ binding, resource })
+        })
         const layout = device.createBindGroupLayout({ entries: entries0 })
         const bindGroup = device.createBindGroup({ layout, entries: entries1 })
         return [layout, bindGroup]
