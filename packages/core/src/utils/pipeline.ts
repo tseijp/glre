@@ -9,14 +9,25 @@ fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
 }
 `
 
-const defaultFragmentWGSL = `
-struct Uniforms {
-  iResolution: vec2f,
-  iMouse: vec2f,
-  iTime: f32,
-}
+// const defaultFragmentWGSL = `
+// struct Uniforms {
+//   iResolution: vec2f,
+//   iMouse: vec2f,
+//   iTime: f32,
+// }
+//
+// @group(0) @binding(0) var<uniform> u: Uniforms;
+//
+// @fragment
+// fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+//   return vec4f(position.xy / u.iResolution, 0.0, 1.0);
+// }
+// `
 
-@group(0) @binding(0) var<uniform> u: Uniforms;
+const defaultFragmentWGSL = `
+@group(0) @binding(0) var<uniform> iResolution: vec2f;
+@group(0) @binding(1) var<uniform> iMouse: vec2f;
+@group(0) @binding(2) var<uniform> iTime: f32;
 
 @fragment
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
@@ -29,7 +40,8 @@ export const createPipeline = (
         format: string,
         vs = defaultVertexWGSL,
         fs = defaultFragmentWGSL,
-        buffers: any[]
+        buffers: any[],
+        layout: any = 'auto'
 ) => {
         return device.createRenderPipeline({
                 vertex: {
@@ -42,7 +54,7 @@ export const createPipeline = (
                         entryPoint: 'main',
                         targets: [{ format }],
                 },
-                layout: 'auto',
+                layout,
                 primitive: { topology: 'triangle-list' },
         }) as GPUPipeline
 }

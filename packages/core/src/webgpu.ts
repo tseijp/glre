@@ -28,33 +28,52 @@ export const webgpu = async (gl: GL) => {
         const format = gpu.getPreferredCanvasFormat()
         c.configure({ device, format, alphaMode: 'opaque' })
 
-        // Uniform buffer setup
-        // WebGPU 16-byte alignment requirement: iTime(4) + padding(12) + iMouse(8) + iPrevTime(4) + iDeltaTime(4) + iResolution(8) = 40 bytes, rounded to 48
-
-        const buffer = device.createBuffer({
-                size: 64, // @ts-ignore
-                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        })
+        // uniformごとに個別のバッファーを作成
+        const uniformBuffers = new Map<
+                string,
+                {
+                        buffer: any
+                        binding: number
+                        size: number
+                }
+        >()
 
         gl('clean', () => {})
 
-        const activeUnit = nested((_, size) => (_activeUnit += size))
-        let _activeUnit = 0
         let pipeline: GPUPipeline
         let bindGroup: GPUBindGroup
-        let uniformData = new Float32Array(0)
+        let pipelineLayout: any
+        let bindGroupLayout: any
+        let needsPipelineRecreation = false
 
         gl('render', () => {
-                if (!pipeline) {
-                        pipeline = createPipeline(device, format, vs, fs, [])
+                if (uniformBuffers.size > 0 && (!bindGroupLayout || needsPipelineRecreation)) {
+                        // 明示的なbindGroupLayout作成
+                        const bindGroupLayoutEntries = Array.from(uniformBuffers.entries()).map(([key, info]) => ({
+                                binding: info.binding, // @ts-ignore
+                                visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.VERTEX,
+                                buffer: { type: 'uniform' as const },
+                        }))
+                        bindGroupLayout = device.createBindGroupLayout({
+                                entries: bindGroupLayoutEntries,
+                        })
+                        pipelineLayout = device.createPipelineLayout({
+                                bindGroupLayouts: [bindGroupLayout],
+                        })
+                }
+                if (!pipeline || needsPipelineRecreation) {
+                        const layout = pipelineLayout || 'auto'
+                        pipeline = createPipeline(device, format, vs, fs, [], layout)
+                        needsPipelineRecreation = false
+                }
+                if (!bindGroup && uniformBuffers.size > 0) {
+                        const entries = Array.from(uniformBuffers.entries()).map(([key, info]) => ({
+                                binding: info.binding,
+                                resource: { buffer: info.buffer },
+                        }))
                         bindGroup = device.createBindGroup({
-                                layout: pipeline.getBindGroupLayout(0),
-                                entries: [
-                                        {
-                                                binding: 0,
-                                                resource: { buffer },
-                                        },
-                                ],
+                                layout: bindGroupLayout,
+                                entries,
                         })
                 }
 
@@ -74,16 +93,35 @@ export const webgpu = async (gl: GL) => {
         })
 
         gl('_uniform', (key: string, value: number | number[]) => {
-                if (is.num(value)) value = [value]
-                const size = value.length
-                const unit = activeUnit(key, size)
-                if (unit === _activeUnit) {
-                        const array = new Float32Array(_activeUnit)
-                        if (uniformData) array.set(uniformData)
-                        uniformData = array
+                if (!uniformBuffers.has(key)) {
+                        needsPipelineRecreation = true
+                        bindGroup = null as any
+                        bindGroupLayout = null
+                        pipelineLayout = null
+                        // 新しいuniformの場合、バッファーとbindingを作成
+                        const alignedSize = 128 // Math.ceil(size / 16) * 16 // 16byte alignment
+
+                        const buffer = device.createBuffer({
+                                size: alignedSize, // @ts-ignore
+                                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+                        })
+
+                        uniformBuffers.set(key, {
+                                buffer,
+                                binding: uniformBuffers.size,
+                                size: alignedSize,
+                        })
                 }
-                for (let i = 0; i < size; i++) uniformData[unit - size + i] = value[i]
-                device.queue.writeBuffer(buffer, 0, uniformData)
+
+                // データ更新
+                const uniform = uniformBuffers.get(key)!
+                const data = new Float32Array(uniform.size / 4)
+                if (Array.isArray(value)) {
+                        data.set(value)
+                } else {
+                        data[0] = value
+                }
+                device.queue.writeBuffer(uniform.buffer, 0, data)
         })
 
         // const _loadFun = (image: HTMLImageElement, gl: GL) => {
