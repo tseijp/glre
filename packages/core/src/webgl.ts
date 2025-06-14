@@ -28,7 +28,6 @@ export const webgl = async (gl: GL) => {
 
         const uniforms = cached((key, value: number | number[]) => {
                 const loc = uniformLocations(key)
-                console.log(loc)
                 if (is.num(value)) return (value: any) => c.uniform1f(loc, value)
                 let l = value.length as 3
                 if (l <= 4) return (value: any) => c[`uniform${l}fv`](loc, value)
