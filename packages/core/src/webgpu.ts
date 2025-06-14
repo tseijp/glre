@@ -1,8 +1,10 @@
+import { nested as cached } from 'reev'
 import { wgsl } from './code/wgsl'
 import { is } from './utils/helpers'
 import {
         createPipeline,
         createDescriptor,
+        createUniformBuffer,
         // createUniformBuffer,
         // updateBindGroup,
         // createVertexBuffer,
@@ -12,7 +14,6 @@ import {
 } from './utils/pipeline'
 import type { X } from './node'
 import type { GL, GPUBindGroup, GPUPipeline } from './types'
-import { nested } from 'reev'
 
 const quadVertexCount = 3
 
@@ -28,55 +29,30 @@ export const webgpu = async (gl: GL) => {
         const format = gpu.getPreferredCanvasFormat()
         c.configure({ device, format, alphaMode: 'opaque' })
 
-        // uniformごとに個別のバッファーを作成
-        const uniformBuffers = new Map<
-                string,
-                {
-                        buffer: any
-                        binding: number
-                        size: number
-                }
-        >()
-
-        gl('clean', () => {})
-
         let pipeline: GPUPipeline
         let bindGroup: GPUBindGroup
-        let pipelineLayout: any
-        let bindGroupLayout: any
-        let needsPipelineRecreation = false
+        let lastActive = 0
+        let needsUpdate = true
+
+        const entries0 = [] as any[]
+        const entries1 = [] as any[]
+
+        const uniformBuffers = cached((_: string, value: number[]) => {
+                needsUpdate = true
+                const binding = lastActive++
+                const { array, buffer } = createUniformBuffer(device, value)
+                entries0.push({ binding, buffer: { type: 'uniform' }, visibility: 3 })
+                entries1.push({ binding, resource: { buffer } })
+                return { array, buffer }
+        })
 
         gl('render', () => {
-                if (uniformBuffers.size > 0 && (!bindGroupLayout || needsPipelineRecreation)) {
-                        // 明示的なbindGroupLayout作成
-                        const bindGroupLayoutEntries = Array.from(uniformBuffers.entries()).map(([key, info]) => ({
-                                binding: info.binding, // @ts-ignore
-                                visibility: GPUShaderStage.FRAGMENT | GPUShaderStage.VERTEX,
-                                buffer: { type: 'uniform' as const },
-                        }))
-                        bindGroupLayout = device.createBindGroupLayout({
-                                entries: bindGroupLayoutEntries,
-                        })
-                        pipelineLayout = device.createPipelineLayout({
-                                bindGroupLayouts: [bindGroupLayout],
-                        })
+                if (needsUpdate) {
+                        needsUpdate = false
+                        const layout = device.createBindGroupLayout({ entries: entries0 })
+                        bindGroup = device.createBindGroup({ layout, entries: entries1 })
+                        pipeline = createPipeline(device, format, vs, fs, [], [layout])
                 }
-                if (!pipeline || needsPipelineRecreation) {
-                        const layout = pipelineLayout || 'auto'
-                        pipeline = createPipeline(device, format, vs, fs, [], layout)
-                        needsPipelineRecreation = false
-                }
-                if (!bindGroup && uniformBuffers.size > 0) {
-                        const entries = Array.from(uniformBuffers.entries()).map(([key, info]) => ({
-                                binding: info.binding,
-                                resource: { buffer: info.buffer },
-                        }))
-                        bindGroup = device.createBindGroup({
-                                layout: bindGroupLayout,
-                                entries,
-                        })
-                }
-
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(pipeline)
@@ -84,8 +60,9 @@ export const webgpu = async (gl: GL) => {
                 pass.draw(quadVertexCount, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
-                return true
         })
+
+        gl('clean', () => {})
 
         gl('_attribute', (key = '', value: number[]) => {
                 // @TODO FIX
@@ -93,35 +70,10 @@ export const webgpu = async (gl: GL) => {
         })
 
         gl('_uniform', (key: string, value: number | number[]) => {
-                if (!uniformBuffers.has(key)) {
-                        needsPipelineRecreation = true
-                        bindGroup = null as any
-                        bindGroupLayout = null
-                        pipelineLayout = null
-                        // 新しいuniformの場合、バッファーとbindingを作成
-                        const alignedSize = 128 // Math.ceil(size / 16) * 16 // 16byte alignment
-
-                        const buffer = device.createBuffer({
-                                size: alignedSize, // @ts-ignore
-                                usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-                        })
-
-                        uniformBuffers.set(key, {
-                                buffer,
-                                binding: uniformBuffers.size,
-                                size: alignedSize,
-                        })
-                }
-
-                // データ更新
-                const uniform = uniformBuffers.get(key)!
-                const data = new Float32Array(uniform.size / 4)
-                if (Array.isArray(value)) {
-                        data.set(value)
-                } else {
-                        data[0] = value
-                }
-                device.queue.writeBuffer(uniform.buffer, 0, data)
+                if (is.num(value)) value = [value]
+                const { array, buffer } = uniformBuffers(key, value)
+                array.set(value)
+                device.queue.writeBuffer(buffer, 0, array)
         })
 
         // const _loadFun = (image: HTMLImageElement, gl: GL) => {

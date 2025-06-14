@@ -1,4 +1,4 @@
-import { nested } from 'reev'
+import { nested as cached } from 'reev'
 import { glsl } from './code/glsl'
 import { is } from './utils/helpers'
 import type { X } from './node'
@@ -14,21 +14,21 @@ export const webgl = async (gl: GL) => {
         const pg = createProgram(c, vs, fs)
 
         let _activeUnit = 0
-        const activeUnits = nested(() => _activeUnit++)
+        const activeUnits = cached(() => _activeUnit++)
 
-        const locations = nested((key, bool = false) => {
+        const locations = cached((key, bool = false) => {
                 if (bool) return c.getAttribLocation(pg, key)
                 return c.getUniformLocation(pg, key) as WebGLUniformLocation
         })
 
-        const strides = nested((_, count: number, value: number[], iboValue?: number[]) => {
+        const strides = cached((_, count: number, value: number[], iboValue?: number[]) => {
                 if (iboValue) count = Math.max(...iboValue) + 1
                 const stride = value.length / count
                 if (stride !== Math.floor(stride)) console.warn(`Vertex Stride Error: count ${count} is mismatch`)
                 return Math.floor(stride)
         })
 
-        const uniforms = nested((key, value: number | number[]) => {
+        const uniforms = cached((key, value: number | number[]) => {
                 const loc = locations(key)
                 if (is.num(value)) return (value: any) => c.uniform1f(loc, value)
                 let l = value.length as 3

@@ -26,8 +26,6 @@ fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
 
 const defaultFragmentWGSL = `
 @group(0) @binding(0) var<uniform> iResolution: vec2f;
-@group(0) @binding(1) var<uniform> iMouse: vec2f;
-@group(0) @binding(2) var<uniform> iTime: f32;
 
 @fragment
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
@@ -41,8 +39,9 @@ export const createPipeline = (
         vs = defaultVertexWGSL,
         fs = defaultFragmentWGSL,
         buffers: any[],
-        layout: any = 'auto'
+        layouts: any[]
 ) => {
+        const layout = device.createPipelineLayout({ bindGroupLayouts: layouts })
         return device.createRenderPipeline({
                 vertex: {
                         module: device.createShaderModule({ code: vs.trim() }),
@@ -72,11 +71,15 @@ export const createDescriptor = (c: GPUContext) => {
         }
 }
 
-// export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
-//
-// export const createUniformBuffer = (device: GPUDevice, size: number) => {
-//         return device.createBuffer({ size: alignTo256(size), usage: 0x40 | 0x4 }) as Buffer
-// }
+export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
+
+export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
+        const array = new Float32Array(value)
+        const size = alignTo256(array.byteLength)
+        const buffer = device.createBuffer({ size, usage: 72 }) as Buffer // 72 === GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        return { array, buffer }
+}
+
 //
 // export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
 //         const array = new Float32Array(value)
