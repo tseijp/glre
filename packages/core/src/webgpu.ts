@@ -23,9 +23,17 @@ export const webgpu = async (gl: Partial<GL>) => {
                 needsUpdate: true,
         } as WebGPUState
 
-        let bindGroups = [] as any[]
-        let vertexBuffers: any[] = []
-        const bufferLayouts: any[] = []
+        const bindGroups = [] as any[]
+        const vertexBuffers = [] as any[]
+        const bufferLayouts = [] as any[]
+
+        const attributes = cached((_, value: number[]) => {
+                const { array, buffer } = createVertexBuffer(device, value)
+                vertexBuffers.push(buffer)
+                bufferLayouts.push(createBufferLayout(bufferLayouts.length, array.length, gl.count))
+                state.needsUpdate = true
+                return { array, buffer }
+        })
 
         const uniforms = cached((_, value: number[]) => {
                 const { array, buffer } = createUniformBuffer(device, value)
@@ -43,7 +51,7 @@ export const webgpu = async (gl: Partial<GL>) => {
 
         const update = () => {
                 const bindGroupLayouts = [] as any
-                bindGroups = []
+                bindGroups.length = 0
                 state.resources.forEach((resource) => {
                         if (!resource.length) return
                         const { layout, bindGroup } = createBindGroup(device, resource)
@@ -68,14 +76,6 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const clean = () => {}
-
-        const attributes = cached((_, value: number[]) => {
-                const { array, buffer } = createVertexBuffer(device, value)
-                vertexBuffers.push(buffer)
-                bufferLayouts.push(createBufferLayout(bufferLayouts.length, array.length, gl.count))
-                state.needsUpdate = true
-                return { array, buffer }
-        })
 
         const _attribute = (key = '', value: number[]) => {
                 const { array, buffer } = attributes(key, value)
