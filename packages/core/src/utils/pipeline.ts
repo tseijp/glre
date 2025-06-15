@@ -33,19 +33,19 @@ export const createDevive = async (c: GPUContext) => {
 export const createPipeline = (
         device: GPUDevice,
         format: string,
-        buffers: any[],
-        layouts: any[],
+        bufferLayouts: any[],
+        bindGroupLayouts: any[],
         vs: string | X = defaultVertexWGSL,
         fs: string | X = defaultFragmentWGSL
 ) => {
         if (is.obj(fs)) fs = wgsl(fs)
         if (is.obj(vs)) vs = wgsl(vs)
-        const layout = device.createPipelineLayout({ bindGroupLayouts: layouts })
+        const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {
                         module: device.createShaderModule({ code: vs.trim() }),
                         entryPoint: 'main',
-                        buffers,
+                        buffers: bufferLayouts,
                 },
                 fragment: {
                         module: device.createShaderModule({ code: fs.trim() }),
@@ -94,8 +94,7 @@ export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
 export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
         const array = new Float32Array(value)
         const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 === // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-        device.queue.writeBuffer(buffer, 0, array)
-        return buffer
+        return { array, buffer }
 }
 
 export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
@@ -111,13 +110,27 @@ export const createTextureSampler = (device: GPUDevice, width = 1280, height = 8
         return { texture, sampler }
 }
 
-export const getVertexStride = (dataLength: number, vertexCount: number) => {
+const getVertexStride = (dataLength: number, vertexCount: number) => {
         return dataLength / vertexCount
 }
 
-export const getVertexFormat = (stride: number) => {
+const getVertexFormat = (stride: number) => {
         if (stride === 2) return 'float32x2'
         if (stride === 3) return 'float32x3'
         if (stride === 4) return 'float32x4'
         return 'float32'
+}
+
+export const createBufferLayout = (shaderLocation: number, dataLength: number, count = 6) => {
+        const stride = getVertexStride(dataLength, count)
+        return {
+                arrayStride: stride * 4,
+                attributes: [
+                        {
+                                shaderLocation,
+                                offset: 0,
+                                format: getVertexFormat(stride),
+                        },
+                ],
+        }
 }

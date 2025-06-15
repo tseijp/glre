@@ -8,8 +8,7 @@ import {
         createBindGroup,
         createTextureSampler,
         createVertexBuffer,
-        getVertexStride,
-        getVertexFormat,
+        createBufferLayout,
 } from './utils/pipeline'
 import type { GL, WebGPUState } from './types'
 
@@ -24,7 +23,8 @@ export const webgpu = async (gl: Partial<GL>) => {
                 needsUpdate: true,
         } as WebGPUState
 
-        const vertexBuffers: any[] = []
+        let bindGroups = [] as any[]
+        let vertexBuffers: any[] = []
         const bufferLayouts: any[] = []
 
         const uniforms = cached((_, value: number[]) => {
@@ -42,15 +42,15 @@ export const webgpu = async (gl: Partial<GL>) => {
         })
 
         const update = () => {
-                const layouts = [] as any
-                state.groups = []
+                const bindGroupLayouts = [] as any
+                bindGroups = []
                 state.resources.forEach((resource) => {
                         if (!resource.length) return
                         const { layout, bindGroup } = createBindGroup(device, resource)
-                        layouts.push(layout)
-                        state.groups.push(bindGroup)
+                        bindGroupLayouts.push(layout)
+                        bindGroups.push(bindGroup)
                 })
-                state.pipeline = createPipeline(device, format, bufferLayouts, layouts, gl.vs, gl.fs)
+                state.pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, gl.vs, gl.fs)
         }
 
         const render = () => {
@@ -60,7 +60,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(state.pipeline)
-                state.groups.forEach((v, i) => pass.setBindGroup(i, v))
+                bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                 vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
                 pass.draw(gl.count, 1, 0, 0)
                 pass.end()
@@ -69,24 +69,17 @@ export const webgpu = async (gl: Partial<GL>) => {
 
         const clean = () => {}
 
-        const _attribute = (_key = '', value: number[]) => {
-                const buffer = createVertexBuffer(device, value)
-                const stride = getVertexStride(value.length, gl.count!)
-                const byteStride = stride * 4
-                const format = getVertexFormat(stride)
-                const shaderLocation = vertexBuffers.length
+        const attributes = cached((_, value: number[]) => {
+                const { array, buffer } = createVertexBuffer(device, value)
                 vertexBuffers.push(buffer)
-                bufferLayouts.push({
-                        arrayStride: byteStride,
-                        attributes: [
-                                {
-                                        shaderLocation,
-                                        offset: 0,
-                                        format,
-                                },
-                        ],
-                })
+                bufferLayouts.push(createBufferLayout(bufferLayouts.length, array.length, gl.count))
                 state.needsUpdate = true
+                return { array, buffer }
+        })
+
+        const _attribute = (key = '', value: number[]) => {
+                const { array, buffer } = attributes(key, value)
+                device.queue.writeBuffer(buffer, 0, array)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
