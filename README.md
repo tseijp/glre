@@ -139,8 +139,8 @@ import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
 const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
 
 const App = () => {
-        const { gl, ref } = useGL({ frag })
-        return <GLView style={{ flex: 1 }} onContextCreate={ref} />
+        const gl = useGL({ frag })
+        return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
 }
 
 registerRootComponent(App)

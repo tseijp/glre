@@ -10,84 +10,42 @@ date: 2023-01-01
 
 # Support React.js
 
-<Canvas />
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
-## Code Example
+<Tabs>
+<TabItem value="webgl" label="WebGL">
 
-```tsx
-import { useMemo } from 'react'
-import { useGL } from 'glre/react'
-
-export const frag = `
-#version 300 es
-precision mediump float;
-uniform vec2 iResolution;
-uniform float iTime;
-uniform float ellipseRadius;
-uniform float ellipseXCoord;
-uniform float ellipseYCoord;
-uniform float ellipseStroke;
-out vec4 fragColor;
-#define PI 3.141592
-#define M(X, Y, A) mat2(1. / X, 0, 0, 1. / Y) * mat2(cos(A), -sin(A), sin(A), cos(A))
-#define circle(p) length(p) - ellipseRadius
-#define ellipse(p, A) circle(M(ellipseXCoord, ellipseYCoord, A) * p)
-#define onion(p, A) d = min(d, abs(ellipse(p, A)) - ellipseStroke)
-void main() {
-        vec2 uv = fract(gl_FragCoord.xy / iResolution);
-        vec2 p = uv * 2.4 - 1.2;
-        p.x *= iResolution.x / iResolution.y;
-        float d = circle(p);
-        onion(p, PI / 2. + iTime);
-        onion(p, PI / 6. + iTime);
-        onion(p, -PI / 6. + iTime);
-        if (d < 0.)
-                fragColor = vec4(96. / 255., 219. / 255., 251. / 255., 0.8);
-}
-`
-
-export const Canvas = () => {
-        const gl = useGL({ frag })
-        return <canvas ref={gl.ref} />
-}
-```
-
-export const frag = `
-#version 300 es
-precision mediump float;
-uniform vec2 iResolution;
-uniform float iTime;
-uniform float ellipseRadius;
-uniform float ellipseXCoord;
-uniform float ellipseYCoord;
-uniform float ellipseStroke;
-out vec4 fragColor;
-#define PI 3.141592
-#define M(X, Y, A) mat2(1. / X, 0, 0, 1. / Y) * mat2(cos(A), -sin(A), sin(A), cos(A))
-#define circle(p) length(p) - ellipseRadius
-#define ellipse(p, A) circle(M(ellipseXCoord, ellipseYCoord, A) * p)
-#define onion(p, A) d = min(d, abs(ellipse(p, A)) - ellipseStroke)
-void main() {
-        vec2 uv = fract(gl_FragCoord.xy / iResolution);
-        vec2 p = uv * 2.4 - 1.2;
-        p.x *= iResolution.x / iResolution.y;
-        float d = circle(p);
-        onion(p, PI / 2. + iTime);
-        onion(p, PI / 6. + iTime);
-        onion(p, -PI / 6. + iTime);
-        if (d < 0.)
-                fragColor = vec4(96. / 255., 219. / 255., 251. / 255., 0.8);
-}
-`
-
-import { useGL } from 'glre/src/react'
-import { useControls, Leva } from 'leva'
-import { useMemo } from 'react'
-import { resize } from '../utils'
-
-export const Canvas = () => {
+```jsx live
+function Canvas() {
         const gl = useGL({
-                frag,
+                frag: `
+                #version 300 es
+                precision mediump float;
+                uniform vec2 iResolution;
+                uniform float iTime;
+                uniform float ellipseRadius;
+                uniform float ellipseXCoord;
+                uniform float ellipseYCoord;
+                uniform float ellipseStroke;
+                out vec4 fragColor;
+                #define PI 3.141592
+                #define M(X, Y, A) mat2(1. / X, 0, 0, 1. / Y) * mat2(cos(A), -sin(A), sin(A), cos(A))
+                #define circle(p) length(p) - ellipseRadius
+                #define ellipse(p, A) circle(M(ellipseXCoord, ellipseYCoord, A) * p)
+                #define onion(p, A) d = min(d, abs(ellipse(p, A)) - ellipseStroke)
+                void main() {
+                        vec2 uv = fract(gl_FragCoord.xy / iResolution);
+                        vec2 p = uv * 2.4 - 1.2;
+                        p.x *= iResolution.x / iResolution.y;
+                        float d = circle(p);
+                        onion(p, PI / 2. + iTime);
+                        onion(p, PI / 6. + iTime);
+                        onion(p, -PI / 6. + iTime);
+                        if (d < 0.)
+                                fragColor = vec4(96. / 255., 219. / 255., 251. / 255., 0.8);
+                }
+                `,
                 resize() {
                         resize(gl)
                 },
@@ -100,10 +58,55 @@ export const Canvas = () => {
                         ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
                 })
         )
-        return (
-                <div style={{ position: 'relative' }}>
-                        <canvas ref={gl.ref} />
-                        <Leva collapsed />
-                </div>
-        )
+        return <canvas ref={gl.ref} />
 }
+```
+
+</TabItem>
+{/* <TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                isWebGL: false,
+                frag: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @group(0) @binding(1) var<uniform> iMouse: vec2f;
+                @group(0) @binding(2) var<uniform> iTime: f32;
+                @group(0) @binding(3) var<uniform> ellipseRadius: f32;
+                @group(0) @binding(4) var<uniform> ellipseXCoord: f32;
+                @group(0) @binding(5) var<uniform> ellipseYCoord: f32;
+                @group(0) @binding(6) var<uniform> ellipseStroke: f32;
+                @fragment
+                fn main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
+                        let iResolution = vec2<f32>(800.0, 600.0);
+                        let iTime = 0.0;
+                        let ellipseRadius = 0.2;
+                        let ellipseXCoord = 2.2;
+                        let ellipseYCoord = 5.4;
+                        let ellipseStroke = 0.01;
+                        let uv = fract(coord.xy / iResolution);
+                        var p = uv * 2.4 - 1.2;
+                        p.x *= iResolution.x / iResolution.y;
+                        let d = length(p) - ellipseRadius;
+                        return vec4<f32>(96.0 / 255.0, 219.0 / 255.0, 251.0 / 255.0, 0.8);
+                }
+                `,
+                // resize() {
+                //         resize(gl)
+                // },
+        })
+        gl.uniform(
+                useControls({
+                        ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
+                        ellipseXCoord: { min: 0, value: 2.2, max: 4.4 },
+                        ellipseYCoord: { min: 0, value: 5.4, max: 10.8 },
+                        ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
+                })
+        )
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem> */}
+</Tabs>
