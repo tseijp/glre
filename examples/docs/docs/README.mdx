@@ -181,7 +181,7 @@ function Canvas() {
                 }
                 `,
         })
-        gl.attribute('a_position', [-1, -1, 1, -1, -1, 1])
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
 }
 ```
@@ -211,7 +211,7 @@ function Canvas() {
                 `,
                 isWebGL: false,
         })
-        gl.attribute('a_position', [-1, -1, 1, -1, -1, 1])
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
 }
 ```
