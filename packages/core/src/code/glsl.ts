@@ -1,4 +1,4 @@
-import { is } from './../utils'
+import { is } from './../utils/helpers'
 import type { Node, NodeType, X, ConversionContext } from '../node'
 
 // GLSLコード生成コンテキスト
@@ -9,10 +9,7 @@ interface GLSLContext extends ConversionContext {
 }
 
 // ノードからGLSLコードを生成
-export const nodeToGLSL = (
-        nodeProxy: X,
-        context?: Partial<GLSLContext>
-): string => {
+export const nodeToGLSL = (nodeProxy: X, context?: Partial<GLSLContext>): string => {
         const ctx: GLSLContext = {
                 target: 'webgl',
                 precision: 'mediump',
@@ -37,8 +34,7 @@ const generateGLSLExpression = (node: Node, context: GLSLContext): string => {
                 return `${parentExpr}.${node.property}`
         }
         // 演算子ノード
-        if (node.operator && node.children && node.children.length >= 2)
-                return generateGLSLOperator(node, context)
+        if (node.operator && node.children && node.children.length >= 2) return generateGLSLOperator(node, context)
         // 数学関数ノード
         if (node.mathFunction && node.children && node.children.length >= 1)
                 return generateGLSLMathFunction(node, context)
@@ -99,41 +95,9 @@ const generateGLSLMathFunction = (node: Node, context: GLSLContext): string => {
         const [x, y, z] = args
         // @TODO FIX
         // if (fun === 'toVar') return x // toVarは変数化のヒントなので、そのまま返す
-        // 単項関数
-        if (args.length === 1) {
-                if (fun === 'abs') return `abs(${x})`
-                if (fun === 'acos') return `acos(${x})`
-                if (fun === 'asin') return `asin(${x})`
-                if (fun === 'atan') return `atan(${x})`
-                if (fun === 'ceil') return `ceil(${x})`
-                if (fun === 'cos') return `cos(${x})`
-                if (fun === 'floor') return `floor(${x})`
-                if (fun === 'fract') return `fract(${x})`
-                if (fun === 'length') return `length(${x})`
-                if (fun === 'normalize') return `normalize(${x})`
-                if (fun === 'sin') return `sin(${x})`
-                if (fun === 'sqrt') return `sqrt(${x})`
-                if (fun === 'tan') return `tan(${x})`
-        }
-        // 二項関数
-        if (args.length === 2) {
-                if (fun === 'atan2') return `atan(${x}, ${y})`
-                if (fun === 'pow') return `pow(${x}, ${y})`
-                if (fun === 'min') return `min(${x}, ${y})`
-                if (fun === 'max') return `max(${x}, ${y})`
-                if (fun === 'dot') return `dot(${x}, ${y})`
-                if (fun === 'cross') return `cross(${x}, ${y})`
-                if (fun === 'distance') return `distance(${x}, ${y})`
-                if (fun === 'reflect') return `reflect(${x}, ${y})`
-        }
-        // 三項関数
-        if (args.length === 3) {
-                if (fun === 'mix') return `mix(${x}, ${y}, ${z})`
-                if (fun === 'clamp') return `clamp(${x}, ${y}, ${z})`
-                if (fun === 'smoothstep') return `smoothstep(${x}, ${y}, ${z})`
-                if (fun === 'refract') return `refract(${x}, ${y}, ${z})`
-        }
-
+        if (args.length === 1) return `${fun}(${x})`
+        if (args.length === 2) return `${fun}(${x}, ${y})`
+        if (args.length === 3) return `${fun}(${x}, ${y}, ${z})`
         return x || '0.0'
 }
 
@@ -177,9 +141,7 @@ export const glsl = (
         // 出力変数
         if (is300ES) shader += 'out vec4 fragColor;\n\n'
         shader += 'void main() {\n'
-        shader += is300ES
-                ? `    fragColor = ${fragment};\n`
-                : `    gl_FragColor = ${fragment};\n`
+        shader += is300ES ? `    fragColor = ${fragment};\n` : `    gl_FragColor = ${fragment};\n`
         shader += '}\n'
 
         return shader

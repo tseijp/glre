@@ -177,8 +177,7 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 
 ```html
 <script type="module">
-        import createGL from 'https://esm.sh/glre'
-        import { vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
+        import { createGL, vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
         const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
         function App() {
                 const el = document.createElement('canvas')
@@ -208,7 +207,7 @@ The node system provides various types and functions that mirror GLSL functional
 import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre'
 
 // Built-in variables
-import { fragCoord, position, iResolution, iTime } from 'glre'
+import { fragCoord, gl_Position, iResolution, iTime } from 'glre'
 
 // Math functions
 import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre'

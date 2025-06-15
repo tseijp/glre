@@ -1,15 +1,19 @@
-import { Nested, EventState } from 'reev'
-import { X } from './node'
+import { EventState } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
+import type { X } from './node'
 export type { Fun, Queue, Frame }
+export type GPUContext = any // GPUCanvasContext https://developer.mozilla.org/en-US/docs/Web/API/GPUCanvasContext
+export type GPUDevice = any //
+export type GPUBuffer = any //
+export type GPUPipeline = any //
+export type GPUBindGroup = any
 export type Uniform = number | number[]
 export type Attribute = number[]
 export type Attributes = Record<string, Attribute>
 export type Uniforms = Record<string, Uniform>
 export type PrecisionMode = 'highp' | 'mediump' | 'lowp'
-
 export type GLClearMode = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFER_BIT'
-
+export type GLDrawType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT'
 export type GLDrawMode =
         | 'POINTS'
         | 'LINE_STRIP'
@@ -19,7 +23,20 @@ export type GLDrawMode =
         | 'TRIANGLE_FAN'
         | 'TRIANGLES'
 
-export type GLDrawType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT'
+export interface WebGLState {
+        context: WebGLRenderingContext
+        program: WebGLProgram
+}
+
+export interface WebGPUState {
+        device: GPUDevice
+        context: GPUContext
+        pipeline: GPUPipeline
+        groups: any[]
+        resources: any[]
+        loadingImg: number
+        needsUpdate: boolean
+}
 
 export type GL = EventState<{
         /**
@@ -34,6 +51,7 @@ export type GL = EventState<{
         size: [number, number]
         mouse: [number, number]
         count: number
+        el: HTMLCanvasElement
         vs: string | X
         fs: string | X
         vert: string | X
@@ -42,26 +60,12 @@ export type GL = EventState<{
         fragment: string | X
 
         /**
-         * for webgl
-         */
-        int: PrecisionMode
-        float: PrecisionMode
-        sampler2D: PrecisionMode
-        samplerCube: PrecisionMode
-        lastActiveUnit: number
-
-        /**
          * core state
          */
-        gl: any
-        pg: any
-        el: any
+        webgpu: WebGPUState
+        webgl: WebGLState
         queue: Queue
         frame: Frame
-        stride: Nested<number>
-        location: Nested<any> // @TODO Nested<(key: string, value: number: number[], ibo: number[]) => number>
-        activeUnit: Nested<number>
-        default: any
 
         /**
          * events

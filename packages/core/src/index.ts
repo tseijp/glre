@@ -1,27 +1,36 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
-import { webgl } from './webgl/index'
-import { webgpu } from './webgpu/index'
-import { is, isWebGPUSupported } from './utils'
+import { webgl } from './webgl'
+import { webgpu } from './webgpu'
+import { is } from './utils/helpers'
 import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './code/glsl'
 export * from './code/wgsl'
 export * from './node'
 export * from './types'
-export * from './utils'
+export * from './utils/helpers'
+export * from './utils/pipeline'
+export * from './utils/program'
 export * from './webgl'
 export * from './webgpu'
-
-let iTime = performance.now(),
-        iPrevTime = 0,
-        iDeltaTime = 0
 
 export const isGL = (a: unknown): a is EventState<GL> => {
         if (!is.obj(a)) return false
         if ('isGL' in a) return true
         return false
 }
+
+export const isServer = () => {
+        return typeof window === 'undefined'
+}
+
+export const isWebGPUSupported = () => {
+        if (isServer()) return false
+        return 'gpu' in navigator
+}
+
+let iTime = performance.now()
 
 export const createGL = (props?: Partial<GL>) => {
         const gl = event<Partial<GL>>({
@@ -32,18 +41,29 @@ export const createGL = (props?: Partial<GL>) => {
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,
-                counter: 0,
+                webgl: {},
+                webgpu: {},
         }) as EventState<GL>
 
-        gl('mount', () => {
+        gl.queue = createQueue()
+        gl.frame = createFrame()
+
+        gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
+        gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
+        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
+        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
+
+        gl('mount', async () => {
+                gl.vs = gl.vs || gl.vert || gl.vertex
+                gl.fs = gl.fs || gl.frag || gl.fragment
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
-                        webgl(gl)
-                } else webgpu(gl)
-                gl.init()
+                        gl((await webgl(gl)) as GL)
+                } else gl((await webgpu(gl)) as GL)
                 gl.resize()
                 gl.frame(() => {
                         gl.loop()
+                        gl.queue.flush()
                         gl.render()
                         return gl.isLoop
                 })
@@ -58,14 +78,6 @@ export const createGL = (props?: Partial<GL>) => {
                 if (gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
                 gl.el.removeEventListener('mousemove', gl.mousemove)
-        })
-
-        gl('loop', () => {
-                iPrevTime = iTime
-                iTime = performance.now() / 1000
-                iDeltaTime = iTime - iPrevTime
-                gl.uniform({ iPrevTime, iTime, iDeltaTime })
-                // if (gl.fragmentNode) updateUniforms({ time: iTime }) // @TODO FIX
         })
 
         gl('resize', () => {
@@ -84,19 +96,9 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.uniform('iMouse', gl.mouse)
         })
 
-        gl.queue = createQueue()
-        gl.frame = createFrame()
-
-        gl.attribute = durable((key, value, iboValue) => {
-                gl.queue(() => void gl._attribute?.(key, value, iboValue))
-        })
-
-        gl.uniform = durable((key, value, isMatrix) => {
-                gl.queue(() => void gl._uniform?.(key, value, isMatrix))
-        })
-
-        gl.texture = durable((key, value) => {
-                gl.queue(() => void gl._texture?.(key, value))
+        gl('loop', () => {
+                iTime = performance.now() / 1000
+                gl.uniform('iTime', iTime)
         })
 
         return gl(props)

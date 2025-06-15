@@ -1,6 +1,6 @@
 {
         "name": "glre",
-        "version": "0.21.0",
+        "version": "0.26.0",
         "author": "tseijp",
         "license": "MIT",
         "private": false,
@@ -113,6 +113,7 @@
                 "expo-gl": "*",
                 "react": ">=16.8",
                 "react-dom": ">=16.8",
+                "react-native": "*",
                 "solid-js": "*"
         },
         "peerDependenciesMeta": {
@@ -126,6 +127,9 @@
                         "optional": true
                 },
                 "react-dom": {
+                        "optional": true
+                },
+                "react-native": {
                         "optional": true
                 },
                 "solid-js": {

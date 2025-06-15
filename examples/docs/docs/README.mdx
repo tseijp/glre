@@ -1,0 +1,275 @@
+---
+marp: true
+hide_table_of_contents: true
+title: 'Introduction'
+description: 'Introduction'
+image: https://github.com/tseijp.png
+keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
+date: 2023-01-01
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# Introduction
+
+## What does it look like?
+
+<table>
+        <tbody>
+                <tr>
+                        <td width="7500px" align="center" valign="center">
+                                glre simplifies WebGl2 / WebGPU programming via TypeScript, React, Solid and more
+                        </td>
+                        <td width="2500px" valign="top">
+                                <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
+                                        <img alt="4" src="https://i.imgur.com/Lb3h9fs.jpg"></img>
+                                </a>
+                        </td>
+                </tr>
+        </tbody>
+</table>
+
+<Tabs>
+<TabItem value="react" label="React">
+
+```jsx
+import { createRoot } from 'react-dom/client'
+import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/react'
+const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+
+const App = () => {
+        const gl = useGL({ frag })
+        return <canvas ref={gl.ref} />
+}
+
+createRoot(document.getElementById('root')).render(<App />)
+```
+
+</TabItem>
+<TabItem value="react-native" label="React Native">
+
+```jsx
+import { GLView } from 'expo-gl'
+import { registerRootComponent } from 'expo'
+import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
+const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+
+const App = () => {
+        const gl = useGL({ frag })
+        return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
+}
+
+registerRootComponent(App)
+```
+
+</TabItem>
+<TabItem value="solid-js" label="Solid.js">
+
+```jsx
+import { render } from 'solid-js/web'
+import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
+const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+
+const App = () => {
+        const gl = onGL({ frag })
+        return <canvas ref={gl.ref} />
+}
+
+render(() => <App />, document.getElementById('root'))
+```
+
+</TabItem>
+<TabItem value="esm" label="ESM">
+
+```html
+<script type="module">
+        import createGL from 'https://esm.sh/glre'
+        import { vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
+        const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+        function App() {
+                const el = document.createElement('canvas')
+                createGL({ el, frag }).mount()
+                document.body.append(el)
+        }
+        document.addEventListener('DOMContentLoaded', App)
+</script>
+```
+
+</TabItem>
+</Tabs>
+
+## Uniforms
+
+<Tabs>
+<TabItem value="webgl" label="WebGL">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                frag: `
+                #version 300 es
+                precision mediump float;
+                uniform vec2 iResolution;
+                uniform vec2 iMouse;
+                uniform float iTime;
+                out vec4 fragColor;
+                void main() {
+                        vec2 uv = gl_FragCoord.xy / iResolution.xy;
+                        fragColor = vec4(iMouse + uv, sin(iTime), 1.0);
+                }
+                `,
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                frag: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @group(0) @binding(1) var<uniform> iMouse: vec2f;
+                @group(0) @binding(2) var<uniform> iTime: f32;
+                @fragment
+                fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+                        let uv = position.xy / iResolution;
+                        return vec4f(iMouse + uv, sin(iTime), 1.0);
+                }
+                `,
+                isWebGL: false,
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Attributes
+
+<Tabs>
+<TabItem value="webgl" label="WebGL">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                count: 3,
+                vs: `
+                #version 300 es
+                in vec4 a_position;
+                void main() {
+                        gl_Position = a_position;
+                }
+                `,
+                fs: `
+                #version 300 es
+                precision mediump float;
+                uniform vec2 iResolution;
+                out vec4 fragColor;
+                void main() {
+                        fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+                }
+                `,
+        })
+        gl.attribute('a_position', [-1, -1, 1, -1, -1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                count: 3,
+                vs: `
+                @vertex
+                fn main(@location(0) position: vec2f) -> @builtin(position) vec4f {
+                        return vec4f(position, 0.0, 1.0);
+                }
+                `,
+                fs: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @fragment
+                fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+                        let uv = position.xy / iResolution;
+                        return vec4f(uv, 0.0, 1.0);
+                }
+                `,
+                isWebGL: false,
+        })
+        gl.attribute('a_position', [-1, -1, 1, -1, -1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Textures
+
+<Tabs>
+<TabItem value="webgl" label="WebGL">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                fs: `
+                #version 300 es
+                precision mediump float;
+                uniform vec2 iResolution;
+                uniform sampler2D iTexture;
+                out vec4 fragColor;
+                void main() {
+                        vec2 uv = gl_FragCoord.xy / iResolution.xy;
+                        fragColor = texture(iTexture, uv);
+                }
+                `,
+        })
+        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                fs: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @group(1) @binding(0) var iSampler: sampler;
+                @group(1) @binding(1) var iTexture: texture_2d<f32>;
+                @fragment
+                fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+                        let uv = position.xy / iResolution;
+                        return textureSample(iTexture, iSampler, uv);
+                }
+                `,
+                isWebGL: false,
+        })
+        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>

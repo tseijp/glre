@@ -7,7 +7,6 @@ export const onGL = (props?: Partial<GL>) => {
         gl.ref = (el: HTMLCanvasElement | null) => {
                 if (el) {
                         gl.el = el
-                        gl.gl = el.getContext('webgl2')
                         gl.mount()
                 } else gl.clean()
         }

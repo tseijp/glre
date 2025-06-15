@@ -1,7 +1,7 @@
+import { float } from './conv'
 import { node } from './node'
 import { uniform } from './uniform'
-import { float } from './conv'
-import { is } from '../utils'
+import { is } from '../utils/helpers'
 import type { X, FunctionNode, ConditionalNode } from './types'
 export type { X, FunctionNode, ConditionalNode }
 export * from './cache'
@@ -30,10 +30,7 @@ export const If = (condition: X, callback: () => void): ConditionalNode => {
         callback()
 
         const conditionalNode = {
-                ElseIf(
-                        newCondition: X,
-                        newCallback: () => void
-                ): ConditionalNode {
+                ElseIf(newCondition: X, newCallback: () => void): ConditionalNode {
                         newCallback()
                         return conditionalNode
                 },
@@ -46,8 +43,8 @@ export const If = (condition: X, callback: () => void): ConditionalNode => {
 }
 
 // 組み込み変数
-export const gl_FragCoord = node('vec4', undefined)
-export const gl_Position = node('vec4', undefined)
+export const fragCoord = node('vec4', undefined)
+export const position = node('vec4', undefined)
 export const iTime = uniform(0.0)
 export const iResolution = uniform([1920, 1080])
 export const iMouse = uniform([0, 0])

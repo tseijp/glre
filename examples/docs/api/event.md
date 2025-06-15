@@ -5,15 +5,15 @@ title: 'Event API'
 description: 'Event API'
 image: https://github.com/tseijp.png
 keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
-date: 2023-01-01
+date: 2025-06-12
 ---
 
 # Event API
 
 ```ts
-import { gl } from 'glre'
+import { createGL } from 'glre'
 
-gl({
+createGL({
         // init
         init() {},
 
@@ -35,16 +35,4 @@ gl({
         // resize event
         resize() {},
 })
-```
-
-## create event
-
-```ts
-import { createGL, createTF } from 'glre'
-
-// create initialized gl event
-const gl = createGL()
-
-// create tranfrom buffer event
-const tf = createTF()
 ```

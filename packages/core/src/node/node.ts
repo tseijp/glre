@@ -1,5 +1,6 @@
-import { OPERATORS, FUNCTIONS, SWIZZLES, NodeType } from './const'
-import { is } from '../utils'
+import { OPERATORS, FUNCTIONS, SWIZZLES } from './const'
+import { is } from '../utils/helpers'
+import type { NodeType } from './const'
 import type { Node, ProxyCallback, X } from './types'
 
 let nodeIdCounter = 0
@@ -8,11 +9,7 @@ let nodeIdCounter = 0
 const generateNodeId = () => `node_${++nodeIdCounter}`
 
 // ノードを作成
-export const createNode = (
-        type: NodeType,
-        value?: any,
-        options?: Partial<Node>
-): Node => {
+export const createNode = (type: NodeType, value?: any, options?: Partial<Node>): Node => {
         return {
                 id: generateNodeId(),
                 type,
@@ -62,21 +59,10 @@ const createNodeProxy = (node: Node, callback?: (info: ProxyCallback) => X) => {
                 if (isMathMethod(key))
                         return (...args: any[]) => {
                                 return createNodeProxy(
-                                        createNode(
-                                                getMathReturnType(
-                                                        key,
-                                                        node.type
-                                                ),
-                                                undefined,
-                                                {
-                                                        mathFunction:
-                                                                key as any,
-                                                        children: [
-                                                                node,
-                                                                ...args,
-                                                        ],
-                                                }
-                                        ),
+                                        createNode(getMathReturnType(key, node.type), undefined, {
+                                                mathFunction: key as any,
+                                                children: [node, ...args],
+                                        }),
                                         callback
                                 )
                         }

@@ -10,7 +10,7 @@ const config = {
         onBrokenMarkdownLinks: 'warn',
         favicon: 'img/favicon.ico',
         organizationName: 'tseijp',
-        projectName: 'tseijp',
+        projectName: 'glre',
         i18n: {
                 defaultLocale: 'en',
                 locales: ['en', 'ja'],
@@ -20,7 +20,7 @@ const config = {
                 },
         },
         markdown: { mermaid: true },
-        // themes: ['@docusaurus/theme-mermaid'], // @TODO
+        themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-live-codeblock'], // @TODO
         presets: [
                 [
                         'classic',
@@ -141,6 +141,12 @@ const config = {
                 //         theme: lightCodeTheme,
                 //         darkTheme: darkCodeTheme,
                 // },
+                // https://docusaurus.io/docs/api/themes/@docusaurus/theme-live-codeblock
+                themeConfig: {
+                        liveCodeBlock: {
+                                playgroundPosition: 'right', // "top" | "bottom"
+                        },
+                },
         },
 }
 

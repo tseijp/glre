@@ -1,6 +1,6 @@
 import { node } from '.'
 import { getCachedBool, getCachedInt, getCachedFloat } from './cache'
-import { is } from '../utils'
+import { is } from '../utils/helpers'
 import type { X } from './types'
 
 // JavaScript値をノードに変換
@@ -63,8 +63,7 @@ export const vec2 = (x?: any, y?: any): X => {
         if (is.und(x)) return node('vec2', [0, 0])
         if (is.und(y)) {
                 if (is.arr(x)) return node('vec2', x.slice(0, 2))
-                if (is.obj(x) && 'x' in x && 'y' in x)
-                        return node('vec2', [x.x, x.y])
+                if (is.obj(x) && 'x' in x && 'y' in x) return node('vec2', [x.x, x.y])
                 return node('vec2', [Number(x), Number(x)])
         }
         return node('vec2', [Number(x), Number(y)])
@@ -74,8 +73,7 @@ export const vec3 = (x?: any, y?: any, z?: any): X => {
         if (is.und(x)) return node('vec3', [0, 0, 0])
         if (is.und(y)) {
                 if (is.arr(x)) return node('vec3', x.slice(0, 3))
-                if (is.obj(x) && 'x' in x && 'y' in x && 'z' in x)
-                        return node('vec3', [x.x, x.y, x.z])
+                if (is.obj(x) && 'x' in x && 'y' in x && 'z' in x) return node('vec3', [x.x, x.y, x.z])
                 return node('vec3', [Number(x), Number(x), Number(x)])
         }
         if (z === undefined) {
@@ -88,8 +86,7 @@ export const vec4 = (x?: any, y?: any, z?: any, w?: any): X => {
         if (is.und(x)) return node('vec4', [0, 0, 0, 1])
         if (is.und(y)) {
                 if (is.arr(x)) return node('vec4', x.slice(0, 4))
-                if (is.obj(x) && 'x' in x && 'y' in x && 'z' in x && 'w' in x)
-                        return node('vec4', [x.x, x.y, x.z, x.w])
+                if (is.obj(x) && 'x' in x && 'y' in x && 'z' in x && 'w' in x) return node('vec4', [x.x, x.y, x.z, x.w])
                 return node('vec4', [Number(x), Number(x), Number(x), 1])
         }
         return node('vec4', [Number(x), Number(y), Number(z), Number(w)])
@@ -102,20 +99,12 @@ export const color = (r?: any, g?: any, b?: any): X => {
         if (is.str(r) && r.startsWith('#')) {
                 const hex = r.slice(1)
                 const num = parseInt(hex, 16)
-                return node('color', [
-                        ((num >> 16) & 255) / 255,
-                        ((num >> 8) & 255) / 255,
-                        (num & 255) / 255,
-                ])
+                return node('color', [((num >> 16) & 255) / 255, ((num >> 8) & 255) / 255, (num & 255) / 255])
         }
 
         // 数値カラーの処理
         if (is.num(r) && g === undefined && b === undefined) {
-                return node('color', [
-                        ((r >> 16) & 255) / 255,
-                        ((r >> 8) & 255) / 255,
-                        (r & 255) / 255,
-                ])
+                return node('color', [((r >> 16) & 255) / 255, ((r >> 8) & 255) / 255, (r & 255) / 255])
         }
 
         return vec3(r, g, b)

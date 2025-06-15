@@ -17,7 +17,7 @@ npm i glre
 or
 
 ```ruby
-yaan add glre
+yarn add glre
 ```
 
 ## Install from CDN or static hosting
@@ -25,18 +25,19 @@ yaan add glre
 ```html
 <canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import self from 'https://cdn.skypack.dev/glre@latest'
-        const fragment = `
+        import { createGL } from 'https://esm.sh/glre'
+        const frag = `
+          #version 300 es
           precision highp float;
           uniform vec2 iResolution;
+          out vec4 fragColor;
           void main() {
-            gl_FragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
+            fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
           }
         `
         function App() {
                 const el = document.getElementById('id')
-                const gl = el.getContext('webgl2')
-                self({ el, gl, fragment }).mount()
+                createGL({ el, frag }).mount()
         }
         document.addEventListener('DOMContentLoaded', App)
 </script>

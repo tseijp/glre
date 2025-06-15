@@ -16,21 +16,22 @@ date: 2023-01-01
 import { createGL } from 'glre'
 import { useGL } from 'glre/react'
 
-useGL({ count: 6 }) // or
+useGL({ frag: `...` }) // or
 
-createGL({ count: 6 })
+createGL({ frag: `...` })
 ```
 
 # Configuration
 
-| `GLConfig`                | default      | description                   |
-| :------------------------ | :----------- | :---------------------------- |
-| `el: Element`             |              | canvas element                |
-| `frag: string`            | [here][frag] | fragment shader               |
-| `vert: string`            | [here][vert] | vertex shader                 |
-| `size: [number, number]`  | `[1, 1]`     | init window resolution values |
-| `mouse: [number, number]` | `[0, 0]`     | init mouse position values    |
-| `count: number`           | `6`          | vertex count number           |
+| `GLConfig`                  | default      | description                   |
+| :-------------------------- | :----------- | :---------------------------- |
+| `el: Element`               |              | canvas element                |
+| `gl: WebGLRenderingContext` |              | canvas webgl2 context         |
+| `frag: string`              | [here][frag] | fragment shader               |
+| `vert: string`              | [here][vert] | vertex shader                 |
+| `count: number`             | `6`          | vertex count number           |
+| `width: number`             |              | init window resolution values |
+| `height: number`            |              | init window resolution values |
 
 [frag]: https://github.com/tseijp/glre/blob/main/packages/core/index.ts
 [vert]: https://github.com/tseijp/glre/blob/main/packages/core/index.ts
@@ -41,12 +42,6 @@ createGL({ count: 6 })
 // initialize gl
 const gl = useGL(config: GLConfig): GL
 
-// Schedule an update
-gl.queue(() => {})
-
-// Start an update loop
-gl.queue(() => true)
-
 // set uniform
 gl.uniform(uniform: Record<string, number | number[]>): GL
 
@@ -55,4 +50,10 @@ gl.texture(texture: Record<string, string>): GL
 
 // set attribute
 gl.attribute(attribute: Record<string, number[]>): GL
+
+// Schedule an update
+gl.queue(() => {})
+
+// Start an update loop
+gl.queue(() => true)
 ```
