@@ -10,10 +10,9 @@ export const webgl = async (gl: Partial<GL>) => {
         c.useProgram(pg)
 
         let _activeUnit = 0
-        const activeUnits = cached(() => _activeUnit++)
-
-        const uniformLocations = cached((key) => c.getUniformLocation(pg, key))
-        const attribLocations = cached((key) => c.getAttribLocation(pg, key))
+        const uniforms = cached((key) => c.getUniformLocation(pg, key))
+        const attribs = cached((key) => c.getAttribLocation(pg, key))
+        const units = cached(() => _activeUnit++)
 
         const clean = () => c.deleteProgram(pg)
 
@@ -24,7 +23,7 @@ export const webgl = async (gl: Partial<GL>) => {
         }
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
-                const loc = attribLocations(key, true)
+                const loc = attribs(key, true)
                 const vbo = createVbo(c, value)
                 const ibo = createIbo(c, iboValue)
                 const str = getStride(gl.count!, value, iboValue)
@@ -32,7 +31,7 @@ export const webgl = async (gl: Partial<GL>) => {
         }
 
         const _uniform = (key: string, value: number | number[]) => {
-                const loc = uniformLocations(key)
+                const loc = uniforms(key)
                 if (is.num(value)) return c.uniform1f(loc, value)
                 let l = value.length
                 if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)
@@ -40,12 +39,12 @@ export const webgl = async (gl: Partial<GL>) => {
                 c[`uniformMatrix${l as 2}fv`](loc, false, value)
         }
 
-        const _texture = (alt: string, src: string) => {
+        const _texture = (key: string, src: string) => {
                 const image = new Image()
-                Object.assign(image, { src, alt, crossOrigin: 'anonymous' })
+                Object.assign(image, { src, crossOrigin: 'anonymous' })
                 image.decode().then(() => {
-                        const loc = uniformLocations(image.alt)
-                        const unit = activeUnits(image.alt)
+                        const loc = uniforms(key)
+                        const unit = units(key)
                         createTexture(c, image, loc, unit)
                 })
         }

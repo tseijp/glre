@@ -73,7 +73,7 @@ export const createBindGroup = (device: GPUDevice, resources: any[]) => {
         })
         const layout = device.createBindGroupLayout({ entries: entries0 })
         const bindGroup = device.createBindGroup({ layout, entries: entries1 })
-        return [layout, bindGroup]
+        return { layout, bindGroup }
 }
 
 export const createDescriptor = (c: GPUContext) => {
@@ -101,7 +101,7 @@ export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
 export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
         const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 })
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
-        return [texture, sampler] as const
+        return { texture, sampler }
 }
 
 // export const createVertexBuffer = (device: GPUDevice, value: number[]) => {

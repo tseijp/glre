@@ -29,12 +29,10 @@ export interface WebGLState {
 }
 
 export interface WebGPUState {
-        uniforms: any
-        textures: any
         device: GPUDevice
         context: GPUContext
-        groups: any[]
         pipeline: GPUPipeline
+        groups: any[]
         resources: any[]
         loadingImg: number
         needsUpdate: boolean

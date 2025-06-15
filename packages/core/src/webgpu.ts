@@ -1,3 +1,4 @@
+import { nested as cached } from 'reev'
 import { is } from './utils/helpers'
 import {
         createDevive,
@@ -15,36 +16,33 @@ export const webgpu = async (gl: Partial<GL>) => {
         const state = {
                 device,
                 context: c,
-                uniforms: {},
-                textures: {},
                 resources: [[], []],
                 loadingImg: 0,
                 needsUpdate: true,
         } as WebGPUState
 
-        const initUniform = (value: number[]) => {
+        const uniforms = cached((_, value: number[]) => {
                 const { array, buffer } = createUniformBuffer(device, value)
                 state.resources[0].push({ buffer })
                 state.needsUpdate = true
                 return { array, buffer }
-        }
+        })
 
-        const initTexutre = (source: HTMLImageElement) => {
-                const { width, height } = source
-                const [texture, sampler] = createTextureSampler(device, width, height)
+        const textures = cached((_, { width, height }: HTMLImageElement) => {
+                const { texture, sampler } = createTextureSampler(device, width, height)
                 state.resources[1].push(sampler, texture.createView())
                 state.needsUpdate = true
                 return { texture, width, height }
-        }
+        })
 
         const update = () => {
                 const layouts = [] as any
                 state.groups = []
                 state.resources.forEach((resource) => {
                         if (!resource.length) return
-                        const [layout, group] = createBindGroup(device, resource)
+                        const { layout, bindGroup } = createBindGroup(device, resource)
                         layouts.push(layout)
-                        state.groups.push(group)
+                        state.groups.push(bindGroup)
                 })
                 state.pipeline = createPipeline(device, format, [], layouts, gl.vs, gl.fs)
         }
@@ -71,8 +69,7 @@ export const webgpu = async (gl: Partial<GL>) => {
 
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
-                if (!state.uniforms[key]) state.uniforms[key] = initUniform(value)
-                const { array, buffer } = state.uniforms[key]
+                const { array, buffer } = uniforms(key, value)
                 array.set(value)
                 device.queue.writeBuffer(buffer, 0, array)
         }
@@ -81,8 +78,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                 state.loadingImg++
                 const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
                 source.decode().then(() => {
-                        if (!state.textures[key]) state.textures[key] = initTexutre(source)
-                        const { texture, width, height } = state.textures[key]
+                        const { texture, width, height } = textures(key, source)
                         device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
                         state.loadingImg--
                 })
