@@ -20,6 +20,7 @@ export const isGL = (a: unknown): a is EventState<GL> => {
         if ('isGL' in a) return true
         return false
 }
+
 export const isServer = () => {
         return typeof window === 'undefined'
 }

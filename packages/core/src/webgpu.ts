@@ -12,12 +12,15 @@ import type { GL, WebGPUState } from './types'
 export const webgpu = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgpu') as any
         const { device, format } = await createDevive(c)
-        const state = { context: c, device } as WebGPUState
-        state.uniforms = {}
-        state.textures = {}
-        state.resources = [[], []] as any[] // group(0) and group(1)
-        state.needsUpdate = true
-        state.stopRender = false
+        const state = {
+                device,
+                context: c,
+                uniforms: {},
+                textures: {},
+                resources: [[], []],
+                loadingImg: 0,
+                needsUpdate: true,
+        } as WebGPUState
 
         const initUniform = (value: number[]) => {
                 const { array, buffer } = createUniformBuffer(device, value)
@@ -47,7 +50,7 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const render = () => {
-                if (state.stopRender) return // ignore if loading img
+                if (state.loadingImg) return // ignore if loading img
                 if (state.needsUpdate) update() // first rendering
                 state.needsUpdate = false
                 const encoder = device.createCommandEncoder()
@@ -75,13 +78,13 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const _texture = (key: string, src: string) => {
-                state.stopRender = true
+                state.loadingImg++
                 const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
                 source.decode().then(() => {
                         if (!state.textures[key]) state.textures[key] = initTexutre(source)
                         const { texture, width, height } = state.textures[key]
                         device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
-                        state.stopRender = false
+                        state.loadingImg--
                 })
         }
 

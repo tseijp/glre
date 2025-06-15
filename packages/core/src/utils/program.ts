@@ -65,20 +65,26 @@ export const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         return buffer
 }
 
+export const getStride = (count: number, value: number[], iboValue?: number[]) => {
+        if (iboValue) count = Math.max(...iboValue) + 1
+        const stride = value.length / count
+        return Math.floor(stride)
+}
+
 export const createAttrib = (
         c: WebGLRenderingContext,
         stride: number,
-        location: any,
+        loc: any,
         vbo: WebGLBuffer,
         ibo?: WebGLBuffer
 ) => {
         c.bindBuffer(c.ARRAY_BUFFER, vbo)
-        c.enableVertexAttribArray(location)
-        c.vertexAttribPointer(location, stride, c.FLOAT, false, 0, 0)
+        c.enableVertexAttribArray(loc)
+        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
         if (ibo) c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, ibo)
 }
 
-export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement) => {
+export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, loc: any, unit: number) => {
         const texture = c.createTexture()
         c.bindTexture(c.TEXTURE_2D, texture)
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img)
@@ -88,17 +94,7 @@ export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement) =
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
         c.bindTexture(c.TEXTURE_2D, null)
-        return texture
-}
-
-export const activeTexture = (
-        c: WebGLRenderingContext,
-        location: WebGLUniformLocation | null,
-        unit: number,
-        texture: WebGLTexture
-) => {
-        if (!location) return
-        c.uniform1i(location, unit)
+        c.uniform1i(loc, unit)
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, texture)
 }

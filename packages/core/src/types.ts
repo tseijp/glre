@@ -36,7 +36,7 @@ export interface WebGPUState {
         groups: any[]
         pipeline: GPUPipeline
         resources: any[]
-        stopRender: boolean
+        loadingImg: number
         needsUpdate: boolean
 }
 
