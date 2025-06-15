@@ -91,6 +91,13 @@ export const createDescriptor = (c: GPUContext) => {
 
 export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
 
+export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
+        const array = new Float32Array(value)
+        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 === // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        device.queue.writeBuffer(buffer, 0, array)
+        return buffer
+}
+
 export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
         const array = new Float32Array(value)
         const size = alignTo256(array.byteLength)
@@ -104,9 +111,13 @@ export const createTextureSampler = (device: GPUDevice, width = 1280, height = 8
         return { texture, sampler }
 }
 
-// export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
-//         const array = new Float32Array(value)
-//         const buffer = device.createBuffer({ size: array.byteLength, usage: 0x20 | 0x4 })
-//         device.queue.writeBuffer(buffer, 0, array)
-//         return buffer as Buffer
-// }
+export const getVertexStride = (dataLength: number, vertexCount: number) => {
+        return dataLength / vertexCount
+}
+
+export const getVertexFormat = (stride: number) => {
+        if (stride === 2) return 'float32x2'
+        if (stride === 3) return 'float32x3'
+        if (stride === 4) return 'float32x4'
+        return 'float32'
+}

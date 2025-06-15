@@ -7,6 +7,9 @@ import {
         createUniformBuffer,
         createBindGroup,
         createTextureSampler,
+        createVertexBuffer,
+        getVertexStride,
+        getVertexFormat,
 } from './utils/pipeline'
 import type { GL, WebGPUState } from './types'
 
@@ -21,8 +24,8 @@ export const webgpu = async (gl: Partial<GL>) => {
                 needsUpdate: true,
         } as WebGPUState
 
-        const vertexBuffers = [] as any[]
-        const vertexLayouts = [] as any[]
+        const vertexBuffers: any[] = []
+        const bufferLayouts: any[] = []
 
         const uniforms = cached((_, value: number[]) => {
                 const { array, buffer } = createUniformBuffer(device, value)
@@ -47,7 +50,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                         layouts.push(layout)
                         state.groups.push(bindGroup)
                 })
-                state.pipeline = createPipeline(device, format, vertexLayouts, layouts, gl.vs, gl.fs)
+                state.pipeline = createPipeline(device, format, bufferLayouts, layouts, gl.vs, gl.fs)
         }
 
         const render = () => {
@@ -66,51 +69,23 @@ export const webgpu = async (gl: Partial<GL>) => {
 
         const clean = () => {}
 
-        const _attribute = (key = '', value: number[]) => {
-                const buffer = device.createBuffer({
-                        size: value.length * 4,
-                        usage: 40, // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        const _attribute = (_key = '', value: number[]) => {
+                const buffer = createVertexBuffer(device, value)
+                const stride = getVertexStride(value.length, gl.count!)
+                const byteStride = stride * 4
+                const format = getVertexFormat(stride)
+                const shaderLocation = vertexBuffers.length
+                vertexBuffers.push(buffer)
+                bufferLayouts.push({
+                        arrayStride: byteStride,
+                        attributes: [
+                                {
+                                        shaderLocation,
+                                        offset: 0,
+                                        format,
+                                },
+                        ],
                 })
-                device.queue.writeBuffer(buffer, 0, new Float32Array(value))
-
-                // Calculate stride dynamically
-                const stride = Math.floor(value.length / gl.count!) * 4
-                const format =
-                        stride === 8
-                                ? 'float32x2'
-                                : stride === 12
-                                ? 'float32x3'
-                                : stride === 16
-                                ? 'float32x4'
-                                : 'float32'
-
-                // Find existing layout for this key or create new one
-                const layoutIndex = vertexBuffers.findIndex((_, i) => i === parseInt(key) || 0)
-                if (layoutIndex === -1) {
-                        vertexBuffers.push(buffer)
-                        vertexLayouts.push({
-                                arrayStride: stride,
-                                attributes: [
-                                        {
-                                                shaderLocation: vertexLayouts.length,
-                                                offset: 0,
-                                                format,
-                                        },
-                                ],
-                        })
-                } else {
-                        vertexBuffers[layoutIndex] = buffer
-                        vertexLayouts[layoutIndex] = {
-                                arrayStride: stride,
-                                attributes: [
-                                        {
-                                                shaderLocation: layoutIndex,
-                                                offset: 0,
-                                                format,
-                                        },
-                                ],
-                        }
-                }
                 state.needsUpdate = true
         }
 
