@@ -21,6 +21,9 @@ export const webgpu = async (gl: Partial<GL>) => {
                 needsUpdate: true,
         } as WebGPUState
 
+        const vertexBuffers = [] as any[]
+        const vertexLayouts = [] as any[]
+
         const uniforms = cached((_, value: number[]) => {
                 const { array, buffer } = createUniformBuffer(device, value)
                 state.resources[0].push({ buffer })
@@ -44,7 +47,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                         layouts.push(layout)
                         state.groups.push(bindGroup)
                 })
-                state.pipeline = createPipeline(device, format, [], layouts, gl.vs, gl.fs)
+                state.pipeline = createPipeline(device, format, vertexLayouts, layouts, gl.vs, gl.fs)
         }
 
         const render = () => {
@@ -55,6 +58,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(state.pipeline)
                 state.groups.forEach((v, i) => pass.setBindGroup(i, v))
+                vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
                 pass.draw(gl.count, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
@@ -63,8 +67,51 @@ export const webgpu = async (gl: Partial<GL>) => {
         const clean = () => {}
 
         const _attribute = (key = '', value: number[]) => {
-                // @TODO FIX
-                // vertexBuffers(key, value)
+                const buffer = device.createBuffer({
+                        size: value.length * 4,
+                        usage: 40, // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+                })
+                device.queue.writeBuffer(buffer, 0, new Float32Array(value))
+
+                // Calculate stride dynamically
+                const stride = Math.floor(value.length / gl.count!) * 4
+                const format =
+                        stride === 8
+                                ? 'float32x2'
+                                : stride === 12
+                                ? 'float32x3'
+                                : stride === 16
+                                ? 'float32x4'
+                                : 'float32'
+
+                // Find existing layout for this key or create new one
+                const layoutIndex = vertexBuffers.findIndex((_, i) => i === parseInt(key) || 0)
+                if (layoutIndex === -1) {
+                        vertexBuffers.push(buffer)
+                        vertexLayouts.push({
+                                arrayStride: stride,
+                                attributes: [
+                                        {
+                                                shaderLocation: vertexLayouts.length,
+                                                offset: 0,
+                                                format,
+                                        },
+                                ],
+                        })
+                } else {
+                        vertexBuffers[layoutIndex] = buffer
+                        vertexLayouts[layoutIndex] = {
+                                arrayStride: stride,
+                                attributes: [
+                                        {
+                                                shaderLocation: layoutIndex,
+                                                offset: 0,
+                                                format,
+                                        },
+                                ],
+                        }
+                }
+                state.needsUpdate = true
         }
 
         const _uniform = (key: string, value: number | number[]) => {

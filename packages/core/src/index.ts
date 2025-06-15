@@ -40,7 +40,7 @@ export const createGL = (props?: Partial<GL>) => {
                 isGL: true,
                 size: [0, 0],
                 mouse: [0, 0],
-                count: 3,
+                count: 6,
                 webgl: {},
                 webgpu: {},
         }) as EventState<GL>
