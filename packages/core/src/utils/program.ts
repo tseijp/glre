@@ -1,4 +1,3 @@
-import { glsl } from '../code/glsl'
 import { X } from '../node'
 import { is } from './helpers'
 
@@ -37,8 +36,8 @@ export const createProgram = (
         vs: string | X = defaultVertexGLSL,
         fs: string | X = defaultFragmentGLSL
 ) => {
-        if (is.obj(fs)) fs = glsl(fs as X)
-        if (is.obj(vs)) vs = glsl(vs as X)
+        if (is.obj(fs)) fs = `${fs}`
+        if (is.obj(vs)) vs = `${vs}`
         const pg = c.createProgram()
         c.attachShader(pg, createShader(c, vs, c.VERTEX_SHADER))
         c.attachShader(pg, createShader(c, fs, c.FRAGMENT_SHADER))

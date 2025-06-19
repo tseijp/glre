@@ -1,7 +1,7 @@
 import { nested as cached } from 'reev'
 import { is } from './utils/helpers'
 import {
-        createDevive,
+        createDevice,
         createPipeline,
         createDescriptor,
         createUniformBuffer,
@@ -14,7 +14,7 @@ import type { GL, WebGPUState } from './types'
 
 export const webgpu = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgpu') as any
-        const { device, format } = await createDevive(c)
+        const { device, format } = await createDevice(c)
         const state = {
                 device,
                 context: c,

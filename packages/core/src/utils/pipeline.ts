@@ -1,4 +1,3 @@
-import { wgsl } from '../code/wgsl'
 import { X } from '../node'
 import { is } from './helpers'
 import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
@@ -21,7 +20,7 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 }
 `
 
-export const createDevive = async (c: GPUContext) => {
+export const createDevice = async (c: GPUContext) => {
         const gpu = (navigator as any).gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
@@ -38,8 +37,8 @@ export const createPipeline = (
         vs: string | X = defaultVertexWGSL,
         fs: string | X = defaultFragmentWGSL
 ) => {
-        if (is.obj(fs)) fs = wgsl(fs)
-        if (is.obj(vs)) vs = wgsl(vs)
+        if (is.obj(fs)) fs = `${fs}`
+        if (is.obj(vs)) vs = `${vs}`
         const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {

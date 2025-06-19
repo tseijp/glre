@@ -1,3 +1,5 @@
+import { is } from '../native'
+
 // 基本型定数
 export const TYPES = [
         'float',
@@ -24,46 +26,39 @@ export const TYPES = [
 
 export type NodeType = (typeof TYPES)[number]
 
-// スウィズル定数
 export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
 type AllSwizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
 
-export type Swillzes =
+export type Swizzles =
         | AllSwizzles<'x' | 'y' | 'z' | 'w'>
         | AllSwizzles<'r' | 'g' | 'b' | 'a'>
         | AllSwizzles<'p' | 'q'>
         | AllSwizzles<'s' | 't'>
 
-// 演算子定数
-export const OPERATORS = [
-        'add',
-        'sub',
-        'mul',
-        'div',
-        'mod',
-        'equal',
-        'notEqual',
-        'lessThan',
-        'lessThanEqual',
-        'greaterThan',
-        'greaterThanEqual',
-        'and',
-        'or',
-        'not',
-        'assign',
-        'xor',
-        'bitAnd',
-        'bitNot',
-        'bitOr',
-        'bitXor',
-        'shiftLeft',
-        'shiftRight',
-] as const
+export const OPERATORS = {
+        add: '+',
+        sub: '-',
+        mul: '*',
+        div: '/',
+        mod: '%',
+        equal: '==',
+        notEqual: '!=',
+        lessThan: '<',
+        lessThanEqual: '<=',
+        greaterThan: '>',
+        greaterThanEqual: '>=',
+        and: '&&',
+        or: '||',
+        bitAnd: '&',
+        bitOr: '|',
+        bitXor: '^',
+        shiftLeft: '<<',
+        shiftRight: '>>',
+} as const
 
-export type Operator = (typeof OPERATORS)[number]
+export type Operator = (keyof typeof OPERATORS)[number]
 
-// 数学関数定数
 export const FUNCTIONS = [
         'abs',
         'acos',
@@ -124,7 +119,18 @@ export const FUNCTIONS = [
 
 export type MathFunction = (typeof FUNCTIONS)[number]
 
-// キャッシュ用定数
-export const CACHE_BOOLS = [true, false] as const
-export const CACHE_INTS = [0, 1, 2, 3, 4, 5] as const
-export const CACHE_FLOATS = [0.0, 1.0, 0.5, 2.0] as const
+export const isOperator = (key: any): key is Operator => {
+        return is.str(key) && OPERATORS.includes(key as Operator)
+}
+
+export const isSwizzle = (key: any): key is Swizzles => {
+        return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
+}
+
+export const isType = (key: any): key is NodeType => {
+        return is.str(key) && TYPES.includes(key as NodeType)
+}
+
+export const isFunction = (key: any): key is MathFunction => {
+        return is.str(key) && FUNCTIONS.includes(key as MathFunction)
+}
