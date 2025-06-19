@@ -109,7 +109,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
-                frag: `
+                fragment: `
                 #version 300 es
                 precision mediump float;
                 uniform vec2 iResolution;
@@ -134,7 +134,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
-                frag: `
+                fragment: `
                 @group(0) @binding(0) var<uniform> iResolution: vec2f;
                 @group(0) @binding(1) var<uniform> iMouse: vec2f;
                 @group(0) @binding(2) var<uniform> iTime: f32;
@@ -164,20 +164,11 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 count: 3,
-                vs: `
+                vertex: `
                 #version 300 es
                 in vec4 a_position;
                 void main() {
                         gl_Position = a_position;
-                }
-                `,
-                fs: `
-                #version 300 es
-                precision mediump float;
-                uniform vec2 iResolution;
-                out vec4 fragColor;
-                void main() {
-                        fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
                 }
                 `,
         })
@@ -195,18 +186,10 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 count: 3,
-                vs: `
+                vertex: `
                 @vertex
                 fn main(@location(0) position: vec2f) -> @builtin(position) vec4f {
                         return vec4f(position, 0.0, 1.0);
-                }
-                `,
-                fs: `
-                @group(0) @binding(0) var<uniform> iResolution: vec2f;
-                @fragment
-                fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-                        let uv = position.xy / iResolution;
-                        return vec4f(uv, 0.0, 1.0);
                 }
                 `,
                 isWebGL: false,
@@ -229,7 +212,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
-                fs: `
+                fragment: `
                 #version 300 es
                 precision mediump float;
                 uniform vec2 iResolution;
@@ -254,7 +237,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
-                fs: `
+                fragment: `
                 @group(0) @binding(0) var<uniform> iResolution: vec2f;
                 @group(1) @binding(0) var iSampler: sampler;
                 @group(1) @binding(1) var iTexture: texture_2d<f32>;
