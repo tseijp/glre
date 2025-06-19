@@ -57,7 +57,9 @@ export const OPERATORS = {
         shiftRight: '>>',
 } as const
 
-export type Operator = (keyof typeof OPERATORS)[number]
+const OPERATOR_KEYS = Object.keys(OPERATORS)
+
+export type Operator = (typeof OPERATOR_KEYS)[number]
 
 export const FUNCTIONS = [
         'abs',
@@ -120,7 +122,7 @@ export const FUNCTIONS = [
 export type MathFunction = (typeof FUNCTIONS)[number]
 
 export const isOperator = (key: any): key is Operator => {
-        return is.str(key) && OPERATORS.includes(key as Operator)
+        return is.str(key) && OPERATOR_KEYS.includes(key as Operator)
 }
 
 export const isSwizzle = (key: any): key is Swizzles => {
