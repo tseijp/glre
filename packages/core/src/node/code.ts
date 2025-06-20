@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { OPERATORS, VARIABLE_MAPPING } from './const'
-import { type NodeState, type X } from './types'
-import { generateFragmentMain, generateUniforms, joins } from './utils'
+import { generateFragmentMain, joins } from './utils'
+import type { NodeState, X } from './types'
 
 export const shader = (x: X, state?: NodeState | null): string => {
         if (!state) state = { lines: [], variables: new Map(), indent: 0, uniforms: new Set() }
@@ -14,13 +14,11 @@ export const shader = (x: X, state?: NodeState | null): string => {
         const { isWebGL } = state
         const [a, b, c] = children
 
-        // uniform 使用追跡
         if (type === 'uniform' && id) {
                 state.uniforms?.add(id)
                 state.onUniform?.(id, x.props.defaultValue)
         }
 
-        // 変数名マッピング
         if (type === 'variable') {
                 const mappedName = isWebGL ? id : VARIABLE_MAPPING[id as keyof typeof VARIABLE_MAPPING] || id
                 if (isVariable && variableName) return variableName
@@ -56,72 +54,17 @@ export const shader = (x: X, state?: NodeState | null): string => {
                 return `${funcName}(${args})`
         }
 
-        if (type === 'if') {
-                const condition = shader(a, state)
-                const thenBlock = x.props.onCondition
-                state.lines?.push(`if (${condition}) {`)
-                if (thenBlock) thenBlock()
-                return ''
-        }
-
-        if (type === 'loop') {
-                const count = shader(a, state)
-                const loopVar = shader(b, state)
-                const callback = x.props.onLoop
-                state.lines?.push(`for (int ${loopVar} = 0; ${loopVar} < ${count}; ${loopVar}++) {`)
-                if (callback) callback({ i: b })
-                return ''
-        }
-
         if (type === 'fragment') {
-                const main = generateFragmentMain(shader(a, state), state)
-                const uniforms = generateUniforms(state)
+                const main = generateFragmentMain(shader(a, state))
+                const uniforms = '' //generateUniforms(state)
                 return uniforms + main
         }
 
         if (type === 'vertex') {
-                const main = generateFragmentMain(shader(a, state), state)
-                const uniforms = generateUniforms(state)
+                const main = generateFragmentMain(shader(a, state))
+                const uniforms = '' //generateUniforms(state)
                 return uniforms + main
         }
 
         return shader(a, state)
 }
-
-/**
-const generateVariable = (id: string, value: X, state: NodeState): string => {
-        if (!state.variables) state.variables = new Map()
-        if (!state.lines) state.lines = []
-
-        const valueStr = shader(value, state)
-        const varType = inferType(value)
-        const mappedType = state.isWebGL ? varType : TYPE_MAPPING[varType as keyof typeof TYPE_MAPPING] || varType
-
-        const declaration = state.isWebGL
-                ? `${mappedType} ${id} = ${valueStr};`
-                : `var ${id}: ${mappedType} = ${valueStr};`
-
-        state.lines.push(declaration)
-        state.variables.set(id, mappedType)
-        return id
-}
-
-const inferType = (x: X): string => {
-        if (is.num(x)) return 'float'
-        if (!isProxy(x)) throw ``
-        if (!x || !x.props || !x.props.children) return 'float'
-
-        const [first] = x.props.children
-        if (is.str(first)) {
-                if (
-                        first.startsWith('vec') ||
-                        first.startsWith('mat') ||
-                        first.startsWith('ivec') ||
-                        first.startsWith('uvec') ||
-                        first.startsWith('bvec')
-                ) {
-                        return first
-                }
-        }
-        return 'float'
-} */

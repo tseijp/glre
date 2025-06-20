@@ -37,18 +37,17 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                         return key
                 },
                 set(_, key, value) {
-                        if (key === 'value') return value
                         if (isSwizzle(key)) {
-                                const assignNode = node('assign', {}, s(key, x), value)
-                                return true
+                                // ???
                         }
-                        return Reflect.set(_, key, value)
+                        return value
                 },
         }) as unknown as NodeProxy
         return x
 }
 
 let count = 0
+
 export const i = (...args: X[]) => node('variable', { id: `i${count++}`, isVariable: true }, ...args)
 export const u = (key: string, defaultValue?: number | number[]) => node('uniform', { defaultValue }, key)
 export const s = (key: Swizzles, arg: X) => node('swizzle', {}, key, arg)
@@ -56,33 +55,26 @@ export const n = (key: string, ...args: X[]) => node('node_type', {}, key, ...ar
 export const o = (key: Operators, ...args: X[]) => node('operator', {}, key, ...args)
 export const f = (key: Functions, ...args: X[]) => node('function', {}, key, ...args)
 
-const current = []
+const current = '??'
 
-export const If = (x: X, onCondition: () => void) => {
-        const ifNode = node('if', { onCondition }, x)
-        current.push(ifNode)
+export const If = (x: X, fun: () => void) => {
         const ret = {
-                ElseIf: (y: X, fn: () => void) => {
-                        ifNode.props.children!.push(node('if', { onCondition: fn }, y))
-                        return ret
+                ElseIf: (y: X, fun: () => void) => {
+                        // ???
                 },
-                Else: (fn: () => void) => {
-                        ifNode.props.children!.push(node('if', { onCondition: fn }, 'else'))
-                        return ret
+                Else: (fun: () => void) => {
+                        // ???
                 },
         }
         return ret
 }
 
-export const Loop = (count: X, callback?: (params: { i: X }) => void) => {
-        const loopVar = i()
-        current.push(node('loop', { onLoop: callback }, count, loopVar))
+export const Loop = (count: X, fun?: () => void) => {
+        // ???
 }
 
 export const Fn = (callback: (params: any) => NodeProxy) => {
         return (...args: X[]) => {
-                const result = callback(args)
-                return result
-                // return node('fn', { onExecute: callback }, result, ...args)
+                // ???
         }
 }
