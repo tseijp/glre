@@ -104,3 +104,36 @@ export const FUNCTIONS = [
         'transformDirection',
         'trunc',
 ] as const
+
+export const TYPE_MAPPING = {
+        float: 'f32',
+        int: 'i32',
+        uint: 'u32',
+        bool: 'bool',
+        vec2: 'vec2f',
+        vec3: 'vec3f',
+        vec4: 'vec4f',
+        mat2: 'mat2x2f',
+        mat3: 'mat3x3f',
+        mat4: 'mat4x4f',
+        ivec2: 'vec2i',
+        ivec3: 'vec3i',
+        ivec4: 'vec4i',
+        uvec2: 'vec2u',
+        uvec3: 'vec3u',
+        uvec4: 'vec4u',
+        bvec2: 'vec2<bool>',
+        bvec3: 'vec3<bool>',
+        bvec4: 'vec4<bool>',
+} as const
+
+export const VARIABLE_MAPPING = {
+        fragCoord: 'position',
+        gl_FragCoord: 'position',
+        fragColor: '@location(0)',
+        gl_FragColor: '@location(0)',
+} as const
+
+export const CONTROL_NODES = ['if', 'loop', 'fn', 'fragment', 'vertex'] as const
+
+export const CONTROL_KEYS = [...CONTROL_NODES]

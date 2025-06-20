@@ -1,5 +1,4 @@
-import { is } from '../utils/helpers'
-import { OPERATORS } from './const'
+import { shader } from './code'
 import { isFunction, isOperator, isSwizzle } from './types'
 import type { Functions, NodeProps, NodeProxy, NodeState, NodeTypes, Operators, Swizzles, X } from './types'
 
@@ -16,9 +15,20 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 get(_, key) {
                         if (key === Symbol.toPrimitive) return converter(x)
                         if (key === 'toString') return () => shader(x)
+                        if (key === 'isProxy') return true
                         if (key === 'props') return props
                         if (key === 'type') return type
-                        if (key === 'toVar') return () => i(...props.children!)
+                        if (key === 'toVar')
+                                return (customName?: string) => {
+                                        const varNode = i(...(props.children || []))
+                                        varNode.props.isVariable = true
+                                        varNode.props.variableName = customName
+                                        return varNode
+                                }
+                        if (key === 'assign')
+                                return (y: X) => {
+                                        return node('assign', {}, x, y)
+                                }
                         if (isSwizzle(key)) return s(key, x)
                         if (isOperator(key) || isFunction(key)) {
                                 const _type = isOperator(key) ? 'operator' : 'function'
@@ -28,54 +38,51 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 },
                 set(_, key, value) {
                         if (key === 'value') return value
+                        if (isSwizzle(key)) {
+                                const assignNode = node('assign', {}, s(key, x), value)
+                                return true
+                        }
+                        return Reflect.set(_, key, value)
                 },
         }) as unknown as NodeProxy
         return x
 }
 
 let count = 0
-export const i = (...args: X[]) => node('variable', { id: `i${count++}` }, ...args)
+export const i = (...args: X[]) => node('variable', { id: `i${count++}`, isVariable: true }, ...args)
 export const u = (key: string, defaultValue?: number | number[]) => node('uniform', { defaultValue }, key)
 export const s = (key: Swizzles, arg: X) => node('swizzle', {}, key, arg)
 export const n = (key: string, ...args: X[]) => node('node_type', {}, key, ...args)
 export const o = (key: Operators, ...args: X[]) => node('operator', {}, key, ...args)
 export const f = (key: Functions, ...args: X[]) => node('function', {}, key, ...args)
 
-const joins = (children: X[], state: NodeState) => {
-        return children
-                .filter((x) => !is.und(x) && !is.nul(x))
-                .map((x) => shader(x, state))
-                .join(', ')
+const current = []
+
+export const If = (x: X, onCondition: () => void) => {
+        const ifNode = node('if', { onCondition }, x)
+        current.push(ifNode)
+        const ret = {
+                ElseIf: (y: X, fn: () => void) => {
+                        ifNode.props.children!.push(node('if', { onCondition: fn }, y))
+                        return ret
+                },
+                Else: (fn: () => void) => {
+                        ifNode.props.children!.push(node('if', { onCondition: fn }, 'else'))
+                        return ret
+                },
+        }
+        return ret
 }
 
-export const shader = (x: X, state?: NodeState | null): string => {
-        if (!state) state = {}
-        if (is.num(x)) return x.toFixed(1)
-        if (is.str(x)) return x
-        if (!x) return ''
-        const type = x.type
-        const { id = '', children = [] } = x.props
-        const { isWebGL } = state
-        const [a, b, c] = children
-        if (type === 'variable') {
-                return id
+export const Loop = (count: X, callback?: (params: { i: X }) => void) => {
+        const loopVar = i()
+        current.push(node('loop', { onLoop: callback }, count, loopVar))
+}
+
+export const Fn = (callback: (params: any) => NodeProxy) => {
+        return (...args: X[]) => {
+                const result = callback(args)
+                return result
+                // return node('fn', { onExecute: callback }, result, ...args)
         }
-        if (type === 'swizzle') return `${shader(b, state)}.${shader(a, state)}`
-        if (type === 'node_type') {
-                if (!is.str(a)) throw ``
-                const func = !isWebGL && a.startsWith('vec') ? `${a}f` : a
-                const args = joins(children.slice(1), state)
-                return `${func}(${args})`
-        }
-        if (type === 'operator') {
-                if (a === 'not' || a === 'bitNot') return `${a}${shader(b, state)}`
-                const op = OPERATORS[a as keyof typeof OPERATORS]
-                return `(${shader(b, state)} ${op} ${shader(c, state)})`
-        }
-        if (type === 'function') {
-                const funcName = a
-                const args = joins(children.slice(1), state)
-                return `${funcName}(${args})`
-        }
-        return shader(a, state)
 }
