@@ -8,12 +8,9 @@ export type NodeTypes =
         | 'operator'
         | 'node_type'
         | 'function'
-        | 'if'
-        | 'loop'
-        | 'fn'
         | 'fragment'
         | 'vertex'
-        | 'assign'
+        | 'scope'
 
 export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         add(n: X): NodeProxy
@@ -34,6 +31,8 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         toVar(name?: string): NodeProxy
         toString(): string
         type: string
+        id?: string
+        children?: X[]
         props: NodeProps
         isProxy: true
 }
@@ -46,6 +45,29 @@ interface LoopConfig {
 
 export type X = NodeProxy | number | string | null | undefined
 
+export interface BaseNode {
+        type: NodeTypes
+        id?: string
+        props: NodeProps
+        children?: X[]
+}
+
+export interface ScopeNode extends BaseNode {
+        type: 'scope'
+        scopeType: 'function' | 'if' | 'loop' | 'main'
+        lines: BaseNode[]
+        variables: Map<string, VariableNode>
+        parent?: ScopeNode
+}
+
+export interface VariableNode extends BaseNode {
+        type: 'variable'
+        variableName: string
+        variableType: string
+        isDeclaration: boolean
+        scope?: ScopeNode
+}
+
 export interface NodeProps {
         id?: string
         scope?: string
@@ -53,6 +75,9 @@ export interface NodeProps {
         defaultValue?: number | number[]
         isVariable?: boolean
         variableName?: string
+        variableType?: string
+        isDeclaration?: boolean
+        scopeType?: 'function' | 'if' | 'loop' | 'main'
         loopConfig?: LoopConfig
         onLoop?: (params: { i: X }) => void
         onExecute?: (params: any) => void
@@ -63,9 +88,11 @@ export interface NodeState {
         lines?: string[]
         isWebGL?: boolean
         variables?: Map<string, string>
-        scopes?: string[]
+        scopes?: ScopeNode[]
+        currentScope?: ScopeNode | null
         indent?: number
         uniforms?: Set<string>
+        variableDeclarations?: Map<string, string>
         onUniform?: (name: string, value: any) => void
 }
 

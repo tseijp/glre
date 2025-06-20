@@ -1,5 +1,5 @@
 import { shader } from './code'
-import { f, n, node, u } from './node'
+import { f, n, node, u, If, Loop, Fn, getCurrentScope, setCurrentScope, pushScope, popScope } from './node'
 import type { NodeState, X } from './types'
 export * from './code'
 export * from './const'
@@ -11,6 +11,30 @@ export const iTime = u('iTime', 0)
 export const fragCoord = node('variable', { id: 'fragCoord' })
 export const fragment = (x: X, state: NodeState) => shader(node('fragment', {}, x), state)
 export const vertex = (x: X, state: NodeState) => shader(node('vertex', {}, x), state)
+
+// Main scope creation helper
+export const createMainScope = (callback: () => void) => {
+        const mainScope = node('scope', { scopeType: 'main' }) as any
+        mainScope.lines = []
+        mainScope.variables = new Map()
+
+        pushScope(mainScope)
+        try {
+                callback()
+        } finally {
+                popScope()
+        }
+
+        return mainScope
+}
+
+// WebGL/WebGPU fragments
+export const fragmentMain = (callback: () => void, state?: Partial<NodeState>) => {
+        const fullState = { isWebGL: true, ...state }
+        const mainScope = createMainScope(callback)
+
+        return fragment(mainScope, fullState as NodeState)
+}
 
 // Type constructors
 export const float = (x: X) => n('float', x)

@@ -1,6 +1,25 @@
 import { shader } from './code'
 import { isFunction, isOperator, isSwizzle } from './types'
-import type { Functions, NodeProps, NodeProxy, NodeState, NodeTypes, Operators, Swizzles, X } from './types'
+import type { Functions, NodeProps, NodeProxy, NodeState, NodeTypes, Operators, Swizzles, X, ScopeNode } from './types'
+import { generateVariableName, inferType } from './utils'
+
+// Global scope management
+let currentScope: ScopeNode | null = null
+const scopeStack: ScopeNode[] = []
+
+export const getCurrentScope = (): ScopeNode | null => currentScope
+export const setCurrentScope = (scope: ScopeNode | null): void => {
+        currentScope = scope
+}
+export const pushScope = (scope: ScopeNode): void => {
+        if (currentScope) scopeStack.push(currentScope)
+        currentScope = scope
+}
+export const popScope = (): ScopeNode | null => {
+        const prev = currentScope
+        currentScope = scopeStack.pop() || null
+        return prev
+}
 
 const converter = (x: X) => {
         return (hint: string) => {
@@ -18,16 +37,57 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                         if (key === 'isProxy') return true
                         if (key === 'props') return props
                         if (key === 'type') return type
+                        if (key === 'id') return props?.id
+                        if (key === 'children') return props?.children
                         if (key === 'toVar')
-                                return (customName?: string) => {
-                                        const varNode = i(...(props.children || []))
-                                        varNode.props.isVariable = true
-                                        varNode.props.variableName = customName
-                                        return varNode
+                                return (name?: string) => {
+                                        const scope = getCurrentScope()
+                                        if (!scope) {
+                                                throw new Error('toVar can only be used within a scope')
+                                        }
+
+                                        const varName = name || generateVariableName('v')
+                                        const varType = inferType(x)
+
+                                        const varNode = node('variable', {
+                                                id: varName,
+                                                variableName: varName,
+                                                variableType: varType,
+                                                isDeclaration: true,
+                                        }) as any
+
+                                        const assignNode = node('variable', {
+                                                id: 'assign',
+                                                children: [varNode, x],
+                                        }) as any
+
+                                        scope.lines.push(assignNode)
+                                        scope.variables.set(varName, varNode)
+
+                                        return node('variable', {
+                                                id: varName,
+                                                variableName: varName,
+                                                variableType: varType,
+                                                isDeclaration: false,
+                                        })
                                 }
                         if (key === 'assign')
-                                return (y: X) => {
-                                        return node('assign', {}, x, y)
+                                return (value: X) => {
+                                        if (x.type !== 'variable') {
+                                                throw new Error('assign can only be called on variables')
+                                        }
+                                        const scope = getCurrentScope()
+                                        if (!scope) {
+                                                throw new Error('assign can only be used within a scope')
+                                        }
+
+                                        const assignNode = node('variable', {
+                                                id: 'assign',
+                                                children: [x, value],
+                                        }) as any
+
+                                        scope.lines.push(assignNode)
+                                        return x
                                 }
                         if (isSwizzle(key)) return s(key, x)
                         if (isOperator(key) || isFunction(key)) {
@@ -57,24 +117,132 @@ export const f = (key: Functions, ...args: X[]) => node('function', {}, key, ...
 
 const current = '??'
 
-export const If = (x: X, fun: () => void) => {
-        const ret = {
-                ElseIf: (y: X, fun: () => void) => {
-                        // ???
+export const If = (condition: X, callback: () => void) => {
+        const ifScope = node('scope', { scopeType: 'if' }) as any as ScopeNode
+        ifScope.lines = []
+        ifScope.variables = new Map()
+
+        const conditionNode = node('variable', {
+                id: 'if',
+                children: [condition, ifScope],
+        }) as any
+
+        pushScope(ifScope)
+        try {
+                callback()
+        } finally {
+                popScope()
+        }
+
+        const currentScope = getCurrentScope()
+        if (currentScope) {
+                currentScope.lines.push(conditionNode)
+        }
+
+        return {
+                ElseIf: (newCondition: X, newCallback: () => void) => {
+                        const elseIfScope = node('scope', { scopeType: 'if' }) as any as ScopeNode
+                        elseIfScope.lines = []
+                        elseIfScope.variables = new Map()
+
+                        const elseIfNode = node('variable', {
+                                id: 'elseif',
+                                children: [newCondition, elseIfScope],
+                        }) as any
+
+                        pushScope(elseIfScope)
+                        try {
+                                newCallback()
+                        } finally {
+                                popScope()
+                        }
+
+                        if (currentScope) {
+                                currentScope.lines.push(elseIfNode)
+                        }
+
+                        return this
                 },
-                Else: (fun: () => void) => {
-                        // ???
+                Else: (elseCallback: () => void) => {
+                        const elseScope = node('scope', { scopeType: 'if' }) as any as ScopeNode
+                        elseScope.lines = []
+                        elseScope.variables = new Map()
+
+                        const elseNode = node('variable', {
+                                id: 'else',
+                                children: [elseScope],
+                        }) as any
+
+                        pushScope(elseScope)
+                        try {
+                                elseCallback()
+                        } finally {
+                                popScope()
+                        }
+
+                        if (currentScope) {
+                                currentScope.lines.push(elseNode)
+                        }
                 },
         }
-        return ret
 }
 
-export const Loop = (count: X, fun?: () => void) => {
-        // ???
+interface LoopOptions {
+        start?: X
+        end: X
+        type?: string
 }
 
-export const Fn = (callback: (params: any) => NodeProxy) => {
+export const Loop = (options: LoopOptions | X, callback?: (params: { i: X }) => void) => {
+        const loopScope = node('scope', { scopeType: 'loop' }) as any as ScopeNode
+        loopScope.lines = []
+        loopScope.variables = new Map()
+
+        const indexVarName = generateVariableName('i')
+        const indexVar = node('variable', {
+                id: indexVarName,
+                variableName: indexVarName,
+                variableType: 'int',
+                isDeclaration: true,
+        })
+
+        const loopNode = node('variable', {
+                id: 'loop',
+                children: [options, indexVar, loopScope],
+        }) as any
+
+        if (callback) {
+                pushScope(loopScope)
+                try {
+                        callback({ i: indexVar })
+                } finally {
+                        popScope()
+                }
+        }
+
+        const currentScope = getCurrentScope()
+        if (currentScope) {
+                currentScope.lines.push(loopNode)
+        }
+}
+
+export const Fn = (callback: (params: any) => X) => {
         return (...args: X[]) => {
-                // ???
+                const fnScope = node('scope', { scopeType: 'function' }) as any as ScopeNode
+                fnScope.lines = []
+                fnScope.variables = new Map()
+
+                pushScope(fnScope)
+                let result: X
+                try {
+                        result = callback({})
+                } finally {
+                        popScope()
+                }
+
+                return node('variable', {
+                        id: 'function_call',
+                        children: [fnScope, result, ...args],
+                })
         }
 }
