@@ -1,7 +1,7 @@
-import { is } from '../native'
+// consts
+export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
-// 基本型定数
-export const TYPES = [
+export const NODE_TYPES = [
         'float',
         'int',
         'uint',
@@ -24,18 +24,6 @@ export const TYPES = [
         'bvec4',
 ] as const
 
-export type NodeType = (typeof TYPES)[number]
-
-export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
-
-type AllSwizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
-
-export type Swizzles =
-        | AllSwizzles<'x' | 'y' | 'z' | 'w'>
-        | AllSwizzles<'r' | 'g' | 'b' | 'a'>
-        | AllSwizzles<'p' | 'q'>
-        | AllSwizzles<'s' | 't'>
-
 export const OPERATORS = {
         add: '+',
         sub: '-',
@@ -57,9 +45,7 @@ export const OPERATORS = {
         shiftRight: '>>',
 } as const
 
-const OPERATOR_KEYS = Object.keys(OPERATORS)
-
-export type Operator = (typeof OPERATOR_KEYS)[number]
+export const OPERATOR_KEYS = Object.keys(OPERATORS)
 
 export const FUNCTIONS = [
         'abs',
@@ -118,21 +104,3 @@ export const FUNCTIONS = [
         'transformDirection',
         'trunc',
 ] as const
-
-export type MathFunction = (typeof FUNCTIONS)[number]
-
-export const isOperator = (key: any): key is Operator => {
-        return is.str(key) && OPERATOR_KEYS.includes(key as Operator)
-}
-
-export const isSwizzle = (key: any): key is Swizzles => {
-        return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
-}
-
-export const isType = (key: any): key is NodeType => {
-        return is.str(key) && TYPES.includes(key as NodeType)
-}
-
-export const isFunction = (key: any): key is MathFunction => {
-        return is.str(key) && FUNCTIONS.includes(key as MathFunction)
-}

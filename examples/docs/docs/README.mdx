@@ -151,6 +151,20 @@ function Canvas() {
 ```
 
 </TabItem>
+<TabItem value="tsl" label="Three.js Shading Language">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                isWebGL: false,
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Attributes

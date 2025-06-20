@@ -28,7 +28,7 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         if (c.getShaderParameter(shader, c.COMPILE_STATUS)) return shader
         const error = c.getShaderInfoLog(shader)
         c.deleteShader(shader)
-        throw new Error(`Could not compile shader: ${error}`)
+        console.warn(`Could not compile shader: ${error}`)
 }
 
 export const createProgram = (
@@ -36,16 +36,19 @@ export const createProgram = (
         vs: string | X = defaultVertexGLSL,
         fs: string | X = defaultFragmentGLSL
 ) => {
-        if (is.obj(fs)) fs = `${fs}`
-        if (is.obj(vs)) vs = `${vs}`
+        if (!is.str(fs)) fs = `${fs}`
+        if (!is.str(vs)) vs = `${vs}`
         const pg = c.createProgram()
-        c.attachShader(pg, createShader(c, vs, c.VERTEX_SHADER))
-        c.attachShader(pg, createShader(c, fs, c.FRAGMENT_SHADER))
+        const vertex = createShader(c, vs, c.VERTEX_SHADER)
+        const fragment = createShader(c, fs, c.FRAGMENT_SHADER)
+        if (!vertex || !fragment) return
+        c.attachShader(pg, vertex)
+        c.attachShader(pg, fragment)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
-        throw new Error(`Could not link pg: ${error}`)
+        console.warn(`Could not link pg: ${error}`)
 }
 
 export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
