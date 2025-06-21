@@ -47,8 +47,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
 
         if (type === 'fn') {
                 let ret = code(x, c)
-                ret += '\n'
-                if (y) ret += `return ${code(y, c)};`
+                if (y) ret += `\nreturn ${code(y, c)};`
                 return ret
         }
 

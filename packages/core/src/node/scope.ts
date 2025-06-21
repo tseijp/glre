@@ -4,17 +4,17 @@ import type { NodeProxy, X } from './types'
 
 let _scope: NodeProxy | null = null
 
-const scoped = (node: NodeProxy | null, callback = () => {}) => {
+const scoped = (x: NodeProxy | null, callback = () => {}) => {
         const prev = _scope
-        _scope = node
+        _scope = x
         callback()
         _scope = prev
 }
 
-const addToScope = (node: NodeProxy) => {
+const addToScope = (x: NodeProxy) => {
         if (!_scope) return // ignore
         if (!_scope.props.children) _scope.props.children = []
-        _scope.props.children.push(node)
+        _scope.props.children.push(x)
 }
 
 export const If = (x: X, callback: () => void) => {
