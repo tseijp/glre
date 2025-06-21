@@ -1,74 +1,68 @@
 import { node } from './node'
+import { getId } from './utils'
 import type { NodeProxy, X } from './types'
 
-// currentScope global management
-let currentScope: NodeProxy | null = null
+let _scope: NodeProxy | null = null
 
-export const setCurrentScope = (node: NodeProxy | null) => {
-        currentScope = node
+const scoped = (node: NodeProxy | null, callback = () => {}) => {
+        const prev = _scope
+        _scope = node
+        callback()
+        _scope = prev
 }
 
-export const getCurrentScope = () => currentScope
-
-export const addToScope = (node: NodeProxy) => {
-        if (!currentScope) return // ignore
-        if (!currentScope.props.children) currentScope.props.children = []
-        currentScope.props.children.push(node)
+const addToScope = (node: NodeProxy) => {
+        if (!_scope) return // ignore
+        if (!_scope.props.children) _scope.props.children = []
+        _scope.props.children.push(node)
 }
 
 export const If = (x: X, callback: () => void) => {
-        const parentScope = getCurrentScope()
-        const y = node('scope', {})
-
-        setCurrentScope(y)
-        callback()
-        setCurrentScope(parentScope)
-
-        const ifNode = node('if', {}, x, y)
+        const y = node('scope')
+        scoped(y, callback)
+        const ifNode = node('if', null, x, y)
         addToScope(ifNode)
-
         return {
                 ElseIf: (y: X, elseCallback: () => void) => {
-                        const z = node('scope', {})
-                        setCurrentScope(z)
-                        elseCallback()
-                        setCurrentScope(parentScope)
+                        const z = node('scope')
+                        scoped(z, elseCallback)
                         ifNode.props.children!.push(y, z)
-                        return ifNode
                 },
                 Else: (elseCallback: () => void) => {
-                        const z = node('scope', {})
-                        setCurrentScope(z)
-                        elseCallback()
-                        setCurrentScope(parentScope)
+                        const z = node('scope')
+                        scoped(z, elseCallback)
                         ifNode.props.children!.push(z)
                 },
         }
 }
 
 export const Loop = (x: X, callback?: (params: { i: NodeProxy }) => void) => {
-        const parentScope = getCurrentScope()
-        const y = node('scope', {})
-
-        const iNode = node('variable', { id: 'i' })
-        setCurrentScope(y)
-        if (callback) callback({ i: iNode })
-        setCurrentScope(parentScope)
-
-        const loopNode = node('loop', {}, x, y)
-        addToScope(loopNode)
-        return loopNode
+        const y = node('scope')
+        scoped(y, () => callback?.({ i: node('variable', { id: 'i' }) }))
+        const ret = node('loop', null, x, y)
+        addToScope(ret)
+        return ret
 }
 
-export const Fn = (callback: (params: any) => NodeProxy) => {
+export const Fn = (callback: (args: X[]) => NodeProxy) => {
         return (...args: X[]) => {
-                const parentScope = getCurrentScope()
-                const fnScope = node('scope', {})
-
-                setCurrentScope(fnScope)
-                const result = callback(args)
-                setCurrentScope(parentScope)
-
-                return node('fn', {}, fnScope, result)
+                let result
+                const fnScope = node('scope')
+                scoped(fnScope, () => (result = callback(args)))
+                return node('fn', null, fnScope, result)
         }
+}
+
+export const toVar = (x: X) => (id: string) => {
+        if (!id) id = getId()
+        const y = node('variable', { id })
+        const z = node('declare', null, y, x)
+        addToScope(z)
+        return y
+}
+
+export const assign = (x: X) => (y: X) => {
+        const assignNode = node('assign', null, x, y)
+        addToScope(assignNode)
+        return x
 }

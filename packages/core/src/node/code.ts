@@ -1,5 +1,5 @@
 import { is } from '../utils/helpers'
-import { OPERATORS, WGSL_TYPE_MAPPING } from './const'
+import { OPERATORS, TYPE_MAPPING } from './const'
 import { generateFragmentMain, generateUniforms, inferType, joins } from './utils'
 import type { NodeConfig, X } from './types'
 
@@ -47,7 +47,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 const varType = inferType(y, c) // vec2
                 const varName = (x as any)?.props?.id
                 if (c.isWebGL) return `${varType} ${varName} = ${code(y, c)};`
-                const wgslType = WGSL_TYPE_MAPPING[varType as keyof typeof WGSL_TYPE_MAPPING]
+                const wgslType = TYPE_MAPPING[varType as keyof typeof TYPE_MAPPING]
                 return `var ${varName}: ${wgslType} = ${code(y, c)};`
         }
 
