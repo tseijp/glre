@@ -42,7 +42,6 @@ export const If = (x: X, callback: () => void) => {
                         elseCallback()
                         setCurrentScope(parentScope)
                         ifNode.props.children!.push(z)
-                        return
                 },
         }
 }

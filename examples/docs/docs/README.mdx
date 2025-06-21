@@ -117,8 +117,8 @@ function Canvas() {
                 uniform float iTime;
                 out vec4 fragColor;
                 void main() {
-                        vec2 uv = gl_FragCoord.xy / iResolution.xy;
-                        fragColor = vec4(iMouse + uv, sin(iTime) * 0.5 + 0.5, 1.0);
+                        vec2 uv = fract(gl_FragCoord.xy / iResolution.xy - iMouse);
+                        fragColor = vec4(uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
                 `,
         })
@@ -140,8 +140,8 @@ function Canvas() {
                 @group(0) @binding(2) var<uniform> iTime: f32;
                 @fragment
                 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-                        let uv = position.xy / iResolution;
-                        return vec4f(iMouse + uv, sin(iTime) * 0.5 + 0.5, 1.0);
+                        let uv = fract(position.xy / iResolution - iMouse);
+                        return vec4f(uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
                 `,
                 isWebGL: false,
@@ -151,7 +151,7 @@ function Canvas() {
 ```
 
 </TabItem>
-<TabItem value="tsl" label="Three.js Shading Language">
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
 ```jsx live
 function Canvas() {
@@ -160,7 +160,8 @@ function Canvas() {
                 height: 256,
                 isWebGL: false,
                 // frag: Fn(() => {
-                //         return vec4(fract(fragCoord.xy.div(iResolution)), 0.0, 1.0)
+                //         const uv = fract(fragCoord.xy.div(iResolution).sub(iMouse))
+                //         return vec4(uv, sin(iTime).mul(0.5).sub(0.5), 1.0)
                 // }),
         })
         return <canvas ref={gl.ref} />
