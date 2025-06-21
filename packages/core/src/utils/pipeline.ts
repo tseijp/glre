@@ -1,4 +1,4 @@
-import { shader, X } from '../node'
+import { fragment, vertex, X } from '../node'
 import { is } from './helpers'
 import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
 
@@ -37,8 +37,8 @@ export const createPipeline = (
         vs: string | X = defaultVertexWGSL,
         fs: string | X = defaultFragmentWGSL
 ) => {
-        if (!is.str(fs)) fs = shader(fs)
-        if (!is.str(vs)) vs = shader(vs)
+        if (!is.str(fs)) fs = fragment(fs, { isWebGL: false })
+        if (!is.str(vs)) vs = vertex(vs, { isWebGL: false })
         const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {

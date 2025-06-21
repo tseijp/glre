@@ -159,6 +159,7 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 isWebGL: false,
+                frag: Fn(() => vec4(fract(fragCoord.xy.div(iResolution)), 0.0, 1.0)),
         })
         return <canvas ref={gl.ref} />
 }

@@ -2,9 +2,26 @@ import { shader } from './code'
 import { isFunction, isOperator, isSwizzle } from './types'
 import type { Functions, NodeProps, NodeProxy, NodeState, NodeTypes, Operators, Swizzles, X } from './types'
 
+// currentStack global management
+let currentStack: NodeProxy | null = null
+let varCount = 0
+
+export const setCurrentStack = (stack: NodeProxy | null) => {
+        currentStack = stack
+}
+
+export const getCurrentStack = () => currentStack
+
 const converter = (x: X) => {
         return (hint: string) => {
                 if (hint === 'string') return shader(x)
+        }
+}
+
+const addToStack = (node: NodeProxy) => {
+        if (currentStack) {
+                if (!currentStack.props.children) currentStack.props.children = []
+                currentStack.props.children.push(node)
         }
 }
 
@@ -20,11 +37,17 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                         if (key === 'type') return type
                         if (key === 'toVar')
                                 return (customName?: string) => {
-                                        // @TODO FIX
+                                        const varName = customName || `v${varCount++}`
+                                        const varNode = node('variable', { id: varName })
+                                        const declareNode = node('declare', {}, varNode, x)
+                                        addToStack(declareNode)
+                                        return varNode
                                 }
                         if (key === 'assign')
                                 return (y: X) => {
-                                        // @TODO FIX
+                                        const assignNode = node('assign', {}, x, y)
+                                        addToStack(assignNode)
+                                        return x
                                 }
                         if (isSwizzle(key)) return s(key, x)
                         if (isOperator(key) || isFunction(key)) {
@@ -35,9 +58,11 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 },
                 set(_, key, value) {
                         if (isSwizzle(key)) {
-                                // @TODO FIX
+                                const swizzleNode = s(key, x)
+                                swizzleNode.assign(value)
+                                return true
                         }
-                        return value
+                        return false
                 },
         }) as unknown as NodeProxy
         return x
@@ -54,24 +79,64 @@ export const f = (key: Functions, ...args: X[]) => node('function', {}, key, ...
 
 const current = '??'
 
-export const If = (x: X, fun: () => void) => {
-        const ret = {
-                ElseIf: (y: X, fun: () => void) => {
-                        // ???
+export const If = (condition: X, callback: () => void) => {
+        const parentStack = getCurrentStack()
+        const thenScope = node('scope', {})
+
+        setCurrentStack(thenScope)
+        callback()
+        setCurrentStack(parentStack)
+
+        const ifNode = node('if', {}, condition, thenScope)
+        addToStack(ifNode)
+
+        return {
+                ElseIf: (elseCondition: X, elseCallback: () => void) => {
+                        const elseScope = node('scope', {})
+                        setCurrentStack(elseScope)
+                        elseCallback()
+                        setCurrentStack(parentStack)
+
+                        if (!ifNode.props.children) ifNode.props.children = [condition, thenScope]
+                        ifNode.props.children.push(elseCondition, elseScope)
+                        return ifNode
                 },
-                Else: (fun: () => void) => {
-                        // ???
+                Else: (elseCallback: () => void) => {
+                        const elseScope = node('scope', {})
+                        setCurrentStack(elseScope)
+                        elseCallback()
+                        setCurrentStack(parentStack)
+
+                        if (!ifNode.props.children) ifNode.props.children = [condition, thenScope]
+                        ifNode.props.children.push(elseScope)
+                        return ifNode
                 },
         }
-        return ret
 }
 
-export const Loop = (count: X, fun?: () => void) => {
-        // ???
+export const Loop = (config: X, callback?: (params: { i: NodeProxy }) => void) => {
+        const parentStack = getCurrentStack()
+        const loopScope = node('scope', {})
+
+        const iVar = node('variable', { id: 'i' })
+        setCurrentStack(loopScope)
+        if (callback) callback({ i: iVar })
+        setCurrentStack(parentStack)
+
+        const loopNode = node('loop', {}, config, loopScope)
+        addToStack(loopNode)
+        return loopNode
 }
 
 export const Fn = (callback: (params: any) => NodeProxy) => {
         return (...args: X[]) => {
-                // ???
+                const parentStack = getCurrentStack()
+                const fnScope = node('scope', {})
+
+                setCurrentStack(fnScope)
+                const result = callback(args)
+                setCurrentStack(parentStack)
+
+                return node('fn', {}, fnScope, result)
         }
 }

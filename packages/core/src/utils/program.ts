@@ -1,4 +1,4 @@
-import { X } from '../node'
+import { fragment, vertex, X } from '../node'
 import { is } from './helpers'
 
 export const defaultVertexGLSL = /* cpp */ `
@@ -36,14 +36,14 @@ export const createProgram = (
         vs: string | X = defaultVertexGLSL,
         fs: string | X = defaultFragmentGLSL
 ) => {
-        if (!is.str(fs)) fs = `${fs}`
-        if (!is.str(vs)) vs = `${vs}`
+        if (!is.str(fs)) fs = fragment(fs, { isWebGL: true })
+        if (!is.str(vs)) vs = vertex(fs, { isWebGL: true })
         const pg = c.createProgram()
-        const vertex = createShader(c, vs, c.VERTEX_SHADER)
-        const fragment = createShader(c, fs, c.FRAGMENT_SHADER)
-        if (!vertex || !fragment) return
-        c.attachShader(pg, vertex)
-        c.attachShader(pg, fragment)
+        const _vs = createShader(c, vs, c.VERTEX_SHADER)
+        const _fs = createShader(c, fs, c.FRAGMENT_SHADER)
+        if (!_vs || !_fs) return
+        c.attachShader(pg, _vs)
+        c.attachShader(pg, _fs)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)

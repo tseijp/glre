@@ -10,6 +10,13 @@ export type NodeTypes =
         | 'function'
         | 'fragment'
         | 'vertex'
+        | 'declare'
+        | 'assign'
+        | 'fn'
+        | 'if'
+        | 'loop'
+        | 'scope'
+        | 'semicolon'
 
 export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         add(n: X): NodeProxy
@@ -34,22 +41,12 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         isProxy: true
 }
 
-interface LoopConfig {
-        start?: X
-        end?: X
-        type?: string
-}
-
 export type X = NodeProxy | number | string | null | undefined
 
 export interface NodeProps {
         id?: string
         children?: X[]
         defaultValue?: number | number[]
-        loopConfig?: LoopConfig
-        onLoop?: (params: { i: X }) => void
-        onExecute?: (params: any) => void
-        onCondition?: () => void
 }
 
 export interface NodeState {
