@@ -1,19 +1,17 @@
-import { code } from './code'
 import { f, n, node, u } from './node'
-import type { NodeConfig, X } from './types'
+import type { X } from './types'
 export * from './code'
 export * from './const'
 export * from './node'
 export * from './scope'
 export * from './types'
+export * from './utils'
 
 // Default uniforms
 export const iResolution = u('iResolution', [1280, 800])
 export const iMouse = u('iMouse', [0, 0])
 export const iTime = u('iTime', 0)
 export const fragCoord = node('variable', { id: 'fragCoord' })
-export const fragment = (x: X, state: NodeConfig) => code(node('fragment', null, x), state)
-export const vertex = (x: X, state: NodeConfig) => code(node('vertex', null, x), state)
 
 // Type constructors
 export const float = (x: X) => n('float', x)

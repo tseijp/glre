@@ -33,8 +33,6 @@ export type NodeTypes =
         | 'operator'
         | 'node_type'
         | 'math_fun'
-        | 'fragment'
-        | 'vertex'
         | 'declare'
         | 'assign'
         | 'fn'

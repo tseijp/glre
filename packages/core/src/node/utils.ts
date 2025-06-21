@@ -52,7 +52,7 @@ export const inferType = (target: X, c: NodeConfig): string => {
         return 'float'
 }
 
-export const generateUniforms = (c: NodeConfig): string => {
+const generateUniforms = (c: NodeConfig): string => {
         if (!c.uniforms || c.uniforms.size === 0) return ''
         const uniformList = Array.from(c.uniforms)
         return (
@@ -65,7 +65,7 @@ export const generateUniforms = (c: NodeConfig): string => {
         )
 }
 
-export const generateFragmentMain = (body: string, uniforms: string, isWebGL = true) => {
+const generateFragmentMain = (body: string, uniforms: string, isWebGL = true) => {
         if (isWebGL)
                 return `
 ${uniforms}
@@ -87,4 +87,16 @@ ${uniforms}
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 ${body}
 }`.trim()
+}
+
+export const fragment = (x: X, c: NodeConfig) => {
+        const body = code(x, c)
+        const uniforms = generateUniforms(c)
+        return generateFragmentMain(body, uniforms, c.isWebGL)
+}
+
+export const vertex = (x: X, c: NodeConfig) => {
+        const body = code(x, c)
+        const uniforms = generateUniforms(c)
+        return generateFragmentMain(body, uniforms, c.isWebGL)
 }

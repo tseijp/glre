@@ -1,6 +1,6 @@
 import { is } from '../utils/helpers'
 import { OPERATORS, TYPE_MAPPING } from './const'
-import { generateFragmentMain, generateUniforms, inferType, joins } from './utils'
+import { inferType, joins } from './utils'
 import type { NodeConfig, X } from './types'
 
 export const code = (target: X, c?: NodeConfig | null): string => {
@@ -37,23 +37,13 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 return `(${code(y, c)} ${op} ${code(z, c)})`
         }
 
-        if (type === 'math_fun') {
-                const funcName = x
-                const args = joins(children.slice(1), c)
-                return `${funcName}(${args})`
-        }
-
-        if (type === 'declare') {
-                const varType = inferType(y, c) // vec2
-                const varName = (x as any)?.props?.id
-                if (c.isWebGL) return `${varType} ${varName} = ${code(y, c)};`
-                const wgslType = TYPE_MAPPING[varType as keyof typeof TYPE_MAPPING]
-                return `var ${varName}: ${wgslType} = ${code(y, c)};`
-        }
+        if (type === 'math_fun') return `${x}(${joins(children.slice(1), c)})`
 
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
 
         if (type === 'scope') return children.map((child) => code(child, c)).join('\n')
+
+        if (type === 'loop') return `for (int i = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
 
         if (type === 'fn') {
                 let ret = code(x, c)
@@ -73,15 +63,12 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 return ret
         }
 
-        if (type === 'loop') {
-                if (is.num(x)) return `for (int i = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
-                return `while (${code(x, c)}) {\n${code(y, c)}\n}`
-        }
-
-        if (type === 'fragment') {
-                const body = code(x, c)
-                const uniforms = generateUniforms(c)
-                return generateFragmentMain(body, uniforms, c.isWebGL)
+        if (type === 'declare') {
+                const varType = inferType(y, c) // vec2
+                const varName = (x as any)?.props?.id
+                if (c.isWebGL) return `${varType} ${varName} = ${code(y, c)};`
+                const wgslType = TYPE_MAPPING[varType as keyof typeof TYPE_MAPPING]
+                return `var ${varName}: ${wgslType} = ${code(y, c)};`
         }
 
         return code(x, c)

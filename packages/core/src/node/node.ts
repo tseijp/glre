@@ -37,6 +37,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
         return x
 }
 
+// Node shorthands
 export const v = (...args: X[]) => node('variable', { id: getId() }, ...args)
 export const u = (key: string, defaultValue?: number | number[]) => node('uniform', { defaultValue }, key)
 export const s = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
