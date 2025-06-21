@@ -1,291 +1,278 @@
 ---
-hide_table_of_contents: true
 title: 'Creating a scene'
-description: 'Creating a scene'
+description: 'A comprehensive guide to creating 3D scenes with glre'
+hide_table_of_contents: true
 image: https://github.com/tseijp.png
-keywords: [glsl, webgl, hooks, react, reactjs, reactive, solid, solidjs, typescript]
-date: 2025-05-12
+keywords: [glsl, webgl, webgpu, hooks, react, reactjs, reactive, solid, solidjs, typescript, guide, tutorial]
+date: 2025-01-01
 ---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
 # Creating a scene
 
-<Result />
+Building 3D worlds with shaders.
 
-The goal of this section is to give a brief introduction to glre.js.
-We will start by setting up a scene, with a spinning cube.
+In this chapter, we'll create a rotating cube using ray marching with glre.
+You'll learn shader programming fundamentals from basic concepts to implementation, step by step.
 
-## Before we started
+## Prerequisites
 
-Before you can use glre.js, you need somewhere to display it.
-Save the following HTML to a file on your computer.
+### Environment Setup
+
+Before using glre, you need a canvas to display your graphics.
+
+<Tabs>
+<TabItem value="html" label="HTML/Vanilla JS">
 
 ```html
-<canvas id="myCanvas"></canvas>
-<script type="module">
-        import createGL from 'https://esm.sh/glre'
+<!DOCTYPE html>
+<html>
+        <head>
+                <title>glre Tutorial</title>
+        </head>
+        <body>
+                <canvas id="myCanvas"></canvas>
+                <script type="module">
+                        import createGL from 'https://esm.sh/glre'
 
-        // Our GLSL and Javascript will go here.
-        const frag = `
-                // ...
+                        // Shader and JavaScript code goes here
+                        const fragmentShader = `
+            // GLSL code will be written here
         `
 
-        function App() {
-                // ...
-        }
+                        function App() {
+                                // Application logic will be written here
+                        }
 
-        document.addEventListener('DOMContentLoaded', App)
-</script>
+                        document.addEventListener('DOMContentLoaded', App)
+                </script>
+        </body>
+</html>
 ```
 
-## Creating Fragment Shader
+</TabItem>
+<TabItem value="react" label="React">
 
-```c
+```jsx
+import { useGL } from 'glre/react'
+
+const TutorialComponent = () => {
+        const gl = useGL({
+                frag: fragmentShader,
+                // Configuration goes here
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>
+
+## Understanding Ray Marching
+
+### What is Ray Marching?
+
+Ray marching is a technique for rendering
+3D objects using mathematical distance functions.
+Unlike traditional polygon-based rendering,
+it casts rays from each pixel to find intersections with objects.
+
+### Distance Functions (SDF)
+
+A Signed Distance Function (SDF) returns the shortest distance
+from any point in space to an object's surface.
+
+```glsl
+// Box distance function
+float boxSDF(vec3 p, float side) {
+    vec3 d = abs(p) - side;
+    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+}
+```
+
+**How this function works:**
+
+- `abs(p) - side`: Distance from cube boundary on each axis
+- Returns negative values inside, positive values outside
+- `length(max(d, 0.0))`: Outside distance calculation
+- `min(max(d.x, max(d.y, d.z)), 0.0)`: Inside distance calculation
+
+## Building the Fragment Shader
+
+### Defining Uniform Variables
+
+Define parameters to pass to the shader.
+
+```glsl
 #version 300 es
 precision highp float;
-uniform vec2 iResolution; // canvas size
-uniform vec3 up;          // camera up direction
-uniform vec3 eye;         // camera position
-uniform vec3 focus;       // camera focus point
-uniform float focal;      // camera focal length
-uniform float size;       // object size
+
+// Canvas information
+uniform vec2 iResolution;  // Canvas size
+
+// Camera parameters
+uniform vec3 up;           // Camera up direction
+uniform vec3 eye;          // Camera position
+uniform vec3 focus;        // Camera focal point
+uniform float focal;       // Focal length
+
+// Object parameters
+uniform float size;        // Cube size
+
+out vec4 fragColor;
 ```
 
-### Creating Box
+**Role of each parameter:**
 
-```c
-float boxSDF(vec3 p, float side) {
-        vec3 d = abs(p) - side;
-        return min(max(d.x, max(d.y, d.z)), 0.) + length(max(d, 0.));
-}
-```
+- `iResolution`: Screen resolution for UV coordinate normalization
+- `eye`, `focus`, `up`: Used to build camera matrix
+- `focal`: Controls field of view
+- `size`: Cube dimensions
 
-## Raymarch Setup
+### Implementing Camera System
 
-- Calculate this particular pixel's normalized coordinates
-- Calculate the direction that the ray through this pixel goes
-- Calculate eye directions
-
-```c
+```glsl
 void main() {
-        /**
-         * Ray marching setup
-         */
-        vec3 look = normalize(focus - eye);
-        vec3 right = normalize(cross(look, up));
-        vec2 scr = gl_FragCoord.xy - iResolution * .5;
-        vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
-        /**
-        * Ray marching
-        */
-        vec3 p = eye + dir;
-        vec3 e = vec3(.0005, .0, .0);
-        float d = boxSDF(p, size);
-        for (int i = 0; i < 50; i++) {
-                if (d <= e.x) {
-                        float dx = boxSDF(p + e.xyy, size) - d;
-                        float dy = boxSDF(p + e.yxx, size) - d;
-                        float dz = boxSDF(p + e.yyx, size) - d;
-                        vec3 norm = normalize(vec3(dx, dy, dz));
-                        fragColor = vec4(norm * .5 + .5, 1.);
-                        return;
-                }
-                p = p + d * dir;
-                d = boxSDF(p, size);
-        }
+    // Ray marching camera setup
+    vec3 look = normalize(focus - eye);    // View direction
+    vec3 right = normalize(cross(look, up)); // Right direction
+
+    // Convert screen coordinates to center origin
+    vec2 scr = gl_FragCoord.xy - iResolution * 0.5;
+
+    // Calculate ray direction
+    vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
 }
 ```
 
-## Setup glre
+**Calculation details:**
 
-```ts
+1. `look`: Direction vector from camera to focal point
+2. `right`: Right direction calculated from cross product of `look` and `up`
+3. `scr`: Convert pixel coordinates to screen-centered coordinate system
+4. `dir`: Calculate actual ray direction from focal length and screen coordinates
+
+### Ray Marching Algorithm
+
+```glsl
+void main() {
+    // ... Camera setup ...
+
+    // Ray marching initialization
+    vec3 p = eye;                    // Current position
+    vec3 epsilon = vec3(0.0005, 0.0, 0.0); // Precision control
+
+    // Ray marching loop
+    for (int i = 0; i < 50; i++) {
+        float d = boxSDF(p, size);   // Distance from current position to cube
+
+        if (d <= epsilon.x) {
+            // Normal calculation when surface is reached
+            float dx = boxSDF(p + epsilon.xyy, size) - d;
+            float dy = boxSDF(p + epsilon.yxy, size) - d;
+            float dz = boxSDF(p + epsilon.yyx, size) - d;
+
+            vec3 normal = normalize(vec3(dx, dy, dz));
+
+            // Output normal as color
+            fragColor = vec4(normal * 0.5 + 0.5, 1.0);
+            return;
+        }
+
+        // Advance ray by distance
+        p = p + d * dir;
+    }
+
+    // Nothing hit - return background
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+```
+
+**Algorithm mechanics:**
+
+1. Start ray from camera position
+2. Evaluate distance function at each step
+3. If distance is small enough, surface is reached
+4. Otherwise, advance ray by that distance
+5. Return background color if maximum steps reached
+
+## JavaScript Implementation
+
+### Initializing glre
+
+<Tabs>
+<TabItem value="vanilla" label="Vanilla JS">
+
+```js
 function App() {
-        const { mount, size, uniform } = createGL({
-                el: document.getElementById('canvas'),
-                frag,
-                isWebGL: true,
-                render() {
-                        const t = performance.now() / 1000
-                        const x = 200 * Math.cos(t)
-                        const z = 200 * Math.sin(t)
-                        uniform({ eye: [x, 0, z] })
-                },
-        })
-        mount()
-        uniform({
-                up: [0, 1, 0],
-                focus: [0, 0, 0],
-                focal: 500,
-                size: 50,
-        })
-}
-
-document.addEventListener('DOMContentLoaded', App)
-```
-
-## The result
-
-```html
-<canvas id="id" style="top: 0; left: 0; position: fixed" />
-<script type="module">
-        import createGL from 'https://esm.sh/glre'
-
-        const frag = `
-                #version 300 es
-                precision highp float;
-                uniform vec2 iResolution; // canvas size
-                uniform vec3 up;          // camera up direction
-                uniform vec3 eye;         // camera position
-                uniform vec3 focus;       // camera focus point
-                uniform float focal;      // camera focal length
-                uniform float size;       // object size
-                out vec4 fragColor;
-                /**
-                 * boxSDF
-                 */
-                float boxSDF(vec3 p, float side) {
-                        vec3 d = abs(p) - side;
-                        return min(max(d.x, max(d.y, d.z)), 0.) + length(max(d, 0.));
-                }
-                /**
-                 * main
-                 */
-                void main() {
-                        /**
-                         * Ray marching setup
-                         */
-                        vec3 look = normalize(focus - eye);
-                        vec3 right = normalize(cross(look, up));
-                        vec2 scr = gl_FragCoord.xy - iResolution * .5;
-                        vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
-                        /**
-                         * Ray marching
-                         */
-                        vec3 p = eye + dir;
-                        vec3 e = vec3(.0005, 0., 0.);
-                        float d = boxSDF(p, size);
-                        for (int i = 0; i < 50; i++) {
-                                if (d <= e.x) {
-                                        float dx = boxSDF(p + e.xyy, size) - d;
-                                        float dy = boxSDF(p + e.yxx, size) - d;
-                                        float dz = boxSDF(p + e.yyx, size) - d;
-                                        vec3 norm = normalize(vec3(dx, dy, dz));
-                                        fragColor = vec4(norm * .5 + .5, 1.);
-                                        return;
-                                }
-                                p = p + d * dir;
-                                d = boxSDF(p, size);
-                        }
-                }
-        `
-
-        export function App() {
-                const { mount, size, uniform } = createGL({
-                        el: document.getElementById('canvas'),
-                        frag,
-                        isWebGL: true,
-                        render() {
-                                const t = performance.now() / 1000
-                                const x = 200 * Math.cos(t)
-                                const z = 200 * Math.sin(t)
-                                uniform({ eye: [x, 0, z] })
-                        },
-                })
-                mount()
-                uniform({
-                        up: [0, 1, 0],
-                        focus: [0, 0, 0],
-                        focal: 500,
-                        size: 50,
-                })
-        }
-
-        document.addEventListener('DOMContentLoaded', App)
-</script>
-```
-
-export const frag = /* CPP */ `
-        #version 300 es
-        precision highp float;
-        uniform vec2 iResolution; // canvas size
-        uniform vec3 up;          // camera up direction
-        uniform vec3 eye;         // camera position
-        uniform vec3 focus;       // camera focus point
-        uniform float focal;      // camera focal length
-        uniform float size;       // object size
-        out vec4 fragColor;
-        /**
-         * boxSDF
-         */
-        float boxSDF(vec3 p, float side) {
-                vec3 d = abs(p) - side;
-                return min(max(d.x, max(d.y, d.z)), 0.) + length(max(d, 0.));
-        }
-        /**
-         * main
-         */
-        void main() {
-                /**
-                 * Ray marching setup
-                        */
-                vec3 look = normalize(focus - eye);
-                vec3 right = normalize(cross(look, up));
-                vec2 scr = gl_FragCoord.xy - iResolution * .5;
-                vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
-                /**
-                 * Ray marching
-                 */
-                vec3 p = eye + dir;
-                vec3 e = vec3(.0005, 0., 0.);
-                float d = boxSDF(p, size);
-                for (int i = 0; i < 50; i++) {
-                        if (d <= e.x) {
-                                float dx = boxSDF(p + e.xyy, size) - d;
-                                float dy = boxSDF(p + e.yxx, size) - d;
-                                float dz = boxSDF(p + e.yyx, size) - d;
-                                vec3 norm = normalize(vec3(dx, dy, dz));
-                                fragColor = vec4(norm * .5 + .5, 1.);
-                                return;
-                        }
-                        p = p + d * dir;
-                        d = boxSDF(p, size);
-                }
-        }
-`
-
-import { createGL } from 'glre/src/index'
-import { useRef, useEffect } from 'react'
-import { resize } from '../utils'
-
-export function App() {
-        const el = document.getElementById('canvas')
         const gl = createGL({
-                el,
-                frag,
-                isWebGL: true,
-                resize() {
-                        resize(gl)
-                },
+                el: document.getElementById('myCanvas'),
+                frag: fragmentShader,
+                isWebGL: true, // Force WebGL (omit if WebGPU available)
+
+                // Animation loop
                 render() {
-                        const t = performance.now() / 1000
-                        const x = 200 * Math.cos(t)
-                        const z = 200 * Math.sin(t)
+                        const time = performance.now() / 1000
+                        const radius = 200
+
+                        // Rotate camera in circular orbit
+                        const x = radius * Math.cos(time)
+                        const z = radius * Math.sin(time)
+
                         gl.uniform({ eye: [x, 0, z] })
                 },
         })
-        gl.mount()
-        gl.uniform({
-                up: [0, 1, 0],
-                focus: [0, 0, 0],
-                focal: 500,
-                size: 50,
-        })
-}
 
-export const Result = () => {
-        useEffect(() => App(), [])
-        return (
-                <div style={{ position: 'relative' }}>
-                        <canvas id="canvas" />
-                </div>
-        )
+        // Set initial uniform values
+        gl.uniform({
+                up: [0, 1, 0], // Y-axis is up
+                focus: [0, 0, 0], // Look at origin
+                focal: 500, // Focal length
+                size: 50, // Cube size
+        })
+
+        gl.mount()
 }
+```
+
+</TabItem>
+<TabItem value="react" label="React">
+
+```jsx
+import { useGL } from 'glre/react'
+import { useEffect } from 'react'
+
+const RotatingCube = () => {
+        const gl = useGL({
+                frag: fragmentShader,
+
+                init() {
+                        // Initial setup
+                        this.uniform({
+                                up: [0, 1, 0],
+                                focus: [0, 0, 0],
+                                focal: 500,
+                                size: 50,
+                        })
+                },
+
+                loop() {
+                        // Animation loop
+                        const time = performance.now() / 1000
+                        const radius = 200
+                        const x = radius * Math.cos(time)
+                        const z = radius * Math.sin(time)
+
+                        this.uniform({ eye: [x, 0, z] })
+                },
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>

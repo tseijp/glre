@@ -1,0 +1,336 @@
+---
+title: 'API Reference'
+description: 'Comprehensive API reference for glre'
+hide_table_of_contents: true
+image: https://github.com/tseijp.png
+keywords: [glsl, webgl, webgpu, hooks, react, reactjs, reactive, solid, solidjs, js, api]
+date: 2025-01-01
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# API Reference
+
+Lightweight graphics library unifying WebGL/WebGPU.
+glre is a modern graphics library that unifies the complex APIs of WebGL2 and WebGPU,
+leveraging TypeScript's type safety and the benefits of reactive programming.
+
+## Initialization
+
+### Framework Integration
+
+<Tabs>
+<TabItem value="react" label="React">
+
+```js
+import { useGL } from 'glre/react'
+
+const Component = () => {
+        const gl = useGL({
+                width: 800,
+                height: 600,
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="solid" label="Solid.js">
+
+```js
+import { onGL } from 'glre/solid'
+
+const Component = () => {
+        const gl = onGL({
+                frag: fragmentShader,
+                width: 800,
+                height: 600,
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="native" label="React Native">
+
+```js
+import { GLView } from 'expo-gl'
+import { useGL } from 'glre/native'
+
+const Component = () => {
+        const gl = useGL({
+                frag: fragmentShader,
+        })
+
+        return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="vanilla" label="Vanilla JS">
+
+```js
+import { createGL } from 'glre'
+
+const gl = createGL({
+        el: document.querySelector('canvas'),
+        frag: fragmentShader,
+})
+
+gl.mount()
+```
+
+</TabItem>
+</Tabs>
+
+## Configuration Options
+
+### GL Configuration
+
+Controls basic WebGL/WebGPU settings.
+
+| Property  | Type                | Default              | Description       |
+| --------- | ------------------- | -------------------- | ----------------- |
+| `el`      | `HTMLCanvasElement` | -                    | Canvas element    |
+| `width`   | `number`            | `window.innerWidth`  | Canvas width      |
+| `height`  | `number`            | `window.innerHeight` | Canvas height     |
+| `isWebGL` | `boolean`           | Auto-detected        | Force WebGL usage |
+| `isLoop`  | `boolean`           | `true`               | Animation loop    |
+| `count`   | `number`            | `6`                  | Vertex count      |
+
+### Shader Configuration
+
+```js
+const gl = useGL({
+        // Fragment shader (Node System or string)
+        frag: fragmentShader,
+        fs: fragmentShader, // Alias
+
+        // Vertex shader (optional)
+        vert: vertexShader,
+        vs: vertexShader, // Alias
+})
+```
+
+## Data Management
+
+### Uniform Variables
+
+Set constant values for shaders.
+
+<Tabs>
+<TabItem value="single" label="Single Values">
+
+```js
+// Numbers
+gl.uniform('iTime', performance.now() / 1000)
+
+// Vectors
+gl.uniform('iResolution', [width, height])
+gl.uniform('iMouse', [mouseX, mouseY])
+```
+
+</TabItem>
+<TabItem value="object" label="Object">
+
+```js
+gl.uniform({
+        iTime: performance.now() / 1000,
+        iResolution: [width, height],
+        iMouse: [mouseX, mouseY],
+        uColor: [1.0, 0.0, 0.0],
+})
+```
+
+</TabItem>
+<TabItem value="reactive" label="Reactive">
+
+```js
+// Auto-update per frame
+gl.uniform('iTime', () => performance.now() / 1000)
+
+// Auto-track mouse position
+gl.uniform('iMouse', () => [gl.mouse[0], gl.mouse[1]])
+```
+
+</TabItem>
+</Tabs>
+
+### Attribute Variables
+
+Set vertex data.
+
+```js
+// Vertex positions
+gl.attribute('a_position', [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])
+
+// Batch setting of multiple attributes
+gl.attribute({
+        a_position: positions,
+        a_texCoord: uvCoordinates,
+        a_normal: normals,
+})
+```
+
+### Textures
+
+Use image resources in shaders.
+
+<Tabs>
+<TabItem value="image" label="Image Files">
+
+```js
+gl.texture('diffuse', '/path/to/texture.jpg')
+gl.texture('normal', '/path/to/normal.png')
+```
+
+</TabItem>
+<TabItem value="canvas" label="Canvas">
+
+```js
+const canvas = document.createElement('canvas')
+const ctx = canvas.getContext('2d')
+// Draw on canvas...
+
+gl.texture('dynamicTexture', canvas)
+```
+
+</TabItem>
+<TabItem value="multiple" label="Multiple Textures">
+
+```js
+gl.texture({
+        diffuse: '/textures/diffuse.jpg',
+        normal: '/textures/normal.jpg',
+        roughness: '/textures/roughness.jpg',
+})
+```
+
+</TabItem>
+</Tabs>
+
+## Event System
+
+### Lifecycle
+
+```js
+const gl = useGL({
+        // Initialization (executed once)
+        init() {
+                console.log('GL context initialized')
+        },
+
+        // On mount
+        mount() {
+                console.log('Rendering started')
+        },
+
+        // On cleanup
+        clean() {
+                console.log('Resources released')
+        },
+})
+```
+
+### Frame Callbacks
+
+<Tabs>
+<TabItem value="loop" label="Animation Loop">
+
+```js
+const gl = useGL({
+        loop(deltaTime) {
+                // Per-frame processing
+                gl.uniform('iTime', performance.now() / 1000)
+                gl.uniform('iFrame', gl.frame.count)
+        },
+})
+```
+
+</TabItem>
+<TabItem value="queue" label="Queuing">
+
+```js
+// Execute once
+gl.queue(() => {
+        gl.uniform('oneTimeValue', computeValue())
+})
+
+// Continue execution (continues while returning true)
+gl.queue((deltaTime) => {
+        if (shouldContinue) {
+                updateAnimation(deltaTime)
+                return true
+        }
+        return false
+})
+```
+
+</TabItem>
+</Tabs>
+
+### Interaction
+
+```js
+const gl = useGL({
+        // Mouse movement
+        mousemove(event) {
+                const x = event.clientX / gl.size[0]
+                const y = 1.0 - event.clientY / gl.size[1]
+                gl.uniform('iMouse', [x, y])
+        },
+
+        // Resize
+        resize(width, height) {
+                gl.uniform('iResolution', [width, height])
+        },
+
+        // Custom rendering
+        render() {
+                // Custom drawing logic
+                customRenderLogic()
+        },
+})
+```
+
+## Node System Integration
+
+### Basic Usage
+
+```js
+import { vec2, vec3, vec4, sin, cos, fract } from 'glre/node'
+
+const fragmentShader = Fn(() => {
+        const uv = fragCoord.xy.div(iResolution).toVar()
+        const time = iTime.toVar()
+
+        const color = vec3(sin(time.add(uv.x.mul(10))), cos(time.add(uv.y.mul(10))), sin(time.mul(2)))
+                .mul(0.5)
+                .add(0.5)
+
+        return vec4(color, 1.0)
+})
+
+const gl = useGL({ frag: fragmentShader })
+```
+
+### Functions and Scope
+
+```js
+const noiseFunction = Fn((args) => {
+        const [uv, time] = args
+        return sin(uv.x.mul(10).add(time))
+                .mul(sin(uv.y.mul(10).add(time)))
+                .mul(0.5)
+                .add(0.5)
+})
+
+const mainShader = Fn(() => {
+        const uv = fragCoord.xy.div(iResolution).toVar()
+        const noise = noiseFunction(uv, iTime)
+        return vec4(noise, noise, noise, 1.0)
+})
+```
