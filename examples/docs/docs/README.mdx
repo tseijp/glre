@@ -118,7 +118,7 @@ function Canvas() {
                 out vec4 fragColor;
                 void main() {
                         vec2 uv = gl_FragCoord.xy / iResolution.xy;
-                        fragColor = vec4(iMouse + uv, sin(iTime), 1.0);
+                        fragColor = vec4(iMouse + uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
                 `,
         })
@@ -141,7 +141,7 @@ function Canvas() {
                 @fragment
                 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
                         let uv = position.xy / iResolution;
-                        return vec4f(iMouse + uv, sin(iTime), 1.0);
+                        return vec4f(iMouse + uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
                 `,
                 isWebGL: false,
@@ -159,7 +159,9 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 isWebGL: false,
-                frag: Fn(() => vec4(fract(fragCoord.xy.div(iResolution)), 0.0, 1.0)),
+                // frag: Fn(() => {
+                //         return vec4(fract(fragCoord.xy.div(iResolution)), 0.0, 1.0)
+                // }),
         })
         return <canvas ref={gl.ref} />
 }

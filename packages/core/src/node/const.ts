@@ -127,13 +127,23 @@ export const TYPE_MAPPING = {
         bvec4: 'vec4<bool>',
 } as const
 
-export const CONTROL_NODES = ['if', 'loop', 'fn', 'fragment', 'vertex', 'declare', 'assign', 'scope', 'semicolon'] as const
+export const CONTROL_NODES = [
+        'if',
+        'loop',
+        'fn',
+        'fragment',
+        'vertex',
+        'declare',
+        'assign',
+        'scope',
+        'semicolon',
+] as const
 
 export const CONTROL_KEYS = [...CONTROL_NODES]
 
 export const WGSL_TYPE_MAPPING = {
         float: 'f32',
-        int: 'i32', 
+        int: 'i32',
         uint: 'u32',
         bool: 'bool',
         vec2: 'vec2f',

@@ -7,7 +7,7 @@ export type NodeTypes =
         | 'swizzle'
         | 'operator'
         | 'node_type'
-        | 'function'
+        | 'math_fun'
         | 'fragment'
         | 'vertex'
         | 'declare'
@@ -17,6 +17,12 @@ export type NodeTypes =
         | 'loop'
         | 'scope'
         | 'semicolon'
+
+export interface NodeProps {
+        id?: string
+        children?: X[]
+        defaultValue?: number | number[]
+}
 
 export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         add(n: X): NodeProxy
@@ -36,20 +42,14 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         assign(n: X): NodeProxy
         toVar(name?: string): NodeProxy
         toString(): string
-        type: string
+        type: NodeTypes
         props: NodeProps
         isProxy: true
 }
 
 export type X = NodeProxy | number | string | null | undefined
 
-export interface NodeProps {
-        id?: string
-        children?: X[]
-        defaultValue?: number | number[]
-}
-
-export interface NodeState {
+export interface NodeConfig {
         isWebGL?: boolean
         uniforms?: Set<string>
         onUniform?: (name: string, value: any) => void
