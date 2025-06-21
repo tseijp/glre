@@ -1,5 +1,5 @@
 import { useState } from 'react' // @ts-ignore
-import { Dimensions } from 'react-native'
+// import { Dimensions } from 'react-native'
 import { createGL, isGL } from './index'
 import type { GL } from './types'
 export * from './index'
@@ -22,7 +22,7 @@ export const useGL = (props: Partial<GL> = {}) => {
                                 gl.resize()
                         }
                         resize()
-                        Dimensions.addEventListener('change', resize)
+                        // Dimensions.addEventListener('change', resize)
                 }
                 return gl({ isNative: true })
         })[0]

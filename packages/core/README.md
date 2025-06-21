@@ -115,7 +115,7 @@ npm install glre
 ```ts
 import { createRoot } from 'react-dom/client'
 import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/react'
-const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
 
 const App = () => {
         const gl = useGL({ frag })
@@ -136,7 +136,7 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 import { GLView } from 'expo-gl'
 import { registerRootComponent } from 'expo'
 import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
-const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
 
 const App = () => {
         const gl = useGL({ frag })
@@ -157,7 +157,7 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 ```ts
 import { render } from 'solid-js/web'
 import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
-const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+const frag = c4(fract(fragCoord.xy.div(iResolution)), 0, 1)
 
 const App = () => {
         const gl = onGL({ frag })
@@ -177,8 +177,9 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 
 ```html
 <script type="module">
-        import { createGL, vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
-        const frag = vec4(fract(fragCoord.xy / iResolution), 0, 1)
+        import createGL from 'https://esm.sh/glre'
+        import { vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
+        const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
         function App() {
                 const el = document.createElement('canvas')
                 createGL({ el, frag }).mount()
@@ -207,7 +208,7 @@ The node system provides various types and functions that mirror GLSL functional
 import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre'
 
 // Built-in variables
-import { fragCoord, gl_Position, iResolution, iTime } from 'glre'
+import { fragCoord, position, iResolution, iTime } from 'glre'
 
 // Math functions
 import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre'

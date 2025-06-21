@@ -1,5 +1,6 @@
-// 基本型定数
-export const TYPES = [
+export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
+
+export const NODE_TYPES = [
         'float',
         'int',
         'uint',
@@ -22,48 +23,29 @@ export const TYPES = [
         'bvec4',
 ] as const
 
-export type NodeType = (typeof TYPES)[number]
+export const OPERATORS = {
+        add: '+',
+        sub: '-',
+        mul: '*',
+        div: '/',
+        mod: '%',
+        equal: '==',
+        notEqual: '!=',
+        lessThan: '<',
+        lessThanEqual: '<=',
+        greaterThan: '>',
+        greaterThanEqual: '>=',
+        and: '&&',
+        or: '||',
+        bitAnd: '&',
+        bitOr: '|',
+        bitXor: '^',
+        shiftLeft: '<<',
+        shiftRight: '>>',
+} as const
 
-// スウィズル定数
-export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
+export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-type AllSwizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
-
-export type Swillzes =
-        | AllSwizzles<'x' | 'y' | 'z' | 'w'>
-        | AllSwizzles<'r' | 'g' | 'b' | 'a'>
-        | AllSwizzles<'p' | 'q'>
-        | AllSwizzles<'s' | 't'>
-
-// 演算子定数
-export const OPERATORS = [
-        'add',
-        'sub',
-        'mul',
-        'div',
-        'mod',
-        'equal',
-        'notEqual',
-        'lessThan',
-        'lessThanEqual',
-        'greaterThan',
-        'greaterThanEqual',
-        'and',
-        'or',
-        'not',
-        'assign',
-        'xor',
-        'bitAnd',
-        'bitNot',
-        'bitOr',
-        'bitXor',
-        'shiftLeft',
-        'shiftRight',
-] as const
-
-export type Operator = (typeof OPERATORS)[number]
-
-// 数学関数定数
 export const FUNCTIONS = [
         'abs',
         'acos',
@@ -122,9 +104,24 @@ export const FUNCTIONS = [
         'trunc',
 ] as const
 
-export type MathFunction = (typeof FUNCTIONS)[number]
-
-// キャッシュ用定数
-export const CACHE_BOOLS = [true, false] as const
-export const CACHE_INTS = [0, 1, 2, 3, 4, 5] as const
-export const CACHE_FLOATS = [0.0, 1.0, 0.5, 2.0] as const
+export const TYPE_MAPPING = {
+        float: 'f32',
+        int: 'i32',
+        uint: 'u32',
+        bool: 'bool',
+        vec2: 'vec2f',
+        vec3: 'vec3f',
+        vec4: 'vec4f',
+        mat2: 'mat2x2f',
+        mat3: 'mat3x3f',
+        mat4: 'mat4x4f',
+        ivec2: 'vec2i',
+        ivec3: 'vec3i',
+        ivec4: 'vec4i',
+        uvec2: 'vec2u',
+        uvec3: 'vec3u',
+        uvec4: 'vec4u',
+        bvec2: 'vec2<bool>',
+        bvec3: 'vec3<bool>',
+        bvec4: 'vec4<bool>',
+} as const

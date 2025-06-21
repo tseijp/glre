@@ -30,25 +30,96 @@ function Canvas() {
                 uniform float ellipseStroke;
                 out vec4 fragColor;
                 #define PI 3.141592
-                #define M(X, Y, A) mat2(1. / X, 0, 0, 1. / Y) * mat2(cos(A), -sin(A), sin(A), cos(A))
-                #define circle(p) length(p) - ellipseRadius
-                #define ellipse(p, A) circle(M(ellipseXCoord, ellipseYCoord, A) * p)
-                #define onion(p, A) d = min(d, abs(ellipse(p, A)) - ellipseStroke)
+                mat2 rotate(float x, float y, float angle) {
+                        mat2 scale = mat2(1.0 / x, 0.0, 0.0, 1.0 / y);
+                        mat2 rotation = mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+                        return scale * rotation;
+                }
+                float circle(vec2 p) {
+                        return length(p) - ellipseRadius;
+                }
+                float ellipse(vec2 p, float angle) {
+                        mat2 transform = rotate(ellipseXCoord, ellipseYCoord, angle);
+                        return circle(transform * p);
+                }
+                float onion(float d, vec2 p, float angle) {
+                        return min(d, abs(ellipse(p, angle)) - ellipseStroke);
+                }
                 void main() {
                         vec2 uv = fract(gl_FragCoord.xy / iResolution);
                         vec2 p = uv * 2.4 - 1.2;
                         p.x *= iResolution.x / iResolution.y;
                         float d = circle(p);
-                        onion(p, PI / 2. + iTime);
-                        onion(p, PI / 6. + iTime);
-                        onion(p, -PI / 6. + iTime);
-                        if (d < 0.)
-                                fragColor = vec4(96. / 255., 219. / 255., 251. / 255., 0.8);
+                        d = onion(d, p, PI / 2.0 + iTime);
+                        d = onion(d, p, PI / 6.0 + iTime);
+                        d = onion(d, p, -PI / 6.0 + iTime);
+                        if (d < 0.0) {
+                                fragColor = vec4(96.0 / 255.0, 219.0 / 255.0, 251.0 / 255.0, 0.8);
+                        }
                 }
                 `,
                 resize() {
                         resize(gl)
                 },
+        })
+        gl.uniform(
+                useControls({
+                        ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
+                        ellipseXCoord: { min: 0, value: 2.2, max: 4.4 },
+                        ellipseYCoord: { min: 0, value: 5.4, max: 10.8 },
+                        ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
+                })
+        )
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                frag: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @group(0) @binding(2) var<uniform> iTime: f32;
+                @group(0) @binding(3) var<uniform> ellipseRadius: f32;
+                @group(0) @binding(4) var<uniform> ellipseXCoord: f32;
+                @group(0) @binding(5) var<uniform> ellipseYCoord: f32;
+                @group(0) @binding(6) var<uniform> ellipseStroke: f32;
+                const PI: f32 = 3.141592;
+                fn rotate(x: f32, y: f32, angle: f32) -> mat2x2<f32> {
+                        let scale = mat2x2<f32>(1.0 / x, 0.0, 0.0, 1.0 / y);
+                        let rotation = mat2x2<f32>(cos(angle), -sin(angle), sin(angle), cos(angle));
+                        return scale * rotation;
+                }
+                fn circle(p: vec2<f32>) -> f32 {
+                        return length(p) - ellipseRadius;
+                }
+                fn ellipse(p: vec2<f32>, angle: f32) -> f32 {
+                        let transform = rotate(ellipseXCoord, ellipseYCoord, angle);
+                        return circle(transform * p);
+                }
+                fn onion(d: f32, p: vec2<f32>, angle: f32) -> f32 {
+                        return min(d, abs(ellipse(p, angle)) - ellipseStroke);
+                }
+                @fragment
+                fn main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
+                        let uv = fract(fragCoord.xy / iResolution);
+                        var p = uv * 2.4 - 1.2;
+                        p.x *= iResolution.x / iResolution.y;
+                        var d = circle(p);
+                        d = onion(d, p, PI / 2.0 + iTime);
+                        d = onion(d, p, PI / 6.0 + iTime);
+                        d = onion(d, p, -PI / 6.0 + iTime);
+                        if (d < 0.0) {
+                                return vec4<f32>(96.0 / 255.0, 219.0 / 255.0, 251.0 / 255.0, 0.8);
+                        } else {
+                                return vec4<f32>(0.0, 0.0, 0.0, 0.0);
+                        }
+                }
+                `,
+                isWebGL: false,
         })
         gl.uniform(
                 useControls({

@@ -1,5 +1,4 @@
-import { glsl } from '../code/glsl'
-import { X } from '../node'
+import { fragment, vertex, X } from '../node'
 import { is } from './helpers'
 
 export const defaultVertexGLSL = /* cpp */ `
@@ -29,7 +28,7 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         if (c.getShaderParameter(shader, c.COMPILE_STATUS)) return shader
         const error = c.getShaderInfoLog(shader)
         c.deleteShader(shader)
-        throw new Error(`Could not compile shader: ${error}`)
+        console.warn(`Could not compile shader: ${error}`)
 }
 
 export const createProgram = (
@@ -37,16 +36,19 @@ export const createProgram = (
         vs: string | X = defaultVertexGLSL,
         fs: string | X = defaultFragmentGLSL
 ) => {
-        if (is.obj(fs)) fs = glsl(fs as X)
-        if (is.obj(vs)) vs = glsl(vs as X)
+        if (!is.str(fs)) fs = fragment(fs, { isWebGL: true })
+        if (!is.str(vs)) vs = vertex(fs, { isWebGL: true })
         const pg = c.createProgram()
-        c.attachShader(pg, createShader(c, vs, c.VERTEX_SHADER))
-        c.attachShader(pg, createShader(c, fs, c.FRAGMENT_SHADER))
+        const _vs = createShader(c, vs, c.VERTEX_SHADER)
+        const _fs = createShader(c, fs, c.FRAGMENT_SHADER)
+        if (!_vs || !_fs) return
+        c.attachShader(pg, _vs)
+        c.attachShader(pg, _fs)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
-        throw new Error(`Could not link pg: ${error}`)
+        console.warn(`Could not link pg: ${error}`)
 }
 
 export const createVbo = (c: WebGLRenderingContext, data: number[]) => {

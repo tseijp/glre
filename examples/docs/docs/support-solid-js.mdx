@@ -25,47 +25,57 @@ function Canvas() {
                 #version 300 es
                 precision highp float;
                 uniform vec2 iResolution;
-                uniform vec3 up;
-                uniform vec3 eye;
-                uniform vec3 focus;
-                uniform float focal;
-                uniform float repeat;
-                uniform float zoom;
-                uniform float solidGap;
-                uniform float solidNorm;
-                uniform float solidScale;
-                uniform float solidPosZ;
+                uniform float height;
+                uniform float radius;
                 uniform vec3 color1;
                 uniform vec3 color2;
-                uniform float cylinderHeight;
-                uniform float cylinderRadius;
+                uniform vec3 eye;
+                uniform float zoom;
+                uniform float repeat;
                 out vec4 fragColor;
-                #define PI 3.141592
-                #define M(X, Y, Z) mat3(1. / X, 0, 0, 0, 1. / Y, 0., 0, 0, 1. / Z)
-                #define repetition(x) if (repeat != 0.) p = mod(p, x * repeat) - x * repeat * .5;
+                const float PI = 3.141592;
+                const float focal = 500.0;
+                const vec3 focus = vec3(0.0);
+                const vec3 up = vec3(0.0, 1.0, 0.0);
+                const float solidGap = 34.0;
+                const float solidNorm = 1.64;
+                const float solidScale = 1.83;
+                const float solidPosZ = 2.6;
+                mat3 scale(float x, float y, float z) {
+                        return mat3(
+                                1.0 / x, 0.0, 0.0,
+                                0.0, 1.0 / y, 0.0,
+                                0.0, 0.0, 1.0 / z
+                        );
+                }
+                void repetition(inout vec3 p, vec3 x) {
+                        if (repeat != 0.0) {
+                                p = mod(p, x * repeat) - x * repeat * 0.5;
+                        }
+                }
                 float cylinderSDF(vec3 p, float h, float r, float sign) {
-                        p.y = p.y - sign * cylinderHeight;
+                        p.y = p.y - sign * height;
                         float dShpere = length(p.xy) - r;
-                        float dPlane = sign * dot(p.xy, normalize(vec2(-1., solidNorm)));
+                        float dPlane = sign * dot(p.xy, normalize(vec2(-1.0, solidNorm)));
                         float dx = max(dShpere, dPlane);
                         float dy = abs(p.z) - h;
-                        return min(max(dx, dy), 0.) + length(vec2(max(dx, 0.), max(dy, 0.)));
+                        return min(max(dx, dy), 0.0) + length(vec2(max(dx, 0.0), max(dy, 0.0)));
                 }
-                float SDF (vec3 p) {
-                        repetition(vec3(cylinderRadius))
-                        p = M(solidScale, 1., 1.) * p;
+                float SDF(vec3 p) {
+                        repetition(p, vec3(radius));
+                        p = scale(solidScale, 1.0, 1.0) * p;
                         p.z = p.z + solidPosZ;
-                        float d1 = cylinderSDF(p + vec3(0., 0., solidGap * 0.5), cylinderHeight, cylinderRadius, -1.);
-                        float d2 = cylinderSDF(p + vec3(0., 0., -solidGap * 0.5), cylinderHeight, cylinderRadius, 1.);
+                        float d1 = cylinderSDF(p + vec3(0.0, 0.0, solidGap * 0.5), height, radius, -1.0);
+                        float d2 = cylinderSDF(p + vec3(0.0, 0.0, -solidGap * 0.5), height, radius, 1.0);
                         return min(d1, d2);
                 }
                 void main() {
                         vec3 look = normalize(focus - eye);
                         vec3 right = normalize(cross(look, up));
-                        vec2 scr = gl_FragCoord.xy - iResolution * .5;
-                        vec3 dir = vec3(scr.x, scr.y, 0.) / zoom;
+                        vec2 scr = gl_FragCoord.xy - iResolution * 0.5;
+                        vec3 dir = vec3(scr.x, scr.y, 0.0) / zoom;
                         vec3 p = eye + dir;
-                        vec3 e = vec3(.0005, 0., 0.);
+                        vec3 e = vec3(0.0005, 0.0, 0.0);
                         float d = SDF(p);
                         for (int i = 0; i < 100; i++) {
                                 if (d <= e.x) {
@@ -73,9 +83,9 @@ function Canvas() {
                                         float dy = SDF(p + e.yxy) - d;
                                         float dz = SDF(p + e.yyx) - d;
                                         vec3 norm = normalize(vec3(dx, dy, dz));
-                                        float lighting = dot(norm, vec3(0., 1., 0.)) + 0.5;
-                                        vec3 color = p.z < 0. ? color2 : color1;
-                                        fragColor = vec4(lighting * color, 1.);
+                                        float lighting = dot(norm, vec3(0.0, 1.0, 0.0)) + 0.5;
+                                        vec3 color = p.z < 0.0 ? color2 : color1;
+                                        fragColor = vec4(lighting * color, 1.0);
                                         return;
                                 }
                                 p = p + d * look;
@@ -89,20 +99,13 @@ function Canvas() {
         })
         gl.uniform(
                 useControls({
-                        cylinderHeight: { min: 0, value: 9.2, max: 18.4 },
-                        cylinderRadius: { min: 0, value: 14.5, max: 29 },
-                        solidGap: { min: 0, value: 34, max: 68 },
-                        solidNorm: { min: 0, value: 1.64, max: 3.28 },
-                        solidScale: { min: 0, value: 1.83, max: 3.66 },
-                        solidPosZ: { min: 0, value: 2.6, max: 5.2 },
+                        height: { min: 0, value: 9.2, max: 18.4 },
+                        radius: { min: 0, value: 14.5, max: 29 },
                         color1: [53 / 255, 97 / 255, 159 / 255],
                         color2: [74 / 255, 128 / 255, 191 / 255],
                         eye: [25, 44, 50],
-                        repeat: { min: 0, value: 0, max: 50 },
-                        focal: 500,
-                        focus: [0, 0, 0],
                         zoom: { min: 0, value: 7.5, max: 15 },
-                        up: [0, 1, 0],
+                        repeat: { min: 0, value: 0, max: 50 },
                 })
         )
         return <canvas ref={gl.ref} />
@@ -110,43 +113,99 @@ function Canvas() {
 ```
 
 </TabItem>
-{/* <TabItem value="webgpu" label="WebGPU">
+<TabItem value="webgpu" label="WebGPU">
 
 ```jsx live
 function Canvas() {
         const gl = useGL({
-                isWebGL: false,
                 frag: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2<f32>;
+                @group(0) @binding(3) var<uniform> height: f32;
+                @group(0) @binding(4) var<uniform> radius: f32;
+                @group(0) @binding(5) var<uniform> color1: vec3<f32>;
+                @group(0) @binding(6) var<uniform> color2: vec3<f32>;
+                @group(0) @binding(7) var<uniform> eye: vec3<f32>;
+                @group(0) @binding(8) var<uniform> zoom: f32;
+                @group(0) @binding(9) var<uniform> repeat: f32;
+                const PI: f32 = 3.141592;
+                const focal: f32 = 500.0;
+                const focus: vec3<f32> = vec3f(0.0);
+                const up: vec3<f32> = vec3f(0.0, 1.0, 0.0);
+                const solidGap: f32 = 34.0;
+                const solidNorm: f32 = 1.64;
+                const solidScale: f32 = 1.83;
+                const solidPosZ: f32 = 2.6;
+                fn scale(x: f32, y: f32, z: f32) -> mat3x3<f32> {
+                        return mat3x3<f32>(
+                                1.0 / x, 0.0, 0.0,
+                                0.0, 1.0 / y, 0.0,
+                                0.0, 0.0, 1.0 / z
+                        );
+                }
+                fn repetition(p: ptr<function, vec3<f32>>, x: vec3<f32>) {
+                        if (repeat != 0.0) {
+                                *p = (*p % (x * repeat)) - x * repeat * 0.5;
+                        }
+                }
+                fn cylinderSDF(p_input: vec3<f32>, h: f32, r: f32, sign: f32) -> f32 {
+                        var p = p_input;
+                        p.y = p.y - sign * height;
+                        let dShpere = length(p.xy) - r;
+                        let dPlane = sign * dot(p.xy, normalize(vec2<f32>(-1.0, solidNorm)));
+                        let dx = max(dShpere, dPlane);
+                        let dy = abs(p.z) - h;
+                        return min(max(dx, dy), 0.0) + length(vec2<f32>(max(dx, 0.0), max(dy, 0.0)));
+                }
+                fn SDF(p_input: vec3<f32>) -> f32 {
+                        var p = p_input;
+                        repetition(&p, vec3<f32>(radius));
+                        p = scale(solidScale, 1.0, 1.0) * p;
+                        p.z = p.z + solidPosZ;
+                        let d1 = cylinderSDF(p + vec3<f32>(0.0, 0.0, solidGap * 0.5), height, radius, -1.0);
+                        let d2 = cylinderSDF(p + vec3<f32>(0.0, 0.0, -solidGap * 0.5), height, radius, 1.0);
+                        return min(d1, d2);
+                }
                 @fragment
-                fn fs_main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
-                        let iResolution = vec2<f32>(800.0, 600.0);
-                        let eye = vec3<f32>(25.0, 44.0, 50.0);
-                        let focus = vec3<f32>(0.0, 0.0, 0.0);
-                        let up = vec3<f32>(0.0, 1.0, 0.0);
-                        let zoom = 7.5;
-                        let color1 = vec3<f32>(53.0 / 255.0, 97.0 / 255.0, 159.0 / 255.0);
-                        let color2 = vec3<f32>(74.0 / 255.0, 128.0 / 255.0, 191.0 / 255.0);
+                fn main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
                         let look = normalize(focus - eye);
                         let right = normalize(cross(look, up));
-                        let scr = coord.xy - iResolution * 0.5;
+                        let scr = fragCoord.xy - iResolution * 0.5;
                         let dir = vec3<f32>(scr.x, scr.y, 0.0) / zoom;
-                        return vec4<f32>(color1, 1.0);
+                        var p = eye + dir;
+                        let e = vec3<f32>(0.0005, 0.0, 0.0);
+                        var d = SDF(p);
+                        for (var i: i32 = 0; i < 100; i++) {
+                                if (d <= e.x) {
+                                        let dx = SDF(p + e.xyy) - d;
+                                        let dy = SDF(p + e.yxy) - d;
+                                        let dz = SDF(p + e.yyx) - d;
+                                        let norm = normalize(vec3<f32>(dx, dy, dz));
+                                        let lighting = dot(norm, vec3<f32>(0.0, 1.0, 0.0)) + 0.5;
+                                        let color = select(color1, color2, p.z < 0.0);
+                                        return vec4<f32>(lighting * color, 1.0);
+                                }
+                                p = p + d * look;
+                                d = SDF(p);
+                        }
+                        return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                 }
                 `,
-                // resize() {
-                //         resize(gl)
-                // },
+                isWebGL: false,
         })
         gl.uniform(
                 useControls({
-                        cylinderHeight: { min: 0, value: 9.2, max: 18.4 },
-                        cylinderRadius: { min: 0, value: 14.5, max: 29 },
+                        height: { min: 0, value: 9.2, max: 18.4 },
+                        radius: { min: 0, value: 14.5, max: 29 },
+                        color1: [53 / 255, 97 / 255, 159 / 255],
+                        color2: [74 / 255, 128 / 255, 191 / 255],
+                        eye: [25, 44, 50],
                         zoom: { min: 0, value: 7.5, max: 15 },
+                        repeat: { min: 0, value: 0, max: 50 },
                 })
         )
         return <canvas ref={gl.ref} />
 }
 ```
 
-</TabItem> */}
+</TabItem>
 </Tabs>

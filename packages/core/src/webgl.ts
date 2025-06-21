@@ -5,7 +5,7 @@ import type { GL, WebGLState } from './types'
 
 export const webgl = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgl2')!
-        const pg = createProgram(c, gl.vs, gl.fs)
+        const pg = createProgram(c, gl.vs, gl.fs)!
         const state = { context: c, program: pg } as WebGLState
         c.useProgram(pg)
 
