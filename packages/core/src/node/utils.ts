@@ -10,7 +10,8 @@ export const joins = (children: X[], state: NodeState) => {
 }
 
 export const generateFragmentMain = (body: string): string => {
-        if (state.isWebGL)
+        // if (isWebGL)
+        if (true)
                 return `
 void main() {
         gl_FragColor = ${body};

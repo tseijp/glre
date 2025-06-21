@@ -127,13 +127,6 @@ export const TYPE_MAPPING = {
         bvec4: 'vec4<bool>',
 } as const
 
-export const VARIABLE_MAPPING = {
-        fragCoord: 'position',
-        gl_FragCoord: 'position',
-        fragColor: '@location(0)',
-        gl_FragColor: '@location(0)',
-} as const
-
 export const CONTROL_NODES = ['if', 'loop', 'fn', 'fragment', 'vertex'] as const
 
 export const CONTROL_KEYS = [...CONTROL_NODES]

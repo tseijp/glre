@@ -1,16 +1,16 @@
 import { is } from '../utils/helpers'
-import { OPERATORS, VARIABLE_MAPPING } from './const'
+import { OPERATORS } from './const'
 import { generateFragmentMain, joins } from './utils'
 import type { NodeState, X } from './types'
 
 export const shader = (x: X, state?: NodeState | null): string => {
-        if (!state) state = { lines: [], variables: new Map(), indent: 0, uniforms: new Set() }
+        if (!state) state = { uniforms: new Set() }
         if (is.num(x)) return x.toFixed(1)
         if (is.str(x)) return x
         if (!x) return ''
 
         const type = x.type
-        const { id = '', children = [], isVariable, variableName } = x.props
+        const { id = '', children = [] } = x.props
         const { isWebGL } = state
         const [a, b, c] = children
 
@@ -20,17 +20,7 @@ export const shader = (x: X, state?: NodeState | null): string => {
         }
 
         if (type === 'variable') {
-                const mappedName = isWebGL ? id : VARIABLE_MAPPING[id as keyof typeof VARIABLE_MAPPING] || id
-                if (isVariable && variableName) return variableName
-                return mappedName
-        }
-
-        if (type === 'assign') {
-                const target = shader(a, state)
-                const value = shader(b, state)
-                const line = `${target} = ${value};`
-                state.lines?.push(line)
-                return target
+                // @TODO FIX
         }
 
         if (type === 'swizzle') return `${shader(b, state)}.${shader(a, state)}`
@@ -55,12 +45,6 @@ export const shader = (x: X, state?: NodeState | null): string => {
         }
 
         if (type === 'fragment') {
-                const main = generateFragmentMain(shader(a, state))
-                const uniforms = '' //generateUniforms(state)
-                return uniforms + main
-        }
-
-        if (type === 'vertex') {
                 const main = generateFragmentMain(shader(a, state))
                 const uniforms = '' //generateUniforms(state)
                 return uniforms + main

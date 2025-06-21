@@ -8,12 +8,8 @@ export type NodeTypes =
         | 'operator'
         | 'node_type'
         | 'function'
-        | 'if'
-        | 'loop'
-        | 'fn'
         | 'fragment'
         | 'vertex'
-        | 'assign'
 
 export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         add(n: X): NodeProxy
@@ -48,11 +44,8 @@ export type X = NodeProxy | number | string | null | undefined
 
 export interface NodeProps {
         id?: string
-        scope?: string
         children?: X[]
         defaultValue?: number | number[]
-        isVariable?: boolean
-        variableName?: string
         loopConfig?: LoopConfig
         onLoop?: (params: { i: X }) => void
         onExecute?: (params: any) => void
@@ -60,11 +53,7 @@ export interface NodeProps {
 }
 
 export interface NodeState {
-        lines?: string[]
         isWebGL?: boolean
-        variables?: Map<string, string>
-        scopes?: string[]
-        indent?: number
         uniforms?: Set<string>
         onUniform?: (name: string, value: any) => void
 }

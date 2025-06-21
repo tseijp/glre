@@ -20,14 +20,11 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                         if (key === 'type') return type
                         if (key === 'toVar')
                                 return (customName?: string) => {
-                                        const varNode = i(...(props.children || []))
-                                        varNode.props.isVariable = true
-                                        varNode.props.variableName = customName
-                                        return varNode
+                                        // @TODO FIX
                                 }
                         if (key === 'assign')
                                 return (y: X) => {
-                                        return node('assign', {}, x, y)
+                                        // @TODO FIX
                                 }
                         if (isSwizzle(key)) return s(key, x)
                         if (isOperator(key) || isFunction(key)) {
@@ -38,7 +35,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 },
                 set(_, key, value) {
                         if (isSwizzle(key)) {
-                                // ???
+                                // @TODO FIX
                         }
                         return value
                 },
@@ -48,7 +45,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 
 let count = 0
 
-export const i = (...args: X[]) => node('variable', { id: `i${count++}`, isVariable: true }, ...args)
+export const i = (...args: X[]) => node('variable', { id: `i${count++}` }, ...args)
 export const u = (key: string, defaultValue?: number | number[]) => node('uniform', { defaultValue }, key)
 export const s = (key: Swizzles, arg: X) => node('swizzle', {}, key, arg)
 export const n = (key: string, ...args: X[]) => node('node_type', {}, key, ...args)
