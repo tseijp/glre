@@ -1,0 +1,278 @@
+---
+title: 'シーン作成'
+description: 'glre を使った 3D シーンの作成ガイド'
+hide_table_of_contents: true
+image: https://github.com/tseijp.png
+keywords: [glsl, webgl, webgpu, hooks, react, reactjs, reactive, solid, solidjs, typescript, guide, tutorial]
+date: 2025-01-01
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# シーン作成
+
+シェーダーで 3D 世界を構築する。
+
+この章では glre を使用して、レイマーチングによる回転する立方体を作成します。
+シェーダープログラミングの基本概念から実装まで、ステップバイステップで学習します。
+
+## 事前準備
+
+### 環境セットアップ
+
+glre を使用する前に、表示するためのキャンバスが必要です。
+
+<Tabs>
+<TabItem value="html" label="HTML/Vanilla JS">
+
+```html
+<!DOCTYPE html>
+<html>
+        <head>
+                <title>glre Tutorial</title>
+        </head>
+        <body>
+                <canvas id="myCanvas"></canvas>
+                <script type="module">
+                        import createGL from 'https://esm.sh/glre'
+
+                        // シェーダーとJavaScriptコードをここに記述
+                        const fragmentShader = `
+            // ここにGLSLコードを書きます
+        `
+
+                        function App() {
+                                // ここにアプリケーションロジックを書きます
+                        }
+
+                        document.addEventListener('DOMContentLoaded', App)
+                </script>
+        </body>
+</html>
+```
+
+</TabItem>
+<TabItem value="react" label="React">
+
+```jsx
+import { useGL } from 'glre/react'
+
+const TutorialComponent = () => {
+        const gl = useGL({
+                frag: fragmentShader,
+                // 設定をここに記述
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>
+
+## レイマーチングの理解
+
+### レイマーチングとは
+
+レイマーチング（Ray Marching）は、数学的な距離関数を使用して
+3D オブジェクトを描画する技術です。
+従来のポリゴンベースのレンダリングとは異なり、
+各ピクセルから光線を飛ばして、オブジェクトとの交点を見つけます。
+
+### 距離関数（SDF）
+
+距離関数（Signed Distance Function）は、
+空間上の任意の点からオブジェクト表面までの最短距離を返す関数です。
+
+```glsl
+// 立方体の距離関数
+float boxSDF(vec3 p, float side) {
+    vec3 d = abs(p) - side;
+    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
+}
+```
+
+**この関数の仕組み：**
+
+- `abs(p) - side`: 各軸での立方体境界からの距離
+- 内側では負の値、外側では正の値を返す
+- `length(max(d, 0.0))`: 外側の距離計算
+- `min(max(d.x, max(d.y, d.z)), 0.0)`: 内側の距離計算
+
+## フラグメントシェーダーの構築
+
+### Uniform 変数の定義
+
+シェーダーに渡すパラメータを定義します。
+
+```glsl
+#version 300 es
+precision highp float;
+
+// キャンバス情報
+uniform vec2 iResolution;  // キャンバスサイズ
+
+// カメラパラメータ
+uniform vec3 up;           // カメラの上方向
+uniform vec3 eye;          // カメラ位置
+uniform vec3 focus;        // カメラの注視点
+uniform float focal;       // 焦点距離
+
+// オブジェクトパラメータ
+uniform float size;        // 立方体のサイズ
+
+out vec4 fragColor;
+```
+
+**各パラメータの役割：**
+
+- `iResolution`: 画面解像度で UV 座標の正規化に使用
+- `eye`, `focus`, `up`: カメラ行列の構築に使用
+- `focal`: 視野角の制御
+- `size`: 立方体の大きさ
+
+### カメラシステムの実装
+
+```glsl
+void main() {
+    // レイマーチング用のカメラセットアップ
+    vec3 look = normalize(focus - eye);    // 視線方向
+    vec3 right = normalize(cross(look, up)); // 右方向
+
+    // 画面座標を中央原点に変換
+    vec2 scr = gl_FragCoord.xy - iResolution * 0.5;
+
+    // レイの方向を計算
+    vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
+}
+```
+
+**計算の詳細：**
+
+1. `look`: カメラから注視点への方向ベクトル
+2. `right`: `look` と `up` の外積で右方向を算出
+3. `scr`: ピクセル座標を画面中央を原点とする座標系に変換
+4. `dir`: 焦点距離と画面座標から実際のレイ方向を計算
+
+### レイマーチングアルゴリズム
+
+```glsl
+void main() {
+    // ... カメラセットアップ ...
+
+    // レイマーチングの初期化
+    vec3 p = eye;                    // 現在位置
+    vec3 epsilon = vec3(0.0005, 0.0, 0.0); // 精度制御
+
+    // レイマーチングループ
+    for (int i = 0; i < 50; i++) {
+        float d = boxSDF(p, size);   // 現在位置から立方体までの距離
+
+        if (d <= epsilon.x) {
+            // 表面に到達した場合の法線計算
+            float dx = boxSDF(p + epsilon.xyy, size) - d;
+            float dy = boxSDF(p + epsilon.yxy, size) - d;
+            float dz = boxSDF(p + epsilon.yyx, size) - d;
+
+            vec3 normal = normalize(vec3(dx, dy, dz));
+
+            // 法線を色として出力
+            fragColor = vec4(normal * 0.5 + 0.5, 1.0);
+            return;
+        }
+
+        // レイを距離分だけ進める
+        p = p + d * dir;
+    }
+
+    // 何も当たらなかった場合
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
+}
+```
+
+**アルゴリズムの仕組み：**
+
+1. カメラ位置からレイを開始
+2. 各ステップで距離関数を評価
+3. 距離が十分小さければ表面に到達
+4. そうでなければ、その距離分だけレイを進める
+5. 最大ステップ数に達したら背景色を返す
+
+## JavaScript 側の実装
+
+### glre の初期化
+
+<Tabs>
+<TabItem value="vanilla" label="Vanilla JS">
+
+```js
+function App() {
+        const gl = createGL({
+                el: document.getElementById('myCanvas'),
+                frag: fragmentShader,
+                isWebGL: true, // WebGL強制使用（WebGPU対応の場合は省略可能）
+
+                // アニメーションループ
+                render() {
+                        const time = performance.now() / 1000
+                        const radius = 200
+
+                        // カメラを円軌道で回転
+                        const x = radius * Math.cos(time)
+                        const z = radius * Math.sin(time)
+
+                        gl.uniform({ eye: [x, 0, z] })
+                },
+        })
+
+        // 初期 uniform 値の設定
+        gl.uniform({
+                up: [0, 1, 0], // Y軸が上方向
+                focus: [0, 0, 0], // 原点を注視
+                focal: 500, // 焦点距離
+                size: 50, // 立方体のサイズ
+        })
+
+        gl.mount()
+}
+```
+
+</TabItem>
+<TabItem value="react" label="React">
+
+```jsx
+import { useGL } from 'glre/react'
+import { useEffect } from 'react'
+
+const RotatingCube = () => {
+        const gl = useGL({
+                frag: fragmentShader,
+
+                init() {
+                        // 初期設定
+                        this.uniform({
+                                up: [0, 1, 0],
+                                focus: [0, 0, 0],
+                                focal: 500,
+                                size: 50,
+                        })
+                },
+
+                loop() {
+                        // アニメーションループ
+                        const time = performance.now() / 1000
+                        const radius = 200
+                        const x = radius * Math.cos(time)
+                        const z = radius * Math.sin(time)
+
+                        this.uniform({ eye: [x, 0, z] })
+                },
+        })
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>

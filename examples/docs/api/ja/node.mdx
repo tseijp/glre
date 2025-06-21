@@ -1,0 +1,330 @@
+---
+title: 'Node System'
+description: 'TypeScriptでシェーダーを記述するNode System'
+hide_table_of_contents: true
+image: https://github.com/tseijp.png
+keywords: [node, shader, tsl, webgl, webgpu, glsl, wgsl, typescript]
+date: 2025-01-01
+---
+
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
+
+# Node System
+
+TypeScript でシェーダーを記述する Node System は、WebGL/WebGPU 両対応の軽量シェーダー言語です。
+Three.js Shading Language（TSL）互換の記法で、複雑な GLSL/WGSL コードを直感的な JavaScript 構文で表現できます。
+
+## なぜ Node System か
+
+### シェーダー開発の現実
+
+シェーダー開発は多くの開発者にとって高い壁です。
+GLSL/WGSL の習得、WebGL/WebGPU の API 差異
+型安全性の欠如など、創造性を阻む要素が山積しています。
+
+Node System はこれらの問題を根本的に解決します。
+TypeScript の型システムとメソッドチェーンにより
+シェーダー開発を直感的で安全なものに変革しています。
+
+### 数学的美学の実現
+
+シェーダーの本質は数学です。ベクトル演算、三角関数、補間関数の組み合わせが美しい視覚表現を生み出します。
+Node System は数学的概念を忠実にコードで表現し、思考をそのまま視覚化できる環境を提供します。
+
+## 基本概念
+
+### 型システム
+
+<Tabs>
+<TabItem value="scalars" label="スカラー型">
+
+```typescript
+const x = float(1.5) // 浮動小数点数
+const y = int(2) // 整数
+const z = bool(true) // 真偽値
+```
+
+</TabItem>
+<TabItem value="vectors" label="ベクトル型">
+
+```typescript
+const position = vec3(1, 2, 3) // 3次元ベクトル
+const color = vec4(1, 0, 0, 1) // RGBA色
+const uv = vec2(0.5, 0.5) // UV座標
+```
+
+</TabItem>
+<TabItem value="matrices" label="行列型">
+
+```typescript
+const transform = mat4() // 4x4変換行列
+const rotation = mat3() // 3x3回転行列
+```
+
+</TabItem>
+</Tabs>
+
+### 演算子チェーン
+
+数学的直感に従った自然な記述が可能です。
+
+```typescript
+const result = vec3(1, 2, 3).add(vec3(4, 5, 6)).mul(2).normalize()
+```
+
+### スウィズリング
+
+ベクトル成分へのアクセス。
+
+```typescript
+const pos = vec3(1, 2, 3)
+const xy = pos.xy // vec2(1, 2)
+const rgb = pos.rgb // 色成分として解釈
+```
+
+## 関数とスコープ
+
+### 関数定義
+
+```typescript
+const boxSDF = Fn((args) => {
+        const [p, size] = args
+        const d = abs(p).sub(size).toVar()
+        const inside = max(d.x, max(d.y, d.z)).min(float(0))
+        const outside = max(d, vec3(0)).length()
+        return inside.add(outside)
+})
+```
+
+### 変数管理
+
+```typescript
+const shader = Fn(() => {
+        // 変数宣言
+        const localVar = vec3(1, 2, 3).toVar('myVariable')
+
+        // 代入
+        localVar.assign(vec3(4, 5, 6))
+
+        // スウィズル代入
+        localVar.y = float(10)
+
+        return localVar
+})
+```
+
+## 制御フロー
+
+### 条件分岐
+
+<Tabs>
+<TabItem value="if-else" label="If-Else">
+
+```typescript
+If(condition, () => {
+        // true の場合の処理
+}).Else(() => {
+        // false の場合の処理
+})
+```
+
+</TabItem>
+<TabItem value="elseif" label="ElseIf">
+
+```typescript
+If(x.lessThan(float(0)), () => {
+        result.assign(vec3(1, 0, 0)) // 赤
+})
+        .ElseIf(x.equal(float(0)), () => {
+                result.assign(vec3(0, 1, 0)) // 緑
+        })
+        .Else(() => {
+                result.assign(vec3(0, 0, 1)) // 青
+        })
+```
+
+</TabItem>
+</Tabs>
+
+### ループ
+
+```typescript
+Loop(int(10), ({ i }) => {
+        sum.assign(sum.add(i))
+})
+```
+
+## 数学関数
+
+### 基本関数
+
+<Tabs>
+<TabItem value="trigonometry" label="三角関数">
+
+```typescript
+const wave = sin(time).mul(0.5).add(0.5)
+const circular = vec2(cos(angle), sin(angle))
+```
+
+</TabItem>
+<TabItem value="interpolation" label="補間関数">
+
+```typescript
+const smooth = smoothstep(float(0), float(1), t)
+const linear = mix(colorA, colorB, t)
+```
+
+</TabItem>
+<TabItem value="vector" label="ベクトル関数">
+
+```typescript
+const unit = normalize(vector)
+const distance = length(positionA.sub(positionB))
+const reflection = reflect(direction, normal)
+```
+
+</TabItem>
+</Tabs>
+
+## 実践的パターン
+
+### 距離関数
+
+レイマーチングの基礎となる距離関数を定義できます。
+
+```typescript
+const sphereSDF = Fn((args) => {
+        const [p, radius] = args
+        return length(p).sub(radius)
+})
+
+const boxSDF = Fn((args) => {
+        const [p, size] = args
+        const d = abs(p).sub(size)
+        return max(d, vec3(0))
+                .length()
+                .add(min(max(d.x, max(d.y, d.z)), float(0)))
+})
+```
+
+### 法線計算
+
+数値微分による法線算出。
+
+```typescript
+const calculateNormal = Fn((args) => {
+        const [p, sdf] = args
+        const eps = float(0.001)
+
+        const dx = sdf(p.add(vec3(eps, 0, 0))).sub(sdf(p.sub(vec3(eps, 0, 0))))
+        const dy = sdf(p.add(vec3(0, eps, 0))).sub(sdf(p.sub(vec3(0, eps, 0))))
+        const dz = sdf(p.add(vec3(0, 0, eps))).sub(sdf(p.sub(vec3(0, 0, eps))))
+
+        return normalize(vec3(dx, dy, dz))
+})
+```
+
+### レイマーチング
+
+基本的なレイマーチングアルゴリズム。
+
+```typescript
+const rayMarch = Fn((args) => {
+        const [origin, direction] = args
+
+        const totalDistance = float(0).toVar()
+        const position = origin.toVar()
+
+        Loop(int(100), ({ i }) => {
+                const distance = sceneSDF(position)
+
+                If(distance.lessThan(float(0.001)), () => {
+                        // ヒット処理
+                        return position
+                })
+
+                position.assign(position.add(direction.mul(distance)))
+                totalDistance.assign(totalDistance.add(distance))
+        })
+
+        return position
+})
+```
+
+## WebGL/WebGPU 対応
+
+### 自動変換
+
+同一のコードから WebGL（GLSL）と WebGPU（WGSL）の両方に自動変換されます。
+
+<Tabs>
+<TabItem value="wgsl" label="WGSL出力">
+
+```wgsl
+fn main() -> vec4f {
+  let uv: vec2f = fragCoord.xy / iResolution;
+  let color: vec3f = vec3f(uv, sin(iTime) * 0.5 + 0.5);
+  return vec4f(color, 1.0);
+}
+```
+
+</TabItem>
+<TabItem value="glsl" label="GLSL出力">
+
+```glsl
+void main() {
+  vec2 uv = gl_FragCoord.xy / iResolution.xy;
+  vec3 color = vec3(uv, sin(iTime) * 0.5 + 0.5);
+  fragColor = vec4(color, 1.0);
+}
+```
+
+</TabItem>
+</Tabs>
+
+### ブラウザー対応
+
+WebGPU 対応ブラウザーでは WGSL、非対応ブラウザーでは WebGL/GLSL に自動フォールバック。
+
+## 応用例
+
+### プロシージャルテクスチャ
+
+```typescript
+const noiseTexture = Fn(() => {
+        const uv = fragCoord.xy.div(iResolution).toVar()
+
+        const noise1 = sin(uv.x.mul(10)).mul(sin(uv.y.mul(10)))
+        const noise2 = sin(uv.x.mul(20).add(iTime)).mul(0.5)
+
+        const finalNoise = noise1.add(noise2).mul(0.5).add(0.5)
+
+        return vec4(finalNoise, finalNoise, finalNoise, 1)
+})
+```
+
+### フラクタル生成
+
+```typescript
+const mandelbrot = Fn(() => {
+        const uv = fragCoord.xy.div(iResolution).mul(4).sub(vec2(2))
+
+        const c = uv.toVar()
+        const z = vec2(0).toVar()
+        const iterations = int(0).toVar()
+
+        Loop(int(100), ({ i }) => {
+                If(length(z).greaterThan(float(2)), () => {
+                        // 発散判定
+                        return
+                })
+
+                z.assign(vec2(z.x.mul(z.x).sub(z.y.mul(z.y)).add(c.x), z.x.mul(z.y).mul(2).add(c.y)))
+                iterations.assign(i)
+        })
+
+        const color = iterations.div(float(100))
+        return vec4(color, color, color, 1)
+})
+```
