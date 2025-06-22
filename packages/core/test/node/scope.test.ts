@@ -1,9 +1,9 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec3, int, If, Loop, Fn } from '../../src/node'
 
-describe('スコープ管理', () => {
-        describe('変数スコープ', () => {
-                it('Fnスコープ内の変数', () => {
+describe('Scope management', () => {
+        describe('Variable scope', () => {
+                it('Variables within Fn scope', () => {
                         const shader = Fn(() => {
                                 const localVar = vec3(1, 2, 3).toVar('local')
                                 return localVar
@@ -13,7 +13,7 @@ describe('スコープ管理', () => {
                         expect(`${result}`).toContain('vec3f local')
                 })
 
-                it('ネストされたスコープ', () => {
+                it('Nested scopes', () => {
                         const shader = Fn(() => {
                                 const outer = float(1).toVar('outer')
 
@@ -30,7 +30,7 @@ describe('スコープ管理', () => {
                         expect(code).toContain('f32 inner')
                 })
 
-                it('ループスコープ', () => {
+                it('Loop scope', () => {
                         const shader = Fn(() => {
                                 const sum = float(0).toVar('sum')
 
@@ -48,19 +48,19 @@ describe('スコープ管理', () => {
                 })
         })
 
-        describe('スコープの分離', () => {
-                it('同名変数の異なるスコープ', () => {
+        describe('Scope separation', () => {
+                it('Same-named variables in different scopes', () => {
                         const shader = Fn(() => {
                                 const result = float(0).toVar('result')
 
                                 If(float(1).equal(float(1)), () => {
                                         const result = float(10).toVar('result')
-                                        // 内側のスコープのresult
+                                        // result in inner scope
                                 })
 
                                 If(float(2).equal(float(2)), () => {
                                         const result = float(20).toVar('result')
-                                        // 別の内側のスコープのresult
+                                        // result in another inner scope
                                 })
 
                                 return result
@@ -70,7 +70,7 @@ describe('スコープ管理', () => {
                         expect(code).toContain('f32 result')
                 })
 
-                it('関数間のスコープ分離', () => {
+                it('Scope separation between functions', () => {
                         const func1 = Fn(() => {
                                 const x = float(1).toVar('x')
                                 return x
@@ -89,10 +89,10 @@ describe('スコープ管理', () => {
                 })
         })
 
-        describe('グローバル vs ローカル変数', () => {
-                it('スコープ外での変数参照エラー', () => {
-                        // 現在の実装では、スコープ外の変数を参照しようとしても
-                        // エラーにはならないが、正しくコード生成されない
+        describe('Global vs local variables', () => {
+                it('Variable reference error outside scope', () => {
+                        // In current implementation, even if trying to reference variables outside scope
+                        // it does not error but code is not generated correctly
 
                         const shader = Fn(() => {
                                 const main = float(0).toVar('main')
@@ -102,8 +102,8 @@ describe('スコープ管理', () => {
                                         main.assign(local)
                                 })
 
-                                // ここで local を参照するとエラーになるべき
-                                // const invalid = local // これは現在エラーにならない
+                                // Referencing local here should cause an error
+                                // const invalid = local // This currently does not error
 
                                 return main
                         })
@@ -113,7 +113,7 @@ describe('スコープ管理', () => {
                         expect(code).toContain('f32 local')
                 })
 
-                it('スコープ内での変数のライフサイクル', () => {
+                it('Variable lifecycle within scope', () => {
                         const shader = Fn(() => {
                                 const counter = int(0).toVar('counter')
 

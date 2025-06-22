@@ -1,9 +1,9 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec3, uniform, Fn } from '../../src/node'
 
-describe('変数管理', () => {
-        describe('変数宣言（toVar）', () => {
-                it('Fnスコープ内での変数宣言', () => {
+describe('Variable management', () => {
+        describe('Variable declaration (toVar)', () => {
+                it('Variable declaration within Fn scope', () => {
                         const shader = Fn(() => {
                                 const x = vec3(1, 2, 3).toVar()
                                 const y = float(0.5).toVar('myFloat')
@@ -15,7 +15,7 @@ describe('変数管理', () => {
                         expect(`${result}`).toContain('f32 myFloat = 0.5')
                 })
 
-                it('型推論による変数宣言', () => {
+                it('Variable declaration with type inference', () => {
                         const shader = Fn(() => {
                                 const x = vec3(1, 2, 3).toVar()
                                 const y = x.mul(2).toVar()
@@ -28,8 +28,8 @@ describe('変数管理', () => {
                 })
         })
 
-        describe('変数代入（assign）', () => {
-                it('通常の代入', () => {
+        describe('Variable assignment (assign)', () => {
+                it('Normal assignment', () => {
                         const shader = Fn(() => {
                                 const x = vec3(1, 2, 3).toVar()
                                 x.assign(vec3(4, 5, 6))
@@ -40,7 +40,7 @@ describe('変数管理', () => {
                         expect(`${result}`).toContain('x = vec3f(4.0, 5.0, 6.0)')
                 })
 
-                it('スウィズル代入', () => {
+                it('Swizzle assignment', () => {
                         const shader = Fn(() => {
                                 const x = vec3(1, 2, 3).toVar()
                                 x.y = float(10)
@@ -52,8 +52,8 @@ describe('変数管理', () => {
                 })
         })
 
-        describe('Uniform変数', () => {
-                it('uniform宣言と使用', () => {
+        describe('Uniform variables', () => {
+                it('Uniform declaration and usage', () => {
                         const time = uniform(float(0))
                         const position = uniform(vec3(0, 0, 0))
 
@@ -61,7 +61,7 @@ describe('変数管理', () => {
                         expect(`${position}`).toContain('uniform')
                 })
 
-                it('uniform自動収集（未実装機能のテスト）', () => {
+                it('Automatic uniform collection (unimplemented feature test)', () => {
                         const config = {
                                 uniforms: new Set<string>(),
                                 isWebGL: false,
@@ -74,7 +74,7 @@ describe('変数管理', () => {
                                 return time.add(pos.x)
                         })
 
-                        // 現在は未実装のため、uniformsは空のまま
+                        // Currently unimplemented, so uniforms remains empty
                         expect(config.uniforms.size).toBe(0)
                 })
         })

@@ -1,9 +1,9 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec3, int, If, Loop, Fn } from '../../src/node'
 
-describe('制御フロー', () => {
-        describe('条件分岐（If/Else/ElseIf）', () => {
-                it('基本的なIf文', () => {
+describe('Control flow', () => {
+        describe('Conditional statements (If/Else/ElseIf)', () => {
+                it('Basic If statement', () => {
                         const shader = Fn(() => {
                                 const x = float(1).toVar()
                                 const y = float(0).toVar()
@@ -21,7 +21,7 @@ describe('制御フロー', () => {
                         expect(`${result}`).toContain('y = 10.0')
                 })
 
-                it('If-Else文', () => {
+                it('If-Else statement', () => {
                         const shader = Fn(() => {
                                 const x = float(1).toVar()
                                 const result = vec3(0).toVar()
@@ -40,7 +40,7 @@ describe('制御フロー', () => {
                         expect(code).toContain('else')
                 })
 
-                it('If-ElseIf-Else文', () => {
+                it('If-ElseIf-Else statement', () => {
                         const shader = Fn(() => {
                                 const x = float(2).toVar()
                                 const result = vec3(0).toVar()
@@ -64,8 +64,8 @@ describe('制御フロー', () => {
                         expect(code).toContain('else')
                 })
 
-                it('Else後のElseIf（未実装機能）', () => {
-                        // 現在の実装ではElse後のElseIfは動作しない
+                it('ElseIf after Else (unimplemented feature)', () => {
+                        // ElseIf after Else does not work in current implementation
                         const shader = Fn(() => {
                                 const x = float(2).toVar()
                                 const result = vec3(0).toVar()
@@ -76,8 +76,8 @@ describe('制御フロー', () => {
                                         result.assign(vec3(0, 1, 0))
                                 })
 
-                                // Else後のElseIfは現在未実装
-                                // ifStatement.ElseIf は存在しない
+                                // ElseIf after Else is currently unimplemented
+                                // ifStatement.ElseIf does not exist
 
                                 return result
                         })
@@ -88,8 +88,8 @@ describe('制御フロー', () => {
                 })
         })
 
-        describe('ループ（Loop）', () => {
-                it('基本的なループ', () => {
+        describe('Loops (Loop)', () => {
+                it('Basic loop', () => {
                         const shader = Fn(() => {
                                 const sum = float(0).toVar()
 
@@ -106,7 +106,7 @@ describe('制御フロー', () => {
                         expect(code).toContain('sum = (sum + i)')
                 })
 
-                it('ネストされたループ', () => {
+                it('Nested loops', () => {
                         const shader = Fn(() => {
                                 const result = float(0).toVar()
 
@@ -124,7 +124,7 @@ describe('制御フロー', () => {
                         expect(code.match(/for/g)?.length).toBeGreaterThanOrEqual(2)
                 })
 
-                it('ループ内での条件分岐', () => {
+                it('Conditional statements within loops', () => {
                         const shader = Fn(() => {
                                 const count = int(0).toVar()
 

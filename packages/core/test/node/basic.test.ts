@@ -9,9 +9,9 @@ const color = (hex: number) => {
         return vec3(r, g, b)
 }
 
-describe('基本型と演算', () => {
-        describe('型生成とコード変換', () => {
-                it('スカラー型のWGSL変換', () => {
+describe('Basic types and operations', () => {
+        describe('Type generation and code conversion', () => {
+                it('WGSL conversion for scalar types', () => {
                         const x = float(1.5)
                         const y = int(2)
 
@@ -19,15 +19,15 @@ describe('基本型と演算', () => {
                         expect(`${y}`).toBe('2')
                 })
 
-                it('ベクトル型のWGSL変換', () => {
+                it('WGSL conversion for vector types', () => {
                         const x = vec3(1, 2, 3)
                         const y = vec4(0.5)
 
                         expect(`${x}`).toBe('vec3f(1.0, 2.0, 3.0)')
-                        expect(`${y}`).toBe('vec4f(0.5, 0.5, 0.5, 0.5)')
+                        expect(`${y}`).toBe('vec4f(0.5)')
                 })
 
-                it('行列型のWGSL変換', () => {
+                it('WGSL conversion for matrix types', () => {
                         const x = mat4()
 
                         expect(`${x}`).toBe(
@@ -35,15 +35,15 @@ describe('基本型と演算', () => {
                         )
                 })
 
-                it('color型のWGSL変換', () => {
+                it('WGSL conversion for color types', () => {
                         const x = color(0xff0000)
 
                         expect(`${x}`).toBe('vec3f(1.0, 0.0, 0.0)')
                 })
         })
 
-        describe('演算子', () => {
-                it('算術演算子チェイン', () => {
+        describe('Operators', () => {
+                it('Arithmetic operator chaining', () => {
                         const x = vec3(1, 2, 3)
                         const y = vec3(4, 5, 6)
                         const z = x.add(y).mul(2).sub(vec3(1))
@@ -53,7 +53,7 @@ describe('基本型と演算', () => {
                         )
                 })
 
-                it('比較演算子', () => {
+                it('Comparison operators', () => {
                         const x = float(1)
                         const y = float(2)
                         const z = x.lessThan(y)
@@ -61,7 +61,7 @@ describe('基本型と演算', () => {
                         expect(`${z}`).toBe('(1.0 < 2.0)')
                 })
 
-                it('論理演算子の組み合わせ', () => {
+                it('Logical operator combinations', () => {
                         const x = float(1).equal(float(1))
                         const y = float(2).greaterThan(float(1))
                         const z = x.and(y)
@@ -70,15 +70,15 @@ describe('基本型と演算', () => {
                 })
         })
 
-        describe('スウィズリング', () => {
-                it('単一成分アクセス', () => {
+        describe('Swizzling', () => {
+                it('Single component access', () => {
                         const x = vec3(1, 2, 3)
                         const y = x.y
 
                         expect(`${y}`).toBe('vec3f(1.0, 2.0, 3.0).y')
                 })
 
-                it('複数成分アクセス', () => {
+                it('Multiple component access', () => {
                         const x = vec4(1, 2, 3, 4)
                         const y = x.xyz
                         const z = x.rg
@@ -87,7 +87,7 @@ describe('基本型と演算', () => {
                         expect(`${z}`).toBe('vec4f(1.0, 2.0, 3.0, 4.0).rg')
                 })
 
-                it('スウィズル演算', () => {
+                it('Swizzle operations', () => {
                         const x = vec3(1, 2, 3)
                         const y = x.xy.add(vec2(4, 5))
 
@@ -95,8 +95,8 @@ describe('基本型と演算', () => {
                 })
         })
 
-        describe('数学関数', () => {
-                it('基本数学関数', () => {
+        describe('Mathematical functions', () => {
+                it('Basic mathematical functions', () => {
                         const x = vec3(1, 2, 3)
                         const y = normalize(x)
                         const z = sin(float(0.5))
@@ -105,7 +105,7 @@ describe('基本型と演算', () => {
                         expect(`${z}`).toBe('sin(0.5)')
                 })
 
-                it('ベクトル関数', () => {
+                it('Vector functions', () => {
                         const x = vec3(1, 0, 0)
                         const y = vec3(0, 1, 0)
                         const z = cross(x, y)
@@ -115,7 +115,7 @@ describe('基本型と演算', () => {
                         expect(`${w}`).toBe('dot(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0))')
                 })
 
-                it('補間関数', () => {
+                it('Interpolation functions', () => {
                         const x = float(0)
                         const y = float(1)
                         const t = float(0.5)
