@@ -17,23 +17,25 @@ const addToScope = (x: NodeProxy) => {
         _scope.props.children.push(x)
 }
 
-export const If = (x: X, callback: () => void) => {
-        const y = node('scope')
-        scoped(y, callback)
-        const ifNode = node('if', null, x, y)
+export const If = (condition: X, callback: () => void) => {
+        const scope = node('scope')
+        scoped(scope, callback)
+        const ifNode = node('if', null, condition, scope)
         addToScope(ifNode)
-        return {
-                ElseIf: (y: X, elseCallback: () => void) => {
-                        const z = node('scope')
-                        scoped(z, elseCallback)
-                        ifNode.props.children!.push(y, z)
+        const createChain = () => ({
+                ElseIf: (newCondition: X, elseIfCallback: () => void) => {
+                        const elseIfScope = node('scope')
+                        scoped(elseIfScope, elseIfCallback)
+                        ifNode.props.children!.push(newCondition, elseIfScope)
+                        return createChain()
                 },
                 Else: (elseCallback: () => void) => {
-                        const z = node('scope')
-                        scoped(z, elseCallback)
-                        ifNode.props.children!.push(z)
+                        const elseScope = node('scope')
+                        scoped(elseScope, elseCallback)
+                        ifNode.props.children!.push(elseScope)
                 },
-        }
+        })
+        return createChain()
 }
 
 export const Loop = (x: X, callback?: (params: { i: NodeProxy }) => void) => {
@@ -44,18 +46,61 @@ export const Loop = (x: X, callback?: (params: { i: NodeProxy }) => void) => {
         return ret
 }
 
+export const Switch = (value: X) => {
+        const switchNode = node('switch', null, value)
+        addToScope(switchNode)
+        const createChain = () => ({
+                Case: (...values: X[]) => {
+                        return (callback: () => void) => {
+                                const caseScope = node('scope')
+                                scoped(caseScope, callback)
+                                const caseNode = node('case', null, ...values, caseScope)
+                                switchNode.props.children!.push(caseNode)
+                                return createChain()
+                        }
+                },
+                Default: (callback: () => void) => {
+                        const defaultScope = node('scope')
+                        scoped(defaultScope, callback)
+                        const defaultNode = node('default', null, defaultScope)
+                        switchNode.props.children!.push(defaultNode)
+                },
+        })
+
+        return createChain()
+}
+
 export const Fn = (callback: (args: X[]) => NodeProxy) => {
         return (...args: X[]) => {
-                let result
+                let result: NodeProxy | undefined
                 const fnScope = node('scope')
                 scoped(fnScope, () => (result = callback(args)))
-                return node('fn', null, fnScope, result)
+                const funcId = getId()
+                node(
+                        'fn',
+                        {
+                                id: funcId,
+                                args: args.length,
+                                returnType: 'auto',
+                        },
+                        fnScope,
+                        result!
+                )
+                return node('fn_call', { id: funcId }, ...args)
         }
 }
 
-export const toVar = (x: X) => (id: string) => {
+export const toVar = (x: X) => (id?: string) => {
         if (!id) id = getId()
         const y = node('variable', { id })
+        const z = node('declare', null, y, x)
+        addToScope(z)
+        return y
+}
+
+export const toConst = (x: X) => (id?: string) => {
+        if (!id) id = getId()
+        const y = node('constant', { id })
         const z = node('declare', null, y, x)
         addToScope(z)
         return y
@@ -65,4 +110,12 @@ export const assign = (x: X) => (y: X) => {
         const assignNode = node('assign', null, x, y)
         addToScope(assignNode)
         return x
+}
+
+export const varying = (value: X, name?: string) => {
+        if (!name) name = getId()
+        const varyingVar = node('varying', { id: name })
+        const declaration = node('declare', null, varyingVar, value)
+        addToScope(declaration)
+        return varyingVar
 }

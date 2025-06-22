@@ -1,6 +1,6 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
-import { FUNCTIONS, NODE_TYPES, OPERATOR_KEYS } from './const'
+import { FUNCTIONS, NODE_TYPES, OPERATOR_KEYS, OPERATORS } from './const'
 import type { Functions, NodeConfig, NodeType, Operators, Swizzles, X } from './types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
@@ -21,6 +21,13 @@ export const isFunction = (key: unknown): key is Functions => {
 
 let count = 0
 
+export const hex2rgb = (hex: number) => {
+        const r = ((hex >> 16) & 0xff) / 255
+        const g = ((hex >> 8) & 0xff) / 255
+        const b = (hex & 0xff) / 255
+        return [r, g, b]
+}
+
 export const getId = () => `i${count++}`
 
 export const joins = (children: X[], c: NodeConfig) => {
@@ -30,12 +37,39 @@ export const joins = (children: X[], c: NodeConfig) => {
                 .join(', ')
 }
 
+// WebGPU type formatting utility
+export const formatWebGPUType = (type: string, c?: NodeConfig): string => {
+        if (!c?.isWebGL && type.startsWith('vec')) {
+                return `${type}f`
+        }
+        return type
+}
+
+// Operator mapping utility
+export const getOperator = (op: string): string => {
+        return OPERATORS[op as keyof typeof OPERATORS] || op
+}
+
 export const inferType = (target: X, c: NodeConfig): string => {
-        if (!target || typeof target !== 'object') return 'float'
+        if (!target || typeof target !== 'object' || typeof target === 'boolean') return 'float'
+        if (!('type' in target) || !('props' in target)) return 'float'
+
         const { type, props } = target
         const { children = [] } = props
         const [x, y, z] = children
+
         if (type === 'node_type') return x as string
+        if (type === 'uniform') {
+                const defaultValue = props.defaultValue
+                if (typeof defaultValue === 'boolean') return 'bool'
+                if (typeof defaultValue === 'number') return 'float'
+                if (Array.isArray(defaultValue)) {
+                        if (defaultValue.length === 2) return 'vec2'
+                        if (defaultValue.length === 3) return 'vec3'
+                        if (defaultValue.length === 4) return 'vec4'
+                }
+                return 'float'
+        }
         if (type === 'operator') {
                 const left = inferType(y, c)
                 const right = inferType(z, c)
@@ -49,6 +83,11 @@ export const inferType = (target: X, c: NodeConfig): string => {
                 if (['dot', 'distance', 'length'].includes(x as string)) return 'float'
                 return 'float'
         }
+        if (type === 'texture') return 'vec4'
+        if (type === 'attribute') return 'vec3' // デフォルト
+        if (type === 'varying') return 'vec3' // デフォルト
+        if (type === 'builtin') return 'vec4' // デフォルト
+
         return 'float'
 }
 
@@ -57,9 +96,9 @@ const generateUniforms = (c: NodeConfig): string => {
         const uniformList = Array.from(c.uniforms)
         return (
                 uniformList
-                        .map((name, i) => {
-                                if (c.isWebGL) return `uniform vec2 ${name};`
-                                else return `@group(0) @binding(${i}) var<uniform> ${name}: vec2f;`
+                        .map((uniform, i) => {
+                                if (c.isWebGL) return `uniform ${uniform};`
+                                else return `@group(0) @binding(${i + 3}) var<uniform> ${uniform};`
                         })
                         .join('\n') + '\n'
         )

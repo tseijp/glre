@@ -1,4 +1,6 @@
 import { f, n, node, u } from './node'
+import { hex2rgb } from './utils'
+import { is } from '../utils/helpers'
 import type { X } from './types'
 export * from './code'
 export * from './const'
@@ -12,6 +14,25 @@ export const iResolution = u('iResolution', [1280, 800])
 export const iMouse = u('iMouse', [0, 0])
 export const iTime = u('iTime', 0)
 export const fragCoord = node('variable', { id: 'fragCoord' })
+
+// Default attributes
+export const uv = (index = 0) => node('attribute', { id: `uv${index || ''}` })
+export const vertexColor = (index = 0) => node('attribute', { id: `color${index || ''}` })
+export const attribute = (id: string, type?: string) => node('attribute', { id, type })
+
+export const vertexStage = (value: X) => {
+        return node('vertex_stage', null, value)
+}
+
+// Buildin Variables
+export const positionLocal = node('builtin', { id: 'positionLocal' })
+export const positionWorld = node('builtin', { id: 'positionWorld' })
+export const positionView = node('builtin', { id: 'positionView' })
+export const normalLocal = node('builtin', { id: 'normalLocal' })
+export const normalWorld = node('builtin', { id: 'normalWorld' })
+export const normalView = node('builtin', { id: 'normalView' })
+export const screenCoordinate = node('builtin', { id: 'screenCoordinate' })
+export const screenUV = node('builtin', { id: 'screenUV' })
 
 // Type constructors
 export const float = (x: X) => n('float', x)
@@ -33,59 +54,69 @@ export const uvec4 = (x?: X, y?: X, z?: X, w?: X) => n('uvec4', x, y, z, w)
 export const bvec2 = (x?: X, y?: X) => n('bvec2', x, y)
 export const bvec3 = (x?: X, y?: X, z?: X) => n('bvec3', x, y, z)
 export const bvec4 = (x?: X, y?: X, z?: X, w?: X) => n('bvec4', x, y, z, w)
+export const color = (r?: X, g?: X, b?: X) => {
+        if (is.num(r) && is.und(g) && is.und(b)) return vec3(...hex2rgb(r))
+        return vec3(r, g, b)
+}
+
+// Texture Functions
+export const texture = (x: X, y: X, z?: X) => node('texture', null, 'texture', x, y, z)
+export const cubeTexture = (x: X, y: X, z?: X) => node('texture', null, 'cubeTexture', x, y, z)
+export const textureSize = (x: X, y?: X) => node('texture', null, 'textureSize', x, y)
 
 // Math Functions
-export const abs = (x: X) => f('abs', x) // Return the absolute value of the parameter.
-export const acos = (x: X) => f('acos', x) // Return the arccosine of the parameter.
-export const all = (x: X) => f('all', x) // Return true if all components of x are true.
-export const any = (x: X) => f('any', x) // Return true if any component of x is true.
-export const asin = (x: X) => f('asin', x) // Return the arcsine of the parameter.
-export const atan = (y: X, x: X) => f('atan', y, x) // Return the arc-tangent of the parameters.
-export const bitcast = (x: X, y: X) => f('bitcast', x, y) // Reinterpret the bits of a value as a different type.
-export const cbrt = (x: X) => f('cbrt', x) // Return the cube root of the parameter.
-export const ceil = (x: X) => f('ceil', x) // Find the nearest integer that is greater than or equal to the parameter.
-export const clamp = (x: X, min: X, max: X) => f('clamp', x, min, max) // Constrain a value to lie between two further values.
-export const cos = (x: X) => f('cos', x) // Return the cosine of the parameter.
-export const cross = (x: X, y: X) => f('cross', x, y) // Calculate the cross product of two vectors.
-export const dFdx = (p: X) => f('dFdx', p) // Return the partial derivative of an argument with respect to x.
-export const dFdy = (p: X) => f('dFdy', p) // Return the partial derivative of an argument with respect to y.
-export const degrees = (radians: X) => f('degrees', radians) // Convert a quantity in radians to degrees.
-export const difference = (x: X, y: X) => f('difference', x, y) // Calculate the absolute difference between two values.
-export const distance = (x: X, y: X) => f('distance', x, y) // Calculate the distance between two points.
-export const dot = (x: X, y: X) => f('dot', x, y) // Calculate the dot product of two vectors.
-export const equals = (x: X, y: X) => f('equals', x, y) // Return true if x equals y.
-export const exp = (x: X) => f('exp', x) // Return the natural exponentiation of the parameter.
-export const exp2 = (x: X) => f('exp2', x) // Return 2 raised to the power of the parameter.
-export const faceforward = (N: X, I: X, Nref: X) => f('faceforward', N, I, Nref) // Return a vector pointing in the same direction as another.
-export const floor = (x: X) => f('floor', x) // Find the nearest integer less than or equal to the parameter.
-export const fract = (x: X) => f('fract', x) // Compute the fractional part of the argument.
-export const fwidth = (x: X) => f('fwidth', x) // Return the sum of the absolute derivatives in x and y.
-export const inverseSqrt = (x: X) => f('inverseSqrt', x) // Return the inverse of the square root of the parameter.
-export const length = (x: X) => f('length', x) // Calculate the length of a vector.
-export const lengthSq = (x: X) => f('lengthSq', x) // Calculate the squared length of a vector.
-export const log = (x: X) => f('log', x) // Return the natural logarithm of the parameter.
-export const log2 = (x: X) => f('log2', x) // Return the base 2 logarithm of the parameter.
-export const max = (x: X, y: X) => f('max', x, y) // Return the greater of two values.
-export const min = (x: X, y: X) => f('min', x, y) // Return the lesser of two values.
-export const mix = (x: X, y: X, a: X) => f('mix', x, y, a) // Linearly interpolate between two values.
-export const negate = (x: X) => f('negate', x) // Negate the value of the parameter ( -x ).
-export const normalize = (x: X) => f('normalize', x) // Calculate the unit vector in the same direction as the original vector.
-export const oneMinus = (x: X) => f('oneMinus', x) // Return 1 minus the parameter.
-export const pow = (x: X, y: X) => f('pow', x, y) // Return the value of the first parameter raised to the power of the second.
-export const pow2 = (x: X) => f('pow2', x) // Return the square of the parameter.
-export const pow3 = (x: X) => f('pow3', x) // Return the cube of the parameter.
-export const pow4 = (x: X) => f('pow4', x) // Return the fourth power of the parameter.
-export const radians = (degrees: X) => f('radians', degrees) // Convert a quantity in degrees to radians.
-export const reciprocal = (x: X) => f('reciprocal', x) // Return the reciprocal of the parameter (1/x).
-export const reflect = (I: X, N: X) => f('reflect', I, N) // Calculate the reflection direction for an incident vector.
-export const refract = (I: X, N: X, eta: X) => f('refract', I, N, eta) // Calculate the refraction direction for an incident vector.
-export const round = (x: X) => f('round', x) // Round the parameter to the nearest integer.
-export const saturate = (x: X) => f('saturate', x) // Constrain a value between 0 and 1.
-export const sign = (x: X) => f('sign', x) // Extract the sign of the parameter.
-export const sin = (x: X) => f('sin', x) // Return the sine of the parameter.
-export const smoothstep = (e0: X, e1: X, x: X) => f('smoothstep', e0, e1, x) // Perform Hermite interpolation between two values.
-export const sqrt = (x: X) => f('sqrt', x) // Return the square root of the parameter.
-export const step = (edge: X, x: X) => f('step', edge, x) // Generate a step function by comparing two values.
-export const tan = (x: X) => f('tan', x) // Return the tangent of the parameter.
-export const transformDirection = (dir: X, matrix: X) => f('transformDirection', dir, matrix) // Transform the direction of a vector by a matrix and then normalize the result.
-export const trunc = (x: X) => f('trunc', x) // Truncate the parameter, removing the fractional part.
+export const abs = (x: X) => f('abs', x)
+export const acos = (x: X) => f('acos', x)
+export const all = (x: X) => f('all', x)
+export const any = (x: X) => f('any', x)
+export const asin = (x: X) => f('asin', x)
+export const atan = (y: X, x?: X) => (x !== undefined ? f('atan', y, x) : f('atan', y))
+export const atan2 = (y: X, x: X) => f('atan', y, x)
+export const bitcast = (x: X, y: X) => f('bitcast', x, y)
+export const cbrt = (x: X) => f('cbrt', x)
+export const ceil = (x: X) => f('ceil', x)
+export const clamp = (x: X, min: X, max: X) => f('clamp', x, min, max)
+export const cos = (x: X) => f('cos', x)
+export const cross = (x: X, y: X) => f('cross', x, y)
+export const dFdx = (p: X) => f('dFdx', p)
+export const dFdy = (p: X) => f('dFdy', p)
+export const degrees = (radians: X) => f('degrees', radians)
+export const difference = (x: X, y: X) => f('difference', x, y)
+export const distance = (x: X, y: X) => f('distance', x, y)
+export const dot = (x: X, y: X) => f('dot', x, y)
+export const equals = (x: X, y: X) => f('equals', x, y)
+export const exp = (x: X) => f('exp', x)
+export const exp2 = (x: X) => f('exp2', x)
+export const faceforward = (N: X, I: X, Nref: X) => f('faceforward', N, I, Nref)
+export const floor = (x: X) => f('floor', x)
+export const fract = (x: X) => f('fract', x)
+export const fwidth = (x: X) => f('fwidth', x)
+export const inverseSqrt = (x: X) => f('inverseSqrt', x)
+export const length = (x: X) => f('length', x)
+export const lengthSq = (x: X) => f('lengthSq', x)
+export const log = (x: X) => f('log', x)
+export const log2 = (x: X) => f('log2', x)
+export const max = (x: X, y: X) => f('max', x, y)
+export const min = (x: X, y: X) => f('min', x, y)
+export const mix = (x: X, y: X, a: X) => f('mix', x, y, a)
+export const negate = (x: X) => f('negate', x)
+export const normalize = (x: X) => f('normalize', x)
+export const oneMinus = (x: X) => f('oneMinus', x)
+export const pow = (x: X, y: X) => f('pow', x, y)
+export const pow2 = (x: X) => f('pow2', x)
+export const pow3 = (x: X) => f('pow3', x)
+export const pow4 = (x: X) => f('pow4', x)
+export const radians = (degrees: X) => f('radians', degrees)
+export const reciprocal = (x: X) => f('reciprocal', x)
+export const reflect = (I: X, N: X) => f('reflect', I, N)
+export const refract = (I: X, N: X, eta: X) => f('refract', I, N, eta)
+export const round = (x: X) => f('round', x)
+export const saturate = (x: X) => f('saturate', x)
+export const sign = (x: X) => f('sign', x)
+export const sin = (x: X) => f('sin', x)
+export const smoothstep = (e0: X, e1: X, x: X) => f('smoothstep', e0, e1, x)
+export const sqrt = (x: X) => f('sqrt', x)
+export const step = (edge: X, x: X) => f('step', edge, x)
+export const tan = (x: X) => f('tan', x)
+export const transformDirection = (dir: X, matrix: X) => f('transformDirection', dir, matrix)
+export const trunc = (x: X) => f('trunc', x)
