@@ -2,7 +2,6 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING } from './const'
 import type { Conversions, Functions, NodeConfig, NodeProxy, Operators, Swizzles, X } from './types'
-import { getFunctions } from './scope'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
