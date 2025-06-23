@@ -10,13 +10,11 @@ export type Operators = (typeof OPERATOR_KEYS)[number]
 
 export interface NodeProps {
         id?: string
-        args?: number
+        args?: X[]
         type?: string
         children?: X[]
         returnType?: string
         value?: number | number[] | boolean
-        paramNames?: string[]
-        paramTypes?: string[]
 }
 
 export interface NodeConfig {

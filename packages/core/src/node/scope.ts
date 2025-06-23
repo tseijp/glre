@@ -1,6 +1,8 @@
 import { node } from './node'
 import { getId } from './utils'
 import type { NodeProxy, X } from './types'
+import { infer } from './infer'
+import { defineConfig } from 'tsup'
 
 let _scope: NodeProxy | null = null
 let _functions: Map<string, NodeProxy> = new Map()
@@ -18,8 +20,8 @@ const addToScope = (x: NodeProxy) => {
         _scope.props.children.push(x)
 }
 
-const addFunction = (id: string, fnNode: NodeProxy) => {
-        _functions.set(id, fnNode)
+const addFunction = (id: string, x: NodeProxy) => {
+        _functions.set(id, x)
 }
 
 export const getFunctions = () => _functions
@@ -82,60 +84,17 @@ export const Switch = (value: X) => {
 }
 
 export const Fn = (callback: (args: X[]) => NodeProxy) => {
-        const fnId = getId()
-        
-        const fnWrapper = (...args: X[]) => {
-                let result: NodeProxy | undefined
-                const fnScope = node('scope')
-                
-                // Parse parameters from callback signature
-                const fnStr = callback.toString()
-                const paramMatch = fnStr.match(/\(\s*(?:\[\s*([^\]]+)\s*\]|\{\s*([^}]+)\s*\}|([^)]+))\s*\)/)
-                let paramNames: string[] = []
-                
-                if (paramMatch) {
-                        const paramStr = paramMatch[1] || paramMatch[2] || paramMatch[3] || ''
-                        paramNames = paramStr.split(',').map(p => {
-                                const cleanParam = p.split('=')[0].trim().replace(/[{}\[\]]/g, '')
-                                return cleanParam || `arg${paramNames.length}`
-                        }).filter(Boolean)
-                }
-                
-                // 引数の型を推論
-                const { infer, inferParameterTypes } = require('./infer')
-                const argTypes = inferParameterTypes(args)
-                
-                // Create parameter nodes with inferred types
-                const paramNodes = paramNames.map((name, i) => {
-                        const paramType = argTypes[i] || 'float'
-                        const paramNode = node('variable', { 
-                                id: name.trim(), 
-                                returnType: paramType 
-                        })
-                        return paramNode
-                })
-                
-                scoped(fnScope, () => {
-                        result = callback(paramNodes)
-                })
-                
-                // 戻り値の型を推論
-                const returnType = result ? infer(result) : 'void'
-                
-                const fnDef = node('fn_def', { 
-                        id: fnId, 
-                        paramNames,
-                        paramTypes: argTypes,
-                        returnType
-                }, fnScope, result!)
-                
-                addFunction(fnId, fnDef)
-                
-                return node('fn_run', { id: fnId, returnType }, ...args)
+        const id = getId()
+        return (...args: NodeProxy[]) => {
+                const x = node('scope')
+                let y: NodeProxy | undefined
+                scoped(x, () => (y = callback(args)))
+                const returnType = y ? infer(y) : 'void'
+                const def = node('fn_def', { id, returnType, args }, x, y)
+                const ret = node('fn_run', { id, returnType }, ...args)
+                addFunction(id, def)
+                return ret
         }
-        
-        fnWrapper.fnId = fnId
-        return fnWrapper
 }
 
 export const toVar = (x: X) => (id?: string) => {

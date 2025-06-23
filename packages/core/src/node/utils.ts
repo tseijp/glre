@@ -1,6 +1,6 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
-import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS } from './const'
+import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING } from './const'
 import type { Conversions, Functions, NodeConfig, NodeProxy, Operators, Swizzles, X } from './types'
 import { getFunctions } from './scope'
 
@@ -46,8 +46,7 @@ export const joins = (children: X[], c: NodeConfig) => {
 
 export const formatConversions = (x: X, c?: NodeConfig) => {
         if (!is.str(x)) return ''
-        if (!c?.isWebGL && x.startsWith('vec')) return `${x}f`
-        return x
+        return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING]
 }
 
 export const getOperator = (op: X) => {

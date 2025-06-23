@@ -1,5 +1,4 @@
 import { is } from '../utils/helpers'
-import { TYPE_MAPPING } from './const'
 import { infer } from './infer'
 import { joins, getOperator, formatConversions } from './utils'
 import type { NodeConfig, X } from './types'
@@ -35,12 +34,12 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'fn_run') return `${id}(${children.map((child) => code(child, c)).join(', ')})`
         if (type === 'fn_def') {
-                const paramNames = props.paramNames || []
-                const paramTypes = props.paramTypes || []
-                const returnType = props.returnType || infer(y, c)
+                const { args = [], returnType } = props
+                console.log(args)
+                const paramNames = [], // not work
+                        paramTypes = [] // not work
                 const scopeCode = code(x, c)
                 const returnCode = y ? `return ${code(y, c)};` : ''
-
                 const params = paramNames
                         .map((name, i) => {
                                 const paramType = paramTypes[i] || 'float'
@@ -49,14 +48,12 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                         .join(', ')
 
                 if (c?.isWebGL) {
-                        return `${returnType} ${id}(${params}) {\n${scopeCode}\n${returnCode}\n}`
+                        return `${returnType} ${id}(${params}) {${scopeCode}\n${returnCode}\n}`
                 } else {
-                        const wgslReturnType = TYPE_MAPPING[returnType as keyof typeof TYPE_MAPPING] || returnType
+                        const wgslReturnType = formatConversions(returnType)
                         const wgslParams = paramNames
                                 .map((name, i) => {
-                                        const paramType = paramTypes[i] || 'float'
-                                        const wgslParamType =
-                                                TYPE_MAPPING[paramType as keyof typeof TYPE_MAPPING] || paramType
+                                        const wgslParamType = formatConversions(returnType)
                                         return `${name}: ${wgslParamType}`
                                 })
                                 .join(', ')
@@ -96,7 +93,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 const varType = infer(y, c)
                 const varName = (x as any)?.props?.id
                 if (c.isWebGL) return `${varType} ${varName} = ${code(y, c)};`
-                const wgslType = TYPE_MAPPING[varType as keyof typeof TYPE_MAPPING]
+                const wgslType = formatConversions(varType)
                 return `var ${varName}: ${wgslType} = ${code(y, c)};`
         }
         // WebGL/WebGPU builtin variables mapping
