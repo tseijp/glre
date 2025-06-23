@@ -1,11 +1,9 @@
+import { infer } from './infer'
 import { node } from './node'
 import { getId } from './utils'
 import type { NodeProxy, X } from './types'
-import { infer } from './infer'
-import { defineConfig } from 'tsup'
 
 let _scope: NodeProxy | null = null
-let _functions: Map<string, NodeProxy> = new Map()
 
 const scoped = (x: NodeProxy | null, callback = () => {}) => {
         const prev = _scope
@@ -18,16 +16,6 @@ const addToScope = (x: NodeProxy) => {
         if (!_scope) return // ignore
         if (!_scope.props.children) _scope.props.children = []
         _scope.props.children.push(x)
-}
-
-const addFunction = (id: string, x: NodeProxy) => {
-        _functions.set(id, x)
-}
-
-export const getFunctions = () => _functions
-
-export const clearFunctions = () => {
-        _functions.clear()
 }
 
 export const If = (condition: X, callback: () => void) => {
@@ -83,17 +71,22 @@ export const Switch = (value: X) => {
         return createChain()
 }
 
-export const Fn = (callback: (args: X[]) => NodeProxy) => {
+export const Fn = (callback: (args: NodeProxy[]) => NodeProxy) => {
         const id = getId()
         return (...args: NodeProxy[]) => {
                 const x = node('scope')
                 let y: NodeProxy | undefined
-                scoped(x, () => (y = callback(args)))
+                const paramVars: NodeProxy[] = []
+                for (let i = 0; i < args.length; i++) {
+                        const paramId = `p${i}`
+                        const paramVar = node('variable', { id: paramId })
+                        paramVars.push(paramVar)
+                }
+                scoped(x, () => (y = callback(paramVars)))
                 const returnType = y ? infer(y) : 'void'
-                const def = node('fn_def', { id, returnType, args }, x, y)
-                const ret = node('fn_run', { id, returnType }, ...args)
-                addFunction(id, def)
-                return ret
+                const paramInfo = args.map((arg, i) => ({ name: `p${i}`, type: infer(arg) }))
+                const def = node('fn_def', { id, returnType, paramInfo, args }, x, y)
+                return node('fn_run', { id, returnType }, def, ...paramVars)
         }
 }
 

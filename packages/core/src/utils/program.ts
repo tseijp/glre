@@ -34,20 +34,22 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
 export const createProgram = (
         c: WebGLRenderingContext,
         vs: string | X = defaultVertexGLSL,
-        fs: string | X = defaultFragmentGLSL
+        fs: string | X = defaultFragmentGLSL,
+        onError = () => {}
 ) => {
         if (!is.str(fs)) fs = fragment(fs, { isWebGL: true })
         if (!is.str(vs)) vs = vertex(fs, { isWebGL: true })
         const pg = c.createProgram()
         const _vs = createShader(c, vs, c.VERTEX_SHADER)
         const _fs = createShader(c, fs, c.FRAGMENT_SHADER)
-        if (!_vs || !_fs) return
+        if (!_vs || !_fs) return onError()
         c.attachShader(pg, _vs)
         c.attachShader(pg, _fs)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
+        onError()
         console.warn(`Could not link pg: ${error}`)
 }
 

@@ -1,6 +1,6 @@
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
 
-export type Constants = (typeof CONSTANTS)[number]
+export type Constants = (typeof CONSTANTS)[number] | 'void'
 
 export type Conversions = (typeof CONVERSIONS)[number]
 
@@ -13,13 +13,15 @@ export interface NodeProps {
         args?: X[]
         type?: string
         children?: X[]
-        returnType?: string
+        returnType?: Constants
         value?: number | number[] | boolean
+        paramInfo?: Array<{ name: string; type: string }>
 }
 
 export interface NodeConfig {
         isWebGL?: boolean
         uniforms?: Set<string>
+        functions?: Set<string>
         onUniform?: (name: string, value: any) => void
 }
 

@@ -22,8 +22,8 @@ export const isConversion = (key: unknown): key is Conversions => {
 
 export const isNodeProxy = (x: unknown): x is NodeProxy => {
         if (!x) return false
-        if (typeof x !== 'object') return false
-        return (x as NodeProxy).isProxy
+        if (!is.fun(x)) return false // @ts-ignore
+        return x.isProxy
 }
 
 let count = 0
@@ -46,6 +46,7 @@ export const joins = (children: X[], c: NodeConfig) => {
 
 export const formatConversions = (x: X, c?: NodeConfig) => {
         if (!is.str(x)) return ''
+        if (c?.isWebGL) return x
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING]
 }
 
@@ -54,14 +55,14 @@ export const getOperator = (op: X) => {
 }
 
 const generateHead = (c: NodeConfig) => {
-        if (!c.uniforms || c.uniforms.size === 0) return ''
-        const uniformList = Array.from(c.uniforms)
-        return uniformList
+        const uniforms = Array.from(c.uniforms!)
                 .map((uniform, i) => {
                         if (c.isWebGL) return `uniform ${uniform};`
                         else return `@group(0) @binding(${i}) var<uniform> ${uniform};`
                 })
                 .join('\n')
+        const functions = Array.from(c.functions!).join('\n')
+        return `${uniforms}\n${functions}`
 }
 
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
@@ -84,16 +85,7 @@ return ${body};
 
 export const fragment = (x: X, c: NodeConfig) => {
         const body = code(x, c)
-        const uniformsHead = generateHead(c)
-
-        // Generate function definitions
-        const functions = getFunctions()
-        const functionDefs = Array.from(functions.values())
-                .map((fn) => code(fn, c))
-                .join('\n\n')
-
-        const head = [uniformsHead, functionDefs].filter(Boolean).join('\n\n')
-
+        const head = generateHead(c)
         return generateFragmentMain(body, head, c.isWebGL)
 }
 

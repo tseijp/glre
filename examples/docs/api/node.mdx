@@ -268,7 +268,7 @@ The same code automatically converts to both WebGL (GLSL) and WebGPU (WGSL).
 
 ```wgsl
 fn main() -> vec4f {
-  let uv: vec2f = fragCoord.xy / iResolution;
+  let uv: vec2f = position.xy / iResolution;
   let color: vec3f = vec3f(uv, sin(iTime) * 0.5 + 0.5);
   return vec4f(color, 1.0);
 }
@@ -299,7 +299,7 @@ while using WGSL for WebGPU-capable browsers.
 
 ```typescript
 const noiseTexture = Fn(() => {
-        const uv = fragCoord.xy.div(iResolution).toVar()
+        const uv = position.xy.div(iResolution).toVar()
 
         const noise1 = sin(uv.x.mul(10)).mul(sin(uv.y.mul(10)))
         const noise2 = sin(uv.x.mul(20).add(iTime)).mul(0.5)
@@ -314,7 +314,7 @@ const noiseTexture = Fn(() => {
 
 ```typescript
 const mandelbrot = Fn(() => {
-        const uv = fragCoord.xy.div(iResolution).mul(4).sub(vec2(2))
+        const uv = position.xy.div(iResolution).mul(4).sub(vec2(2))
 
         const c = uv.toVar()
         const z = vec2(0).toVar()

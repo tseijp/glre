@@ -104,8 +104,8 @@ function Canvas() {
                         return min(d, abs(ellipse(p, angle)) - ellipseStroke);
                 }
                 @fragment
-                fn main(@builtin(position) fragCoord: vec4<f32>) -> @location(0) vec4<f32> {
-                        let uv = fract(fragCoord.xy / iResolution);
+                fn main(@builtin(position) position: vec4<f32>) -> @location(0) vec4<f32> {
+                        let uv = fract(position.xy / iResolution);
                         var p = uv * 2.4 - 1.2;
                         p.x *= iResolution.x / iResolution.y;
                         var d = circle(p);

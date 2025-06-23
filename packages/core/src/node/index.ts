@@ -4,6 +4,7 @@ import { is } from '../utils/helpers'
 import type { X } from './types'
 export * from './code'
 export * from './const'
+export * from './infer'
 export * from './node'
 export * from './scope'
 export * from './types'
@@ -13,7 +14,7 @@ export * from './utils'
 export const iResolution = u('iResolution', [1280, 800])
 export const iMouse = u('iMouse', [0, 0])
 export const iTime = u('iTime', 0)
-export const fragCoord = node('variable', { id: 'fragCoord' })
+export const position = node('variable', { id: 'gl_FragCoord' })
 
 // Default attributes
 export const uv = (index = 0) => node('attribute', { id: `uv${index || ''}` })

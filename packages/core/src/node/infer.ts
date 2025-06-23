@@ -42,13 +42,13 @@ const getHighestPriorityType = (args: X[]) => {
                 return currentPriority > highestPriority ? currentType : highest
         }, 'float')
 }
-const inferSwizzleType = (componentCount: number): Constants => {
-        return COMPONENT_COUNT_TO_TYPE[componentCount as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'vec4'
+const inferSwizzleType = (count: number): Constants => {
+        return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'vec4'
 }
 
 const inferBuiltinType = (id: string | undefined): Constants => {
         if (!id) return 'vec3'
-        return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES] || 'vec3'
+        return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES]!
 }
 
 const inferMathType = (funcName: string, args: X[]): Constants => {
@@ -64,9 +64,8 @@ const inferMathType = (funcName: string, args: X[]): Constants => {
 }
 
 export const infer = (target: X, c?: NodeConfig): Constants => {
-        if (!target) return 'float'
+        if (!target) throw ``
         if (!isNodeProxy(target)) return inferPrimitiveType(target)
-
         const { type, props } = target
         const { id, children = [], value, returnType } = props
         const [x, y, z] = children
@@ -83,8 +82,8 @@ export const infer = (target: X, c?: NodeConfig): Constants => {
         if (type === 'math_fun') return inferMathType(x as string, children.slice(1))
         if (type === 'swizzle') return inferSwizzleType((x as string).length)
         if (type === 'ternary') return inferBinaryOpType(infer(y, c), infer(z, c), 'add')
-        if (type === 'fn_run') return (returnType as Constants) || 'float'
-        if (type === 'fn_def') return (returnType as Constants) || (y ? infer(y, c) : ('void' as Constants))
+        if (type === 'fn_run') return returnType!
+        if (type === 'fn_def') return returnType!
         if (type === 'builtin') return inferBuiltinType(id)
         return 'float'
 }

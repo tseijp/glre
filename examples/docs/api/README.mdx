@@ -304,7 +304,7 @@ const gl = useGL({
 import { vec2, vec3, vec4, sin, cos, fract } from 'glre/node'
 
 const fragmentShader = Fn(() => {
-        const uv = fragCoord.xy.div(iResolution).toVar()
+        const uv = position.xy.div(iResolution).toVar()
         const time = iTime.toVar()
 
         const color = vec3(sin(time.add(uv.x.mul(10))), cos(time.add(uv.y.mul(10))), sin(time.mul(2)))
@@ -329,7 +329,7 @@ const noiseFunction = Fn((args) => {
 })
 
 const mainShader = Fn(() => {
-        const uv = fragCoord.xy.div(iResolution).toVar()
+        const uv = position.xy.div(iResolution).toVar()
         const noise = noiseFunction(uv, iTime)
         return vec4(noise, noise, noise, 1.0)
 })

@@ -171,7 +171,7 @@ export const COMPONENT_COUNT_TO_TYPE = {
 } as const
 
 export const BUILTIN_TYPES = {
-        fragCoord: 'vec4',
+        gl_FragCoord: 'vec4',
         position: 'vec3',
         normal: 'vec3',
         uv: 'vec2',

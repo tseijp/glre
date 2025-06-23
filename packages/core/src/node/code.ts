@@ -6,6 +6,7 @@ import type { NodeConfig, X } from './types'
 export const code = (target: X, c?: NodeConfig | null): string => {
         if (!c) c = {}
         if (!c.uniforms) c.uniforms = new Set()
+        if (!c.functions) c.functions = new Set()
         if (is.num(target)) return target.toFixed(1)
         if (is.str(target)) return target
         if (is.bol(target)) return target.toString()
@@ -13,7 +14,6 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         const { type, props } = target
         const { id = '', children = [] } = props
         const [x, y, z] = children
-        // variables
         if (type === 'uniform') {
                 const varType = infer(target, c)
                 c.uniforms.add(`${varType} ${id}`)
@@ -29,31 +29,27 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         }
         if (type === 'math_fun') return `${x}(${joins(children.slice(1), c)})`
         if (type === 'conversions') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
-        // scopes
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
-        if (type === 'fn_run') return `${id}(${children.map((child) => code(child, c)).join(', ')})`
+        if (type === 'fn_run') {
+                c.functions.add(code(x, c))
+                return `${id}(${children
+                        .slice(1)
+                        .map((child) => code(child, c))
+                        .join(', ')})`
+        }
         if (type === 'fn_def') {
-                const { args = [], returnType } = props
-                console.log(args)
-                const paramNames = [], // not work
-                        paramTypes = [] // not work
+                const { paramInfo = [], returnType } = props
                 const scopeCode = code(x, c)
                 const returnCode = y ? `return ${code(y, c)};` : ''
-                const params = paramNames
-                        .map((name, i) => {
-                                const paramType = paramTypes[i] || 'float'
-                                return `${paramType} ${name}`
-                        })
-                        .join(', ')
-
                 if (c?.isWebGL) {
-                        return `${returnType} ${id}(${params}) {${scopeCode}\n${returnCode}\n}`
+                        const params = paramInfo.map(({ name, type }) => `${type} ${name}`).join(', ')
+                        return `${returnType} ${id}(${params}) {\n${scopeCode}\n${returnCode}\n}`
                 } else {
-                        const wgslReturnType = formatConversions(returnType)
-                        const wgslParams = paramNames
-                                .map((name, i) => {
-                                        const wgslParamType = formatConversions(returnType)
+                        const wgslReturnType = formatConversions(returnType, c)
+                        const wgslParams = paramInfo
+                                .map(({ name, type }) => {
+                                        const wgslParamType = formatConversions(type, c)
                                         return `${name}: ${wgslParamType}`
                                 })
                                 .join(', ')
@@ -96,7 +92,6 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 const wgslType = formatConversions(varType)
                 return `var ${varName}: ${wgslType} = ${code(y, c)};`
         }
-        // WebGL/WebGPU builtin variables mapping
         if (type === 'builtin') {
                 if (c?.isWebGL) {
                         if (id === 'position') return 'gl_FragCoord'
