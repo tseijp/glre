@@ -60,9 +60,9 @@ export const color = (r?: X, g?: X, b?: X) => {
 }
 
 // Texture Functions
-export const texture = (x: X, y: X, z?: X) => node('texture', null, 'texture', x, y, z)
-export const cubeTexture = (x: X, y: X, z?: X) => node('texture', null, 'cubeTexture', x, y, z)
-export const textureSize = (x: X, y?: X) => node('texture', null, 'textureSize', x, y)
+export const texture = (x: X, y: X, z?: X) => f('texture', x, y, z)
+export const cubeTexture = (x: X, y: X, z?: X) => f('cubeTexture', x, y, z)
+export const textureSize = (x: X, y?: X) => f('textureSize', x, y)
 
 // Math Functions
 export const abs = (x: X) => f('abs', x)

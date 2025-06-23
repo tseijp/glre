@@ -1,6 +1,6 @@
 export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
-export const NODE_TYPES = [
+export const CONSTANTS = [
         'float',
         'int',
         'uint',
@@ -21,6 +21,29 @@ export const NODE_TYPES = [
         'bvec2',
         'bvec3',
         'bvec4',
+] as const
+
+export const CONVERSIONS = [
+        'toFloat',
+        'toInt',
+        'toUint',
+        'toBool',
+        'toVec2',
+        'toVec3',
+        'toVec4',
+        'toIvec2',
+        'toIvec3',
+        'toIvec4',
+        'toUvec2',
+        'toUvec3',
+        'toUvec4',
+        'toBvec2',
+        'toBvec3',
+        'toBvec4',
+        'toMat2',
+        'toMat3',
+        'toMat4',
+        'toColor',
 ] as const
 
 export const OPERATORS = {
@@ -102,6 +125,10 @@ export const FUNCTIONS = [
         'tan',
         'transformDirection',
         'trunc',
+        // Texture functions
+        'texture',
+        'cubeTexture',
+        'textureSize',
 ] as const
 
 export const TYPE_MAPPING = {

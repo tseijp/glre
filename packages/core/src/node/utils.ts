@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
-import { FUNCTIONS, NODE_TYPES, OPERATOR_KEYS, OPERATORS } from './const'
-import type { Functions, NodeConfig, NodeType, Operators, Swizzles, X } from './types'
+import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS } from './const'
+import type { Conversions, Functions, NodeConfig, Operators, Swizzles, X } from './types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -11,12 +11,12 @@ export const isOperator = (key: unknown): key is Operators => {
         return OPERATOR_KEYS.includes(key as Operators)
 }
 
-export const isNodeType = (key: unknown): key is NodeType => {
-        return NODE_TYPES.includes(key as NodeType)
-}
-
 export const isFunction = (key: unknown): key is Functions => {
         return FUNCTIONS.includes(key as Functions)
+}
+
+export const isConversion = (key: unknown): key is Conversions => {
+        return CONVERSIONS.includes(key as Conversions)
 }
 
 let count = 0
@@ -38,15 +38,16 @@ export const joins = (children: X[], c: NodeConfig) => {
 }
 
 // WebGPU type formatting utility
-export const formatWebGPUType = (type: string, c?: NodeConfig): string => {
-        if (!c?.isWebGL && type.startsWith('vec')) {
-                return `${type}f`
+export const formatConversions = (x: X, c?: NodeConfig): string => {
+        if (!is.str(x)) return ''
+        if (!c?.isWebGL && x.startsWith('vec')) {
+                return `${x}f`
         }
-        return type
+        return x
 }
 
 // Operator mapping utility
-export const getOperator = (op: string): string => {
+export const getOperator = (op: X) => {
         return OPERATORS[op as keyof typeof OPERATORS] || op
 }
 
@@ -58,7 +59,7 @@ export const inferType = (target: X, c: NodeConfig): string => {
         const { children = [] } = props
         const [x, y, z] = children
 
-        if (type === 'node_type') return x as string
+        if (type === 'conversions') return x as string
         if (type === 'uniform') {
                 const defaultValue = props.defaultValue
                 if (typeof defaultValue === 'boolean') return 'bool'
@@ -83,10 +84,9 @@ export const inferType = (target: X, c: NodeConfig): string => {
                 if (['dot', 'distance', 'length'].includes(x as string)) return 'float'
                 return 'float'
         }
-        if (type === 'texture') return 'vec4'
-        if (type === 'attribute') return 'vec3' // デフォルト
-        if (type === 'varying') return 'vec3' // デフォルト
-        if (type === 'builtin') return 'vec4' // デフォルト
+        if (type === 'attribute') return 'vec3'
+        if (type === 'varying') return 'vec3'
+        if (type === 'builtin') return 'vec4'
 
         return 'float'
 }
@@ -94,37 +94,29 @@ export const inferType = (target: X, c: NodeConfig): string => {
 const generateUniforms = (c: NodeConfig): string => {
         if (!c.uniforms || c.uniforms.size === 0) return ''
         const uniformList = Array.from(c.uniforms)
-        return (
-                uniformList
-                        .map((uniform, i) => {
-                                if (c.isWebGL) return `uniform ${uniform};`
-                                else return `@group(0) @binding(${i + 3}) var<uniform> ${uniform};`
-                        })
-                        .join('\n') + '\n'
-        )
+        return uniformList
+                .map((uniform, i) => {
+                        if (c.isWebGL) return `uniform ${uniform};`
+                        else return `@group(0) @binding(${i}) var<uniform> ${uniform};`
+                })
+                .join('\n')
 }
 
 const generateFragmentMain = (body: string, uniforms: string, isWebGL = true) => {
         if (isWebGL)
                 return `
-${uniforms}
 #version 300 es
 precision mediump float;
-uniform vec2 iResolution;
-uniform vec2 iMouse;
-uniform float iTime;
+${uniforms}
 out vec4 fragColor;
 void main() {
-${body}
+fragColor = ${body};
 }`.trim()
         return `
-@group(0) @binding(0) var<uniform> iResolution: vec2f;
-@group(0) @binding(1) var<uniform> iMouse: vec2f;
-@group(0) @binding(2) var<uniform> iTime: f32;
 ${uniforms}
 @fragment
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-${body}
+return ${body};
 }`.trim()
 }
 

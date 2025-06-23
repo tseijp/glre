@@ -72,21 +72,24 @@ export const Switch = (value: X) => {
 
 export const Fn = (callback: (args: X[]) => NodeProxy) => {
         return (...args: X[]) => {
-                let result: NodeProxy | undefined
+                let result: NodeProxy
                 const fnScope = node('scope')
                 scoped(fnScope, () => (result = callback(args)))
-                const funcId = getId()
-                node(
-                        'fn',
-                        {
-                                id: funcId,
-                                args: args.length,
-                                returnType: 'auto',
-                        },
-                        fnScope,
-                        result!
+                if (_scope) return node('fn_call', null, fnScope, result!)
+                const id = getId()
+                addToScope(
+                        node(
+                                'fn_def',
+                                {
+                                        id,
+                                        args: args.length,
+                                        returnType: 'auto',
+                                },
+                                fnScope,
+                                result!
+                        )
                 )
-                return node('fn_call', { id: funcId }, ...args)
+                return node('fn_call', { id }, ...args)
         }
 }
 

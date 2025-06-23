@@ -1,6 +1,8 @@
-import { FUNCTIONS, NODE_TYPES, OPERATOR_KEYS } from './const'
+import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
 
-export type NodeType = (typeof NODE_TYPES)[number]
+export type Constants = (typeof CONSTANTS)[number]
+
+export type Conversions = (typeof CONVERSIONS)[number]
 
 export type Functions = (typeof FUNCTIONS)[number]
 
@@ -8,12 +10,11 @@ export type Operators = (typeof OPERATOR_KEYS)[number]
 
 export interface NodeProps {
         id?: string
-        children?: X[]
-        defaultValue?: number | number[] | boolean
-        // 関数用プロパティ
         args?: number
-        returnType?: string
         type?: string
+        children?: X[]
+        returnType?: string
+        defaultValue?: number | number[] | boolean
 }
 
 export interface NodeConfig {
@@ -35,11 +36,11 @@ export type NodeTypes =
         | 'variable'
         | 'swizzle'
         | 'operator'
-        | 'node_type'
+        | 'conversions'
         | 'math_fun'
         | 'declare'
         | 'assign'
-        | 'fn'
+        | 'fn_def'
         | 'fn_call'
         | 'if'
         | 'loop'
@@ -48,40 +49,35 @@ export type NodeTypes =
         | 'case'
         | 'default'
         | 'ternary'
-        | 'texture'
         | 'attribute'
         | 'varying'
         | 'builtin'
         | 'constant'
         | 'vertex_stage'
 
-export interface NodeProxy extends Record<Swizzles, NodeProxy> {
-        // 基本演算子
+export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
+        // Operators
         add(n: X): NodeProxy
         sub(n: X): NodeProxy
         mul(n: X): NodeProxy
         div(n: X): NodeProxy
         mod(n: X): NodeProxy
-
-        // 比較演算子
         equal(n: X): NodeProxy
         notEqual(n: X): NodeProxy
         lessThan(n: X): NodeProxy
         lessThanEqual(n: X): NodeProxy
         greaterThan(n: X): NodeProxy
         greaterThanEqual(n: X): NodeProxy
-
-        // 論理演算子
         and(n: X): NodeProxy
         or(n: X): NodeProxy
         not(): NodeProxy
 
-        // 変数操作
+        // Variable manipulation
         assign(n: X): NodeProxy
         toVar(name?: string): NodeProxy
         toConst(name?: string): NodeProxy
 
-        // 数学関数メソッド
+        // Math function methods
         abs(): NodeProxy
         sin(): NodeProxy
         cos(): NodeProxy
@@ -127,29 +123,7 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         dFdy(): NodeProxy
         fwidth(): NodeProxy
 
-        // 型変換メソッド
-        toFloat(): NodeProxy
-        toInt(): NodeProxy
-        toUint(): NodeProxy
-        toBool(): NodeProxy
-        toVec2(): NodeProxy
-        toVec3(): NodeProxy
-        toVec4(): NodeProxy
-        toIvec2(): NodeProxy
-        toIvec3(): NodeProxy
-        toIvec4(): NodeProxy
-        toUvec2(): NodeProxy
-        toUvec3(): NodeProxy
-        toUvec4(): NodeProxy
-        toBvec2(): NodeProxy
-        toBvec3(): NodeProxy
-        toBvec4(): NodeProxy
-        toMat2(): NodeProxy
-        toMat3(): NodeProxy
-        toMat4(): NodeProxy
-        toColor(): NodeProxy
-
-        // システムプロパティ
+        // System properties
         toString(c?: NodeConfig): string
         type: NodeTypes
         props: NodeProps
