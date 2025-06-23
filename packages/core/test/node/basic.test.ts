@@ -1,6 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, int, vec2, vec3, vec4, mat4, normalize, sin, cross, dot, mix } from '../../src/node'
-import { node } from '../../src/node'
 
 const color = (hex: number) => {
         const r = ((hex >> 16) & 0xff) / 255

@@ -1,26 +1,26 @@
 export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
 export const CONSTANTS = [
-        'float',
-        'int',
-        'uint',
         'bool',
-        'color',
-        'vec2',
-        'vec3',
-        'vec4',
-        'mat2',
-        'mat3',
-        'mat4',
+        'uint',
+        'int',
+        'float',
+        'bvec2',
+        'bvec3',
+        'bvec4',
         'ivec2',
         'ivec3',
         'ivec4',
         'uvec2',
         'uvec3',
         'uvec4',
-        'bvec2',
-        'bvec3',
-        'bvec4',
+        'vec2',
+        'vec3',
+        'vec4',
+        'color',
+        'mat2',
+        'mat3',
+        'mat4',
 ] as const
 
 export const CONVERSIONS = [
@@ -69,66 +69,74 @@ export const OPERATORS = {
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-export const FUNCTIONS = [
+// Function return type classification
+export const SCALAR_RETURN_FUNCTIONS = ['dot', 'distance', 'length', 'lengthSq', 'determinant', 'luminance'] as const
+
+export const BOOL_RETURN_FUNCTIONS = ['all', 'any'] as const
+
+export const PRESERVE_TYPE_FUNCTIONS = [
         'abs',
-        'acos',
-        'asin',
-        'atan',
-        'atan2',
+        'sign',
+        'floor',
         'ceil',
-        'clamp',
+        'round',
+        'fract',
+        'trunc',
+        'sin',
         'cos',
-        'cross',
-        'degrees',
-        'distance',
-        'dot',
+        'tan',
+        'asin',
+        'acos',
+        'atan',
         'exp',
         'exp2',
-        'faceforward',
-        'floor',
-        'fract',
-        'length',
-        'all',
-        'any',
-        'bitcast',
-        'cbrt',
-        'dFdx',
-        'dFdy',
-        'difference',
-        'equals',
-        'fwidth',
-        'inverseSqrt',
-        'lengthSq',
         'log',
         'log2',
-        'max',
-        'min',
-        'mix',
-        'negate',
+        'sqrt',
+        'inverseSqrt',
         'normalize',
         'oneMinus',
+        'saturate',
+        'negate',
+        'reciprocal',
+        'dFdx',
+        'dFdy',
+        'fwidth',
+] as const
+
+export const VEC3_RETURN_FUNCTIONS = ['cross'] as const
+
+export const FIRST_ARG_TYPE_FUNCTIONS = ['reflect', 'refract'] as const
+
+export const HIGHEST_TYPE_FUNCTIONS = ['min', 'max', 'mix', 'clamp', 'step', 'smoothstep'] as const
+
+export const VEC4_RETURN_FUNCTIONS = ['texture', 'textureLod', 'textureSize', 'cubeTexture'] as const
+
+export const ADDITIONAL_FUNCTIONS = [
+        'atan2',
+        'degrees',
+        'faceforward',
+        'bitcast',
+        'cbrt',
+        'difference',
+        'equals',
         'pow',
         'pow2',
         'pow3',
         'pow4',
         'radians',
-        'reciprocal',
-        'reflect',
-        'refract',
-        'round',
-        'saturate',
-        'sign',
-        'sin',
-        'smoothstep',
-        'sqrt',
-        'step',
-        'tan',
         'transformDirection',
-        'trunc',
-        // Texture functions
-        'texture',
-        'cubeTexture',
-        'textureSize',
+] as const
+
+export const FUNCTIONS = [
+        ...SCALAR_RETURN_FUNCTIONS,
+        ...BOOL_RETURN_FUNCTIONS,
+        ...PRESERVE_TYPE_FUNCTIONS,
+        ...VEC3_RETURN_FUNCTIONS,
+        ...FIRST_ARG_TYPE_FUNCTIONS,
+        ...HIGHEST_TYPE_FUNCTIONS,
+        ...VEC4_RETURN_FUNCTIONS,
+        ...ADDITIONAL_FUNCTIONS,
 ] as const
 
 export const TYPE_MAPPING = {
@@ -152,3 +160,31 @@ export const TYPE_MAPPING = {
         bvec3: 'vec3<bool>',
         bvec4: 'vec4<bool>',
 } as const
+
+export const COMPONENT_COUNT_TO_TYPE = {
+        1: 'float',
+        2: 'vec2',
+        3: 'vec3',
+        4: 'vec4',
+        9: 'mat3',
+        16: 'mat4',
+} as const
+
+export const BUILTIN_TYPES = {
+        fragCoord: 'vec4',
+        position: 'vec3',
+        normal: 'vec3',
+        uv: 'vec2',
+        color: 'vec4',
+} as const
+
+export const COMPARISON_OPERATORS = [
+        'equal',
+        'notEqual',
+        'lessThan',
+        'lessThanEqual',
+        'greaterThan',
+        'greaterThanEqual',
+] as const
+
+export const LOGICAL_OPERATORS = ['and', 'or'] as const

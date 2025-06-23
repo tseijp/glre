@@ -14,7 +14,9 @@ export interface NodeProps {
         type?: string
         children?: X[]
         returnType?: string
-        defaultValue?: number | number[] | boolean
+        value?: number | number[] | boolean
+        paramNames?: string[]
+        paramTypes?: string[]
 }
 
 export interface NodeConfig {
@@ -41,7 +43,7 @@ export type NodeTypes =
         | 'declare'
         | 'assign'
         | 'fn_def'
-        | 'fn_call'
+        | 'fn_run'
         | 'if'
         | 'loop'
         | 'scope'

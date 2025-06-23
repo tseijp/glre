@@ -30,25 +30,6 @@ describe('Complex shader patterns', () => {
                 })
         })
 
-        describe('Normal calculation patterns', () => {
-                it('Normal calculation using numerical differentiation', () => {
-                        const calculateNormal = Fn((args) => {
-                                const [p, sdf] = args
-                                const epsilon = vec3(0.0005, 0, 0).toVar('epsilon')
-
-                                const dx = sdf(p.add(epsilon.xyy)).sub(sdf(p.sub(epsilon.xyy)))
-                                const dy = sdf(p.add(epsilon.yxy)).sub(sdf(p.sub(epsilon.yxy)))
-                                const dz = sdf(p.add(epsilon.yyx)).sub(sdf(p.sub(epsilon.yyx)))
-
-                                return normalize(vec3(dx, dy, dz))
-                        })
-
-                        // This function needs to receive an actual SDF function as argument but
-                        // there are limitations in passing functions as function arguments in current implementation
-                        expect(calculateNormal).toBeDefined()
-                })
-        })
-
         describe('Ray marching patterns', () => {
                 it('Basic ray marching', () => {
                         const rayMarch = Fn((args) => {

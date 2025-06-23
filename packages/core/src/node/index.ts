@@ -19,10 +19,7 @@ export const fragCoord = node('variable', { id: 'fragCoord' })
 export const uv = (index = 0) => node('attribute', { id: `uv${index || ''}` })
 export const vertexColor = (index = 0) => node('attribute', { id: `color${index || ''}` })
 export const attribute = (id: string, type?: string) => node('attribute', { id, type })
-
-export const vertexStage = (value: X) => {
-        return node('vertex_stage', null, value)
-}
+export const vertexStage = (value: X) => node('vertex_stage', null, value)
 
 // Buildin Variables
 export const positionLocal = node('builtin', { id: 'positionLocal' })

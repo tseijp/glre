@@ -40,10 +40,12 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 
 // Node shorthands
 export const v = (...args: X[]) => node('variable', { id: getId() }, ...args)
-export const u = (id: string, defaultValue?: number | number[] | boolean) => node('uniform', { id, defaultValue })
 export const s = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
 export const n = (key: string, ...args: X[]) => node('conversions', null, key, ...args)
 export const o = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
 export const f = (key: Functions, ...args: X[]) => node('math_fun', null, key, ...args)
+
+// uniform and attribute
+export const u = (id: string, value?: number | number[] | boolean) => node('uniform', { id, value })
 
 export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
