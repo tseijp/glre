@@ -82,8 +82,7 @@ export const infer = (target: X, c?: NodeConfig): Constants => {
         if (type === 'function') return inferMathType(x as string, children.slice(1))
         if (type === 'swizzle') return inferSwizzleType((x as string).length)
         if (type === 'ternary') return inferBinaryOpType(infer(y, c), infer(z, c), 'add')
-        if (type === 'fn_run') return returnType!
-        if (type === 'fn_def') return returnType!
+        if (type === 'define') return returnType!
         if (type === 'builtin') return inferBuiltinType(id)
         return 'float'
 }

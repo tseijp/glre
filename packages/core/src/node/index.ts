@@ -1,4 +1,4 @@
-import { conversion as c, function_ as f, node, uniform as u } from './node'
+import { conversion as c, function_ as f, node } from './node'
 import { hex2rgb } from './utils'
 import { is } from '../utils/helpers'
 import type { X } from './types'
@@ -13,16 +13,18 @@ export * from './utils'
 // x ? y : z
 export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
 
-// Default uniforms
-export const iResolution = u([1280, 800], 'iResolution')
-export const iMouse = u([0, 0], 'iMouse')
-export const iTime = u(0, 'iTime')
-export const position = node('variable', { id: 'gl_FragCoord' })
+// uniform and attribute
+export const uniform = (value: number | number[], id?: string) => node('uniform', { id, value })
+export const varying = (value: number | number[], id?: string) => node('varying', { id, value })
+export const attribute = (value: number | number[], id?: string) => node('varying', { id, value })
+export const variable = (id: string) => node('variable', { id })
 
-// Default attributes
-export const uv = (index = 0) => node('attribute', { id: `uv${index || ''}` })
-export const attribute = (id: string, type?: string) => node('attribute', { id, type })
-export const vertexColor = (index = 0) => node('attribute', { id: `color${index || ''}` })
+// Default uniforms
+export const iResolution = uniform([1280, 800], 'iResolution')
+export const iMouse = uniform([0, 0], 'iMouse')
+export const iTime = uniform(0, 'iTime')
+export const position = variable('gl_FragCoord')
+export const vertexId = variable('gl_VertexID')
 
 // Buildin Variables
 export const positionLocal = node('builtin', { id: 'positionLocal' })

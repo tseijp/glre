@@ -1,3 +1,4 @@
+import { NodeProps } from './../../../../node_modules/glre/src/node/types'
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING } from './const'
@@ -57,6 +58,28 @@ const generateHead = (c: NodeConfig) => {
         return Array.from(c.headers!)
                 .map(([, v]) => v)
                 .join('\n')
+}
+
+export const generateDefine = (props: NodeProps, c: NodeConfig) => {
+        const { id, paramInfo = [], returnType, children = [] } = props
+        const [x, y, ...args] = children
+        const lines = []
+        const scopeCode = code(x, c)
+        if (scopeCode) lines.push(scopeCode)
+        if (y) lines.push(`return ${code(y, c)};`)
+        if (c?.isWebGL) {
+                const params = paramInfo.map(({ name, type }) => `${type} ${name}`).join(', ')
+                return `${returnType} ${id}(${params}) {\n${lines.join('\n')}\n}`
+        } else {
+                const wgslReturnType = formatConversions(returnType, c)
+                const wgslParams = paramInfo
+                        .map(({ name, type }) => {
+                                const wgslParamType = formatConversions(type, c)
+                                return `${name}: ${wgslParamType}`
+                        })
+                        .join(', ')
+                return `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n${lines.join('\n')}\n}`
+        }
 }
 
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {

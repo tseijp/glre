@@ -14,7 +14,6 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (key === 'type') return type
                 if (key === 'props') return props
                 if (key === 'toVar') return toVar.bind(null, x)
-                if (key === 'toConst') return toConst.bind(null, x)
                 if (key === 'assign') return assign.bind(null, x)
                 if (key === 'isProxy') return true
                 if (key === 'toString') return code.bind(null, x)
@@ -41,25 +40,3 @@ export const swizzle = (key: Swizzles, arg: X) => node('swizzle', null, key, arg
 export const operator = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
 export const function_ = (key: Functions, ...args: X[]) => node('function', null, key, ...args)
 export const conversion = (key: string, ...args: X[]) => node('conversion', null, key, ...args)
-
-// uniform and attribute
-export const uniform = (value: number | number[] | boolean, id: string) => {
-        return node('uniform', { id, value })
-}
-
-export const toConst = (x: X, id?: string) => {
-        // @TODO FIX
-        // if (!id) id = getId()
-        // const y = node('constant', { id })
-        // const z = node('declare', null, y, x)
-        // addToScope(z)
-        // return y
-}
-export const varying = (value: X, name?: string) => {
-        // @TODO FIX
-        // if (!name) name = getId()
-        // const varyingVar = node('varying', { id: name })
-        // const declaration = node('declare', null, varyingVar, value)
-        // addToScope(declaration)
-        // return varyingVar
-}

@@ -69,25 +69,26 @@ export const Switch = (value: X) => {
                         return (fun: () => void) => {
                                 const scope = node('scope')
                                 scoped(scope, fun)
-                                const x = node('case', null, ...values, scope)
-                                switchNode.props.children!.push(x)
+                                // 複数のcase値を処理
+                                for (const val of values) {
+                                        switchNode.props.children!.push(val, scope)
+                                }
                                 return createChain()
                         }
                 },
                 Default: (fun: () => void) => {
                         const scope = node('scope')
                         scoped(scope, fun)
-                        const x = node('default', null, scope)
-                        switchNode.props.children!.push(x)
+                        switchNode.props.children!.push(scope)
                 },
         })
 
         return createChain()
 }
 
-export const Fn = (fun: (args: NodeProxy[]) => NodeProxy) => {
+export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
         const id = getId()
-        return (...args: NodeProxy[]) => {
+        return (...args: X[]) => {
                 const x = node('scope')
                 let y: NodeProxy | undefined
                 const paramVars: NodeProxy[] = []
@@ -99,7 +100,6 @@ export const Fn = (fun: (args: NodeProxy[]) => NodeProxy) => {
                 scoped(x, () => (y = fun(paramVars)))
                 const returnType = y ? infer(y) : 'void'
                 const paramInfo = args.map((arg, i) => ({ name: `p${i}`, type: infer(arg) }))
-                const def = node('fn_def', { id, returnType, paramInfo, args }, x, y)
-                return node('fn_run', { id, returnType }, def, ...paramVars)
+                return node('define', { id, returnType, paramInfo }, x, y, ...args)
         }
 }
