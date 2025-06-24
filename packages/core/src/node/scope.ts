@@ -93,7 +93,8 @@ export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
                 const paramVars: NodeProxy[] = []
                 for (let i = 0; i < args.length; i++) {
                         const paramId = `p${i}`
-                        const paramVar = node('variable', { id: paramId })
+                        // 関数呼び出し時の引数から型情報を継承
+                        const paramVar = node('variable', { id: paramId, inferFrom: args[i] })
                         paramVars.push(paramVar)
                 }
                 scoped(x, () => (y = fun(paramVars)))
