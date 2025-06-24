@@ -1,4 +1,3 @@
-import { infer } from './infer'
 import { node } from './node'
 import { getId } from './utils'
 import type { NodeProxy, X } from './types'
@@ -98,8 +97,6 @@ export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
                         paramVars.push(paramVar)
                 }
                 scoped(x, () => (y = fun(paramVars)))
-                const returnType = y ? infer(y) : 'void'
-                const paramInfo = args.map((arg, i) => ({ name: `p${i}`, type: infer(arg) }))
-                return node('define', { id, returnType, paramInfo }, x, y, ...args)
+                return node('define', { id }, x, y, ...args)
         }
 }

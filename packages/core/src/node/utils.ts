@@ -3,6 +3,7 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING } from './const'
 import type { Conversions, Functions, NodeConfig, NodeProxy, Operators, Swizzles, X } from './types'
+import { infer } from './infer'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -61,25 +62,19 @@ const generateHead = (c: NodeConfig) => {
 }
 
 export const generateDefine = (props: NodeProps, c: NodeConfig) => {
-        const { id, paramInfo = [], returnType, children = [] } = props
+        const { id, children = [] } = props
         const [x, y, ...args] = children
-        const lines = []
-        const scopeCode = code(x, c)
-        if (scopeCode) lines.push(scopeCode)
+        const returnType = y ? infer(y, c) : 'void'
+        const params = args.map((arg, i) => [`p${i}`, infer(arg, c)])
+        const lines = [code(x, c)]
         if (y) lines.push(`return ${code(y, c)};`)
         if (c?.isWebGL) {
-                const params = paramInfo.map(({ name, type }) => `${type} ${name}`).join(', ')
-                return `${returnType} ${id}(${params}) {\n${lines.join('\n')}\n}`
-        } else {
-                const wgslReturnType = formatConversions(returnType, c)
-                const wgslParams = paramInfo
-                        .map(({ name, type }) => {
-                                const wgslParamType = formatConversions(type, c)
-                                return `${name}: ${wgslParamType}`
-                        })
-                        .join(', ')
-                return `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n${lines.join('\n')}\n}`
+                const paramList = params.map(([name, type]) => `${type} ${name}`)
+                return `${returnType} ${id}(${paramList}) {\n${lines.join('\n')}\n}`
         }
+        const wgslReturnType = formatConversions(returnType, c)
+        const wgslParams = params.map(([name, type]) => `${name}: ${formatConversions(type, c)}`)
+        return `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n${lines.join('\n')}\n}`
 }
 
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {

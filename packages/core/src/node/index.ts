@@ -18,16 +18,25 @@ export const uniform = (value: number | number[], id?: string) => node('uniform'
 export const varying = (value: number | number[], id?: string) => node('varying', { id, value })
 export const attribute = (value: number | number[], id?: string) => node('varying', { id, value })
 export const variable = (id: string) => node('variable', { id })
+export const builtin = (id: string) => node('builtin', { id })
 
 // Default uniforms
 export const iResolution = uniform([1280, 800], 'iResolution')
 export const iMouse = uniform([0, 0], 'iMouse')
 export const iTime = uniform(0, 'iTime')
-export const position = variable('gl_FragCoord')
-export const vertexId = variable('gl_VertexID')
 
-// Buildin Variables
-export const positionLocal = node('builtin', { id: 'positionLocal' })
+// Builtin Variables
+export const position = node('builtin', { id: 'position' })
+export const vertexIndex = node('builtin', { id: 'vertex_index' })
+export const instanceIndex = node('builtin', { id: 'instance_index' })
+export const frontFacing = node('builtin', { id: 'front_facing' })
+export const fragDepth = node('builtin', { id: 'frag_depth' })
+export const sampleIndex = node('builtin', { id: 'sample_index' })
+export const sampleMask = node('builtin', { id: 'sample_mask' })
+export const pointCoord = node('builtin', { id: 'point_coord' })
+
+// TSL Compatible Builtin Variables
+export const positionLocal = node('builtin', { id: 'position' })
 export const positionWorld = node('builtin', { id: 'positionWorld' })
 export const positionView = node('builtin', { id: 'positionView' })
 export const normalLocal = node('builtin', { id: 'normalLocal' })
@@ -35,6 +44,10 @@ export const normalWorld = node('builtin', { id: 'normalWorld' })
 export const normalView = node('builtin', { id: 'normalView' })
 export const screenCoordinate = node('builtin', { id: 'screenCoordinate' })
 export const screenUV = node('builtin', { id: 'screenUV' })
+
+// Legacy aliases for backward compatibility
+export const fragCoord = position
+export const vertexId = vertexIndex
 
 // Type constructors
 export const float = (x: X) => c('float', x)

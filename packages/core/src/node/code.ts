@@ -1,6 +1,7 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
 import { joins, getOperator, formatConversions, generateDefine } from './utils'
+import { WGSL_TO_GLSL_BUILTIN } from './const'
 import type { NodeConfig, X } from './types'
 
 export const code = (target: X, c?: NodeConfig | null): string => {
@@ -17,9 +18,10 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         if (type === 'uniform') {
                 if (c.headers.has(id)) return id
                 if (!c.binding) c.binding = 0
+                const varType = infer(target, c)
                 head = c.isWebGL
-                        ? `uniform ${infer(target, c)} ${id};`
-                        : `@group(0) @binding(${c.binding++}) var<uniform> ${id}: ${infer(target, c)};`
+                        ? `uniform ${varType} ${id};`
+                        : `@group(0) @binding(${c.binding++}) var<uniform> ${id}: ${formatConversions(varType, c)};`
         }
         if (type === 'attribute') {
                 if (c.headers.has(id)) return id
@@ -44,13 +46,17 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
-        if (type === 'function') return `${x}(${joins(children.slice(1), c)})`
+        if (type === 'function') {
+                // Handle special functions that need to be converted to operators
+                if (x === 'negate') return `(-${joins(children.slice(1), c)})`
+                return `${x}(${joins(children.slice(1), c)})`
+        }
         if (type === 'conversion') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'define') {
                 const args = children.slice(2)
-                const ret = `${id}(${args.map((arg) => code(arg, c)).join(', ')})`
+                const ret = `${id}(${args.map((arg) => code(arg, c))})`
                 if (c.headers.has(id)) return ret
                 c.headers.set(id, generateDefine(props, c))
                 return ret
@@ -88,7 +94,8 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         }
         if (type === 'builtin') {
                 if (c?.isWebGL) {
-                        if (id === 'position') return 'gl_FragCoord'
+                        const glslBuiltin = WGSL_TO_GLSL_BUILTIN[id as keyof typeof WGSL_TO_GLSL_BUILTIN]
+                        if (glslBuiltin) return glslBuiltin
                         if (id === 'uv') return 'gl_FragCoord.xy'
                 }
                 return id

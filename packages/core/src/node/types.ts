@@ -13,14 +13,13 @@ export interface NodeProps {
         args?: X[]
         type?: string
         children?: X[]
-        returnType?: Constants
         value?: number | number[] | boolean
-        paramInfo?: Array<{ name: string; type: string }>
 }
 
 export interface NodeConfig {
         isWebGL?: boolean
         binding?: number
+        infers?: WeakMap<NodeProxy, Constants>
         headers?: Map<string, string>
         onMount?: (name: string, value: any) => void
 }

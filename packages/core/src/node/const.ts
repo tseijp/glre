@@ -69,7 +69,6 @@ export const OPERATORS = {
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-// Function return type classification
 export const SCALAR_RETURN_FUNCTIONS = ['dot', 'distance', 'length', 'lengthSq', 'determinant', 'luminance'] as const
 
 export const BOOL_RETURN_FUNCTIONS = ['all', 'any'] as const
@@ -171,8 +170,37 @@ export const COMPONENT_COUNT_TO_TYPE = {
 } as const
 
 export const BUILTIN_TYPES = {
+        // WGSL builtin variables
+        position: 'vec4',
+        vertex_index: 'uint',
+        instance_index: 'uint',
+        front_facing: 'bool',
+        frag_depth: 'float',
+        sample_index: 'uint',
+        sample_mask: 'uint',
+        point_coord: 'vec2',
+
+        // TSL compatible variables
+        positionLocal: 'vec3',
+        positionWorld: 'vec3',
+        positionView: 'vec3',
+        normalLocal: 'vec3',
+        normalWorld: 'vec3',
+        normalView: 'vec3',
+        screenCoordinate: 'vec2',
+        screenUV: 'vec2',
+
+        // Legacy GLSL variables (for backward compatibility)
         gl_FragCoord: 'vec4',
-        position: 'vec3',
+        gl_VertexID: 'uint',
+        gl_InstanceID: 'uint',
+        gl_FrontFacing: 'bool',
+        gl_FragDepth: 'float',
+        gl_SampleID: 'uint',
+        gl_SampleMask: 'uint',
+        gl_PointCoord: 'vec2',
+
+        // Common variables
         normal: 'vec3',
         uv: 'vec2',
         color: 'vec4',
@@ -188,3 +216,14 @@ export const COMPARISON_OPERATORS = [
 ] as const
 
 export const LOGICAL_OPERATORS = ['and', 'or'] as const
+
+export const WGSL_TO_GLSL_BUILTIN = {
+        position: 'gl_FragCoord',
+        vertex_index: 'gl_VertexID',
+        instance_index: 'gl_InstanceID',
+        front_facing: 'gl_FrontFacing',
+        frag_depth: 'gl_FragDepth',
+        sample_index: 'gl_SampleID',
+        sample_mask: 'gl_SampleMask',
+        point_coord: 'gl_PointCoord',
+} as const
