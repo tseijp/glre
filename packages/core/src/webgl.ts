@@ -6,13 +6,12 @@ import type { GL, WebGLState } from './types'
 export const webgl = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgl2')!
         const pg = createProgram(c, gl.vs, gl.fs, () => void (gl.isLoop = false))!
-        const state = { context: c, program: pg } as WebGLState
         c.useProgram(pg)
-
         let _activeUnit = 0
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
         const attribs = cached((key) => c.getAttribLocation(pg, key))
         const units = cached(() => _activeUnit++)
+        const state = { context: c, program: pg } as WebGLState
 
         const clean = () => c.deleteProgram(pg)
 

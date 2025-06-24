@@ -20,9 +20,9 @@ export interface NodeProps {
 
 export interface NodeConfig {
         isWebGL?: boolean
-        uniforms?: Set<string>
-        functions?: Set<string>
-        onUniform?: (name: string, value: any) => void
+        binding?: number
+        headers?: Map<string, string>
+        onMount?: (name: string, value: any) => void
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
@@ -38,8 +38,8 @@ export type NodeTypes =
         | 'variable'
         | 'swizzle'
         | 'operator'
-        | 'conversions'
-        | 'math_fun'
+        | 'conversion'
+        | 'function'
         | 'declare'
         | 'assign'
         | 'fn_def'
@@ -55,7 +55,6 @@ export type NodeTypes =
         | 'varying'
         | 'builtin'
         | 'constant'
-        | 'vertex_stage'
 
 export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         // Operators
@@ -132,4 +131,4 @@ export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         isProxy: true
 }
 
-export type X = NodeProxy | number | string | boolean | null | undefined
+export type X = NodeProxy | number | string | boolean | undefined

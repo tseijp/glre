@@ -5,46 +5,63 @@ import type { NodeConfig, X } from './types'
 
 export const code = (target: X, c?: NodeConfig | null): string => {
         if (!c) c = {}
-        if (!c.uniforms) c.uniforms = new Set()
-        if (!c.functions) c.functions = new Set()
-        if (is.num(target)) return target.toFixed(1)
+        if (!c.headers) c.headers = new Map()
         if (is.str(target)) return target
-        if (is.bol(target)) return target.toString()
+        if (is.num(target)) return target.toFixed(1)
+        if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return '' // ignore if no target
         const { type, props } = target
         const { id = '', children = [] } = props
         const [x, y, z] = children
+        let head = ''
         if (type === 'uniform') {
-                const varType = infer(target, c)
-                c.uniforms.add(`${varType} ${id}`)
-                c.onUniform?.(id, props.value)
+                if (c.headers.has(id)) return id
+                if (!c.binding) c.binding = 0
+                head = c.isWebGL
+                        ? `uniform ${infer(target, c)} ${id};`
+                        : `@group(0) @binding(${c.binding++}) var<uniform> ${id}: ${infer(target, c)};`
+        }
+        if (type === 'attribute') {
+                if (c.headers.has(id)) return id
+                head = `${infer(target, c)} ${id}`
+        }
+        if (type === 'constant') {
+                if (c.headers.has(id)) return id
+                head = `${infer(target, c)} ${id}`
+        }
+        if (type === 'varying') {
+                if (c.headers.has(id)) return id
+                head = `${infer(target, c)} ${id}`
+        }
+        if (head) {
+                c.headers.set(id, head)
+                c.onMount?.(id, props.value)
                 return id
         }
-        if (type === 'variable' || type === 'varying' || type === 'constant' || type === 'attribute') return id
-        if (type === 'vertex_stage') return code(x, c)
+        if (type === 'variable') return id
         if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
-        if (type === 'math_fun') return `${x}(${joins(children.slice(1), c)})`
-        if (type === 'conversions') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
+        if (type === 'function') return `${x}(${joins(children.slice(1), c)})`
+        if (type === 'conversion') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'fn_run') {
-                c.functions.add(code(x, c))
-                return `${id}(${children
-                        .slice(1)
-                        .map((child) => code(child, c))
-                        .join(', ')})`
+                if (!c.headers.has(id)) c.headers.set(id, code(x, c))
+                const args = children.slice(1).map((child) => code(child, c))
+                return `${id}(${args.join(', ')})`
         }
         if (type === 'fn_def') {
                 const { paramInfo = [], returnType } = props
+                const lines = []
                 const scopeCode = code(x, c)
-                const returnCode = y ? `return ${code(y, c)};` : ''
+                if (scopeCode) lines.push(scopeCode)
+                if (y) lines.push(`return ${code(y, c)};`)
                 if (c?.isWebGL) {
                         const params = paramInfo.map(({ name, type }) => `${type} ${name}`).join(', ')
-                        return `${returnType} ${id}(${params}) {\n${scopeCode}\n${returnCode}\n}`
+                        return `${returnType} ${id}(${params}) {\n${lines.join('\n')}\n}`
                 } else {
                         const wgslReturnType = formatConversions(returnType, c)
                         const wgslParams = paramInfo
@@ -53,7 +70,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                                         return `${name}: ${wgslParamType}`
                                 })
                                 .join(', ')
-                        return `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n${scopeCode}\n${returnCode}\n}`
+                        return `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n${lines.join('\n')}\n}`
                 }
         }
         if (type === 'loop') return `for (int i = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
@@ -77,9 +94,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 const values = children.slice(0, -1)
                 const scope = children[children.length - 1]
                 let ret = ''
-                for (const value of values) {
-                        ret += `case ${code(value, c)}:\n`
-                }
+                for (const value of values) ret += `case ${code(value, c)}:\n`
                 ret += `${code(scope, c)}\nbreak;\n`
                 return ret
         }

@@ -1,5 +1,5 @@
-import { fragment, vertex, X } from '../node'
-import { is } from './helpers'
+import { fragment, isNodeProxy, vertex } from '../node'
+import type { NodeProxy } from '../node'
 import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
 
 const defaultVertexWGSL = `
@@ -34,11 +34,11 @@ export const createPipeline = (
         format: string,
         bufferLayouts: any[],
         bindGroupLayouts: any[],
-        vs: string | X = defaultVertexWGSL,
-        fs: string | X = defaultFragmentWGSL
+        vs: string | NodeProxy = defaultVertexWGSL,
+        fs: string | NodeProxy = defaultFragmentWGSL
 ) => {
-        if (!is.str(fs)) fs = fragment(fs, { isWebGL: false })
-        if (!is.str(vs)) vs = vertex(vs, { isWebGL: false })
+        if (isNodeProxy(vs)) vs = vertex(vs, { isWebGL: false })
+        if (isNodeProxy(fs)) fs = fragment(fs, { isWebGL: false })
         const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {

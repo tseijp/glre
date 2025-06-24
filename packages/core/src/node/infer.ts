@@ -18,7 +18,7 @@ import type { Constants, NodeConfig, X } from './types'
 
 const inferPrimitiveType = (x: any): Constants => {
         if (is.bol(x)) return 'bool'
-        if (is.num(x)) return Number.isInteger(x) ? 'int' : 'float'
+        if (is.num(x)) return 'float' // Number.isInteger(x) ? 'int' : 'float' // @TODO FIX
         if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'float'
         return 'float'
 }
@@ -77,9 +77,9 @@ export const infer = (target: X, c?: NodeConfig): Constants => {
                 type === 'varying'
         )
                 return inferPrimitiveType(value)
-        if (type === 'conversions') return x as Constants
+        if (type === 'conversion') return x as Constants
         if (type === 'operator') return inferBinaryOpType(infer(y, c), infer(z, c), x as string)
-        if (type === 'math_fun') return inferMathType(x as string, children.slice(1))
+        if (type === 'function') return inferMathType(x as string, children.slice(1))
         if (type === 'swizzle') return inferSwizzleType((x as string).length)
         if (type === 'ternary') return inferBinaryOpType(infer(y, c), infer(z, c), 'add')
         if (type === 'fn_run') return returnType!

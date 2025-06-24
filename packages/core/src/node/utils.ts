@@ -21,7 +21,7 @@ export const isConversion = (key: unknown): key is Conversions => {
 
 export const isNodeProxy = (x: unknown): x is NodeProxy => {
         if (!x) return false
-        if (!is.fun(x)) return false // @ts-ignore
+        if (typeof x !== 'object') return false // @ts-ignore
         return x.isProxy
 }
 
@@ -54,14 +54,9 @@ export const getOperator = (op: X) => {
 }
 
 const generateHead = (c: NodeConfig) => {
-        const uniforms = Array.from(c.uniforms!)
-                .map((uniform, i) => {
-                        if (c.isWebGL) return `uniform ${uniform};`
-                        else return `@group(0) @binding(${i}) var<uniform> ${uniform};`
-                })
+        return Array.from(c.headers!)
+                .map(([, v]) => v)
                 .join('\n')
-        const functions = Array.from(c.functions!).join('\n')
-        return `${uniforms}\n${functions}`
 }
 
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
@@ -82,10 +77,12 @@ return ${body};
 }`.trim()
 }
 
-export const fragment = (x: X, c: NodeConfig) => {
+export const fragment = (x: X, c: NodeConfig = {}) => {
         const body = code(x, c)
         const head = generateHead(c)
-        return generateFragmentMain(body, head, c.isWebGL)
+        const main = generateFragmentMain(body, head, c.isWebGL)
+        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
+        return main
 }
 
 export const vertex = (x: X, c: NodeConfig) => {

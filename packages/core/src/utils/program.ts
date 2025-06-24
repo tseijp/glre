@@ -1,5 +1,5 @@
-import { fragment, vertex, X } from '../node'
-import { is } from './helpers'
+import { fragment, isNodeProxy, vertex } from '../node'
+import type { NodeProxy } from '../node'
 
 export const defaultVertexGLSL = /* cpp */ `
 #version 300 es
@@ -33,12 +33,12 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
 
 export const createProgram = (
         c: WebGLRenderingContext,
-        vs: string | X = defaultVertexGLSL,
-        fs: string | X = defaultFragmentGLSL,
+        vs: string | NodeProxy = defaultVertexGLSL,
+        fs: string | NodeProxy = defaultFragmentGLSL,
         onError = () => {}
 ) => {
-        if (!is.str(fs)) fs = fragment(fs, { isWebGL: true })
-        if (!is.str(vs)) vs = vertex(fs, { isWebGL: true })
+        if (isNodeProxy(fs)) fs = fragment(fs, { isWebGL: true })
+        if (isNodeProxy(vs)) vs = vertex(fs, { isWebGL: true })
         const pg = c.createProgram()
         const _vs = createShader(c, vs, c.VERTEX_SHADER)
         const _fs = createShader(c, fs, c.FRAGMENT_SHADER)
