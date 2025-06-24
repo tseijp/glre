@@ -134,39 +134,53 @@ function Canvas() {
 ```
 
 </TabItem>
-{/* <TabItem value="webgpu" label="WebGPU">
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
 ```jsx live
 function Canvas() {
-        const gl = useGL({
-                isWebGL: false,
-                frag: `
-                @group(0) @binding(0) var<uniform> iResolution: vec2f;
-                @group(0) @binding(1) var<uniform> iMouse: vec2f;
-                @group(0) @binding(2) var<uniform> iTime: f32;
-                @group(0) @binding(3) var<uniform> ellipseRadius: f32;
-                @group(0) @binding(4) var<uniform> ellipseXCoord: f32;
-                @group(0) @binding(5) var<uniform> ellipseYCoord: f32;
-                @group(0) @binding(6) var<uniform> ellipseStroke: f32;
-                @fragment
-                fn main(@builtin(position) coord: vec4<f32>) -> @location(0) vec4<f32> {
-                        let iResolution = vec2<f32>(800.0, 600.0);
-                        let iTime = 0.0;
-                        let ellipseRadius = 0.2;
-                        let ellipseXCoord = 2.2;
-                        let ellipseYCoord = 5.4;
-                        let ellipseStroke = 0.01;
-                        let uv = fract(coord.xy / iResolution);
-                        var p = uv * 2.4 - 1.2;
-                        p.x *= iResolution.x / iResolution.y;
-                        let d = length(p) - ellipseRadius;
-                        return vec4<f32>(96.0 / 255.0, 219.0 / 255.0, 251.0 / 255.0, 0.8);
-                }
-                `,
-                // resize() {
-                //         resize(gl)
-                // },
+        const ellipseRadius = uniform(0.5, 'ellipseRadius')
+        const ellipseXCoord = uniform(1.0, 'ellipseXCoord')
+        const ellipseYCoord = uniform(1.0, 'ellipseYCoord')
+        const ellipseStroke = uniform(0.1, 'ellipseStroke')
+
+        const PI = float(3.141592)
+
+        const rotate = Fn(([x, y, angle]) => {
+                const scale = mat2(float(1).div(x), float(0), float(0), float(1).div(y)).toVar('scale')
+                const rotation = mat2(cos(angle), sin(angle).negate(), sin(angle), cos(angle)).toVar('rotation')
+                return scale.mul(rotation)
         })
+
+        const circle = Fn(([p]) => {
+                return length(p).sub(ellipseRadius)
+        })
+
+        const ellipse = Fn(([p, angle]) => {
+                const transform = rotate(ellipseXCoord, ellipseYCoord, angle).toVar('transform')
+                return circle(transform.mul(p))
+        })
+
+        const onion = Fn(([d, p, angle]) => {
+                return min(d, abs(ellipse(p, angle)).sub(ellipseStroke))
+        })
+
+        const frag = Fn(() => {
+                const uv = fract(position.xy.div(iResolution)).toVar('uv')
+                const p = uv.mul(2.4).sub(1.2).toVar('p')
+                p.x = p.x.mul(iResolution.x.div(iResolution.y))
+                const d = circle(p).toVar('d')
+                d.assign(onion(d, p, PI.div(2).add(iTime)))
+                d.assign(onion(d, p, PI.div(6).add(iTime)))
+                d.assign(onion(d, p, PI.div(6).negate().add(iTime)))
+                const color = vec4(0, 0, 0, 0).toVar('color')
+                If(d.lessThan(float(0)), () => {
+                        color.assign(vec4(float(96).div(255), float(219).div(255), float(251).div(255), 0.8))
+                })
+                return color
+        })()
+
+        const gl = useGL({ frag })
+
         gl.uniform(
                 useControls({
                         ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
@@ -175,9 +189,10 @@ function Canvas() {
                         ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
                 })
         )
+
         return <canvas ref={gl.ref} />
 }
 ```
 
-</TabItem> */}
+</TabItem>
 </Tabs>
