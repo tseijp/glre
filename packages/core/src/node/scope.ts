@@ -19,7 +19,7 @@ const addToScope = (x: NodeProxy) => {
 
 export const toVar = (x: X, id?: string) => {
         if (!id) id = getId()
-        const y = node('variable', { id })
+        const y = node('variable', { id, inferFrom: x })
         const z = node('declare', null, y, x)
         addToScope(z)
         return y

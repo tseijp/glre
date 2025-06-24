@@ -65,13 +65,14 @@ const inferMathType = (funcName: string, args: X[], c: NodeConfig): Constants =>
 
 export const inferImpl = (target: NodeProxy, c: NodeConfig): Constants => {
         const { type, props } = target
-        const { id, children = [], value } = props
+        const { id, children = [], value, inferFrom } = props
         const [x, y, z] = children
+        if (inferFrom) return infer(inferFrom, c)
         if (
                 type === 'uniform' ||
-                type === 'variable' ||
                 type === 'constant' ||
                 type === 'attribute' ||
+                type === 'variable' ||
                 type === 'varying'
         )
                 return inferPrimitiveType(value)

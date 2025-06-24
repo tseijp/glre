@@ -14,6 +14,7 @@ export interface NodeProps {
         type?: string
         children?: X[]
         value?: number | number[] | boolean
+        inferFrom?: X
 }
 
 export interface NodeConfig {
