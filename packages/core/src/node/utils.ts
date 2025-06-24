@@ -1,7 +1,9 @@
+import { NodeProps } from './../../../../node_modules/glre/src/node/types'
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING } from './const'
 import type { Conversions, Functions, NodeConfig, NodeProxy, Operators, Swizzles, X } from './types'
+import { infer } from './infer'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -21,7 +23,7 @@ export const isConversion = (key: unknown): key is Conversions => {
 
 export const isNodeProxy = (x: unknown): x is NodeProxy => {
         if (!x) return false
-        if (!is.fun(x)) return false // @ts-ignore
+        if (typeof x !== 'object') return false // @ts-ignore
         return x.isProxy
 }
 
@@ -54,14 +56,25 @@ export const getOperator = (op: X) => {
 }
 
 const generateHead = (c: NodeConfig) => {
-        const uniforms = Array.from(c.uniforms!)
-                .map((uniform, i) => {
-                        if (c.isWebGL) return `uniform ${uniform};`
-                        else return `@group(0) @binding(${i}) var<uniform> ${uniform};`
-                })
+        return Array.from(c.headers!)
+                .map(([, v]) => v)
                 .join('\n')
-        const functions = Array.from(c.functions!).join('\n')
-        return `${uniforms}\n${functions}`
+}
+
+export const generateDefine = (props: NodeProps, c: NodeConfig) => {
+        const { id, children = [] } = props
+        const [x, y, ...args] = children
+        const returnType = y ? infer(y, c) : 'void'
+        const params = args.map((arg, i) => [`p${i}`, infer(arg, c)])
+        const lines = [code(x, c)]
+        if (y) lines.push(`return ${code(y, c)};`)
+        if (c?.isWebGL) {
+                const paramList = params.map(([name, type]) => `${type} ${name}`)
+                return `${returnType} ${id}(${paramList}) {\n${lines.join('\n')}\n}`
+        }
+        const wgslReturnType = formatConversions(returnType, c)
+        const wgslParams = params.map(([name, type]) => `${name}: ${formatConversions(type, c)}`)
+        return `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n${lines.join('\n')}\n}`
 }
 
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
@@ -82,10 +95,12 @@ return ${body};
 }`.trim()
 }
 
-export const fragment = (x: X, c: NodeConfig) => {
+export const fragment = (x: X, c: NodeConfig = {}) => {
         const body = code(x, c)
         const head = generateHead(c)
-        return generateFragmentMain(body, head, c.isWebGL)
+        const main = generateFragmentMain(body, head, c.isWebGL)
+        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
+        return main
 }
 
 export const vertex = (x: X, c: NodeConfig) => {

@@ -1,6 +1,6 @@
 import { EventState } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
-import type { X } from './node'
+import type { NodeProxy } from './node'
 export type { Fun, Queue, Frame }
 export type GPUContext = any // GPUCanvasContext https://developer.mozilla.org/en-US/docs/Web/API/GPUCanvasContext
 export type GPUDevice = any //
@@ -52,12 +52,12 @@ export type GL = EventState<{
         mouse: [number, number]
         count: number
         el: HTMLCanvasElement
-        vs: string | X
-        fs: string | X
-        vert: string | X
-        frag: string | X
-        vertex: string | X
-        fragment: string | X
+        vs: string | NodeProxy
+        fs: string | NodeProxy
+        vert: string | NodeProxy
+        frag: string | NodeProxy
+        vertex: string | NodeProxy
+        fragment: string | NodeProxy
 
         /**
          * core state

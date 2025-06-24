@@ -23,22 +23,12 @@ yarn add glre
 ## Install from CDN or static hosting
 
 ```html
-<canvas id="id" style="top: 0; left: 0; position: fixed" />
 <script type="module">
-        import { createGL } from 'https://esm.sh/glre'
-        const frag = `
-          #version 300 es
-          precision highp float;
-          uniform vec2 iResolution;
-          out vec4 fragColor;
-          void main() {
-            fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-          }
-        `
-        function App() {
-                const el = document.getElementById('id')
-                createGL({ el, frag }).mount()
-        }
-        document.addEventListener('DOMContentLoaded', App)
+        import createGL from 'https://esm.sh/glre'
+        import { vec4, fract, position, iResolution } from 'https://esm.sh/glre/node'
+        const fs = vec4(fract(position.xy.div(iResolution)), 0, 1)
+        const el = document.createElement('canvas')
+        createGL({ el, fs }).mount()
+        document.body.append(el)
 </script>
 ```

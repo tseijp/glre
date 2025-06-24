@@ -1,4 +1,4 @@
-import { f, n, node, u } from './node'
+import { conversion as c, function_ as f, node } from './node'
 import { hex2rgb } from './utils'
 import { is } from '../utils/helpers'
 import type { X } from './types'
@@ -10,20 +10,33 @@ export * from './scope'
 export * from './types'
 export * from './utils'
 
+// x ? y : z
+export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
+
+// uniform and attribute
+export const uniform = (value: number | number[], id?: string) => node('uniform', { id, value })
+export const varying = (value: number | number[], id?: string) => node('varying', { id, value })
+export const attribute = (value: number | number[], id?: string) => node('varying', { id, value })
+export const variable = (id: string) => node('variable', { id })
+export const builtin = (id: string) => node('builtin', { id })
+
 // Default uniforms
-export const iResolution = u('iResolution', [1280, 800])
-export const iMouse = u('iMouse', [0, 0])
-export const iTime = u('iTime', 0)
-export const position = node('variable', { id: 'gl_FragCoord' })
+export const iResolution = uniform([1280, 800], 'iResolution')
+export const iMouse = uniform([0, 0], 'iMouse')
+export const iTime = uniform(0, 'iTime')
 
-// Default attributes
-export const uv = (index = 0) => node('attribute', { id: `uv${index || ''}` })
-export const vertexColor = (index = 0) => node('attribute', { id: `color${index || ''}` })
-export const attribute = (id: string, type?: string) => node('attribute', { id, type })
-export const vertexStage = (value: X) => node('vertex_stage', null, value)
+// Builtin Variables
+export const position = node('builtin', { id: 'position' })
+export const vertexIndex = node('builtin', { id: 'vertex_index' })
+export const instanceIndex = node('builtin', { id: 'instance_index' })
+export const frontFacing = node('builtin', { id: 'front_facing' })
+export const fragDepth = node('builtin', { id: 'frag_depth' })
+export const sampleIndex = node('builtin', { id: 'sample_index' })
+export const sampleMask = node('builtin', { id: 'sample_mask' })
+export const pointCoord = node('builtin', { id: 'point_coord' })
 
-// Buildin Variables
-export const positionLocal = node('builtin', { id: 'positionLocal' })
+// TSL Compatible Builtin Variables
+export const positionLocal = node('builtin', { id: 'position' })
 export const positionWorld = node('builtin', { id: 'positionWorld' })
 export const positionView = node('builtin', { id: 'positionView' })
 export const normalLocal = node('builtin', { id: 'normalLocal' })
@@ -32,26 +45,30 @@ export const normalView = node('builtin', { id: 'normalView' })
 export const screenCoordinate = node('builtin', { id: 'screenCoordinate' })
 export const screenUV = node('builtin', { id: 'screenUV' })
 
+// Legacy aliases for backward compatibility
+export const fragCoord = position
+export const vertexId = vertexIndex
+
 // Type constructors
-export const float = (x: X) => n('float', x)
-export const int = (x: X) => n('int', x)
-export const uint = (x: X) => n('uint', x)
-export const bool = (x: X) => n('bool', x)
-export const vec2 = (x?: X, y?: X) => n('vec2', x, y)
-export const vec3 = (x?: X, y?: X, z?: X) => n('vec3', x, y, z)
-export const vec4 = (x?: X, y?: X, z?: X, w?: X) => n('vec4', x, y, z, w)
-export const mat2 = (...args: X[]) => n('mat2', ...args)
-export const mat3 = (...args: X[]) => n('mat3', ...args)
-export const mat4 = (...args: X[]) => n('mat4', ...args)
-export const ivec2 = (x?: X, y?: X) => n('ivec2', x, y)
-export const ivec3 = (x?: X, y?: X, z?: X) => n('ivec3', x, y, z)
-export const ivec4 = (x?: X, y?: X, z?: X, w?: X) => n('ivec4', x, y, z, w)
-export const uvec2 = (x?: X, y?: X) => n('uvec2', x, y)
-export const uvec3 = (x?: X, y?: X, z?: X) => n('uvec3', x, y, z)
-export const uvec4 = (x?: X, y?: X, z?: X, w?: X) => n('uvec4', x, y, z, w)
-export const bvec2 = (x?: X, y?: X) => n('bvec2', x, y)
-export const bvec3 = (x?: X, y?: X, z?: X) => n('bvec3', x, y, z)
-export const bvec4 = (x?: X, y?: X, z?: X, w?: X) => n('bvec4', x, y, z, w)
+export const float = (x: X) => c('float', x)
+export const int = (x: X) => c('int', x)
+export const uint = (x: X) => c('uint', x)
+export const bool = (x: X) => c('bool', x)
+export const vec2 = (x?: X, y?: X) => c('vec2', x, y)
+export const vec3 = (x?: X, y?: X, z?: X) => c('vec3', x, y, z)
+export const vec4 = (x?: X, y?: X, z?: X, w?: X) => c('vec4', x, y, z, w)
+export const mat2 = (...args: X[]) => c('mat2', ...args)
+export const mat3 = (...args: X[]) => c('mat3', ...args)
+export const mat4 = (...args: X[]) => c('mat4', ...args)
+export const ivec2 = (x?: X, y?: X) => c('ivec2', x, y)
+export const ivec3 = (x?: X, y?: X, z?: X) => c('ivec3', x, y, z)
+export const ivec4 = (x?: X, y?: X, z?: X, w?: X) => c('ivec4', x, y, z, w)
+export const uvec2 = (x?: X, y?: X) => c('uvec2', x, y)
+export const uvec3 = (x?: X, y?: X, z?: X) => c('uvec3', x, y, z)
+export const uvec4 = (x?: X, y?: X, z?: X, w?: X) => c('uvec4', x, y, z, w)
+export const bvec2 = (x?: X, y?: X) => c('bvec2', x, y)
+export const bvec3 = (x?: X, y?: X, z?: X) => c('bvec3', x, y, z)
+export const bvec4 = (x?: X, y?: X, z?: X, w?: X) => c('bvec4', x, y, z, w)
 export const color = (r?: X, g?: X, b?: X) => {
         if (is.num(r) && is.und(g) && is.und(b)) return vec3(...hex2rgb(r))
         return vec3(r, g, b)
