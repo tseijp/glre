@@ -26,14 +26,14 @@ export const iMouse = uniform([0, 0], 'iMouse')
 export const iTime = uniform(0, 'iTime')
 
 // Builtin Variables
-export const position = node('builtin', { id: 'position' })
-export const vertexIndex = node('builtin', { id: 'vertex_index' })
-export const instanceIndex = node('builtin', { id: 'instance_index' })
-export const frontFacing = node('builtin', { id: 'front_facing' })
-export const fragDepth = node('builtin', { id: 'frag_depth' })
-export const sampleIndex = node('builtin', { id: 'sample_index' })
-export const sampleMask = node('builtin', { id: 'sample_mask' })
-export const pointCoord = node('builtin', { id: 'point_coord' })
+export const position = builtin('position')
+export const vertexIndex = builtin('vertex_index')
+export const instanceIndex = builtin('instance_index')
+export const frontFacing = builtin('front_facing')
+export const fragDepth = builtin('frag_depth')
+export const sampleIndex = builtin('sample_index')
+export const sampleMask = builtin('sample_mask')
+export const pointCoord = builtin('point_coord')
 
 // TSL Compatible Builtin Variables
 export const positionLocal = node('builtin', { id: 'position' })

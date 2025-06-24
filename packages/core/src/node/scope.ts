@@ -19,7 +19,7 @@ const addToScope = (x: NodeProxy) => {
 
 export const toVar = (x: X, id?: string) => {
         if (!id) id = getId()
-        const y = node('variable', { id })
+        const y = node('variable', { id, inferFrom: x })
         const z = node('declare', null, y, x)
         addToScope(z)
         return y
@@ -93,7 +93,8 @@ export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
                 const paramVars: NodeProxy[] = []
                 for (let i = 0; i < args.length; i++) {
                         const paramId = `p${i}`
-                        const paramVar = node('variable', { id: paramId })
+                        // 関数呼び出し時の引数から型情報を継承
+                        const paramVar = node('variable', { id: paramId, inferFrom: args[i] })
                         paramVars.push(paramVar)
                 }
                 scoped(x, () => (y = fun(paramVars)))
