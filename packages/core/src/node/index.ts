@@ -1,4 +1,4 @@
-import { builtin, conversion as c, function_ as f, node, uniform } from './node'
+import { builtin, conversion as c, function_ as f, uniform } from './node'
 import { hex2rgb } from './utils'
 import { is } from '../utils/helpers'
 import type { X } from './types'

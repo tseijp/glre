@@ -17,6 +17,10 @@ export const code = (target: X, c?: NodeConfig | null): string => {
          * headers
          */
         let head = ''
+        if (type === 'attribute') {
+                if (c.headers.has(id)) return id
+                head = `${infer(target, c)} ${id}`
+        }
         if (type === 'uniform') {
                 if (c.headers.has(id)) return id
                 if (!c.binding) c.binding = 0
@@ -24,10 +28,6 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 head = c.isWebGL
                         ? `uniform ${varType} ${id};`
                         : `@group(0) @binding(${c.binding++}) var<uniform> ${id}: ${formatConversions(varType, c)};`
-        }
-        if (type === 'attribute') {
-                if (c.headers.has(id)) return id
-                head = `${infer(target, c)} ${id}`
         }
         if (type === 'constant') {
                 if (c.headers.has(id)) return id
@@ -63,6 +63,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
          */
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
+        if (type === 'loop') return `for (int i = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
         if (type === 'define') {
                 const args = children.slice(2)
                 const ret = `${id}(${args.map((arg) => code(arg, c))})`
@@ -70,7 +71,6 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 c.headers.set(id, generateDefine(props, c))
                 return ret
         }
-        if (type === 'loop') return `for (int i = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
         if (type === 'if') {
                 let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
                 for (let i = 2; i < children.length; i += 2) {

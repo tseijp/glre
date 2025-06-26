@@ -68,15 +68,13 @@ export const generateDefine = (props: NodeProps, c: NodeConfig) => {
         const { id, children = [] } = props
         const [x, y, ...args] = children
         const returnType = y ? infer(y, c) : 'void'
-        const params = args.map((arg, i) => [`p${i}`, infer(arg, c)])
         let ret = ''
         if (c?.isWebGL) {
-                const paramList = params.map(([name, type]) => `${type} ${name}`)
-                ret += `${returnType} ${id}(${paramList}) {\n`
+                const params = args.map((arg, i) => `${infer(arg, c)} p${i}`)
+                ret += `${returnType} ${id}(${params}) {\n`
         } else {
-                const wgslReturnType = formatConversions(returnType, c)
-                const wgslParams = params.map(([name, type]) => `${name}: ${formatConversions(type, c)}`)
-                ret += `fn ${id}(${wgslParams}) -> ${wgslReturnType} {\n`
+                const params = args.map((arg, i) => `p${i}: ${formatConversions(infer(arg, c), c)}`)
+                ret += `fn ${id}(${params}) -> ${formatConversions(returnType, c)} {\n`
         }
         const scopeCode = code(x, c)
         if (scopeCode) ret += scopeCode + '\n'
@@ -85,22 +83,28 @@ export const generateDefine = (props: NodeProps, c: NodeConfig) => {
         return ret
 }
 
-const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
-        if (isWebGL)
-                return `
+const GLSL_FRAGMENT_HEAD = `
 #version 300 es
 precision mediump float;
 out vec4 fragColor;
-${head}
-void main() {
-fragColor = ${body};
-}`.trim()
-        return `
-${head}
+`.trim()
+
+const WGSL_FRAGMENT_HEAD = `
 @fragment
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-return ${body};
-}`.trim()
+`.trim()
+
+const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
+        let ret = ''
+        if (isWebGL) ret += GLSL_FRAGMENT_HEAD
+        if (head) ret += head + '\n'
+        if (isWebGL) ret += `void main() {\n  fragColor = ${body};`
+        else {
+                ret += WGSL_FRAGMENT_HEAD + '\n'
+                ret += `  return ${body};`
+        }
+        ret += '\n}'
+        return ret
 }
 
 const generateVertexMain = (body: string, head: string, isWebGL = true) => {

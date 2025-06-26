@@ -34,24 +34,27 @@ export type Swizzles =
         | _Swizzles<'s' | 't'>
 
 export type NodeTypes =
+        // headers
+        | 'attribute'
         | 'uniform'
+        | 'varying'
+        | 'constant'
+        // variables
         | 'variable'
         | 'swizzle'
-        | 'operator'
+        | 'ternary'
+        | 'builtin'
         | 'conversion'
+        | 'operator'
         | 'function'
-        | 'declare'
+        // scopes
+        | 'scope'
         | 'assign'
+        | 'loop'
         | 'define'
         | 'if'
-        | 'loop'
-        | 'scope'
         | 'switch'
-        | 'ternary'
-        | 'attribute'
-        | 'varying'
-        | 'builtin'
-        | 'constant'
+        | 'declare'
 
 export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         // Operators
@@ -73,7 +76,6 @@ export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         // Variable manipulation
         assign(n: X): NodeProxy
         toVar(name?: string): NodeProxy
-        toConst(name?: string): NodeProxy
 
         // Math function methods
         abs(): NodeProxy
