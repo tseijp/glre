@@ -1,8 +1,26 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { infer } from './infer'
-import { CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING, WGSL_TO_GLSL_BUILTIN } from './const'
-import type { Conversions, Functions, NodeConfig, NodeProps, NodeProxy, Operators, Swizzles, X } from './types'
+import {
+        CONSTANTS,
+        CONVERSIONS,
+        FUNCTIONS,
+        OPERATOR_KEYS,
+        OPERATORS,
+        TYPE_MAPPING,
+        WGSL_TO_GLSL_BUILTIN,
+} from './const'
+import type {
+        Constants,
+        Conversions,
+        Functions,
+        NodeConfig,
+        NodeProps,
+        NodeProxy,
+        Operators,
+        Swizzles,
+        X,
+} from './types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -56,6 +74,11 @@ export const getOperator = (op: X) => {
 
 export const getBluiltin = (id: string) => {
         return WGSL_TO_GLSL_BUILTIN[id as keyof typeof WGSL_TO_GLSL_BUILTIN]
+}
+
+export const conversionToConstant = (conversionKey: string): Constants => {
+        const index = CONVERSIONS.indexOf(conversionKey as Conversions)
+        return index !== -1 ? CONSTANTS[index] : 'float'
 }
 
 const generateHead = (c: NodeConfig) => {
@@ -117,8 +140,7 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
         return ret
 }
 
-const generateVertexMain = (body: string, head: string, isWebGL = true) => {
-        // @TODO FIX
+const generateVertexMain = (_body: string, _head: string, isWebGL = true) => {
         if (isWebGL) return ``
         return ``
 }

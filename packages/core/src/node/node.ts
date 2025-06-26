@@ -1,6 +1,6 @@
 import { code } from './code'
 import { assign, toVar } from './scope'
-import { isConversion, isFunction, isOperator, isSwizzle } from './utils'
+import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle } from './utils'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
@@ -21,7 +21,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isSwizzle(key)) return swizzle(key, x)
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
-                if (isConversion(key)) return conversion(key, x)
+                if (isConversion(key)) return conversion(conversionToConstant(key), x)
         }
         const set = (_: unknown, key: string, value: X) => {
                 if (isSwizzle(key)) {
