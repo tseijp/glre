@@ -22,7 +22,6 @@ export interface NodeProps {
         args?: X[]
         type?: string
         children?: X[]
-        value?: number | number[] | boolean
         inferFrom?: X
         layout?: FnLayout
 }
@@ -32,7 +31,7 @@ export interface NodeConfig {
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         headers?: Map<string, string>
-        onMount?: (name: string, value: any) => void
+        onMount?: (name: string) => void
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`

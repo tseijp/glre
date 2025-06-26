@@ -34,10 +34,11 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
         return x
 }
 
-// uniform and attribute
-export const uniform = (value: number | number[], id?: string) => node('uniform', { id, value })
-export const varying = (value: number | number[], id?: string) => node('varying', { id, value })
-export const attribute = (value: number | number[], id?: string) => node('varying', { id, value })
+// headers
+export const attribute = (value: X, id?: string) => node('varying', { id }, value)
+export const uniform = (value: X, id?: string) => node('uniform', { id }, value)
+export const varying = (value: X, id?: string) => node('varying', { id }, value)
+export const constant = (value: X, id?: string) => node('constant', { id }, value)
 export const variable = (id: string) => node('variable', { id })
 export const builtin = (id: string) => node('builtin', { id })
 

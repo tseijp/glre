@@ -65,29 +65,20 @@ const inferSwizzle = (count: number): Constants => {
 
 export const inferImpl = (target: NodeProxy, c: NodeConfig): Constants => {
         const { type, props } = target
-        const { id, children = [], value, inferFrom } = props
+        const { id, children = [], inferFrom } = props
         const [x, y, z] = children
         if (inferFrom) return infer(inferFrom, c)
-        if (
-                type === 'uniform' ||
-                type === 'constant' ||
-                type === 'attribute' ||
-                type === 'variable' ||
-                type === 'varying'
-        )
-                return inferPrimitiveType(value)
         if (type === 'conversion') return x as Constants
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
         if (type === 'swizzle') return inferSwizzle((x as string).length)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
+        if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define') {
-                // Use layout type if specified
                 if (props.layout?.type) return props.layout.type as Constants
                 return y ? infer(y, c) : 'void'
         }
-        if (type === 'builtin') return inferBuiltin(id)
-        return 'float' // @TODO FIX
+        return infer(x, c)
 }
 
 export const infer = (target: X, c: NodeConfig | null): Constants => {

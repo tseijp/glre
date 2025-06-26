@@ -7,7 +7,10 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
         if (is.str(target)) return target
-        if (is.num(target)) return target.toFixed(1)
+        if (is.num(target)) {
+                const decimalPlaces = String(target).includes('.') ? String(target).split('.')[1].length : 1
+                return target.toFixed(Math.max(1, decimalPlaces))
+        }
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return '' // ignore if no target
         const { type, props } = target
@@ -31,7 +34,11 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         }
         if (type === 'constant') {
                 if (c.headers.has(id)) return id
-                head = `${infer(target, c)} ${id}`
+                const varType = infer(target, c)
+                const value = code(x, c)
+                head = c.isWebGL
+                        ? `const ${varType} ${id} = ${value};`
+                        : `const ${id}: ${formatConversions(varType, c)} = ${value};`
         }
         if (type === 'varying') {
                 if (c.headers.has(id)) return id
@@ -39,7 +46,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         }
         if (head) {
                 c.headers.set(id, head)
-                c.onMount?.(id, props.value)
+                c.onMount?.(id)
                 return id
         }
         /**

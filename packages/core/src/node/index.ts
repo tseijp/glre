@@ -10,11 +10,6 @@ export * from './scope'
 export * from './types'
 export * from './utils'
 
-// Default uniforms
-export const iResolution = uniform([1280, 800], 'iResolution')
-export const iMouse = uniform([0, 0], 'iMouse')
-export const iTime = uniform(0, 'iTime')
-
 // Builtin Variables
 export const position = builtin('position')
 export const vertexIndex = builtin('vertex_index')
@@ -59,6 +54,11 @@ export const color = (r?: X, g?: X, b?: X) => {
         if (is.num(r) && is.und(g) && is.und(b)) return vec3(...hex2rgb(r))
         return vec3(r, g, b)
 }
+
+// Default uniforms
+export const iResolution = uniform(vec2(1280, 800), 'iResolution')
+export const iMouse = uniform(vec2(0, 0), 'iMouse')
+export const iTime = uniform(float(0), 'iTime')
 
 // Texture Functions
 export const texture = (x: X, y: X, z?: X) => f('texture', x, y, z)

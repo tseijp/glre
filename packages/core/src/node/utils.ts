@@ -130,7 +130,7 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
         let ret = ''
         if (isWebGL) ret += GLSL_FRAGMENT_HEAD
-        if (head) ret += head + '\n'
+        if (head) ret += '\n' + head + '\n'
         if (isWebGL) ret += `void main() {\n  fragColor = ${body};`
         else {
                 ret += WGSL_FRAGMENT_HEAD + '\n'
