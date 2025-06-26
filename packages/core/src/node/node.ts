@@ -23,9 +23,9 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
                 if (isConversion(key)) return conversion(conversionToConstant(key), x)
         }
-        const set = (_: unknown, key: string, value: X) => {
+        const set = (_: unknown, key: string, y: X) => {
                 if (isSwizzle(key)) {
-                        swizzle(key, x).assign(value)
+                        swizzle(key, x).assign(y)
                         return true
                 }
                 return false
@@ -35,10 +35,10 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 }
 
 // headers
-export const attribute = (value: X, id?: string) => node('varying', { id }, value)
-export const uniform = (value: X, id?: string) => node('uniform', { id }, value)
-export const varying = (value: X, id?: string) => node('varying', { id }, value)
-export const constant = (value: X, id?: string) => node('constant', { id }, value)
+export const attribute = (x: X, id?: string) => node('varying', { id }, x)
+export const uniform = (x: X, id?: string) => node('uniform', { id }, x)
+export const varying = (x: X, id?: string) => node('varying', { id }, x)
+export const constant = (x: X, id?: string) => node('constant', { id }, x)
 export const variable = (id: string) => node('variable', { id })
 export const builtin = (id: string) => node('builtin', { id })
 
