@@ -65,15 +65,25 @@ const generateHead = (c: NodeConfig) => {
 }
 
 export const generateDefine = (props: NodeProps, c: NodeConfig) => {
-        const { id, children = [] } = props
+        const { id, children = [], layout } = props
         const [x, y, ...args] = children
-        const returnType = y ? infer(y, c) : 'void'
+        const returnType = layout?.type || (y ? infer(y, c) : 'void')
+        const argParams: [name: string, type: string][] = []
+        if (layout?.inputs)
+                for (const input of layout.inputs) {
+                        argParams.push([input.name, input.type])
+                }
+        else
+                for (let i = 0; i < args.length; i++) {
+                        argParams.push([`p${i}`, infer(args[i], c)])
+                }
         let ret = ''
+        const params: string[] = []
         if (c?.isWebGL) {
-                const params = args.map((arg, i) => `${infer(arg, c)} p${i}`)
+                for (const [id, type] of argParams) params.push(`${type} ${id}`)
                 ret += `${returnType} ${id}(${params}) {\n`
         } else {
-                const params = args.map((arg, i) => `p${i}: ${formatConversions(infer(arg, c), c)}`)
+                for (const [id, type] of argParams) params.push(`${id}: ${formatConversions(type, c)}`)
                 ret += `fn ${id}(${params}) -> ${formatConversions(returnType, c)} {\n`
         }
         const scopeCode = code(x, c)

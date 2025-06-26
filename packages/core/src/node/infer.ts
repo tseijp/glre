@@ -81,7 +81,11 @@ export const inferImpl = (target: NodeProxy, c: NodeConfig): Constants => {
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
         if (type === 'swizzle') return inferSwizzle((x as string).length)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
-        if (type === 'define') return y ? infer(y, c) : 'void'
+        if (type === 'define') {
+                // Use layout type if specified
+                if (props.layout?.type) return props.layout.type as Constants
+                return y ? infer(y, c) : 'void'
+        }
         if (type === 'builtin') return inferBuiltin(id)
         return 'float' // @TODO FIX
 }

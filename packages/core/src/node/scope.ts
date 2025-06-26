@@ -1,7 +1,7 @@
 import { int } from '.'
-import { node } from './node'
+import { conversion, node } from './node'
 import { getId } from './utils'
-import type { NodeProxy, X } from './types'
+import type { FnLayout, NodeProps, NodeProxy, X } from './types'
 
 let _scope: NodeProxy | null = null
 
@@ -84,17 +84,28 @@ export const Switch = (x: X) => {
 }
 
 export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
-        const id = getId()
-        return (...args: X[]) => {
+        let layout: FnLayout
+        const ret = (...args: X[]) => {
+                const id = layout?.name || getId()
                 const x = node('scope')
                 let y: NodeProxy | undefined
                 const paramVars: NodeProxy[] = []
-                for (let i = 0; i < args.length; i++) {
-                        const paramId = `p${i}`
-                        const paramVar = node('variable', { id: paramId, inferFrom: args[i] })
-                        paramVars.push(paramVar)
-                }
+                const paramDefs: NodeProps[] = []
+                if (layout?.inputs)
+                        for (const input of layout.inputs) {
+                                paramDefs.push({ id: input.name, inferFrom: conversion(input.type) })
+                        }
+                else
+                        for (let i = 0; i < args.length; i++) {
+                                paramDefs.push({ id: `p${i}`, inferFrom: args[i] })
+                        }
+                for (const props of paramDefs) paramVars.push(node('variable', props))
                 scoped(x, () => (y = fun(paramVars)))
-                return node('define', { id }, x, y, ...args)
+                return node('define', { id, layout }, x, y, ...args)
         }
+        ret.setLayout = (newLayout: FnLayout) => {
+                layout = newLayout
+                return ret
+        }
+        return ret
 }

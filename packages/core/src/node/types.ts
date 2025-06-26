@@ -8,6 +8,15 @@ export type Functions = (typeof FUNCTIONS)[number]
 
 export type Operators = (typeof OPERATOR_KEYS)[number]
 
+export interface FnLayout {
+        name: string
+        type: Constants
+        inputs: Array<{
+                name: string
+                type: Constants
+        }>
+}
+
 export interface NodeProps {
         id?: string
         args?: X[]
@@ -15,6 +24,7 @@ export interface NodeProps {
         children?: X[]
         value?: number | number[] | boolean
         inferFrom?: X
+        layout?: FnLayout
 }
 
 export interface NodeConfig {

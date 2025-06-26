@@ -151,8 +151,24 @@ function Canvas() {
                 return scale.mul(rotation)
         })
 
+        rotate.setLayout({
+                name: 'rotate',
+                type: 'mat2',
+                inputs: [
+                        { name: 'x', type: 'float' },
+                        { name: 'y', type: 'float' },
+                        { name: 'angle', type: 'float' },
+                ],
+        })
+
         const circle = Fn(([p]) => {
                 return length(p).sub(ellipseRadius)
+        })
+
+        circle.setLayout({
+                name: 'circle',
+                type: 'float',
+                inputs: [{ name: 'p', type: 'vec2' }],
         })
 
         const ellipse = Fn(([p, angle]) => {
@@ -160,8 +176,27 @@ function Canvas() {
                 return circle(transform.mul(p))
         })
 
+        ellipse.setLayout({
+                name: 'ellipse',
+                type: 'float',
+                inputs: [
+                        { name: 'p', type: 'vec2' },
+                        { name: 'angle', type: 'float' },
+                ],
+        })
+
         const onion = Fn(([d, p, angle]) => {
                 return min(d, abs(ellipse(p, angle)).sub(ellipseStroke))
+        })
+
+        onion.setLayout({
+                name: 'onion',
+                type: 'float',
+                inputs: [
+                        { name: 'd', type: 'float' },
+                        { name: 'p', type: 'vec2' },
+                        { name: 'angle', type: 'float' },
+                ],
         })
 
         const frag = Fn(() => {
