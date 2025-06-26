@@ -47,7 +47,7 @@ export const If = (x: X, fun: () => void) => {
                 Else: (_fun: () => void) => {
                         const _x = node('scope')
                         scoped(_x, _fun)
-                        ifNode.props.children!.push(x)
+                        ifNode.props.children!.push(_x)
                 },
         })
         return ret()

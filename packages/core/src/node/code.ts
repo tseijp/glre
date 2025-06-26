@@ -63,7 +63,10 @@ export const code = (target: X, c?: NodeConfig | null): string => {
          */
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
-        if (type === 'loop') return `for (int i = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
+        if (type === 'loop')
+                return c.isWebGL
+                        ? `for (int i = 0; i < ${x}; i += 1) {\n${code(y, c)}\n}`
+                        : `for (var i: i32 = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
         if (type === 'define') {
                 const args = children.slice(2)
                 const ret = `${id}(${args.map((arg) => code(arg, c))})`
