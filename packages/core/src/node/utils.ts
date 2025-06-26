@@ -69,6 +69,7 @@ export const generateDefine = (props: NodeProps, c: NodeConfig) => {
         const [x, y, ...args] = children
         const returnType = layout?.type || (y ? infer(y, c) : 'void')
         const argParams: [name: string, type: string][] = []
+        const params: string[] = []
         if (layout?.inputs)
                 for (const input of layout.inputs) {
                         argParams.push([input.name, input.type])
@@ -78,7 +79,6 @@ export const generateDefine = (props: NodeProps, c: NodeConfig) => {
                         argParams.push([`p${i}`, infer(args[i], c)])
                 }
         let ret = ''
-        const params: string[] = []
         if (c?.isWebGL) {
                 for (const [id, type] of argParams) params.push(`${type} ${id}`)
                 ret += `${returnType} ${id}(${params}) {\n`
