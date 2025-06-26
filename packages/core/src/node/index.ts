@@ -1,4 +1,4 @@
-import { conversion as c, function_ as f, node } from './node'
+import { builtin, conversion as c, function_ as f, node, uniform } from './node'
 import { hex2rgb } from './utils'
 import { is } from '../utils/helpers'
 import type { X } from './types'
@@ -9,16 +9,6 @@ export * from './node'
 export * from './scope'
 export * from './types'
 export * from './utils'
-
-// x ? y : z
-export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
-
-// uniform and attribute
-export const uniform = (value: number | number[], id?: string) => node('uniform', { id, value })
-export const varying = (value: number | number[], id?: string) => node('varying', { id, value })
-export const attribute = (value: number | number[], id?: string) => node('varying', { id, value })
-export const variable = (id: string) => node('variable', { id })
-export const builtin = (id: string) => node('builtin', { id })
 
 // Default uniforms
 export const iResolution = uniform([1280, 800], 'iResolution')
@@ -36,18 +26,14 @@ export const sampleMask = builtin('sample_mask')
 export const pointCoord = builtin('point_coord')
 
 // TSL Compatible Builtin Variables
-export const positionLocal = node('builtin', { id: 'position' })
-export const positionWorld = node('builtin', { id: 'positionWorld' })
-export const positionView = node('builtin', { id: 'positionView' })
-export const normalLocal = node('builtin', { id: 'normalLocal' })
-export const normalWorld = node('builtin', { id: 'normalWorld' })
-export const normalView = node('builtin', { id: 'normalView' })
-export const screenCoordinate = node('builtin', { id: 'screenCoordinate' })
-export const screenUV = node('builtin', { id: 'screenUV' })
-
-// Legacy aliases for backward compatibility
-export const fragCoord = position
-export const vertexId = vertexIndex
+export const normalLocal = builtin('normalLocal')
+export const normalWorld = builtin('normalWorld')
+export const normalView = builtin('normalView')
+export const positionLocal = builtin('position')
+export const positionWorld = builtin('positionWorld')
+export const positionView = builtin('positionView')
+export const screenCoordinate = builtin('screenCoordinate')
+export const screenUV = builtin('screenUV')
 
 // Type constructors
 export const float = (x: X) => c('float', x)

@@ -1,3 +1,4 @@
+import { int } from '.'
 import { node } from './node'
 import { getId } from './utils'
 import type { NodeProxy, X } from './types'
@@ -20,7 +21,7 @@ const addToScope = (x: NodeProxy) => {
 export const toVar = (x: X, id?: string) => {
         if (!id) id = getId()
         const y = node('variable', { id, inferFrom: x })
-        const z = node('declare', null, y, x)
+        const z = node('declare', null, x, y)
         addToScope(z)
         return y
 }
@@ -31,48 +32,45 @@ export const assign = (x: X, y: X) => {
         return x
 }
 
-export const If = (condition: X, fun: () => void) => {
-        const scope = node('scope')
-        scoped(scope, fun)
-        const ifNode = node('if', null, condition, scope)
+export const If = (x: X, fun: () => void) => {
+        const y = node('scope')
+        scoped(y, fun)
+        const ifNode = node('if', null, x, y)
         addToScope(ifNode)
-        const createChain = () => ({
-                ElseIf: (x: X, _fun: () => void) => {
-                        const y = node('scope')
-                        scoped(y, _fun)
-                        ifNode.props.children!.push(x, y)
-                        return createChain()
+        const ret = () => ({
+                ElseIf: (_x: X, _fun: () => void) => {
+                        const _y = node('scope')
+                        scoped(_y, _fun)
+                        ifNode.props.children!.push(_x, _y)
+                        return ret()
                 },
                 Else: (_fun: () => void) => {
-                        const x = node('scope')
-                        scoped(x, _fun)
+                        const _x = node('scope')
+                        scoped(_x, _fun)
                         ifNode.props.children!.push(x)
                 },
         })
-        return createChain()
+        return ret()
 }
 
 export const Loop = (x: X, fun: (params: { i?: NodeProxy }) => void) => {
         const y = node('scope')
-        scoped(y, () => fun({ i: node('variable', { id: 'i' }) }))
+        scoped(y, () => fun({ i: node('variable', { id: 'i', inferFrom: int(0) }) }))
         const ret = node('loop', null, x, y)
         addToScope(ret)
         return ret
 }
 
-export const Switch = (value: X) => {
-        const switchNode = node('switch', null, value)
+export const Switch = (x: X) => {
+        const switchNode = node('switch', null, x)
         addToScope(switchNode)
-        const createChain = () => ({
+        const ret = () => ({
                 Case: (...values: X[]) => {
                         return (fun: () => void) => {
-                                const scope = node('scope')
-                                scoped(scope, fun)
-                                // 複数のcase値を処理
-                                for (const val of values) {
-                                        switchNode.props.children!.push(val, scope)
-                                }
-                                return createChain()
+                                const y = node('scope')
+                                scoped(y, fun)
+                                for (const _x of values) switchNode.props.children!.push(_x, y)
+                                return ret()
                         }
                 },
                 Default: (fun: () => void) => {
@@ -82,7 +80,7 @@ export const Switch = (value: X) => {
                 },
         })
 
-        return createChain()
+        return ret()
 }
 
 export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
@@ -93,7 +91,6 @@ export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
                 const paramVars: NodeProxy[] = []
                 for (let i = 0; i < args.length; i++) {
                         const paramId = `p${i}`
-                        // 関数呼び出し時の引数から型情報を継承
                         const paramVar = node('variable', { id: paramId, inferFrom: args[i] })
                         paramVars.push(paramVar)
                 }

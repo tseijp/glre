@@ -226,4 +226,5 @@ export const WGSL_TO_GLSL_BUILTIN = {
         sample_index: 'gl_SampleID',
         sample_mask: 'gl_SampleMask',
         point_coord: 'gl_PointCoord',
+        uv: 'gl_FragCoord.xy',
 } as const

@@ -1,6 +1,6 @@
 import { code } from './code'
 import { assign, toVar } from './scope'
-import { getId, isConversion, isFunction, isOperator, isSwizzle } from './utils'
+import { isConversion, isFunction, isOperator, isSwizzle } from './utils'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
@@ -34,9 +34,18 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
         return x
 }
 
+// uniform and attribute
+export const uniform = (value: number | number[], id?: string) => node('uniform', { id, value })
+export const varying = (value: number | number[], id?: string) => node('varying', { id, value })
+export const attribute = (value: number | number[], id?: string) => node('varying', { id, value })
+export const variable = (id: string) => node('variable', { id })
+export const builtin = (id: string) => node('builtin', { id })
+
 // Node shorthands
-export const variable = (...args: X[]) => node('variable', { id: getId() }, ...args)
 export const swizzle = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
 export const operator = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
 export const function_ = (key: Functions, ...args: X[]) => node('function', null, key, ...args)
 export const conversion = (key: string, ...args: X[]) => node('conversion', null, key, ...args)
+
+// x ? y : z
+export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
