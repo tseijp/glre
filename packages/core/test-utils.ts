@@ -1,9 +1,9 @@
-import { Fn, infer } from '../../src/node'
-import type { NodeConfig, X } from '../../src/node'
+import { Fn, infer } from './src/node'
+import type { NodeConfig, X } from './src/node'
 
-export const build = (callback: () => any) => {
+export const build = (fun: () => any) => {
         const config = {} as NodeConfig
-        const ret = Fn(callback).setLayout({ name: 'fn', type: 'auto' })()
+        const ret = Fn(fun).setLayout({ name: 'fn', type: 'auto' })()
         ret.toString(config)
         const def = config.headers?.get('fn')
         return def

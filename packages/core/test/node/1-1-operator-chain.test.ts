@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec2, vec3, position } from '../../src/node'
-import { inferAndCode } from './utils'
+import { inferAndCode } from '../../test-utils'
 
 describe('Operator Chain', () => {
         describe('Arithmetic operator chaining', () => {

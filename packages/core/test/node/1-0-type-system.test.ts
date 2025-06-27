@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, int, vec2, vec3, vec4, mat3, infer } from '../../src/node'
-import { inferAndCode } from './utils'
+import { inferAndCode } from '../../test-utils'
 
 describe('Type System', () => {
         describe('Primitive type creation', () => {

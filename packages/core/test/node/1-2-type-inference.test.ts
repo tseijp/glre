@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec2, vec3, sin, cos, dot, normalize, mix } from '../../src/node'
-import { inferAndCode } from './utils'
+import { inferAndCode } from '../../test-utils'
 
 describe('Type Inference', () => {
         describe('Function return type inference', () => {

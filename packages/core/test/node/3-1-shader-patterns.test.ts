@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec2, vec3, vec4, fract, sin, cos, mix, position, iResolution, iTime } from '../../src/node'
-import { build } from './utils'
+import { build } from '../../test-utils'
 
 describe('Shader Patterns', () => {
         describe('Fragment shader basics', () => {

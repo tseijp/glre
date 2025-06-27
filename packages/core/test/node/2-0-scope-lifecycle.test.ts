@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec3, Fn } from '../../src/node'
-import { build } from './utils'
+import { build } from '../../test-utils'
 
 describe('Scope Lifecycle', () => {
         describe('Variable lifecycle in Fn scope', () => {

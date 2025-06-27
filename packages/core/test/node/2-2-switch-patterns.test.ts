@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, int, Switch } from '../../src/node'
-import { build } from './utils'
+import { build } from '../../test-utils'
 
 describe('Switch Patterns', () => {
         describe('Single case processing', () => {

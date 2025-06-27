@@ -16,7 +16,7 @@ import {
         iTime,
         int,
 } from '../../src/node'
-import { build, inferAndCode } from './utils'
+import { build, inferAndCode } from '../../test-utils'
 
 describe('Integration Tests', () => {
         describe('Complete shader generation', () => {

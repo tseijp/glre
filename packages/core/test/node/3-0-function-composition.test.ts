@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec3, mat3, sin, cos, Fn } from '../../src/node'
-import { inferAndCode } from './utils'
+import { inferAndCode } from '../../test-utils'
 
 describe('Function Composition', () => {
         describe('TSL compatible function patterns', () => {
@@ -134,7 +134,7 @@ describe('Function Composition', () => {
                         })
                         const result = add(float(1), float(2))
                         const { type, wgsl } = inferAndCode(result)
-                        expect(type).toBe('float') // @TODO FIX
+                        expect(type).toBe('float')
                         expect(wgsl).toBe('add(f32(1.0),f32(2.0))')
                 })
 

@@ -1,6 +1,6 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, vec3, If, Loop, bool, int } from '../../src/node'
-import { build } from './utils'
+import { build } from '../../test-utils'
 
 describe('Control Flow', () => {
         describe('Simple conditional branching', () => {
