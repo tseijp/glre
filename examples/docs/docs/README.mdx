@@ -159,13 +159,12 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                frag: vec4(1),
-                // frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), sin(iTime).mul(0.5).sub(0.5), 1.0),
+                frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), sin(iTime).mul(0.5).sub(0.5), 1.0),
                 // or
-                frag: Fn(() => {
-                        const uv = fract(position.xy.div(iResolution).sub(iMouse))
-                        return vec4(uv, sin(iTime).mul(0.5).sub(0.5), 1.0)
-                })(),
+                // frag: Fn((p) => {
+                //         const uv = fract(p.xy.div(iResolution).sub(iMouse))
+                //         return vec4(uv, sin(iTime).mul(0.5).sub(0.5), 1.0)
+                // })(position),
         })
         return <canvas ref={gl.ref} />
 }
