@@ -65,7 +65,7 @@ export type NodeTypes =
         | 'switch'
         | 'declare'
 
-export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
+export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         // Operators
         add(n: X): NodeProxy
         sub(n: X): NodeProxy
@@ -133,6 +133,26 @@ export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         fwidth(): NodeProxy
 
         // System properties
+        toBool(): NodeProxy
+        toUint(): NodeProxy
+        toInt(): NodeProxy
+        toFloat(): NodeProxy
+        toBvec2(): NodeProxy
+        toIvec2(): NodeProxy
+        toUvec2(): NodeProxy
+        toVec2(): NodeProxy
+        toBvec3(): NodeProxy
+        toIvec3(): NodeProxy
+        toUvec3(): NodeProxy
+        toVec3(): NodeProxy
+        toBvec4(): NodeProxy
+        toIvec4(): NodeProxy
+        toUvec4(): NodeProxy
+        toVec4(): NodeProxy
+        toColor(): NodeProxy
+        toMat2(): NodeProxy
+        toMat3(): NodeProxy
+        toMat4(): NodeProxy
         toString(c?: NodeConfig): string
         type: NodeTypes
         props: NodeProps

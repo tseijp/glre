@@ -53,7 +53,7 @@ export const If = (x: X, fun: () => void) => {
         return ret()
 }
 
-export const Loop = (x: X, fun: (params: { i?: NodeProxy }) => void) => {
+export const Loop = (x: X, fun: (params: { i: NodeProxy }) => void) => {
         const y = node('scope')
         scoped(y, () => fun({ i: node('variable', { id: 'i', inferFrom: int(0) }) }))
         const ret = node('loop', null, x, y)
