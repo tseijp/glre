@@ -1,6 +1,6 @@
 import { code } from './code'
 import { assign, toVar } from './scope'
-import { getId, isConversion, isFunction, isOperator, isSwizzle } from './utils'
+import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle } from './utils'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
@@ -21,11 +21,11 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isSwizzle(key)) return swizzle(key, x)
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
-                if (isConversion(key)) return conversion(key, x)
+                if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
         }
-        const set = (_: unknown, key: string, value: X) => {
+        const set = (_: unknown, key: string, y: X) => {
                 if (isSwizzle(key)) {
-                        swizzle(key, x).assign(value)
+                        swizzle(key, x).assign(y)
                         return true
                 }
                 return false
@@ -34,9 +34,19 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
         return x
 }
 
+// headers
+export const attribute = (x: X, id?: string) => node('varying', { id }, x)
+export const uniform = (x: X, id?: string) => node('uniform', { id }, x)
+export const varying = (x: X, id?: string) => node('varying', { id }, x)
+export const constant = (x: X, id?: string) => node('constant', { id }, x)
+export const variable = (id: string) => node('variable', { id })
+export const builtin = (id: string) => node('builtin', { id })
+
 // Node shorthands
-export const variable = (...args: X[]) => node('variable', { id: getId() }, ...args)
 export const swizzle = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
 export const operator = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
 export const function_ = (key: Functions, ...args: X[]) => node('function', null, key, ...args)
 export const conversion = (key: string, ...args: X[]) => node('conversion', null, key, ...args)
+
+// x ? y : z
+export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)

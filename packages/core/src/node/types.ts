@@ -8,13 +8,22 @@ export type Functions = (typeof FUNCTIONS)[number]
 
 export type Operators = (typeof OPERATOR_KEYS)[number]
 
+export interface FnLayout {
+        name: string
+        type: Constants | 'auto'
+        inputs?: Array<{
+                name: string
+                type: Constants
+        }>
+}
+
 export interface NodeProps {
         id?: string
         args?: X[]
         type?: string
         children?: X[]
-        value?: number | number[] | boolean
         inferFrom?: X
+        layout?: FnLayout
 }
 
 export interface NodeConfig {
@@ -22,7 +31,7 @@ export interface NodeConfig {
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         headers?: Map<string, string>
-        onMount?: (name: string, value: any) => void
+        onMount?: (name: string) => void
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
@@ -34,26 +43,29 @@ export type Swizzles =
         | _Swizzles<'s' | 't'>
 
 export type NodeTypes =
+        // headers
+        | 'attribute'
         | 'uniform'
+        | 'varying'
+        | 'constant'
+        // variables
         | 'variable'
         | 'swizzle'
-        | 'operator'
+        | 'ternary'
+        | 'builtin'
         | 'conversion'
+        | 'operator'
         | 'function'
-        | 'declare'
+        // scopes
+        | 'scope'
         | 'assign'
+        | 'loop'
         | 'define'
         | 'if'
-        | 'loop'
-        | 'scope'
         | 'switch'
-        | 'ternary'
-        | 'attribute'
-        | 'varying'
-        | 'builtin'
-        | 'constant'
+        | 'declare'
 
-export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
+export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         // Operators
         add(n: X): NodeProxy
         sub(n: X): NodeProxy
@@ -73,7 +85,6 @@ export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         // Variable manipulation
         assign(n: X): NodeProxy
         toVar(name?: string): NodeProxy
-        toConst(name?: string): NodeProxy
 
         // Math function methods
         abs(): NodeProxy
@@ -122,6 +133,26 @@ export interface NodeProxy extends Record<Swizzles | Conversions, NodeProxy> {
         fwidth(): NodeProxy
 
         // System properties
+        toBool(): NodeProxy
+        toUint(): NodeProxy
+        toInt(): NodeProxy
+        toFloat(): NodeProxy
+        toBvec2(): NodeProxy
+        toIvec2(): NodeProxy
+        toUvec2(): NodeProxy
+        toVec2(): NodeProxy
+        toBvec3(): NodeProxy
+        toIvec3(): NodeProxy
+        toUvec3(): NodeProxy
+        toVec3(): NodeProxy
+        toBvec4(): NodeProxy
+        toIvec4(): NodeProxy
+        toUvec4(): NodeProxy
+        toVec4(): NodeProxy
+        toColor(): NodeProxy
+        toMat2(): NodeProxy
+        toMat3(): NodeProxy
+        toMat4(): NodeProxy
         toString(c?: NodeConfig): string
         type: NodeTypes
         props: NodeProps
