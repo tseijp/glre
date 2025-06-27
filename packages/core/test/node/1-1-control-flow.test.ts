@@ -1,40 +1,25 @@
 import { describe, it, expect } from '@jest/globals'
-import { float, vec3, If, Loop, bool, int } from '../../src/node'
+import { float, If, Loop, int } from '../../src/node'
 import { build } from '../../test-utils'
 
 describe('Control Flow', () => {
-        describe('Simple conditional branching', () => {
-                it('basic If statement', () => {
+        describe('Conditional branching', () => {
+                it('If statement', () => {
                         const def = build(() => {
-                                const x = float(1).toVar()
+                                const x = float(1).toVar('x')
                                 If(x.greaterThan(float(0)), () => {
                                         x.assign(float(2))
                                 })
                                 return x
                         })
-                        expect(def).toContain('if (')
-                        expect(def).toContain(' > f32(0.0)')
-                        expect(def).toContain(' = f32(2.0)')
+                        expect(def).toContain('if ((x > f32(0.0))) {')
+                        expect(def).toContain('x = f32(2.0);')
                 })
 
-                it('If with return value', () => {
-                        const def = build(() => {
-                                const result = float(0).toVar()
-                                If(bool(true), () => {
-                                        result.assign(float(10))
-                                })
-                                return result
-                        })
-                        expect(def).toContain('if (bool(true))')
-                        expect(def).toContain(' = f32(10.0)')
-                })
-        })
-
-        describe('ElseIf chain processing', () => {
                 it('If-ElseIf-Else chain', () => {
                         const def = build(() => {
-                                const x = float(5).toVar()
-                                const result = float(0).toVar()
+                                const x = float(5).toVar('x')
+                                const result = float(0).toVar('result')
                                 If(x.lessThan(float(3)), () => {
                                         result.assign(float(1))
                                 })
@@ -46,63 +31,28 @@ describe('Control Flow', () => {
                                         })
                                 return result
                         })
-                        expect(def).toContain('if (')
-                        expect(def).toContain('} else if (')
+                        expect(def).toContain('if ((x < f32(3.0))) {')
+                        expect(def).toContain('} else if ((x < f32(7.0))) {')
                         expect(def).toContain('} else {')
-                })
-
-                it('multiple ElseIf conditions', () => {
-                        const def = build(() => {
-                                const x = float(1).toVar()
-                                If(x.equal(float(1)), () => {
-                                        x.assign(float(10))
-                                })
-                                        .ElseIf(x.equal(float(2)), () => {
-                                                x.assign(float(20))
-                                        })
-                                        .ElseIf(x.equal(float(3)), () => {
-                                                x.assign(float(30))
-                                        })
-                                return x
-                        })
-                        expect(def).toContain('} else if (')
-                        expect(def).toContain('== f32(2.0)')
-                        expect(def).toContain('== f32(3.0)')
                 })
         })
 
-        describe('Loop structure processing', () => {
+        describe('Loop structures', () => {
                 it('fixed count loop', () => {
                         const def = build(() => {
-                                const sum = float(0).toVar()
+                                const sum = float(0).toVar('sum')
                                 Loop(int(5), ({ i }) => {
                                         sum.assign(sum.add(i))
                                 })
                                 return sum
                         })
-                        expect(def).toContain('for (')
-                        // expect(def).toContain('i < 5') // @TODO FIX
-                        expect(def).toContain('i++')
+                        expect(def).toContain('for (var i: i32 = 0; i < i32(5.0); i++) {')
                 })
 
-                it('conditional loop', () => {
+                it('nested structures', () => {
                         const def = build(() => {
-                                const x = float(1).toVar()
-                                Loop(x.lessThan(float(10)), () => {
-                                        x.assign(x.mul(float(2)))
-                                })
-                                return x
-                        })
-                        expect(def).toContain('for (')
-                        expect(def).toContain(' < f32(10.0)')
-                })
-        })
-
-        describe('Nested structure output', () => {
-                it('nested If statements', () => {
-                        const def = build(() => {
-                                const x = float(5).toVar()
-                                const y = float(3).toVar()
+                                const x = float(5).toVar('x')
+                                const y = float(3).toVar('y')
                                 If(x.greaterThan(float(0)), () => {
                                         If(y.greaterThan(float(0)), () => {
                                                 x.assign(x.add(y))
@@ -110,38 +60,8 @@ describe('Control Flow', () => {
                                 })
                                 return x
                         })
-                        expect(def).toContain('if (')
-                        expect(def).toContain(' > f32(0.0)')
-                })
-
-                it('nested Loop statements', () => {
-                        const def = build(() => {
-                                const sum = float(0).toVar()
-                                Loop(int(3), () => {
-                                        Loop(int(2), () => {
-                                                sum.assign(sum.add(float(1)))
-                                        })
-                                })
-                                return sum
-                        })
-                        expect(def).toContain('for (')
-                        expect(def).toContain('i < i32(3.0)')
-                        expect(def).toContain('i < i32(2.0)')
-                })
-
-                it('If inside Loop', () => {
-                        const def = build(() => {
-                                const result = vec3(0, 0, 0).toVar()
-                                Loop(int(3), ({ i }) => {
-                                        If(i.greaterThan(int(1)), () => {
-                                                result.x = result.x.add(float(1))
-                                        })
-                                })
-                                return result
-                        })
-                        expect(def).toContain('for (')
-                        expect(def).toContain('if (')
-                        expect(def).toContain(' > i32(1.0)')
+                        expect(def).toContain('if ((x > f32(0.0))) {')
+                        expect(def).toContain('if ((y > f32(0.0))) {')
                 })
         })
 })

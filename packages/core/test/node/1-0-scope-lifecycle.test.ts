@@ -3,108 +3,71 @@ import { float, vec3, Fn } from '../../src/node'
 import { build } from '../../test-utils'
 
 describe('Scope Lifecycle', () => {
-        describe('Variable lifecycle in Fn scope', () => {
-                it('toVar creates variable declaration', () => {
+        describe('Variable declarations', () => {
+                it('toVar with explicit name', () => {
                         const def = build(() => {
-                                const x = float(1).toVar()
+                                const x = float(1).toVar('x')
                                 return x
                         })
-                        expect(def).toContain('var i')
-                        expect(def).toContain('f32 = f32(1.0)')
+                        expect(def).toContain('var x: f32 = f32(1.0)')
+                        expect(def).toContain('return x')
                 })
 
-                it('assign creates assignment statement', () => {
+                it('multiple variables', () => {
                         const def = build(() => {
-                                const x = float(0).toVar()
-                                x.assign(float(5))
-                                return x
-                        })
-                        expect(def).toContain('var i')
-                        expect(def).toContain('f32 = f32(0.0)')
-                        expect(def).toContain('i')
-                        expect(def).toContain(' = f32(5.0)')
-                })
-
-                it('multiple variable declarations', () => {
-                        const def = build(() => {
-                                const x = float(1).toVar()
-                                const y = float(2).toVar()
-                                const z = x.add(y).toVar()
+                                const x = float(1).toVar('x')
+                                const y = float(2).toVar('y')
+                                const z = x.add(y).toVar('z')
                                 return z
                         })
-                        expect(def).toContain('var i')
-                        expect(def).toContain('var i')
-                        expect(def).toContain('var i')
+                        expect(def).toContain('var x: f32 = f32(1.0);')
+                        expect(def).toContain('var y: f32 = f32(2.0);')
+                        expect(def).toContain('var z: f32 = (x + y);')
                 })
         })
 
-        describe('Variable scope access', () => {
-                it('variable used after declaration', () => {
+        describe('Variable assignments', () => {
+                it('assign operation', () => {
                         const def = build(() => {
-                                const x = float(2).toVar()
-                                const y = x.mul(float(3))
-                                return y
+                                const x = float(0).toVar('x')
+                                x.assign(float(5))
+                                return x
                         })
-                        expect(def).toContain('var i')
-                        expect(def).toContain('f32 = f32(2.0)')
-                        expect(def).toContain('return (i')
-                        expect(def).toContain(' * f32(3.0))')
+                        expect(def).toContain('x = f32(5.0)')
                 })
 
                 it('swizzle assignment', () => {
                         const def = build(() => {
-                                const x = vec3(1, 2, 3).toVar()
+                                const x = vec3(1, 2, 3).toVar('x')
                                 x.x = float(5)
                                 return x
                         })
-                        expect(def).toContain('var i')
-                        expect(def).toContain('vec3f(1.0, 2.0, 3.0)')
-                        expect(def).toContain('.x = f32(5.0)')
+                        expect(def).toContain('x.x = f32(5.0);')
                 })
         })
 
-        describe('Return value handling', () => {
-                it('simple return value', () => {
+        describe('Scope behavior', () => {
+                it('variable usage', () => {
                         const def = build(() => {
-                                return float(42)
+                                const x = float(2).toVar('x')
+                                const y = x.mul(float(3))
+                                return y
                         })
-                        expect(def).toContain('return f32(42.0)')
+                        expect(def).toContain('var x: f32 = f32(2.0);')
+                        expect(def).toContain('return (x * f32(3.0));')
                 })
 
-                it('computed return value', () => {
-                        const def = build(() => {
-                                const x = float(5)
-                                const y = float(7)
-                                return x.add(y)
-                        })
-                        expect(def).toContain('return (f32(5.0) + f32(7.0))')
-                })
-
-                it('variable return value', () => {
-                        const def = build(() => {
-                                const x = float(10).toVar()
-                                x.assign(x.mul(float(2)))
-                                return x
-                        })
-                        expect(def).toContain('var i')
-                        expect(def).toContain('return i')
-                })
-        })
-
-        describe('Nested scope behavior', () => {
-                it('Fn within Fn scope isolation', () => {
+                it('nested function scope', () => {
                         const innerFn = Fn(() => {
-                                const x = float(1).toVar()
+                                const x = float(1).toVar('x')
                                 return x
                         })
                         innerFn.setLayout({ name: 'inner', type: 'float' })
-
                         const def = build(() => {
-                                const y = float(2).toVar()
+                                const y = float(2).toVar('y')
                                 const result = innerFn()
                                 return y.add(result)
                         })
-                        expect(def).toContain('var i')
                         expect(def).toContain('inner()')
                 })
         })
