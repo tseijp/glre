@@ -8,8 +8,9 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         if (!c.headers) c.headers = new Map()
         if (is.str(target)) return target
         if (is.num(target)) {
-                const decimalPlaces = String(target).includes('.') ? String(target).split('.')[1].length : 1
-                return target.toFixed(Math.max(1, decimalPlaces))
+                const ret = `${target}`
+                if (ret.includes('.')) return ret
+                return ret + '.0'
         }
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return '' // ignore if no target

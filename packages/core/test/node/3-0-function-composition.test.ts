@@ -18,7 +18,7 @@ describe('Function Composition', () => {
                         const result = rotate(float(1.57))
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('mat3')
-                        expect(wgsl).toBe('rotate(1.6)')
+                        expect(wgsl).toBe('rotate(f32(1.57))')
                 })
 
                 it('mix function composition', () => {
@@ -37,7 +37,7 @@ describe('Function Composition', () => {
                         const result = interpolate(vec3(1, 0, 0), vec3(0, 1, 0), float(0.5))
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('vec3')
-                        expect(wgsl).toBe('interpolate(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), 0.5)')
+                        expect(wgsl).toBe('interpolate(vec3f(1.0, 0.0, 0.0),vec3f(0.0, 1.0, 0.0),f32(0.5))')
                 })
         })
 
@@ -67,7 +67,7 @@ describe('Function Composition', () => {
                         const result = distance(vec3(1, 2, 3), vec3(4, 5, 6))
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('float')
-                        expect(wgsl).toBe('distance(vec3f(1.0, 2.0, 3.0), vec3f(4.0, 5.0, 6.0))')
+                        expect(wgsl).toBe('distance(vec3f(1.0, 2.0, 3.0),vec3f(4.0, 5.0, 6.0))')
                 })
 
                 it('complex function composition', () => {
@@ -99,7 +99,7 @@ describe('Function Composition', () => {
                         const result = transform(vec3(1, 1, 0), float(2), float(0.5))
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('vec3')
-                        expect(wgsl).toBe('transform(vec3f(1.0, 1.0, 0.0), 2.0, 0.5)')
+                        expect(wgsl).toBe('transform(vec3f(1.0, 1.0, 0.0),f32(2.0),f32(0.5))')
                 })
         })
 
@@ -134,8 +134,8 @@ describe('Function Composition', () => {
                         })
                         const result = add(float(1), float(2))
                         const { type, wgsl } = inferAndCode(result)
-                        expect(type).toBe('float')
-                        expect(wgsl).toBe('add(1.0, 2.0)')
+                        expect(type).toBe('float') // @TODO FIX
+                        expect(wgsl).toBe('add(f32(1.0),f32(2.0))')
                 })
 
                 it('function with multiple return types', () => {

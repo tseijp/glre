@@ -75,7 +75,7 @@ export const inferImpl = (target: NodeProxy, c: NodeConfig): Constants => {
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define') {
-                if (props.layout?.type) return props.layout.type as Constants
+                if (props.layout?.type && props.layout?.type !== 'auto') return props.layout.type as Constants
                 return y ? infer(y, c) : 'void'
         }
         return infer(x, c)

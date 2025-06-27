@@ -9,7 +9,7 @@ describe('Type Inference', () => {
                         const y = sin(x)
                         const { type, wgsl } = inferAndCode(y)
                         expect(type).toBe('float')
-                        expect(wgsl).toBe('sin(1.6)')
+                        expect(wgsl).toBe('sin(f32(1.57))')
                 })
 
                 it('dot function returns scalar', () => {
@@ -37,7 +37,7 @@ describe('Type Inference', () => {
                         const z = x.mul(y)
                         const { type, wgsl } = inferAndCode(z)
                         expect(type).toBe('vec2')
-                        expect(wgsl).toBe('(2.0 * vec2f(1.0, 1.0))')
+                        expect(wgsl).toBe('(f32(2.0) * vec2f(1.0, 1.0))')
                 })
 
                 it('vec3 + float promotes to vec3', () => {
@@ -46,7 +46,7 @@ describe('Type Inference', () => {
                         const z = x.add(y)
                         const { type, wgsl } = inferAndCode(z)
                         expect(type).toBe('vec3')
-                        expect(wgsl).toBe('(vec3f(1.0, 2.0, 3.0) + 0.5)')
+                        expect(wgsl).toBe('(vec3f(1.0, 2.0, 3.0) + f32(0.5))')
                 })
         })
 
@@ -59,7 +59,7 @@ describe('Type Inference', () => {
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('vec3')
                         expect(wgsl).toBe(
-                                '(mix(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), 0.5) + vec3f(0.0, 0.0, 1.0))'
+                                '(mix(vec3f(1.0, 0.0, 0.0), vec3f(0.0, 1.0, 0.0), f32(0.5)) + vec3f(0.0, 0.0, 1.0))'
                         )
                 })
 

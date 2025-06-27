@@ -8,14 +8,14 @@ describe('Type System', () => {
                         const x = float(1.5)
                         const { type, wgsl } = inferAndCode(x)
                         expect(type).toBe('float')
-                        expect(wgsl).toBe('1.5')
+                        expect(wgsl).toBe('f32(1.5)')
                 })
 
                 it('int creation and infer', () => {
                         const x = int(42)
                         const { type, wgsl } = inferAndCode(x)
                         expect(type).toBe('int')
-                        expect(wgsl).toBe('42.0')
+                        expect(wgsl).toBe('i32(42.0)')
                 })
 
                 it('vec3 creation and infer', () => {
@@ -33,7 +33,7 @@ describe('Type System', () => {
                         const z = x.add(y)
                         const { type, wgsl } = inferAndCode(z)
                         expect(type).toBe('vec3')
-                        expect(wgsl).toBe('(2.0 + vec3f(1.0, 1.0, 1.0))')
+                        expect(wgsl).toBe('(f32(2.0) + vec3f(1.0, 1.0, 1.0))')
                 })
 
                 it('vec2 * float → vec2', () => {
@@ -42,7 +42,7 @@ describe('Type System', () => {
                         const z = x.mul(y)
                         const { type, wgsl } = inferAndCode(z)
                         expect(type).toBe('vec2')
-                        expect(wgsl).toBe('(vec2f(1.0, 2.0) * 0.5)')
+                        expect(wgsl).toBe('(vec2f(1.0, 2.0) * f32(0.5))')
                 })
         })
 
@@ -60,7 +60,7 @@ describe('Type System', () => {
                         const y = x.toInt()
                         const { type, wgsl } = inferAndCode(y)
                         expect(type).toBe('int')
-                        expect(wgsl).toBe('i32(3.1)')
+                        expect(wgsl).toBe('i32(f32(3.14))')
                 })
         })
 

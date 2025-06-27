@@ -21,7 +21,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isSwizzle(key)) return swizzle(key, x)
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
-                if (isConversion(key)) return conversion(conversionToConstant(key), x)
+                if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
         }
         const set = (_: unknown, key: string, y: X) => {
                 if (isSwizzle(key)) {

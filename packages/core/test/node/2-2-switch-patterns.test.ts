@@ -1,11 +1,11 @@
 import { describe, it, expect } from '@jest/globals'
 import { float, int, Switch } from '../../src/node'
-import { fnResult } from './utils'
+import { build } from './utils'
 
 describe('Switch Patterns', () => {
         describe('Single case processing', () => {
                 it('single case switch', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const x = int(1).toVar()
                                 const result = float(0).toVar()
                                 Switch(x).Case(int(1))(() => {
@@ -14,12 +14,12 @@ describe('Switch Patterns', () => {
                                 return result
                         })
                         expect(def).toContain('switch (')
-                        expect(def).toContain('case 1')
+                        expect(def).toContain('case i32(1.0)')
                         expect(def).toContain('break')
                 })
 
                 it('case with assignment', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const value = int(2)
                                 const output = float(0).toVar()
                                 Switch(value).Case(int(2))(() => {
@@ -27,14 +27,14 @@ describe('Switch Patterns', () => {
                                 })
                                 return output
                         })
-                        expect(def).toContain('case 2')
-                        expect(def).toContain(' = 20.0')
+                        expect(def).toContain('case i32(2.0)')
+                        expect(def).toContain(' = f32(20.0)')
                 })
         })
 
         describe('Multiple value cases', () => {
                 it('multiple cases for same action', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const x = int(1).toVar()
                                 const result = float(0).toVar()
                                 Switch(x).Case(
@@ -46,14 +46,14 @@ describe('Switch Patterns', () => {
                                 })
                                 return result
                         })
-                        expect(def).toContain('case 1')
-                        expect(def).toContain('case 2')
-                        expect(def).toContain('case 3')
-                        expect(def).toContain(' = 100.0')
+                        expect(def).toContain('case i32(1.0)')
+                        expect(def).toContain('case i32(2.0)')
+                        expect(def).toContain('case i32(3.0)')
+                        expect(def).toContain(' = f32(100.0)')
                 })
 
                 it('different cases with different actions', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const x = int(0).toVar()
                                 const result = float(0).toVar()
                                 Switch(x)
@@ -68,18 +68,18 @@ describe('Switch Patterns', () => {
                                 })
                                 return result
                         })
-                        expect(def).toContain('case 0')
-                        expect(def).toContain('case 1')
-                        expect(def).toContain('case 2')
-                        expect(def).toContain(' = 5.0')
-                        expect(def).toContain(' = 15.0')
-                        expect(def).toContain(' = 25.0')
+                        expect(def).toContain('case i32(0.0)')
+                        expect(def).toContain('case i32(1.0)')
+                        expect(def).toContain('case i32(2.0)')
+                        expect(def).toContain(' = f32(5.0)')
+                        expect(def).toContain(' = f32(15.0)')
+                        expect(def).toContain(' = f32(25.0)')
                 })
         })
 
         describe('Default case processing', () => {
                 it('switch with default case', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const x = int(99).toVar()
                                 const result = float(0).toVar()
                                 Switch(x)
@@ -91,13 +91,13 @@ describe('Switch Patterns', () => {
                                         })
                                 return result
                         })
-                        expect(def).toContain('case 1')
+                        expect(def).toContain('case i32(1.0)')
                         expect(def).toContain('default:')
-                        expect(def).toContain(' = -1.0')
+                        expect(def).toContain(' = f32(-1.0)')
                 })
 
                 it('comprehensive switch with cases and default', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const input = int(0).toVar()
                                 const output = float(0).toVar()
                                 Switch(input)
@@ -118,17 +118,17 @@ describe('Switch Patterns', () => {
                                         })
                                 return output
                         })
-                        expect(def).toContain('case 0')
-                        expect(def).toContain('case 1')
-                        expect(def).toContain('case 2')
-                        expect(def).toContain('case 3')
+                        expect(def).toContain('case i32(0.0)')
+                        expect(def).toContain('case i32(1.0)')
+                        expect(def).toContain('case i32(2.0)')
+                        expect(def).toContain('case i32(3.0)')
                         expect(def).toContain('default:')
                 })
         })
 
         describe('No fallthrough behavior', () => {
                 it('implicit break statements', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const x = int(1).toVar()
                                 const result = float(0).toVar()
                                 Switch(x)
@@ -140,14 +140,14 @@ describe('Switch Patterns', () => {
                                 })
                                 return result
                         })
-                        expect(def).toContain('case 1')
+                        expect(def).toContain('case i32(1.0)')
                         expect(def).toContain('break')
-                        expect(def).toContain('case 2')
+                        expect(def).toContain('case i32(2.0)')
                         expect(def).toContain('break')
                 })
 
                 it('switch with complex expressions in cases', () => {
-                        const def = fnResult(() => {
+                        const def = build(() => {
                                 const x = int(1).toVar()
                                 const a = float(0).toVar()
                                 const b = float(0).toVar()
@@ -162,12 +162,12 @@ describe('Switch Patterns', () => {
                                 })
                                 return a.add(b)
                         })
-                        expect(def).toContain('case 1')
-                        expect(def).toContain(' = 1.0')
-                        expect(def).toContain(' * 2.0')
-                        expect(def).toContain('case 2')
-                        expect(def).toContain(' = 3.0')
-                        expect(def).toContain(' + 1.0')
+                        expect(def).toContain('case i32(1.0)')
+                        expect(def).toContain(' = f32(1.0)')
+                        expect(def).toContain(' * f32(2.0)')
+                        expect(def).toContain('case i32(2.0)')
+                        expect(def).toContain(' = f32(3.0)')
+                        expect(def).toContain(' + f32(1.0)')
                 })
         })
 })

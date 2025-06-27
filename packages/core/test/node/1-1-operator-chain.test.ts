@@ -12,7 +12,7 @@ describe('Operator Chain', () => {
                         const result = x.add(y).mul(z).div(w)
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('float')
-                        expect(wgsl).toBe('(((1.0 + 2.0) * 3.0) / 4.0)')
+                        expect(wgsl).toBe('(((f32(1.0) + f32(2.0)) * f32(3.0)) / f32(4.0))')
                 })
 
                 it('vec3 operator chain', () => {
@@ -22,7 +22,7 @@ describe('Operator Chain', () => {
                         const result = x.add(y).mul(z)
                         const { type, wgsl } = inferAndCode(result)
                         expect(type).toBe('vec3')
-                        expect(wgsl).toBe('((vec3f(1.0, 2.0, 3.0) + vec3f(4.0, 5.0, 6.0)) * 2.0)')
+                        expect(wgsl).toBe('((vec3f(1.0, 2.0, 3.0) + vec3f(4.0, 5.0, 6.0)) * f32(2.0))')
                 })
         })
 
@@ -33,7 +33,7 @@ describe('Operator Chain', () => {
                         const z = x.lessThan(y)
                         const { type, wgsl } = inferAndCode(z)
                         expect(type).toBe('bool')
-                        expect(wgsl).toBe('(1.0 < 2.0)')
+                        expect(wgsl).toBe('(f32(1.0) < f32(2.0))')
                 })
 
                 it('equal with vector types', () => {
@@ -78,7 +78,7 @@ describe('Operator Chain', () => {
                         const y = x.xy.mul(float(2))
                         const { type, wgsl } = inferAndCode(y)
                         expect(type).toBe('vec2')
-                        expect(wgsl).toBe('(vec3f(1.0, 2.0, 3.0).xy * 2.0)')
+                        expect(wgsl).toBe('(vec3f(1.0, 2.0, 3.0).xy * f32(2.0))')
                 })
 
                 it('arithmetic with swizzle', () => {
