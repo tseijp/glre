@@ -10,8 +10,8 @@ export type Operators = (typeof OPERATOR_KEYS)[number]
 
 export interface FnLayout {
         name: string
-        type: Constants
-        inputs: Array<{
+        type: Constants | 'auto'
+        inputs?: Array<{
                 name: string
                 type: Constants
         }>

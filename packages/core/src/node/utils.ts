@@ -90,7 +90,7 @@ const generateHead = (c: NodeConfig) => {
 export const generateDefine = (props: NodeProps, c: NodeConfig) => {
         const { id, children = [], layout } = props
         const [x, y, ...args] = children
-        const returnType = layout?.type || (y ? infer(y, c) : 'void')
+        const returnType = layout?.type && layout?.type !== 'auto' ? layout?.type : y ? infer(y, c) : 'void'
         const argParams: [name: string, type: string][] = []
         const params: string[] = []
         if (layout?.inputs)

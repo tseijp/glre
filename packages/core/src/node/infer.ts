@@ -81,7 +81,7 @@ export const inferImpl = (target: NodeProxy, c: NodeConfig): Constants => {
         return infer(x, c)
 }
 
-export const infer = (target: X, c: NodeConfig | null): Constants => {
+export const infer = (target: X, c?: NodeConfig | null): Constants => {
         if (!c) c = {}
         if (!isNodeProxy(target)) return inferPrimitiveType(target)
         if (!c.infers) c.infers = new WeakMap<NodeProxy, Constants>()
