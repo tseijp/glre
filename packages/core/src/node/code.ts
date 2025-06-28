@@ -1,11 +1,12 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
 import { getBluiltin, getOperator, generateDefine, formatConversions, joins } from './utils'
-import type { NodeConfig, X } from './types'
+import type { NodeContext, X } from './types'
 
-export const code = (target: X, c?: NodeConfig | null): string => {
+export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
+        if (!c.bindings) c.bindings = new Map()
         if (is.str(target)) return target
         if (is.num(target)) {
                 const ret = `${target}`
@@ -13,13 +14,10 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 return ret + '.0'
         }
         if (is.bol(target)) return target ? 'true' : 'false'
-        if (!target) return '' // ignore if no target
+        if (!target) return ''
         const { type, props } = target
         const { id = '', children = [] } = props
         const [x, y, z] = children
-        /**
-         * headers
-         */
         let head = ''
         if (type === 'attribute') {
                 if (c.headers.has(id)) return id
@@ -27,11 +25,12 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         }
         if (type === 'uniform') {
                 if (c.headers.has(id)) return id
-                if (!c.binding) c.binding = 0
                 const varType = infer(target, c)
+                if (c.bindings.has(id)) c.bindings.set(id, c.bindings.size)
+                const binding = c.bindings.get(id)!
                 head = c.isWebGL
                         ? `uniform ${varType} ${id};`
-                        : `@group(0) @binding(${c.binding++}) var<uniform> ${id}: ${formatConversions(varType, c)};`
+                        : `@group(0) @binding(${binding}) var<uniform> ${id}: ${formatConversions(varType, c)};`
         }
         if (type === 'constant') {
                 if (c.headers.has(id)) return id
@@ -50,9 +49,6 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 c.onMount?.(id)
                 return id
         }
-        /**
-         * variables
-         */
         if (type === 'variable') return id
         if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary') return `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
@@ -66,9 +62,6 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 if (x === 'negate') return `(-${joins(children.slice(1), c)})`
                 return `${x}(${joins(children.slice(1), c)})`
         }
-        /**
-         * scopes
-         */
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'loop')

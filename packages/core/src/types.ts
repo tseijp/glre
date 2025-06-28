@@ -32,8 +32,9 @@ export interface WebGPUState {
         device: GPUDevice
         context: GPUContext
         pipeline: GPUPipeline
-        groups: any[]
-        resources: any[]
+        uniforms: Map<string, any>
+        attributes: Map<string, any>
+        textures: Map<string, any>
         loadingImg: number
         needsUpdate: boolean
 }

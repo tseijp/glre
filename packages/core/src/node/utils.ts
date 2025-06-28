@@ -14,7 +14,7 @@ import type {
         Constants,
         Conversions,
         Functions,
-        NodeConfig,
+        NodeContext,
         NodeProps,
         NodeProxy,
         Operators,
@@ -40,8 +40,8 @@ export const isConversion = (key: unknown): key is Conversions => {
 
 export const isNodeProxy = (x: unknown): x is NodeProxy => {
         if (!x) return false
-        if (typeof x !== 'object') return false // @ts-ignore
-        return x.isProxy
+        if (typeof x !== 'object') return false
+        return (x as any).isProxy
 }
 
 export const hex2rgb = (hex: number) => {
@@ -55,14 +55,14 @@ let count = 0
 
 export const getId = () => `i${count++}`
 
-export const joins = (children: X[], c: NodeConfig) => {
+export const joins = (children: X[], c: NodeContext) => {
         return children
                 .filter((x) => !is.und(x) && !is.nul(x))
                 .map((x) => code(x, c))
                 .join(', ')
 }
 
-export const formatConversions = (x: X, c?: NodeConfig) => {
+export const formatConversions = (x: X, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING]
@@ -81,13 +81,13 @@ export const conversionToConstant = (conversionKey: string): Constants => {
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
 
-const generateHead = (c: NodeConfig) => {
+const generateHead = (c: NodeContext) => {
         return Array.from(c.headers!)
                 .map(([, v]) => v)
                 .join('\n')
 }
 
-export const generateDefine = (props: NodeProps, c: NodeConfig) => {
+export const generateDefine = (props: NodeProps, c: NodeContext) => {
         const { id, children = [], layout } = props
         const [x, y, ...args] = children
         const returnType = layout?.type && layout?.type !== 'auto' ? layout?.type : y ? infer(y, c) : 'void'
@@ -140,21 +140,41 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
         return ret
 }
 
-const generateVertexMain = (_body: string, _head: string, isWebGL = true) => {
-        if (isWebGL) return ``
-        return ``
+const generateVertexInputs = (c: NodeContext) => {
+        if (!c.attributes) return ''
+        const inputs = []
+        for (const [name, location] of c.attributes.entries()) {
+                const format = 'vec2f'
+                inputs.push(`@location(${location}) ${name}: ${format}`)
+        }
+        return inputs.join(',\n  ')
 }
 
-export const fragment = (x: X, c: NodeConfig = {}) => {
+const generateVertexMain = (body: string, head: string, isWebGL = true, c?: NodeContext) => {
+        if (isWebGL) return ''
+        let ret = ''
+        if (head) ret += head + '\n'
+        ret += '@vertex\n'
+        ret += 'fn main('
+        if (c?.attributes?.size) {
+                ret += '\n  ' + generateVertexInputs(c) + '\n'
+        }
+        ret += ') -> @builtin(position) vec4f {\n'
+        if (body) ret += `  ${body}\n`
+        else ret += '  return vec4f(0.0, 0.0, 0.0, 1.0);\n'
+        ret += '}'
+        return ret
+}
+
+export const fragment = (x: X, c: NodeContext = {}) => {
         const body = code(x, c)
         const head = generateHead(c)
         const main = generateFragmentMain(body, head, c.isWebGL)
-        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
         return main
 }
 
-export const vertex = (x: X, c: NodeConfig) => {
+export const vertex = (x: X, c: NodeContext) => {
         const body = code(x, c)
         const head = generateHead(c)
-        return generateVertexMain(body, head, c.isWebGL)
+        return generateVertexMain(body, head, c.isWebGL, c)
 }

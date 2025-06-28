@@ -35,10 +35,11 @@ export const createPipeline = (
         bufferLayouts: any[],
         bindGroupLayouts: any[],
         vs: string | NodeProxy = defaultVertexWGSL,
-        fs: string | NodeProxy = defaultFragmentWGSL
+        fs: string | NodeProxy = defaultFragmentWGSL,
+        context: any = { isWebGL: false }
 ) => {
-        if (isNodeProxy(vs)) vs = vertex(vs, { isWebGL: false })
-        if (isNodeProxy(fs)) fs = fragment(fs, { isWebGL: false })
+        if (isNodeProxy(vs)) vs = vertex(vs, context)
+        if (isNodeProxy(fs)) fs = fragment(fs, context)
         const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {
@@ -61,9 +62,9 @@ export const createBindGroup = (device: GPUDevice, resources: any[]) => {
         const entries1 = [] as any[]
         resources.forEach((resource, binding) => {
                 if (!resource) return
-                const isUniform = 'buffer' in resource // @ts-ignore
-                const isTexture = resource instanceof GPUTextureView // @ts-ignore
-                const isSampler = resource instanceof GPUSampler // @ts-ignore
+                const isUniform = 'buffer' in resource
+                const isTexture = resource.constructor.name === 'GPUTextureView'
+                const isSampler = resource.constructor.name === 'GPUSampler'
                 if (isUniform) entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
                 else if (isTexture) entries0.push({ binding, visibility: 2, texture: {} })
                 else if (isSampler) entries0.push({ binding, visibility: 2, sampler: {} })
@@ -92,14 +93,14 @@ export const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
 
 export const createVertexBuffer = (device: GPUDevice, value: number[]) => {
         const array = new Float32Array(value)
-        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 === // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 })
         return { array, buffer }
 }
 
 export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
         const array = new Float32Array(value)
         const size = alignTo256(array.byteLength)
-        const buffer = device.createBuffer({ size, usage: 72 }) as Buffer // 72 === GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        const buffer = device.createBuffer({ size, usage: 72 }) as Buffer
         return { array, buffer }
 }
 
@@ -114,10 +115,8 @@ const getVertexStride = (dataLength: number, vertexCount: number) => {
 }
 
 const getVertexFormat = (stride: number) => {
-        if (stride === 2) return 'float32x2'
-        if (stride === 3) return 'float32x3'
-        if (stride === 4) return 'float32x4'
-        return 'float32'
+        const formats = ['float32', 'float32x2', 'float32x3', 'float32x4']
+        return formats[Math.min(stride, 4) - 1] || 'float32'
 }
 
 export const createBufferLayout = (shaderLocation: number, dataLength: number, count = 6) => {

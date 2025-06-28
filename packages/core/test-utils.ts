@@ -1,8 +1,8 @@
 import { Fn, infer } from './src/node'
-import type { NodeConfig, X } from './src/node'
+import type { NodeContext, X } from './src/node'
 
 export const build = (fun: () => any) => {
-        const config = {} as NodeConfig
+        const config = {} as NodeContext
         const ret = Fn(fun).setLayout({ name: 'fn', type: 'auto' })()
         ret.toString(config)
         const def = config.headers?.get('fn')

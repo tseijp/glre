@@ -26,11 +26,12 @@ export interface NodeProps {
         layout?: FnLayout
 }
 
-export interface NodeConfig {
+export interface NodeContext {
         isWebGL?: boolean
-        binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         headers?: Map<string, string>
+        bindings?: Map<string, number>
+        attributes?: Map<string, number>
         onMount?: (name: string) => void
 }
 
@@ -153,7 +154,7 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         toMat2(): NodeProxy
         toMat3(): NodeProxy
         toMat4(): NodeProxy
-        toString(c?: NodeConfig): string
+        toString(c?: NodeContext): string
         type: NodeTypes
         props: NodeProps
         isProxy: true
