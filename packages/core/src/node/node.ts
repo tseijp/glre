@@ -35,7 +35,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 }
 
 // headers
-export const attribute = (x: X, id?: string) => node('varying', { id }, x)
+export const attribute = (x: X, id?: string) => node('attribute', { id }, x)
 export const uniform = (x: X, id?: string) => node('uniform', { id }, x)
 export const varying = (x: X, id?: string) => node('varying', { id }, x)
 export const constant = (x: X, id?: string) => node('constant', { id }, x)

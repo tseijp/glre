@@ -154,13 +154,15 @@ const generateVertexMain = (body: string, head: string, c: NodeConfig) => {
         if (c.isWebGL) {
                 ret.push('#version 300 es')
                 ret.push(head)
+                ret.push('void main() {')
+                ret.push(`gl_Position = ${body};`)
         } else {
                 ret.push('@vertex')
                 ret.push(head)
                 ret.push('fn main(')
                 ret.push(generateVertexInputs(c))
                 ret.push(') -> @builtin(position) vec4f {')
-                ret.push(`  ${body}`)
+                ret.push(`  return ${body};`)
         }
         ret.push('}')
         return ret.filter(Boolean).join('\n')
@@ -177,5 +179,7 @@ export const fragment = (x: X, c: NodeConfig = {}) => {
 export const vertex = (x: X, c: NodeConfig) => {
         const body = code(x, c)
         const head = generateHead(c)
-        return generateVertexMain(body, head, c.isWebGL)
+        const main = generateVertexMain(body, head, c)
+        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
+        return main
 }

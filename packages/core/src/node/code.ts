@@ -22,8 +22,9 @@ export const code = (target: X, c?: NodeConfig | null): string => {
          */
         let head = ''
         if (type === 'attribute') {
+                if (!c.isWebGL) return id
                 if (c.headers.has(id)) return id
-                head = `${infer(target, c)} ${id}`
+                head = `in ${infer(target, c)} ${id};`
         }
         if (type === 'uniform') {
                 if (c.headers.has(id)) return id
@@ -34,7 +35,10 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                         const binding = c.gl?.state?.uniforms(id, [])
                         const group = binding?.group || 0
                         const bindingNum = binding?.binding || 0
-                        head = `@group(${group}) @binding(${bindingNum}) var<uniform> ${id}: ${formatConversions(varType, c)};`
+                        head = `@group(${group}) @binding(${bindingNum}) var<uniform> ${id}: ${formatConversions(
+                                varType,
+                                c
+                        )};`
                 }
         }
         if (type === 'constant') {

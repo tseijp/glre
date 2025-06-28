@@ -220,6 +220,26 @@ function Canvas() {
 ```
 
 </TabItem>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                vert: vec4(attribute(vec2(0), 'a_position'), 0.0, 1.0),
+                // or
+                // vert: Fn((position) => {
+                //         return vec4(position, 0.0, 1.0)
+                // })(attribute(vec2(0), 'position')),
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 </Tabs>
 
 ## Textures
