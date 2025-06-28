@@ -1,75 +1,70 @@
 import { nested as cached } from 'reev'
 import { is } from './utils/helpers'
 import {
+        createAttribBuffer,
+        createBindGroup,
+        createBindingManager,
         createDevice,
         createPipeline,
         createDescriptor,
         createUniformBuffer,
-        createBindGroup,
         createTextureSampler,
-        createVertexBuffer,
-        createBufferLayout,
+        createVertexBuffers,
 } from './utils/pipeline'
 import type { GL, WebGPUState } from './types'
 
 export const webgpu = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgpu') as any
         const { device, format } = await createDevice(c)
+        const bindingManager = createBindingManager()
+
         const state = {
                 device,
                 context: c,
-                resources: [[], []],
+                resources: [],
                 loadingImg: 0,
                 needsUpdate: true,
-        } as WebGPUState
+        } as unknown as WebGPUState
 
-        const bindGroups = [] as any[]
-        const vertexBuffers = [] as any[]
-        const bufferLayouts = [] as any[]
-
-        const attributes = cached((_, value: number[]) => {
-                const { array, buffer } = createVertexBuffer(device, value)
-                vertexBuffers.push(buffer)
-                bufferLayouts.push(createBufferLayout(bufferLayouts.length, array.length, gl.count))
-                state.needsUpdate = true
-                return { array, buffer }
-        })
-
-        const uniforms = cached((_, value: number[]) => {
+        const uniforms = cached((_key, value: number[]) => {
+                const { group, binding } = bindingManager.nextUniform()
                 const { array, buffer } = createUniformBuffer(device, value)
-                state.resources[0].push({ buffer })
                 state.needsUpdate = true
-                return { array, buffer }
+                return { array, buffer, binding, group }
         })
 
-        const textures = cached((_, { width, height }: HTMLImageElement) => {
+        const textures = cached((_key, { width, height }: HTMLImageElement) => {
+                const { group, binding } = bindingManager.nextTexture()
                 const { texture, sampler } = createTextureSampler(device, width, height)
-                state.resources[1].push(sampler, texture.createView())
                 state.needsUpdate = true
-                return { texture, width, height }
+                return { binding, group, texture, sampler }
+        })
+
+        const attributes = cached((_key, value: number[]) => {
+                const { location } = bindingManager.nextAttribute()
+                const { array, buffer } = createAttribBuffer(device, value)
+                const stride = value.length / gl.count!
+                state.needsUpdate = true
+                return { array, buffer, location, stride, offset: location * stride * 4 }
         })
 
         const update = () => {
-                const bindGroupLayouts = [] as any
-                bindGroups.length = 0
-                state.resources.forEach((resource) => {
-                        if (!resource.length) return
-                        const { layout, bindGroup } = createBindGroup(device, resource)
-                        bindGroupLayouts.push(layout)
-                        bindGroups.push(bindGroup)
-                })
-                state.pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, gl.vs, gl.fs)
+                const { vertexBuffers, bufferLayouts } = createVertexBuffers(attributes.map, gl.count)
+                const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms.map, textures.map)
+                state.pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, gl.vs, gl.fs, gl)
+                state.bindGroups = bindGroups
+                state.vertexBuffers = vertexBuffers
         }
 
         const render = () => {
-                if (state.loadingImg) return // ignore if loading img
-                if (state.needsUpdate) update() // first rendering
+                if (state.loadingImg) return
+                if (state.needsUpdate) update()
                 state.needsUpdate = false
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(state.pipeline)
-                bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
+                state.bindGroups.forEach((v: any, i: number) => pass.setBindGroup(i, v))
+                state.vertexBuffers.forEach((v: any, i: number) => v && pass.setVertexBuffer(i, v))
                 pass.draw(gl.count, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
@@ -78,25 +73,37 @@ export const webgpu = async (gl: Partial<GL>) => {
         const clean = () => {}
 
         const _attribute = (key = '', value: number[]) => {
-                const { array, buffer } = attributes(key, value)
-                device.queue.writeBuffer(buffer, 0, array)
+                const attribute = attributes(key, value)
+                attribute.array.set(value)
+                device.queue.writeBuffer(attribute.buffer, attribute.offset, attribute.array)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
-                const { array, buffer } = uniforms(key, value)
-                array.set(value)
-                device.queue.writeBuffer(buffer, 0, array)
+                const uniform = uniforms(key, value)
+                uniform.array.set(value)
+                device.queue.writeBuffer(uniform.buffer, 0, uniform.array)
         }
 
         const _texture = (key: string, src: string) => {
                 state.loadingImg++
                 const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
                 source.decode().then(() => {
-                        const { texture, width, height } = textures(key, source)
-                        device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
+                        const texture = textures(key, source)
+                        device.queue.copyExternalImageToTexture(
+                                { source },
+                                { texture: texture.texture },
+                                { width: source.width, height: source.height }
+                        )
                         state.loadingImg--
                 })
+        }
+
+        gl.state = {
+                uniforms,
+                textures,
+                attributes,
+                bindingManager,
         }
 
         return { webgpu: state, render, clean, _attribute, _uniform, _texture }

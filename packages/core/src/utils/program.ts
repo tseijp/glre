@@ -35,10 +35,12 @@ export const createProgram = (
         c: WebGLRenderingContext,
         vs: string | NodeProxy = defaultVertexGLSL,
         fs: string | NodeProxy = defaultFragmentGLSL,
-        onError = () => {}
+        onError = () => {},
+        gl?: any
 ) => {
-        if (isNodeProxy(fs)) fs = fragment(fs, { isWebGL: true })
-        if (isNodeProxy(vs)) vs = vertex(fs, { isWebGL: true })
+        const config = { isWebGL: true, gl }
+        if (isNodeProxy(fs)) fs = fragment(fs, config)
+        if (isNodeProxy(vs)) vs = vertex(vs, config)
         const pg = c.createProgram()
         const _vs = createShader(c, vs, c.VERTEX_SHADER)
         const _fs = createShader(c, fs, c.FRAGMENT_SHADER)

@@ -41,6 +41,12 @@ export const createGL = (props?: Partial<GL>) => {
                 count: 6,
                 webgl: {},
                 webgpu: {},
+                state: {
+                        uniforms: null,
+                        textures: null,
+                        attributes: null,
+                        bindingManager: null,
+                },
         }) as EventState<GL>
 
         gl.queue = createQueue()

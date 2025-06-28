@@ -140,9 +140,32 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
         return ret
 }
 
-const generateVertexMain = (_body: string, _head: string, isWebGL = true) => {
-        if (isWebGL) return ``
-        return ``
+const generateVertexInputs = (c: NodeConfig) => {
+        if (!c.gl?.state?.attributes) return ''
+        const attributes = []
+        for (const [key, attr] of c.gl.state.attributes.map) {
+                attributes.push(`@location(${attr.location}) ${key}: vec2f`)
+        }
+        return attributes.join(', ')
+}
+
+const generateVertexMain = (body: string, head: string, c: NodeConfig) => {
+        const ret = []
+        if (c.isWebGL) {
+                ret.push('#version 300 es')
+                ret.push(head)
+                ret.push('void main() {')
+                ret.push(`gl_Position = ${body};`)
+        } else {
+                ret.push('@vertex')
+                ret.push(head)
+                ret.push('fn main(')
+                ret.push(generateVertexInputs(c))
+                ret.push(') -> @builtin(position) vec4f {')
+                ret.push(`  return ${body};`)
+        }
+        ret.push('}')
+        return ret.filter(Boolean).join('\n')
 }
 
 export const fragment = (x: X, c: NodeConfig = {}) => {
@@ -156,5 +179,7 @@ export const fragment = (x: X, c: NodeConfig = {}) => {
 export const vertex = (x: X, c: NodeConfig) => {
         const body = code(x, c)
         const head = generateHead(c)
-        return generateVertexMain(body, head, c.isWebGL)
+        const main = generateVertexMain(body, head, c)
+        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
+        return main
 }

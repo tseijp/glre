@@ -5,7 +5,7 @@ import type { GL, WebGLState } from './types'
 
 export const webgl = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgl2')!
-        const pg = createProgram(c, gl.vs, gl.fs, () => void (gl.isLoop = false))!
+        const pg = createProgram(c, gl.vs, gl.fs, () => void (gl.isLoop = false), gl)!
         c.useProgram(pg)
         let _activeUnit = 0
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
