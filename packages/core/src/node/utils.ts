@@ -116,54 +116,47 @@ export const generateDefine = (props: NodeProps, c: NodeContext) => {
         return ret
 }
 
-const GLSL_FRAGMENT_HEAD = `
-#version 300 es
-precision mediump float;
-out vec4 fragColor;
-`.trim()
-
-const WGSL_FRAGMENT_HEAD = `
-@fragment
-fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-`.trim()
-
 const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
-        let ret = ''
-        if (isWebGL) ret += GLSL_FRAGMENT_HEAD
-        if (head) ret += '\n' + head + '\n'
-        if (isWebGL) ret += `void main() {\n  fragColor = ${body};`
-        else {
-                ret += WGSL_FRAGMENT_HEAD + '\n'
-                ret += `  return ${body};`
+        const ret = [] as string[]
+        if (isWebGL) {
+                ret.push('#version 300 es\nprecision mediump float;\nout vec4 fragColor;')
+                ret.push(head)
+                ret.push(`void main() {\n  fragColor = ${body};`)
+        } else {
+                ret.push(head)
+                ret.push('@fragment')
+                ret.push('fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {') // @TODO FIX
+                ret.push(`  return ${body};`)
         }
-        ret += '\n}'
-        return ret
+        ret.push('}')
+        return ret.filter(Boolean).join('\n')
 }
 
-const generateVertexInputs = (c: NodeContext) => {
-        if (!c.attributes) return ''
+const generateVertexInputs = (c?: NodeContext) => {
+        if (!c?.attributes?.size) return ''
         const inputs = []
         for (const [name, location] of c.attributes.entries()) {
-                const format = 'vec2f'
+                const format = 'vec2f' // @TODO FIX
                 inputs.push(`@location(${location}) ${name}: ${format}`)
         }
         return inputs.join(',\n  ')
 }
 
 const generateVertexMain = (body: string, head: string, isWebGL = true, c?: NodeContext) => {
-        if (isWebGL) return ''
-        let ret = ''
-        if (head) ret += head + '\n'
-        ret += '@vertex\n'
-        ret += 'fn main('
-        if (c?.attributes?.size) {
-                ret += '\n  ' + generateVertexInputs(c) + '\n'
+        const ret = []
+        if (isWebGL) {
+                ret.push('#version 300 es')
+                ret.push(head)
+        } else {
+                ret.push('@vertex')
+                ret.push(head)
+                ret.push('fn main(')
+                ret.push(generateVertexInputs(c))
+                ret.push(') -> @builtin(position) vec4f {')
+                ret.push(`  ${body}`)
         }
-        ret += ') -> @builtin(position) vec4f {\n'
-        if (body) ret += `  ${body}\n`
-        else ret += '  return vec4f(0.0, 0.0, 0.0, 1.0);\n'
-        ret += '}'
-        return ret
+        ret.push('}')
+        return ret.filter(Boolean).join('\n')
 }
 
 export const fragment = (x: X, c: NodeContext = {}) => {
@@ -176,5 +169,6 @@ export const fragment = (x: X, c: NodeContext = {}) => {
 export const vertex = (x: X, c: NodeContext) => {
         const body = code(x, c)
         const head = generateHead(c)
-        return generateVertexMain(body, head, c.isWebGL, c)
+        const main = generateVertexMain(body, head, c.isWebGL, c)
+        return main
 }

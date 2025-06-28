@@ -34,9 +34,9 @@ export const webgpu = async (gl: Partial<GL>) => {
                 state.needsUpdate = true
         }
 
-        const initTextureInfo = (key: string, img: HTMLImageElement) => {
-                const { texture, sampler } = createTextureSampler(device, img.width, img.height)
-                state.textures.set(key, { texture, sampler, group: 1, binding: state.textures.size * 2 })
+        const initTextureInfo = (key: string, { width, height }: HTMLImageElement) => {
+                const { texture, sampler } = createTextureSampler(device, width, height)
+                state.textures.set(key, { texture, sampler, group: 1, binding: state.textures.size * 2, width, height })
                 state.needsUpdate = true
         }
 
