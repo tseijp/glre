@@ -32,6 +32,8 @@ export interface NodeConfig {
         infers?: WeakMap<NodeProxy, Constants>
         headers?: Map<string, string>
         onMount?: (name: string) => void
+        gl?: any
+        bindingManager?: any
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`

@@ -36,6 +36,15 @@ export interface WebGPUState {
         resources: any[]
         loadingImg: number
         needsUpdate: boolean
+        bindGroups: any[]
+        vertexBuffers: any[]
+}
+
+export interface ResourceState {
+        uniforms: any
+        textures: any
+        attributes: any
+        bindingManager: any
 }
 
 export type GL = EventState<{
@@ -58,6 +67,7 @@ export type GL = EventState<{
         frag: string | NodeProxy
         vertex: string | NodeProxy
         fragment: string | NodeProxy
+        bindings?: any
 
         /**
          * core state
@@ -66,6 +76,7 @@ export type GL = EventState<{
         webgl: WebGLState
         queue: Queue
         frame: Frame
+        state: ResourceState
 
         /**
          * events
