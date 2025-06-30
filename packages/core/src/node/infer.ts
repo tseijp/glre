@@ -13,7 +13,7 @@ import {
         VEC3_RETURN_FUNCTIONS,
         VEC4_RETURN_FUNCTIONS,
 } from './const'
-import { isNodeProxy } from './utils'
+import { isConstantsType, isNodeProxy } from './utils'
 import type { Constants, NodeConfig, NodeProxy, X } from './types'
 
 const getHighestPriorityType = (args: X[], c: NodeConfig) => {
@@ -54,7 +54,7 @@ const inferOperator = (leftType: string, rightType: string, op: string): Constan
 
 const inferPrimitiveType = (x: any): Constants => {
         if (is.bol(x)) return 'bool'
-        if (is.num(x)) return 'float' // Number.isInteger(x) ? 'int' : 'float' // @TODO FIX
+        if (is.num(x)) return 'float'
         if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'float'
         return 'float'
 }
@@ -63,21 +63,26 @@ const inferSwizzle = (count: number): Constants => {
         return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE]!
 }
 
+const inferFromArray = (arr: X[], c: NodeConfig): Constants => {
+        if (arr.length === 0) return 'void'
+        const ret = infer(arr[0], c)
+        for (const x of arr.slice(1))
+                if (ret !== infer(x)) throw new Error(`glre node system error: defined scope return mismatch`)
+        return ret
+}
+
 export const inferImpl = (target: NodeProxy, c: NodeConfig): Constants => {
         const { type, props } = target
-        const { id, children = [], inferFrom } = props
+        const { id, children = [], layout, inferFrom } = props
         const [x, y, z] = children
-        if (inferFrom) return infer(inferFrom, c)
         if (type === 'conversion') return x as Constants
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
         if (type === 'swizzle') return inferSwizzle((x as string).length)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
-        if (type === 'define') {
-                if (props.layout?.type && props.layout?.type !== 'auto') return props.layout.type as Constants
-                return y ? infer(y, c) : 'void'
-        }
+        if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
+        if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
 }
 

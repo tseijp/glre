@@ -51,8 +51,8 @@ export interface WebGPUState {
         pipeline: GPURenderPipeline
         groups: any[]
         resources: any[]
-        loadingImg: number
         needsUpdate: boolean
+        imageLoading: number
         bindGroups: GPUBindGroup[]
         vertexBuffers: GPUBuffer[]
 }

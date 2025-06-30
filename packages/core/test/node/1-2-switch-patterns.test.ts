@@ -5,7 +5,7 @@ import { build } from '../../test-utils'
 describe('Switch Patterns', () => {
         describe('Basic switch cases', () => {
                 it('single case', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const x = int(1).toVar('x')
                                 const result = float(0).toVar('result')
                                 Switch(x).Case(int(1))(() => {
@@ -13,13 +13,13 @@ describe('Switch Patterns', () => {
                                 })
                                 return result
                         })
-                        expect(def).toContain('switch (x) {')
-                        expect(def).toContain('case i32(1.0):')
-                        expect(def).toContain('break;')
+                        expect(wgsl).toContain('switch (x) {')
+                        expect(wgsl).toContain('case i32(1.0):')
+                        expect(wgsl).toContain('break;')
                 })
 
                 it('multiple cases', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const x = int(1).toVar('x')
                                 const result = float(0).toVar('result')
                                 Switch(x)
@@ -34,15 +34,15 @@ describe('Switch Patterns', () => {
                                         })
                                 return result
                         })
-                        expect(def).toContain('case i32(1.0):')
-                        expect(def).toContain('case i32(2.0):')
-                        expect(def).toContain('default:')
+                        expect(wgsl).toContain('case i32(1.0):')
+                        expect(wgsl).toContain('case i32(2.0):')
+                        expect(wgsl).toContain('default:')
                 })
         })
 
         describe('Multi-value cases', () => {
                 it('shared action cases', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const x = int(1).toVar('x')
                                 const result = float(0).toVar('result')
                                 Switch(x).Case(
@@ -54,16 +54,16 @@ describe('Switch Patterns', () => {
                                 })
                                 return result
                         })
-                        expect(def).toContain('case i32(1.0):')
-                        expect(def).toContain('case i32(2.0):')
-                        expect(def).toContain('case i32(3.0):')
-                        expect(def).toContain('result = f32(100.0);')
+                        expect(wgsl).toContain('case i32(1.0):')
+                        expect(wgsl).toContain('case i32(2.0):')
+                        expect(wgsl).toContain('case i32(3.0):')
+                        expect(wgsl).toContain('result = f32(100.0);')
                 })
         })
 
         describe('Complex expressions', () => {
                 it('multiple statements per case', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const x = int(1).toVar('x')
                                 const a = float(0).toVar('a')
                                 const b = float(0).toVar('b')
@@ -73,8 +73,8 @@ describe('Switch Patterns', () => {
                                 })
                                 return a.add(b)
                         })
-                        expect(def).toContain('a = f32(1.0);')
-                        expect(def).toContain('b = (a * f32(2.0));')
+                        expect(wgsl).toContain('a = f32(1.0);')
+                        expect(wgsl).toContain('b = (a * f32(2.0));')
                 })
         })
 })
