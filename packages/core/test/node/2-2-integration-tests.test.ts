@@ -21,21 +21,21 @@ import { build, inferAndCode } from '../../test-utils'
 describe('Integration Tests', () => {
         describe('Complete shader generation', () => {
                 it('shader with uniforms', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const uColorA = uniform(vec3(1, 0, 0), 'colorA')
                                 const uColorB = uniform(vec3(0, 0, 1), 'colorB')
                                 const t = sin(iTime).mul(float(0.5)).add(float(0.5)).toVar('t')
                                 const color = mix(uColorA, uColorB, t)
                                 return vec4(color, float(1))
                         })
-                        expect(def).toContain('colorA')
-                        expect(def).toContain('colorB')
-                        expect(def).toContain('sin(iTime)')
-                        expect(def).toContain('mix(')
+                        expect(wgsl).toContain('colorA')
+                        expect(wgsl).toContain('colorB')
+                        expect(wgsl).toContain('sin(iTime)')
+                        expect(wgsl).toContain('mix(')
                 })
 
                 it('animated shader with control flow', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const uv = position.xy.div(iResolution.xy).toVar('uv')
                                 const color = vec3(0, 0, 0).toVar('color')
                                 const t = iTime.mul(float(2)).toVar('t')
@@ -46,16 +46,16 @@ describe('Integration Tests', () => {
                                 })
                                 return vec4(color, float(1))
                         })
-                        expect(def).toContain('if ((uv.x > f32(0.5)))')
-                        expect(def).toContain('} else {')
-                        expect(def).toContain('sin(')
-                        expect(def).toContain('cos(')
+                        expect(wgsl).toContain('if ((uv.x > f32(0.5)))')
+                        expect(wgsl).toContain('} else {')
+                        expect(wgsl).toContain('sin(')
+                        expect(wgsl).toContain('cos(')
                 })
         })
 
         describe('Complex expressions', () => {
                 it('nested mathematical operations', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const uv = position.xy.div(iResolution.xy).toVar('uv')
                                 const centered = uv.sub(vec3(0.5, 0.5, 0)).toVar('centered')
                                 const radius = centered.length().toVar('radius')
@@ -66,14 +66,14 @@ describe('Integration Tests', () => {
                                 const final = mix(vec3(0, 0, 0), vec3(1, 1, 1), wave.mul(float(0.5)).add(float(0.5)))
                                 return vec4(final, float(1))
                         })
-                        expect(def).toContain('length(')
-                        expect(def).toContain('fract(')
-                        expect(def).toContain('f32(6.28)')
-                        expect(def).toContain('mix(')
+                        expect(wgsl).toContain('length(')
+                        expect(wgsl).toContain('fract(')
+                        expect(wgsl).toContain('f32(6.28)')
+                        expect(wgsl).toContain('mix(')
                 })
 
                 it('loop with accumulation', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const uv = position.xy.div(iResolution.xy).toVar('uv')
                                 const color = vec3(0, 0, 0).toVar('color')
                                 Loop(int(5), ({ i }) => {
@@ -83,9 +83,9 @@ describe('Integration Tests', () => {
                                 })
                                 return vec4(color, float(1))
                         })
-                        expect(def).toContain('for (var i: i32 = 0; i < i32(5.0); i++)')
-                        expect(def).toContain('f32(10.0)')
-                        expect(def).toContain('f32(0.2)')
+                        expect(wgsl).toContain('for (var i: i32 = 0; i < i32(5.0); i++)')
+                        expect(wgsl).toContain('f32(10.0)')
+                        expect(wgsl).toContain('f32(0.2)')
                 })
         })
 
@@ -101,7 +101,7 @@ describe('Integration Tests', () => {
                                 type: 'float',
                                 inputs: [{ name: 'p', type: 'vec3' }],
                         })
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const uv = position.xy.div(iResolution.xy).toVar('uv')
                                 const n1 = noise(vec3(uv.mul(float(5)), iTime))
                                 const n2 = noise(vec3(uv.mul(float(10)), iTime.mul(float(2))))
@@ -109,13 +109,13 @@ describe('Integration Tests', () => {
                                 const color = mix(vec3(0.2, 0.4, 0.8), vec3(0.8, 0.6, 0.2), combined)
                                 return vec4(color, float(1))
                         })
-                        expect(def).toContain('noise(')
-                        expect(def).toContain('f32(0.7)')
-                        expect(def).toContain('f32(0.3)')
+                        expect(wgsl).toContain('noise(')
+                        expect(wgsl).toContain('f32(0.7)')
+                        expect(wgsl).toContain('f32(0.3)')
                 })
 
                 it('reactive parameters', () => {
-                        const def = build(() => {
+                        const wgsl = build(() => {
                                 const uSpeed = uniform(float(1), 'speed')
                                 const uScale = uniform(float(1), 'scale')
                                 const uColor = uniform(vec3(1, 1, 1), 'color')
@@ -126,9 +126,9 @@ describe('Integration Tests', () => {
                                 const final = uColor.mul(pattern.add(float(1)).mul(float(0.5)))
                                 return vec4(final, float(1))
                         })
-                        expect(def).toContain('speed')
-                        expect(def).toContain('scale')
-                        expect(def).toContain('color')
+                        expect(wgsl).toContain('speed')
+                        expect(wgsl).toContain('scale')
+                        expect(wgsl).toContain('color')
                 })
         })
 

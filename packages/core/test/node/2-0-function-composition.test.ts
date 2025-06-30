@@ -15,9 +15,10 @@ describe('Function Composition', () => {
                                 type: 'mat3',
                                 inputs: [{ name: 'angle', type: 'float' }],
                         })
-                        const result = rotate(float(1.57))
-                        expect(inferAndCode(result).type).toBe('mat3')
-                        expect(inferAndCode(result).wgsl).toBe('rotate(f32(1.57))')
+                        const x = rotate(float(1.57))
+                        const { type, wgsl } = inferAndCode(x)
+                        expect(type).toBe('mat3')
+                        expect(wgsl).toBe('rotate(f32(1.57))')
                 })
 
                 it('interpolation function', () => {
@@ -33,8 +34,8 @@ describe('Function Composition', () => {
                                         { name: 't', type: 'float' },
                                 ],
                         })
-                        const result = interpolate(vec3(1, 0, 0), vec3(0, 1, 0), float(0.5))
-                        expect(inferAndCode(result).type).toBe('vec3')
+                        const x = interpolate(vec3(1, 0, 0), vec3(0, 1, 0), float(0.5))
+                        expect(inferAndCode(x).type).toBe('vec3')
                 })
         })
 
@@ -59,8 +60,8 @@ describe('Function Composition', () => {
                                         { name: 'b', type: 'vec3' },
                                 ],
                         })
-                        const result = distance(vec3(1, 2, 3), vec3(4, 5, 6))
-                        expect(inferAndCode(result).type).toBe('float')
+                        const x = distance(vec3(1, 2, 3), vec3(4, 5, 6))
+                        expect(inferAndCode(x).type).toBe('float')
                 })
         })
 
@@ -75,8 +76,8 @@ describe('Function Composition', () => {
                                         { name: 'b', type: 'float' },
                                 ],
                         })
-                        const result = add(float(1), float(2))
-                        expect(inferAndCode(result).type).toBe('float')
+                        const x = add(float(1), float(2))
+                        expect(inferAndCode(x).type).toBe('float')
                 })
         })
 })

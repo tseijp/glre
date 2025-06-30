@@ -22,7 +22,7 @@ export interface NodeProps {
         args?: X[]
         type?: string
         children?: X[]
-        inferFrom?: X | X[]
+        inferFrom?: X[]
         layout?: FnLayout
         parent?: NodeProxy
 }

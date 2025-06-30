@@ -1,6 +1,5 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
-import { infer } from './infer'
 import {
         CONSTANTS,
         CONVERSIONS,
@@ -10,17 +9,7 @@ import {
         TYPE_MAPPING,
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
-import type {
-        Constants,
-        Conversions,
-        Functions,
-        NodeConfig,
-        NodeProps,
-        NodeProxy,
-        Operators,
-        Swizzles,
-        X,
-} from './types'
+import type { Constants, Conversions, Functions, NodeConfig, NodeProxy, Operators, Swizzles, X } from './types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -42,6 +31,12 @@ export const isNodeProxy = (x: unknown): x is NodeProxy => {
         if (!x) return false
         if (typeof x !== 'object') return false // @ts-ignore
         return x.isProxy
+}
+
+export const isConstantsType = (type?: Constants | 'auto'): type is Constants => {
+        if (!type) return false
+        if (type === 'auto') return false
+        return true
 }
 
 export const hex2rgb = (hex: number) => {
@@ -85,35 +80,6 @@ const generateHead = (c: NodeConfig) => {
         return Array.from(c.headers!)
                 .map(([, v]) => v)
                 .join('\n')
-}
-
-export const generateDefine = (props: NodeProps, c: NodeConfig) => {
-        const { id, children = [], layout } = props
-        const [x, y, ...args] = children
-        const returnType = layout?.type && layout?.type !== 'auto' ? layout?.type : y ? infer(y, c) : 'void'
-        const argParams: [name: string, type: string][] = []
-        const params: string[] = []
-        if (layout?.inputs)
-                for (const input of layout.inputs) {
-                        argParams.push([input.name, input.type])
-                }
-        else
-                for (let i = 0; i < args.length; i++) {
-                        argParams.push([`p${i}`, infer(args[i], c)])
-                }
-        let ret = ''
-        if (c?.isWebGL) {
-                for (const [id, type] of argParams) params.push(`${type} ${id}`)
-                ret += `${returnType} ${id}(${params}) {\n`
-        } else {
-                for (const [id, type] of argParams) params.push(`${id}: ${formatConversions(type, c)}`)
-                ret += `fn ${id}(${params}) -> ${formatConversions(returnType, c)} {\n`
-        }
-        const scopeCode = code(x, c)
-        if (scopeCode) ret += scopeCode + '\n'
-        if (y) ret += `return ${code(y, c)};`
-        ret += '\n}'
-        return ret
 }
 
 const GLSL_FRAGMENT_HEAD = `

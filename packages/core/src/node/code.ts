@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
-import { getBluiltin, getOperator, generateDefine, formatConversions, joins } from './utils'
-import type { NodeConfig, X } from './types'
+import { getBluiltin, getOperator, formatConversions, joins } from './utils'
+import type { Constants, NodeConfig, NodeProps, X } from './types'
 
 export const code = (target: X, c?: NodeConfig | null): string => {
         if (!c) c = {}
@@ -13,7 +13,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 return ret + '.0'
         }
         if (is.bol(target)) return target ? 'true' : 'false'
-        if (!target) return '' // ignore if no target
+        if (!target) return ''
         const { type, props } = target
         const { id = '', children = [] } = props
         const [x, y, z] = children
@@ -84,41 +84,75 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 return c.isWebGL
                         ? `for (int i = 0; i < ${x}; i += 1) {\n${code(y, c)}\n}`
                         : `for (var i: i32 = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
+        if (type === 'if') return codeIf(c, x, y, children)
+        if (type === 'switch') return codeSwitch(c, x, children)
+        if (type === 'declare') return codeDeclare(c, x, y)
         if (type === 'define') {
-                const args = children.slice(2)
+                const returnType = infer(target, c)
+                const args = children.slice(1)
                 const ret = `${id}(${args.map((arg) => code(arg, c))})`
                 if (c.headers.has(id)) return ret
-                c.headers.set(id, generateDefine(props, c))
+                c.headers.set(id, codeDefine(props, returnType, c))
                 return ret
-        }
-        if (type === 'if') {
-                let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
-                for (let i = 2; i < children.length; i += 2) {
-                        const isElseIf = i >= children.length - 1
-                        ret += !isElseIf
-                                ? ` else if (${code(children[i], c)}) {\n${code(children[i + 1], c)}\n}`
-                                : ` else {\n${code(children[i], c)}\n}`
-                }
-                return ret
-        }
-        if (type === 'switch') {
-                let ret = `switch (${code(x, c)}) {\n`
-                for (let i = 1; i < children.length; i += 2) {
-                        const isDefault = i >= children.length - 1
-                        if (isDefault && children.length % 2 === 0) {
-                                ret += `default:\n${code(children[i], c)}\nbreak;\n`
-                        } else if (i + 1 < children.length)
-                                ret += `case ${code(children[i], c)}:\n${code(children[i + 1], c)}\nbreak;\n`
-                }
-                ret += '}'
-                return ret
-        }
-        if (type === 'declare') {
-                const varType = infer(x, c)
-                const varName = (y as any)?.props?.id
-                if (c.isWebGL) return `${varType} ${varName} = ${code(x, c)};`
-                const wgslType = formatConversions(varType)
-                return `var ${varName}: ${wgslType} = ${code(x, c)};`
         }
         return code(x, c)
+}
+
+const codeIf = (c: NodeConfig, x: X, y: X, children: X[]) => {
+        let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
+        for (let i = 2; i < children.length; i += 2) {
+                const isElseIf = i >= children.length - 1
+                ret += !isElseIf
+                        ? ` else if (${code(children[i], c)}) {\n${code(children[i + 1], c)}\n}`
+                        : ` else {\n${code(children[i], c)}\n}`
+        }
+        return ret
+}
+
+const codeSwitch = (c: NodeConfig, x: X, children: X[]) => {
+        let ret = `switch (${code(x, c)}) {\n`
+        for (let i = 1; i < children.length; i += 2) {
+                const isDefault = i >= children.length - 1
+                if (isDefault && children.length % 2 === 0) {
+                        ret += `default:\n${code(children[i], c)}\nbreak;\n`
+                } else if (i + 1 < children.length)
+                        ret += `case ${code(children[i], c)}:\n${code(children[i + 1], c)}\nbreak;\n`
+        }
+        ret += '}'
+        return ret
+}
+
+const codeDeclare = (c: NodeConfig, x: X, y: X) => {
+        const varType = infer(x, c)
+        const varName = (y as any)?.props?.id
+        if (c.isWebGL) return `${varType} ${varName} = ${code(x, c)};`
+        const wgslType = formatConversions(varType)
+        return `var ${varName}: ${wgslType} = ${code(x, c)};`
+}
+
+export const codeDefine = (props: NodeProps, returnType: Constants, c: NodeConfig) => {
+        const { id, children = [], layout } = props
+        const [x, ...args] = children
+        const argParams: [name: string, type: string][] = []
+        const params: string[] = []
+        if (layout?.inputs)
+                for (const input of layout.inputs) {
+                        argParams.push([input.name, input.type])
+                }
+        else
+                for (let i = 0; i < args.length; i++) {
+                        argParams.push([`p${i}`, infer(args[i], c)])
+                }
+        let ret = ''
+        if (c?.isWebGL) {
+                for (const [id, type] of argParams) params.push(`${type} ${id}`)
+                ret += `${returnType} ${id}(${params}) {\n`
+        } else {
+                for (const [id, type] of argParams) params.push(`${id}: ${formatConversions(type, c)}`)
+                ret += `fn ${id}(${params}) -> ${formatConversions(returnType, c)} {\n`
+        }
+        const scopeCode = code(x, c)
+        if (scopeCode) ret += scopeCode
+        ret += '\n}'
+        return ret
 }
