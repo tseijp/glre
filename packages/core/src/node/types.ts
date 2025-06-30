@@ -22,8 +22,9 @@ export interface NodeProps {
         args?: X[]
         type?: string
         children?: X[]
-        inferFrom?: X
+        inferFrom?: X | X[]
         layout?: FnLayout
+        parent?: NodeProxy
 }
 
 export interface NodeConfig {
@@ -66,6 +67,7 @@ export type NodeTypes =
         | 'if'
         | 'switch'
         | 'declare'
+        | 'return'
 
 export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         // Operators
