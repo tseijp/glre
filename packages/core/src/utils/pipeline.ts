@@ -112,7 +112,7 @@ export const createBindingManager = () => {
 export const createBindGroup = (device: any, uniforms: Map<string, any>, textures: Map<string, any>) => {
         const groups = new Map<number, any>()
         const getGroup = (i = 0) => {
-                if (groups.has(i)) groups.set(i, { entries0: [], entries1: [] })
+                if (!groups.has(i)) groups.set(i, { entries0: [], entries1: [] })
                 return groups.get(i)
         }
         for (const { binding, buffer, group: i } of uniforms.values()) {
