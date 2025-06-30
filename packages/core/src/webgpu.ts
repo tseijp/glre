@@ -22,29 +22,29 @@ export const webgpu = async (gl: Partial<GL>) => {
                 device,
                 context: c,
                 resources: [],
-                loadingImg: 0,
+                imageLoading: 0,
                 needsUpdate: true,
         } as unknown as WebGPUState
 
         const uniforms = cached((_key, value: number[]) => {
+                state.needsUpdate = true
                 const { group, binding } = bindingManager.nextUniform()
                 const { array, buffer } = createUniformBuffer(device, value)
-                state.needsUpdate = true
                 return { array, buffer, binding, group }
         })
 
         const textures = cached((_key, { width, height }: HTMLImageElement) => {
+                state.needsUpdate = true
                 const { group, binding } = bindingManager.nextTexture()
                 const { texture, sampler } = createTextureSampler(device, width, height)
-                state.needsUpdate = true
                 return { binding, group, texture, sampler }
         })
 
         const attributes = cached((_key, value: number[]) => {
+                state.needsUpdate = true
                 const { location } = bindingManager.nextAttribute()
                 const { array, buffer } = createAttribBuffer(device, value)
                 const stride = value.length / gl.count!
-                state.needsUpdate = true
                 return { array, buffer, location, stride, offset: location * stride * 4 }
         })
 
@@ -57,7 +57,7 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const render = () => {
-                if (state.loadingImg) return
+                if (state.imageLoading) return
                 if (state.needsUpdate) update()
                 state.needsUpdate = false
                 const encoder = device.createCommandEncoder()
@@ -86,7 +86,7 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const _texture = (key: string, src: string) => {
-                state.loadingImg++
+                state.imageLoading++
                 const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
                 source.decode().then(() => {
                         const texture = textures(key, source)
@@ -95,7 +95,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                                 { texture: texture.texture },
                                 { width: source.width, height: source.height }
                         )
-                        state.loadingImg--
+                        state.imageLoading--
                 })
         }
 

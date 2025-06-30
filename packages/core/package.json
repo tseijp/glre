@@ -106,11 +106,9 @@
                 "README.md"
         ],
         "dependencies": {
+                "@webgpu/types": "*",
                 "reev": "0.12.0",
                 "refr": "0.7.0"
-        },
-        "devDependencies": {
-                "@webgpu/types": "0.1.63"
         },
         "peerDependencies": {
                 "expo": "*",
