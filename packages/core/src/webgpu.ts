@@ -14,7 +14,7 @@ import {
 import type { GL, WebGPUState } from './types'
 
 export const webgpu = async (gl: Partial<GL>) => {
-        const c = gl.el!.getContext('webgpu') as any
+        const c = gl.el!.getContext('webgpu') as GPUCanvasContext
         const { device, format } = await createDevice(c)
         const bindingManager = createBindingManager()
 
@@ -63,9 +63,9 @@ export const webgpu = async (gl: Partial<GL>) => {
                 const encoder = device.createCommandEncoder()
                 const pass = encoder.beginRenderPass(createDescriptor(c))
                 pass.setPipeline(state.pipeline)
-                state.bindGroups.forEach((v: any, i: number) => pass.setBindGroup(i, v))
-                state.vertexBuffers.forEach((v: any, i: number) => v && pass.setVertexBuffer(i, v))
-                pass.draw(gl.count, 1, 0, 0)
+                state.bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
+                state.vertexBuffers.forEach((v, i) => v && pass.setVertexBuffer(i, v))
+                pass.draw(gl.count!, 1, 0, 0)
                 pass.end()
                 device.queue.submit([encoder.finish()])
         }

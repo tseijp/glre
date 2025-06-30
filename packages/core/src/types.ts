@@ -2,11 +2,6 @@ import { EventState } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
 import type { NodeProxy } from './node'
 export type { Fun, Queue, Frame }
-export type GPUContext = any // GPUCanvasContext https://developer.mozilla.org/en-US/docs/Web/API/GPUCanvasContext
-export type GPUDevice = any //
-export type GPUBuffer = any //
-export type GPUPipeline = any //
-export type GPUBindGroup = any
 export type Uniform = number | number[]
 export type Attribute = number[]
 export type Attributes = Record<string, Attribute>
@@ -23,6 +18,28 @@ export type GLDrawMode =
         | 'TRIANGLE_FAN'
         | 'TRIANGLES'
 
+export interface UniformData {
+        array: Float32Array
+        buffer: GPUBuffer
+        binding: number
+        group: number
+}
+
+export interface TextureData {
+        binding: number
+        group: number
+        texture: GPUTexture
+        sampler: GPUSampler
+}
+
+export interface AttributeData {
+        array: Float32Array
+        buffer: GPUBuffer
+        location: number
+        stride: number
+        offset: number
+}
+
 export interface WebGLState {
         context: WebGLRenderingContext
         program: WebGLProgram
@@ -30,14 +47,14 @@ export interface WebGLState {
 
 export interface WebGPUState {
         device: GPUDevice
-        context: GPUContext
-        pipeline: GPUPipeline
+        context: GPUCanvasContext
+        pipeline: GPURenderPipeline
         groups: any[]
         resources: any[]
         loadingImg: number
         needsUpdate: boolean
-        bindGroups: any[]
-        vertexBuffers: any[]
+        bindGroups: GPUBindGroup[]
+        vertexBuffers: GPUBuffer[]
 }
 
 export interface ResourceState {

@@ -1,7 +1,6 @@
-import { nested } from 'reev'
 import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
-import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
+import type { AttributeData, GL, TextureData, UniformData } from '../types'
 
 const defaultVertexWGSL = `
 @vertex
@@ -24,60 +23,13 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 /**
  * initialize
  */
-export const createDevice = async (c: GPUContext) => {
-        const gpu = (navigator as any).gpu
+export const createDevice = async (c: GPUCanvasContext) => {
+        const gpu = navigator.gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
-        const device = await adapter.requestDevice()
+        const device = await adapter!.requestDevice()
         c.configure({ device, format, alphaMode: 'opaque' })
         return { device, format }
-}
-
-export const createPipeline = (
-        device: GPUDevice,
-        format: string,
-        bufferLayouts: any[],
-        bindGroupLayouts: any[],
-        vs: string | NodeProxy = defaultVertexWGSL,
-        fs: string | NodeProxy = defaultFragmentWGSL,
-        gl?: any
-) => {
-        const config = { isWebGL: false, gl }
-        if (isNodeProxy(vs)) vs = vertex(vs, config)
-        if (isNodeProxy(fs)) fs = fragment(fs, config)
-        const layout = device.createPipelineLayout({ bindGroupLayouts })
-        return device.createRenderPipeline({
-                vertex: {
-                        module: device.createShaderModule({ code: vs.trim() }),
-                        entryPoint: 'main',
-                        buffers: bufferLayouts,
-                },
-                fragment: {
-                        module: device.createShaderModule({ code: fs.trim() }),
-                        entryPoint: 'main',
-                        targets: [{ format }],
-                },
-                layout,
-                primitive: { topology: 'triangle-list' },
-        }) as GPUPipeline
-}
-
-/**
- * buffers
- */
-const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
-
-export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const size = alignTo256(array.byteLength)
-        const buffer = device.createBuffer({ size, usage: 72 }) as Buffer // 72 === GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        return { array, buffer }
-}
-
-export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 === // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-        return { array, buffer }
 }
 
 export const createBindingManager = () => {
@@ -106,10 +58,59 @@ export const createBindingManager = () => {
         }
 }
 
+export const createPipeline = (
+        device: GPUDevice,
+        format: GPUTextureFormat,
+        bufferLayouts: GPUVertexBufferLayout[],
+        bindGroupLayouts: GPUBindGroupLayout[],
+        vs: string | NodeProxy = defaultVertexWGSL,
+        fs: string | NodeProxy = defaultFragmentWGSL,
+        gl?: Partial<GL>
+) => {
+        const config = { isWebGL: false, gl }
+        if (isNodeProxy(vs)) vs = vertex(vs, config)
+        if (isNodeProxy(fs)) fs = fragment(fs, config)
+        const layout = device.createPipelineLayout({ bindGroupLayouts })
+        return device.createRenderPipeline({
+                vertex: {
+                        module: device.createShaderModule({ code: vs.trim() }),
+                        entryPoint: 'main',
+                        buffers: bufferLayouts,
+                },
+                fragment: {
+                        module: device.createShaderModule({ code: fs.trim() }),
+                        entryPoint: 'main',
+                        targets: [{ format }],
+                },
+                layout,
+                primitive: { topology: 'triangle-list' },
+        })
+}
+
+/**
+ * buffers
+ */
+export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
+        const array = new Float32Array(value)
+        const size = Math.ceil(array.byteLength / 256) * 256
+        const buffer = device.createBuffer({ size, usage: 72 }) // 72 is GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        return { array, buffer }
+}
+
+export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
+        const array = new Float32Array(value)
+        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 is GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        return { array, buffer }
+}
+
 /**
  * uniforms
  */
-export const createBindGroup = (device: any, uniforms: Map<string, any>, textures: Map<string, any>) => {
+export const createBindGroup = (
+        device: GPUDevice,
+        uniforms: Map<string, UniformData>,
+        textures: Map<string, TextureData>
+) => {
         const groups = new Map<number, any>()
         const getGroup = (i = 0) => {
                 if (!groups.has(i)) groups.set(i, { entries0: [], entries1: [] })
@@ -135,21 +136,21 @@ export const createBindGroup = (device: any, uniforms: Map<string, any>, texture
         return ret
 }
 
-export const createDescriptor = (c: GPUContext) => {
+export const createDescriptor = (c: GPUCanvasContext) => {
         return {
                 colorAttachments: [
                         {
                                 view: c.getCurrentTexture().createView(),
                                 clearValue: { r: 0, g: 0, b: 0, a: 1 },
-                                loadOp: 'clear',
-                                storeOp: 'store',
+                                loadOp: 'clear' as GPULoadOp,
+                                storeOp: 'store' as GPUStoreOp,
                         },
                 ],
-        }
+        } as GPURenderPassDescriptor
 }
 
 export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
-        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 })
+        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
         return { texture, sampler }
 }
@@ -161,7 +162,7 @@ const getVertexStride = (dataLength: number, vertexCount: number) => {
         return dataLength / vertexCount
 }
 
-const getVertexFormat = (stride: number) => {
+const getVertexFormat = (stride: number): GPUVertexFormat => {
         if (stride === 2) return 'float32x2'
         if (stride === 3) return 'float32x3'
         if (stride === 4) return 'float32x4'
@@ -182,9 +183,9 @@ const createBufferLayout = (shaderLocation: number, dataLength: number, count = 
         }
 }
 
-export const createVertexBuffers = (attributes: any, count = 6) => {
-        const vertexBuffers = []
-        const bufferLayouts = []
+export const createVertexBuffers = (attributes: Map<string, AttributeData>, count = 6) => {
+        const vertexBuffers: GPUBuffer[] = []
+        const bufferLayouts: GPUVertexBufferLayout[] = []
         for (const [, { array, buffer, location }] of attributes) {
                 vertexBuffers[location] = buffer
                 bufferLayouts[location] = createBufferLayout(location, array.length, count)
