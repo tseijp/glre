@@ -44,7 +44,7 @@
                                 "default": "./dist/react.js"
                         },
                         "require": "./dist/react.cjs",
-                        "default": "./dist/react.cjs"
+                        "default": "./dist/react.js"
                 },
                 "./native": {
                         "types": "./dist/native.d.ts",
@@ -57,7 +57,7 @@
                                 "default": "./dist/native.js"
                         },
                         "require": "./dist/native.cjs",
-                        "default": "./dist/native.cjs"
+                        "default": "./dist/native.js"
                 },
                 "./solid": {
                         "types": "./dist/solid.d.ts",
@@ -70,7 +70,7 @@
                                 "default": "./dist/solid.js"
                         },
                         "require": "./dist/solid.cjs",
-                        "default": "./dist/solid.cjs"
+                        "default": "./dist/solid.js"
                 },
                 ".": {
                         "types": "./dist/index.d.ts",
@@ -83,7 +83,7 @@
                                 "default": "./dist/index.js"
                         },
                         "require": "./dist/index.cjs",
-                        "default": "./dist/index.cjs"
+                        "default": "./dist/index.js"
                 },
                 "./*": {
                         "types": "./dist/index.d.ts",
@@ -96,7 +96,7 @@
                                 "default": "./dist/index.js"
                         },
                         "require": "./dist/index.cjs",
-                        "default": "./dist/index.cjs"
+                        "default": "./dist/index.js"
                 }
         },
         "files": [
@@ -108,6 +108,9 @@
         "dependencies": {
                 "reev": "0.12.0",
                 "refr": "0.7.0"
+        },
+        "devDependencies": {
+                "@webgpu/types": "0.1.63"
         },
         "peerDependencies": {
                 "expo": "*",

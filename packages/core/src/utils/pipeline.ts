@@ -1,6 +1,6 @@
 import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
-import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
+import type { AttributeData, GL, TextureData, UniformData } from '../types'
 
 const defaultVertexWGSL = `
 @vertex
@@ -23,79 +23,13 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 /**
  * initialize
  */
-export const createDevice = async (c: GPUContext) => {
-        const gpu = (navigator as any).gpu
+export const createDevice = async (c: GPUCanvasContext) => {
+        const gpu = navigator.gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
-        const device = await adapter.requestDevice()
+        const device = await adapter!.requestDevice()
         c.configure({ device, format, alphaMode: 'opaque' })
         return { device, format }
-}
-
-export const createPipeline = (
-        device: GPUDevice,
-        format: string,
-        bufferLayouts: any[],
-        bindGroupLayouts: any[],
-        vs: string | NodeProxy = defaultVertexWGSL,
-        fs: string | NodeProxy = defaultFragmentWGSL,
-        gl?: any
-) => {
-        const config = { isWebGL: false, gl }
-        if (isNodeProxy(vs)) vs = vertex(vs, config)
-        if (isNodeProxy(fs)) fs = fragment(fs, config)
-        const layout = device.createPipelineLayout({ bindGroupLayouts })
-        return device.createRenderPipeline({
-                vertex: {
-                        module: device.createShaderModule({ code: vs.trim() }),
-                        entryPoint: 'main',
-                        buffers: bufferLayouts,
-                },
-                fragment: {
-                        module: device.createShaderModule({ code: fs.trim() }),
-                        entryPoint: 'main',
-                        targets: [{ format }],
-                },
-                layout,
-                primitive: { topology: 'triangle-list' },
-        }) as GPUPipeline
-}
-
-// export const createBindGroup = (device: GPUDevice, resources: any[]) => {
-//         const entries0 = [] as any[]
-//         const entries1 = [] as any[]
-//         resources.forEach((resource, binding) => {
-//                 if (!resource) return
-//                 const isUniform = 'buffer' in resource // @ts-ignore
-//                 const isTexture = resource instanceof GPUTextureView // @ts-ignore
-//                 const isSampler = resource instanceof GPUSampler // @ts-ignore
-//                 if (isUniform) entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
-//                 else if (isTexture) entries0.push({ binding, visibility: 2, texture: {} })
-//                 else if (isSampler) entries0.push({ binding, visibility: 2, sampler: {} })
-//                 else return
-//                 entries1.push({ binding, resource })
-//         })
-//         const layout = device.createBindGroupLayout({ entries: entries0 })
-//         const bindGroup = device.createBindGroup({ layout, entries: entries1 })
-//         return { layout, bindGroup }
-// }
-
-/**
- * buffers
- */
-const alignTo256 = (size: number) => Math.ceil(size / 256) * 256
-
-export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const size = alignTo256(array.byteLength)
-        const buffer = device.createBuffer({ size, usage: 72 }) as Buffer // 72 === GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        return { array, buffer }
-}
-
-export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 === // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-        return { array, buffer }
 }
 
 export const createBindingManager = () => {
@@ -124,59 +58,99 @@ export const createBindingManager = () => {
         }
 }
 
+export const createPipeline = (
+        device: GPUDevice,
+        format: GPUTextureFormat,
+        bufferLayouts: GPUVertexBufferLayout[],
+        bindGroupLayouts: GPUBindGroupLayout[],
+        vs: string | NodeProxy = defaultVertexWGSL,
+        fs: string | NodeProxy = defaultFragmentWGSL,
+        gl?: Partial<GL>
+) => {
+        const config = { isWebGL: false, gl }
+        if (isNodeProxy(vs)) vs = vertex(vs, config)
+        if (isNodeProxy(fs)) fs = fragment(fs, config)
+        const layout = device.createPipelineLayout({ bindGroupLayouts })
+        return device.createRenderPipeline({
+                vertex: {
+                        module: device.createShaderModule({ code: vs.trim() }),
+                        entryPoint: 'main',
+                        buffers: bufferLayouts,
+                },
+                fragment: {
+                        module: device.createShaderModule({ code: fs.trim() }),
+                        entryPoint: 'main',
+                        targets: [{ format }],
+                },
+                layout,
+                primitive: { topology: 'triangle-list' },
+        })
+}
+
+/**
+ * buffers
+ */
+export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
+        const array = new Float32Array(value)
+        const size = Math.ceil(array.byteLength / 256) * 256
+        const buffer = device.createBuffer({ size, usage: 72 }) // 72 is GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
+        return { array, buffer }
+}
+
+export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
+        const array = new Float32Array(value)
+        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 is GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        return { array, buffer }
+}
+
 /**
  * uniforms
  */
-export const createBindGroup = (device: any, uniforms: Map<string, any>, textures: Map<string, any>) => {
-        const groupedResources = new Map<number, { binding: number; resource: any; type: string }[]>()
-        for (const [, uniform] of uniforms) {
-                if (!groupedResources.has(uniform.group)) groupedResources.set(uniform.group, [])
-                groupedResources.get(uniform.group)!.push({
-                        binding: uniform.binding,
-                        resource: { buffer: uniform.buffer },
-                        type: 'uniform',
-                })
+export const createBindGroup = (
+        device: GPUDevice,
+        uniforms: Map<string, UniformData>,
+        textures: Map<string, TextureData>
+) => {
+        const groups = new Map<number, any>()
+        const getGroup = (i = 0) => {
+                if (!groups.has(i)) groups.set(i, { entries0: [], entries1: [] })
+                return groups.get(i)
         }
-        for (const [, texture] of textures) {
-                if (!groupedResources.has(texture.group)) groupedResources.set(texture.group, [])
-                const group = groupedResources.get(texture.group)!
-                group.push({ binding: texture.binding, resource: texture.sampler, type: 'sampler' })
-                group.push({ binding: texture.binding + 1, resource: texture.texture.createView(), type: 'texture' })
+        for (const { binding, buffer, group: i } of uniforms.values()) {
+                const { entries0, entries1 } = getGroup(i)
+                entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
+                entries1.push({ binding, resource: { buffer } })
         }
-        const bindGroups = []
-        const bindGroupLayouts = []
-        for (const [groupIndex, resources] of groupedResources) {
-                const entries0 = []
-                const entries1 = []
-                for (const { binding, resource, type } of resources) {
-                        if (type === 'uniform') entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
-                        else if (type === 'texture') entries0.push({ binding, visibility: 2, texture: {} })
-                        else if (type === 'sampler') entries0.push({ binding, visibility: 2, sampler: {} })
-                        entries1.push({ binding, resource })
-                }
-                const layout = device.createBindGroupLayout({ entries: entries0 })
-                const bindGroup = device.createBindGroup({ layout, entries: entries1 })
-                bindGroupLayouts[groupIndex] = layout
-                bindGroups[groupIndex] = bindGroup
+        for (const { binding, group: i, sampler, texture } of textures.values()) {
+                const { entries0, entries1 } = getGroup(i)
+                entries0.push({ binding, visibility: 2, sampler: {} })
+                entries0.push({ binding: binding + 1, visibility: 2, texture: {} })
+                entries1.push({ binding, resource: sampler })
+                entries1.push({ binding: binding + 1, resource: texture.createView() })
         }
-
-        return { bindGroups, bindGroupLayouts }
+        const ret = { bindGroups: [], bindGroupLayouts: [] } as any
+        for (const [i, { entries0, entries1 }] of groups) {
+                ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: entries0 })
+                ret.bindGroups[i] = device.createBindGroup({ layout: ret.bindGroupLayouts[i], entries: entries1 })
+        }
+        return ret
 }
-export const createDescriptor = (c: GPUContext) => {
+
+export const createDescriptor = (c: GPUCanvasContext) => {
         return {
                 colorAttachments: [
                         {
                                 view: c.getCurrentTexture().createView(),
                                 clearValue: { r: 0, g: 0, b: 0, a: 1 },
-                                loadOp: 'clear',
-                                storeOp: 'store',
+                                loadOp: 'clear' as GPULoadOp,
+                                storeOp: 'store' as GPUStoreOp,
                         },
                 ],
-        }
+        } as GPURenderPassDescriptor
 }
 
 export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
-        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 })
+        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
         return { texture, sampler }
 }
@@ -188,7 +162,7 @@ const getVertexStride = (dataLength: number, vertexCount: number) => {
         return dataLength / vertexCount
 }
 
-const getVertexFormat = (stride: number) => {
+const getVertexFormat = (stride: number): GPUVertexFormat => {
         if (stride === 2) return 'float32x2'
         if (stride === 3) return 'float32x3'
         if (stride === 4) return 'float32x4'
@@ -209,9 +183,9 @@ const createBufferLayout = (shaderLocation: number, dataLength: number, count = 
         }
 }
 
-export const createVertexBuffers = (attributes: any, count = 6) => {
-        const vertexBuffers = []
-        const bufferLayouts = []
+export const createVertexBuffers = (attributes: Map<string, AttributeData>, count = 6) => {
+        const vertexBuffers: GPUBuffer[] = []
+        const bufferLayouts: GPUVertexBufferLayout[] = []
         for (const [, { array, buffer, location }] of attributes) {
                 vertexBuffers[location] = buffer
                 bufferLayouts[location] = createBufferLayout(location, array.length, count)

@@ -11,15 +11,15 @@ interface BuildTarget {
 const BUILD_TARGETS: BuildTarget[] = [
         {
                 format: 'cjs',
+        },
+        {
+                format: 'esm',
                 // https://github.com/egoist/tsup/issues/618
                 dts: {
                         compilerOptions: {
                                 moduleResolution: 'node',
                         },
                 },
-        },
-        {
-                format: 'esm',
         },
 ]
 
