@@ -295,4 +295,22 @@ function Canvas() {
 ```
 
 </TabItem>
+{/*
+<TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                fragment: textureSample(texture2d('iTexture'), sampler(), position.xy / iResolution)
+                isWebGL: false,
+        })
+        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+*/}
 </Tabs>
