@@ -107,9 +107,8 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
 }
 
 const generateVertexInputs = (c: NodeContext) => {
-        if (!c.gl?.state?.attributes) return ''
         const attributes = []
-        for (const [key, attr] of c.gl.state.attributes.map) {
+        for (const [key, attr] of c.webgpu?.attributes.map!) {
                 attributes.push(`@location(${attr.location}) ${key}: vec4f`) // @TODO FIX type infer
         }
         return attributes.join(', ')

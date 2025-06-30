@@ -1,6 +1,6 @@
 import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
-import type { AttributeData, GL, TextureData, UniformData } from '../types'
+import type { AttributeData, TextureData, UniformData, WebGPUState } from '../types'
 
 const defaultVertexWGSL = `
 @vertex
@@ -32,27 +32,27 @@ export const createDevice = async (c: GPUCanvasContext) => {
         return { device, format }
 }
 
-export const createBindingManager = () => {
-        let uniformCount = 0
-        let textureCount = 0
-        let attributeCount = 0
+export const createBindings = () => {
+        let uniform = 0
+        let texture = 0
+        let attribute = 0
         return {
-                nextUniform: () => {
-                        const group = Math.floor(uniformCount / 12)
-                        const binding = uniformCount % 12
-                        uniformCount++
+                uniform: () => {
+                        const group = Math.floor(uniform / 12)
+                        const binding = uniform % 12
+                        uniform++
                         return { group, binding }
                 },
-                nextTexture: () => {
-                        const baseGroup = Math.ceil(uniformCount / 12)
-                        const group = baseGroup + Math.floor(textureCount / 12)
-                        const binding = textureCount % 12
-                        textureCount++
+                texture: () => {
+                        const baseGroup = Math.ceil(uniform / 12)
+                        const group = baseGroup + Math.floor(texture / 12)
+                        const binding = texture % 12
+                        texture++
                         return { group, binding }
                 },
-                nextAttribute: () => {
-                        const location = attributeCount
-                        attributeCount++
+                attribute: () => {
+                        const location = attribute
+                        attribute++
                         return { location }
                 },
         }
@@ -63,11 +63,11 @@ export const createPipeline = (
         format: GPUTextureFormat,
         bufferLayouts: GPUVertexBufferLayout[],
         bindGroupLayouts: GPUBindGroupLayout[],
+        webgpu: WebGPUState,
         vs: string | NodeProxy = defaultVertexWGSL,
-        fs: string | NodeProxy = defaultFragmentWGSL,
-        gl?: Partial<GL>
+        fs: string | NodeProxy = defaultFragmentWGSL
 ) => {
-        const config = { isWebGL: false, gl }
+        const config = { isWebGL: false, webgpu }
         if (isNodeProxy(vs)) vs = vertex(vs, config)
         if (isNodeProxy(fs)) fs = fragment(fs, config)
         const layout = device.createPipelineLayout({ bindGroupLayouts })
@@ -128,7 +128,7 @@ export const createBindGroup = (
                 entries1.push({ binding, resource: sampler })
                 entries1.push({ binding: binding + 1, resource: texture.createView() })
         }
-        const ret = { bindGroups: [], bindGroupLayouts: [] } as any
+        const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
         for (const [i, { entries0, entries1 }] of groups) {
                 ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: entries0 })
                 ret.bindGroups[i] = device.createBindGroup({ layout: ret.bindGroupLayouts[i], entries: entries1 })
@@ -169,7 +169,7 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-const createBufferLayout = (shaderLocation: number, dataLength: number, count = 6) => {
+const createBufferLayout = (shaderLocation = 0, dataLength = 0, count = 6) => {
         const stride = getVertexStride(dataLength, count)
         return {
                 arrayStride: stride * 4,

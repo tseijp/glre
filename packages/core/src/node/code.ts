@@ -32,10 +32,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (c.isWebGL) {
                         head = `uniform ${varType} ${id};`
                 } else {
-                        const binding = c.gl?.state?.uniforms(id, [])
-                        const group = binding?.group || 0
-                        const bindingNum = binding?.binding || 0
-                        head = `@group(${group}) @binding(${bindingNum}) var<uniform> ${id}: ${formatConversions(
+                        const { group, binding } = c.webgpu?.uniforms(id, [])!
+                        head = `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${formatConversions(
                                 varType,
                                 c
                         )};`

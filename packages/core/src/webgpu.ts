@@ -3,7 +3,7 @@ import { is } from './utils/helpers'
 import {
         createAttribBuffer,
         createBindGroup,
-        createBindingManager,
+        createBindings,
         createDevice,
         createPipeline,
         createDescriptor,
@@ -16,57 +16,52 @@ import type { GL, WebGPUState } from './types'
 export const webgpu = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgpu') as GPUCanvasContext
         const { device, format } = await createDevice(c)
-        const bindingManager = createBindingManager()
-
-        const state = {
-                device,
-                context: c,
-                resources: [],
-                imageLoading: 0,
-                needsUpdate: true,
-        } as unknown as WebGPUState
+        const bindings = createBindings()
+        let imageLoading = 0
+        let needsUpdate = true
+        let _render = (_pass: GPURenderPassEncoder) => {}
 
         const uniforms = cached((_key, value: number[]) => {
-                state.needsUpdate = true
-                const { group, binding } = bindingManager.nextUniform()
+                needsUpdate = true
+                const { group, binding } = bindings.uniform()
                 const { array, buffer } = createUniformBuffer(device, value)
                 return { array, buffer, binding, group }
         })
 
         const textures = cached((_key, { width, height }: HTMLImageElement) => {
-                state.needsUpdate = true
-                const { group, binding } = bindingManager.nextTexture()
+                needsUpdate = true
+                const { group, binding } = bindings.texture()
                 const { texture, sampler } = createTextureSampler(device, width, height)
-                return { binding, group, texture, sampler }
+                return { texture, sampler, binding, group }
         })
 
         const attributes = cached((_key, value: number[]) => {
-                state.needsUpdate = true
-                const { location } = bindingManager.nextAttribute()
-                const { array, buffer } = createAttribBuffer(device, value)
+                needsUpdate = true
                 const stride = value.length / gl.count!
+                const { location } = bindings.attribute()
+                const { array, buffer } = createAttribBuffer(device, value)
                 return { array, buffer, location, stride, offset: location * stride * 4 }
         })
 
         const update = () => {
                 const { vertexBuffers, bufferLayouts } = createVertexBuffers(attributes.map, gl.count)
                 const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms.map, textures.map)
-                state.pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, gl.vs, gl.fs, gl)
-                state.bindGroups = bindGroups
-                state.vertexBuffers = vertexBuffers
+                const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, webgpu, gl.vs, gl.fs)
+                _render = (pass) => {
+                        pass.setPipeline(pipeline)
+                        bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
+                        vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
+                        pass.draw(gl.count!, 1, 0, 0)
+                        pass.end()
+                }
         }
 
         const render = () => {
-                if (state.imageLoading) return
-                if (state.needsUpdate) update()
-                state.needsUpdate = false
+                if (imageLoading) return
+                if (needsUpdate) update()
+                needsUpdate = false
                 const encoder = device.createCommandEncoder()
-                const pass = encoder.beginRenderPass(createDescriptor(c))
-                pass.setPipeline(state.pipeline)
-                state.bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                state.vertexBuffers.forEach((v, i) => v && pass.setVertexBuffer(i, v))
-                pass.draw(gl.count!, 1, 0, 0)
-                pass.end()
+                _render(encoder.beginRenderPass(createDescriptor(c)))
                 device.queue.submit([encoder.finish()])
         }
 
@@ -86,7 +81,7 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const _texture = (key: string, src: string) => {
-                state.imageLoading++
+                imageLoading++
                 const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
                 source.decode().then(() => {
                         const texture = textures(key, source)
@@ -95,16 +90,10 @@ export const webgpu = async (gl: Partial<GL>) => {
                                 { texture: texture.texture },
                                 { width: source.width, height: source.height }
                         )
-                        state.imageLoading--
+                        imageLoading--
                 })
         }
 
-        gl.state = {
-                uniforms,
-                textures,
-                attributes,
-                bindingManager,
-        }
-
-        return { webgpu: state, render, clean, _attribute, _uniform, _texture }
+        const webgpu = { device, uniforms, textures, attributes } as WebGPUState
+        return { webgpu, render, clean, _attribute, _uniform, _texture }
 }

@@ -1,4 +1,4 @@
-import { EventState } from 'reev'
+import type { EventState, Nested } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
 import type { NodeProxy } from './node'
 export type { Fun, Queue, Frame }
@@ -47,21 +47,9 @@ export interface WebGLState {
 
 export interface WebGPUState {
         device: GPUDevice
-        context: GPUCanvasContext
-        pipeline: GPURenderPipeline
-        groups: any[]
-        resources: any[]
-        needsUpdate: boolean
-        imageLoading: number
-        bindGroups: GPUBindGroup[]
-        vertexBuffers: GPUBuffer[]
-}
-
-export interface ResourceState {
-        uniforms: any
-        textures: any
-        attributes: any
-        bindingManager: any
+        uniforms: Nested<UniformData>
+        textures: Nested<TextureData>
+        attributes: Nested<AttributeData>
 }
 
 export type GL = EventState<{
@@ -84,7 +72,6 @@ export type GL = EventState<{
         frag: string | NodeProxy
         vertex: string | NodeProxy
         fragment: string | NodeProxy
-        bindings?: any
 
         /**
          * core state
@@ -93,7 +80,6 @@ export type GL = EventState<{
         webgl: WebGLState
         queue: Queue
         frame: Frame
-        state: ResourceState
 
         /**
          * events

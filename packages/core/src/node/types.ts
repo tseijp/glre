@@ -1,3 +1,4 @@
+import { WebGPUState } from '../types'
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
@@ -33,8 +34,7 @@ export interface NodeContext {
         infers?: WeakMap<NodeProxy, Constants>
         headers?: Map<string, string>
         onMount?: (name: string) => void
-        bindingManager?: any
-        gl?: any
+        webgpu?: WebGPUState
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
