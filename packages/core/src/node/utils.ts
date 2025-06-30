@@ -9,7 +9,7 @@ import {
         TYPE_MAPPING,
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
-import type { Constants, Conversions, Functions, NodeConfig, NodeProxy, Operators, Swizzles, X } from './types'
+import type { Constants, Conversions, Functions, NodeContext, NodeProxy, Operators, Swizzles, X } from './types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -50,14 +50,14 @@ let count = 0
 
 export const getId = () => `i${count++}`
 
-export const joins = (children: X[], c: NodeConfig) => {
+export const joins = (children: X[], c: NodeContext) => {
         return children
                 .filter((x) => !is.und(x) && !is.nul(x))
                 .map((x) => code(x, c))
                 .join(', ')
 }
 
-export const formatConversions = (x: X, c?: NodeConfig) => {
+export const formatConversions = (x: X, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING]
@@ -76,7 +76,7 @@ export const conversionToConstant = (conversionKey: string): Constants => {
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
 
-const generateHead = (c: NodeConfig) => {
+const generateHead = (c: NodeContext) => {
         return Array.from(c.headers!)
                 .map(([, v]) => v)
                 .join('\n')
@@ -106,16 +106,16 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
         return ret
 }
 
-const generateVertexInputs = (c: NodeConfig) => {
+const generateVertexInputs = (c: NodeContext) => {
         if (!c.gl?.state?.attributes) return ''
         const attributes = []
         for (const [key, attr] of c.gl.state.attributes.map) {
-                attributes.push(`@location(${attr.location}) ${key}: vec2f`)
+                attributes.push(`@location(${attr.location}) ${key}: vec4f`) // @TODO FIX type infer
         }
         return attributes.join(', ')
 }
 
-const generateVertexMain = (body: string, head: string, c: NodeConfig) => {
+const generateVertexMain = (body: string, head: string, c: NodeContext) => {
         const ret = []
         if (c.isWebGL) {
                 ret.push('#version 300 es')
@@ -134,7 +134,7 @@ const generateVertexMain = (body: string, head: string, c: NodeConfig) => {
         return ret.filter(Boolean).join('\n')
 }
 
-export const fragment = (x: X, c: NodeConfig = {}) => {
+export const fragment = (x: X, c: NodeContext = {}) => {
         const body = code(x, c)
         const head = generateHead(c)
         const main = generateFragmentMain(body, head, c.isWebGL)
@@ -142,7 +142,7 @@ export const fragment = (x: X, c: NodeConfig = {}) => {
         return main
 }
 
-export const vertex = (x: X, c: NodeConfig) => {
+export const vertex = (x: X, c: NodeContext) => {
         const body = code(x, c)
         const head = generateHead(c)
         const main = generateVertexMain(body, head, c)

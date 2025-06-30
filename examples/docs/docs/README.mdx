@@ -227,12 +227,13 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
+                count: 3,
                 isWebGL: true,
-                vert: vec4(attribute(vec2(0), 'a_position'), 0.0, 1.0),
+                vert: attribute(vec4(0), 'a_position'),
                 // or
-                // vert: Fn((position) => {
-                //         return vec4(position, 0.0, 1.0)
-                // })(attribute(vec2(0), 'position')),
+                // vert: Fn(() => {
+                //         return attribute(vec4(0), 'a_position')
+                // })(),
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
