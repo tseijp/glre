@@ -1,3 +1,4 @@
+import { nested } from 'reev'
 import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
 import type { GPUContext, GPUDevice, GPUPipeline } from '../types'
@@ -61,25 +62,6 @@ export const createPipeline = (
         }) as GPUPipeline
 }
 
-// export const createBindGroup = (device: GPUDevice, resources: any[]) => {
-//         const entries0 = [] as any[]
-//         const entries1 = [] as any[]
-//         resources.forEach((resource, binding) => {
-//                 if (!resource) return
-//                 const isUniform = 'buffer' in resource // @ts-ignore
-//                 const isTexture = resource instanceof GPUTextureView // @ts-ignore
-//                 const isSampler = resource instanceof GPUSampler // @ts-ignore
-//                 if (isUniform) entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
-//                 else if (isTexture) entries0.push({ binding, visibility: 2, texture: {} })
-//                 else if (isSampler) entries0.push({ binding, visibility: 2, sampler: {} })
-//                 else return
-//                 entries1.push({ binding, resource })
-//         })
-//         const layout = device.createBindGroupLayout({ entries: entries0 })
-//         const bindGroup = device.createBindGroup({ layout, entries: entries1 })
-//         return { layout, bindGroup }
-// }
-
 /**
  * buffers
  */
@@ -128,40 +110,31 @@ export const createBindingManager = () => {
  * uniforms
  */
 export const createBindGroup = (device: any, uniforms: Map<string, any>, textures: Map<string, any>) => {
-        const groupedResources = new Map<number, { binding: number; resource: any; type: string }[]>()
-        for (const [, uniform] of uniforms) {
-                if (!groupedResources.has(uniform.group)) groupedResources.set(uniform.group, [])
-                groupedResources.get(uniform.group)!.push({
-                        binding: uniform.binding,
-                        resource: { buffer: uniform.buffer },
-                        type: 'uniform',
-                })
+        const groups = new Map<number, any>()
+        const getGroup = (i = 0) => {
+                if (groups.has(i)) groups.set(i, { entries0: [], entries1: [] })
+                return groups.get(i)
         }
-        for (const [, texture] of textures) {
-                if (!groupedResources.has(texture.group)) groupedResources.set(texture.group, [])
-                const group = groupedResources.get(texture.group)!
-                group.push({ binding: texture.binding, resource: texture.sampler, type: 'sampler' })
-                group.push({ binding: texture.binding + 1, resource: texture.texture.createView(), type: 'texture' })
+        for (const { binding, buffer, group: i } of uniforms.values()) {
+                const { entries0, entries1 } = getGroup(i)
+                entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
+                entries1.push({ binding, resource: { buffer } })
         }
-        const bindGroups = []
-        const bindGroupLayouts = []
-        for (const [groupIndex, resources] of groupedResources) {
-                const entries0 = []
-                const entries1 = []
-                for (const { binding, resource, type } of resources) {
-                        if (type === 'uniform') entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
-                        else if (type === 'texture') entries0.push({ binding, visibility: 2, texture: {} })
-                        else if (type === 'sampler') entries0.push({ binding, visibility: 2, sampler: {} })
-                        entries1.push({ binding, resource })
-                }
-                const layout = device.createBindGroupLayout({ entries: entries0 })
-                const bindGroup = device.createBindGroup({ layout, entries: entries1 })
-                bindGroupLayouts[groupIndex] = layout
-                bindGroups[groupIndex] = bindGroup
+        for (const { binding, group: i, sampler, texture } of textures.values()) {
+                const { entries0, entries1 } = getGroup(i)
+                entries0.push({ binding, visibility: 2, sampler: {} })
+                entries0.push({ binding: binding + 1, visibility: 2, texture: {} })
+                entries1.push({ binding, resource: sampler })
+                entries1.push({ binding: binding + 1, resource: texture.createView() })
         }
-
-        return { bindGroups, bindGroupLayouts }
+        const ret = { bindGroups: [], bindGroupLayouts: [] } as any
+        for (const [i, { entries0, entries1 }] of groups) {
+                ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: entries0 })
+                ret.bindGroups[i] = device.createBindGroup({ layout: ret.bindGroupLayouts[i], entries: entries1 })
+        }
+        return ret
 }
+
 export const createDescriptor = (c: GPUContext) => {
         return {
                 colorAttachments: [
