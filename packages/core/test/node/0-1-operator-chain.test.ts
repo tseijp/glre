@@ -6,14 +6,16 @@ describe('Operator Chain', () => {
         describe('Arithmetic chains', () => {
                 it('float operations', () => {
                         const x = float(1).add(float(2)).mul(float(3)).div(float(4))
-                        expect(inferAndCode(x).type).toBe('float')
-                        expect(inferAndCode(x).wgsl).toContain('(((f32(1.0) + f32(2.0)) * f32(3.0)) / f32(4.0))')
+                        const { type, wgsl } = inferAndCode(x)
+                        expect(type).toBe('float')
+                        expect(wgsl).toContain('(((f32(1.0) + f32(2.0)) * f32(3.0)) / f32(4.0))')
                 })
 
                 it('vector operations', () => {
                         const x = vec3(1, 2, 3).add(vec3(4, 5, 6)).mul(float(2))
-                        expect(inferAndCode(x).type).toBe('vec3')
-                        expect(inferAndCode(x).wgsl).toContain('vec3f(1.0, 2.0, 3.0)')
+                        const { type, wgsl } = inferAndCode(x)
+                        expect(type).toBe('vec3')
+                        expect(wgsl).toContain('vec3f(1.0, 2.0, 3.0)')
                 })
         })
 

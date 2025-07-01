@@ -2,10 +2,6 @@ import type { EventState, Nested } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
 import type { NodeProxy } from './node'
 export type { Fun, Queue, Frame }
-export type Uniform = number | number[]
-export type Attribute = number[]
-export type Attributes = Record<string, Attribute>
-export type Uniforms = Record<string, Uniform>
 export type PrecisionMode = 'highp' | 'mediump' | 'lowp'
 export type GLClearMode = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFER_BIT'
 export type GLDrawType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT'
@@ -32,7 +28,7 @@ export interface TextureData {
         sampler: GPUSampler
 }
 
-export interface AttributeData {
+export interface AttribData {
         array: Float32Array
         buffer: GPUBuffer
         location: number
@@ -49,8 +45,13 @@ export interface WebGPUState {
         device: GPUDevice
         uniforms: Nested<UniformData>
         textures: Nested<TextureData>
-        attributes: Nested<AttributeData>
+        attribs: Nested<AttribData>
 }
+
+export type Uniform = number | number[]
+export type Attribute = number[]
+export type Attributes = Record<string, Attribute>
+export type Uniforms = Record<string, Uniform>
 
 export type GL = EventState<{
         /**

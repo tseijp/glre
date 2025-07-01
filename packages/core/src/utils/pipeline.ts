@@ -1,6 +1,6 @@
 import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
-import type { AttributeData, TextureData, UniformData, WebGPUState } from '../types'
+import type { AttribData, TextureData, UniformData, WebGPUState } from '../types'
 
 const defaultVertexWGSL = `
 @vertex
@@ -35,7 +35,7 @@ export const createDevice = async (c: GPUCanvasContext) => {
 export const createBindings = () => {
         let uniform = 0
         let texture = 0
-        let attribute = 0
+        let attrib = 0
         return {
                 uniform: () => {
                         const group = Math.floor(uniform / 12)
@@ -50,9 +50,9 @@ export const createBindings = () => {
                         texture++
                         return { group, binding }
                 },
-                attribute: () => {
-                        const location = attribute
-                        attribute++
+                attrib: () => {
+                        const location = attrib
+                        attrib++
                         return { location }
                 },
         }
@@ -156,7 +156,7 @@ export const createTextureSampler = (device: GPUDevice, width = 1280, height = 8
 }
 
 /**
- * attributes
+ * attribs
  */
 const getVertexStride = (dataLength: number, vertexCount: number) => {
         return dataLength / vertexCount
@@ -183,10 +183,10 @@ const createBufferLayout = (shaderLocation = 0, dataLength = 0, count = 6) => {
         }
 }
 
-export const createVertexBuffers = (attributes: Map<string, AttributeData>, count = 6) => {
+export const createVertexBuffers = (attribs: Map<string, AttribData>, count = 6) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
-        for (const [, { array, buffer, location }] of attributes) {
+        for (const [, { array, buffer, location }] of attribs) {
                 vertexBuffers[location] = buffer
                 bufferLayouts[location] = createBufferLayout(location, array.length, count)
         }

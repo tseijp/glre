@@ -4,11 +4,11 @@ import {
         createAttribBuffer,
         createBindGroup,
         createBindings,
+        createDescriptor,
         createDevice,
         createPipeline,
-        createDescriptor,
-        createUniformBuffer,
         createTextureSampler,
+        createUniformBuffer,
         createVertexBuffers,
 } from './utils/pipeline'
 import type { GL, WebGPUState } from './types'
@@ -35,16 +35,16 @@ export const webgpu = async (gl: Partial<GL>) => {
                 return { texture, sampler, binding, group }
         })
 
-        const attributes = cached((_key, value: number[]) => {
+        const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
                 const stride = value.length / gl.count!
-                const { location } = bindings.attribute()
+                const { location } = bindings.attrib()
                 const { array, buffer } = createAttribBuffer(device, value)
                 return { array, buffer, location, stride, offset: location * stride * 4 }
         })
 
         const update = () => {
-                const { vertexBuffers, bufferLayouts } = createVertexBuffers(attributes.map, gl.count)
+                const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map, gl.count)
                 const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms.map, textures.map)
                 const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, webgpu, gl.vs, gl.fs)
                 _render = (pass) => {
@@ -68,16 +68,16 @@ export const webgpu = async (gl: Partial<GL>) => {
         const clean = () => {}
 
         const _attribute = (key = '', value: number[]) => {
-                const attribute = attributes(key, value)
-                attribute.array.set(value)
-                device.queue.writeBuffer(attribute.buffer, attribute.offset, attribute.array)
+                const { array, buffer, offset } = attribs(key, value)
+                array.set(value)
+                device.queue.writeBuffer(buffer, offset, array)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
-                const uniform = uniforms(key, value)
-                uniform.array.set(value)
-                device.queue.writeBuffer(uniform.buffer, 0, uniform.array)
+                const { array, buffer } = uniforms(key, value)
+                array.set(value)
+                device.queue.writeBuffer(buffer, 0, array)
         }
 
         const _texture = (key: string, src: string) => {
@@ -94,6 +94,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                 })
         }
 
-        const webgpu = { device, uniforms, textures, attributes } as WebGPUState
+        const webgpu = { device, uniforms, textures, attribs } as WebGPUState
+
         return { webgpu, render, clean, _attribute, _uniform, _texture }
 }
