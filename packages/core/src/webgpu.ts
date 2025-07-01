@@ -44,7 +44,7 @@ export const webgpu = async (gl: Partial<GL>) => {
         })
 
         const update = () => {
-                const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map, gl.count)
+                const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map)
                 const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms.map, textures.map)
                 const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, webgpu, gl.vs, gl.fs)
                 _render = (pass) => {

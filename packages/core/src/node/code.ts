@@ -25,10 +25,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (!c.isWebGL) {
                         const varType = infer(target, c)
                         if (!c.arguments) c.arguments = new Map()
-                        c.arguments.set(id, {
-                                location: c.webgpu?.attribs.map.get(id)?.location || 0,
-                                type: varType,
-                        })
+                        const { location } = c.webgpu?.attribs.map.get(id)!
+                        c.arguments.set(id, { location, type: varType })
                         return id
                 }
                 if (c.headers.has(id)) return id
@@ -40,11 +38,9 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (c.isWebGL) {
                         head = `uniform ${varType} ${id};`
                 } else {
-                        const { group, binding } = c.webgpu?.uniforms(id, [])!
-                        head = `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${formatConversions(
-                                varType,
-                                c
-                        )};`
+                        const { group, binding } = c.webgpu?.uniforms.map.get(id)!
+                        const wgslType = formatConversions(varType, c)
+                        head = `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
                 }
         }
         if (type === 'constant') {
