@@ -11,7 +11,6 @@ export const webgl = async (gl: Partial<GL>) => {
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
         const attribs = cached((key) => c.getAttribLocation(pg, key))
         const units = cached(() => _activeUnit++)
-        const state = { context: c, program: pg } as WebGLState
 
         const clean = () => c.deleteProgram(pg)
 
@@ -48,5 +47,5 @@ export const webgl = async (gl: Partial<GL>) => {
                 })
         }
 
-        return { webgl: state, render, clean, _attribute, _uniform, _texture }
+        return { render, clean, _attribute, _uniform, _texture, webgl: { context: c, program: pg } as WebGLState }
 }

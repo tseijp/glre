@@ -1,11 +1,7 @@
-import { EventState } from 'reev'
+import type { EventState, Nested } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
 import type { NodeProxy } from './node'
 export type { Fun, Queue, Frame }
-export type Uniform = number | number[]
-export type Attribute = number[]
-export type Attributes = Record<string, Attribute>
-export type Uniforms = Record<string, Uniform>
 export type PrecisionMode = 'highp' | 'mediump' | 'lowp'
 export type GLClearMode = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFER_BIT'
 export type GLDrawType = 'UNSIGNED_BYTE' | 'UNSIGNED_SHORT' | 'UNSIGNED_INT'
@@ -32,12 +28,11 @@ export interface TextureData {
         sampler: GPUSampler
 }
 
-export interface AttributeData {
+export interface AttribData {
         array: Float32Array
         buffer: GPUBuffer
         location: number
         stride: number
-        offset: number
 }
 
 export interface WebGLState {
@@ -47,22 +42,15 @@ export interface WebGLState {
 
 export interface WebGPUState {
         device: GPUDevice
-        context: GPUCanvasContext
-        pipeline: GPURenderPipeline
-        groups: any[]
-        resources: any[]
-        needsUpdate: boolean
-        imageLoading: number
-        bindGroups: GPUBindGroup[]
-        vertexBuffers: GPUBuffer[]
+        uniforms: Nested<UniformData>
+        textures: Nested<TextureData>
+        attribs: Nested<AttribData>
 }
 
-export interface ResourceState {
-        uniforms: any
-        textures: any
-        attributes: any
-        bindingManager: any
-}
+export type Uniform = number | number[]
+export type Attribute = number[]
+export type Attributes = Record<string, Attribute>
+export type Uniforms = Record<string, Uniform>
 
 export type GL = EventState<{
         /**
@@ -84,7 +72,6 @@ export type GL = EventState<{
         frag: string | NodeProxy
         vertex: string | NodeProxy
         fragment: string | NodeProxy
-        bindings?: any
 
         /**
          * core state
@@ -93,7 +80,6 @@ export type GL = EventState<{
         webgl: WebGLState
         queue: Queue
         frame: Frame
-        state: ResourceState
 
         /**
          * events
@@ -112,6 +98,7 @@ export type GL = EventState<{
          */
         _uniform?(key: string, value: Uniform, isMatrix?: boolean): GL
         uniform(key: string, value: Uniform, isMatrix?: boolean): GL
+        uniform(node: NodeProxy): GL
         uniform(target: { [key: string]: Uniform }): GL
         _texture?(key: string, value: string): GL
         texture(key: string, value: string): GL

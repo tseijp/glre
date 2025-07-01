@@ -1,9 +1,9 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
 import { getBluiltin, getOperator, formatConversions, joins } from './utils'
-import type { Constants, NodeConfig, NodeProps, X } from './types'
+import type { Constants, NodeContext, NodeProps, X } from './types'
 
-export const code = (target: X, c?: NodeConfig | null): string => {
+export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
         if (is.str(target)) return target
@@ -22,7 +22,13 @@ export const code = (target: X, c?: NodeConfig | null): string => {
          */
         let head = ''
         if (type === 'attribute') {
-                if (!c.isWebGL) return id
+                if (!c.isWebGL) {
+                        const varType = infer(target, c)
+                        if (!c.arguments) c.arguments = new Map()
+                        const { location } = c.webgpu?.attribs.map.get(id)!
+                        c.arguments.set(id, { location, type: varType })
+                        return id
+                }
                 if (c.headers.has(id)) return id
                 head = `in ${infer(target, c)} ${id};`
         }
@@ -32,13 +38,9 @@ export const code = (target: X, c?: NodeConfig | null): string => {
                 if (c.isWebGL) {
                         head = `uniform ${varType} ${id};`
                 } else {
-                        const binding = c.gl?.state?.uniforms(id, [])
-                        const group = binding?.group || 0
-                        const bindingNum = binding?.binding || 0
-                        head = `@group(${group}) @binding(${bindingNum}) var<uniform> ${id}: ${formatConversions(
-                                varType,
-                                c
-                        )};`
+                        const { group, binding } = c.webgpu?.uniforms.map.get(id)!
+                        const wgslType = formatConversions(varType, c)
+                        head = `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
                 }
         }
         if (type === 'constant') {
@@ -98,7 +100,7 @@ export const code = (target: X, c?: NodeConfig | null): string => {
         return code(x, c)
 }
 
-const codeIf = (c: NodeConfig, x: X, y: X, children: X[]) => {
+const codeIf = (c: NodeContext, x: X, y: X, children: X[]) => {
         let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
         for (let i = 2; i < children.length; i += 2) {
                 const isElseIf = i >= children.length - 1
@@ -109,7 +111,7 @@ const codeIf = (c: NodeConfig, x: X, y: X, children: X[]) => {
         return ret
 }
 
-const codeSwitch = (c: NodeConfig, x: X, children: X[]) => {
+const codeSwitch = (c: NodeContext, x: X, children: X[]) => {
         let ret = `switch (${code(x, c)}) {\n`
         for (let i = 1; i < children.length; i += 2) {
                 const isDefault = i >= children.length - 1
@@ -122,7 +124,7 @@ const codeSwitch = (c: NodeConfig, x: X, children: X[]) => {
         return ret
 }
 
-const codeDeclare = (c: NodeConfig, x: X, y: X) => {
+const codeDeclare = (c: NodeContext, x: X, y: X) => {
         const varType = infer(x, c)
         const varName = (y as any)?.props?.id
         if (c.isWebGL) return `${varType} ${varName} = ${code(x, c)};`
@@ -130,7 +132,7 @@ const codeDeclare = (c: NodeConfig, x: X, y: X) => {
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
-export const codeDefine = (props: NodeProps, returnType: Constants, c: NodeConfig) => {
+export const codeDefine = (props: NodeProps, returnType: Constants, c: NodeContext) => {
         const { id, children = [], layout } = props
         const [x, ...args] = children
         const argParams: [name: string, type: string][] = []

@@ -41,12 +41,6 @@ export const createGL = (props?: Partial<GL>) => {
                 count: 6,
                 webgl: {},
                 webgpu: {},
-                state: {
-                        uniforms: null,
-                        textures: null,
-                        attributes: null,
-                        bindingManager: null,
-                },
         }) as EventState<GL>
 
         gl.queue = createQueue()
@@ -54,7 +48,7 @@ export const createGL = (props?: Partial<GL>) => {
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
-        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
+        gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)))
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {

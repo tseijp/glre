@@ -1,6 +1,7 @@
 import { code } from './code'
 import { assign, toVar } from './scope'
-import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle } from './utils'
+import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId, isNodeProxy } from './utils'
+import { inferPrimitiveType } from './infer'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
@@ -35,8 +36,17 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 }
 
 // headers
-export const attribute = (x: X, id?: string) => node('attribute', { id }, x)
-export const uniform = (x: X, id?: string) => node('uniform', { id }, x)
+export const attribute = (x: X, id?: string) => {
+        if (!id) id = getId()
+        node('attribute', { id }, x)
+}
+
+export const uniform = (x: X, id?: string) => {
+        if (!id) id = getId()
+        if (!isNodeProxy(x)) x = conversion(inferPrimitiveType(x))
+        return node('uniform', { id }, x)
+}
+
 export const varying = (x: X, id?: string) => node('varying', { id }, x)
 export const constant = (x: X, id?: string) => node('constant', { id }, x)
 export const variable = (id: string) => node('variable', { id })
