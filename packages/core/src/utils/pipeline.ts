@@ -158,10 +158,6 @@ export const createTextureSampler = (device: GPUDevice, width = 1280, height = 8
 /**
  * attribs
  */
-const getVertexStride = (dataLength: number, vertexCount: number) => {
-        return dataLength / vertexCount
-}
-
 const getVertexFormat = (stride: number): GPUVertexFormat => {
         if (stride === 2) return 'float32x2'
         if (stride === 3) return 'float32x3'
@@ -169,26 +165,21 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-const createBufferLayout = (shaderLocation = 0, dataLength = 0, count = 6) => {
-        const stride = getVertexStride(dataLength, count)
-        return {
-                arrayStride: stride * 4,
-                attributes: [
-                        {
-                                shaderLocation,
-                                offset: 0,
-                                format: getVertexFormat(stride),
-                        },
-                ],
-        }
-}
-
-export const createVertexBuffers = (attribs: Map<string, AttribData>, count = 6) => {
+export const createVertexBuffers = (attribs: Map<string, AttribData>) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
-        for (const [, { array, buffer, location }] of attribs) {
+        for (const [, { buffer, location, stride }] of attribs) {
                 vertexBuffers[location] = buffer
-                bufferLayouts[location] = createBufferLayout(location, array.length, count)
+                bufferLayouts[location] = {
+                        arrayStride: stride * 4,
+                        attributes: [
+                                {
+                                        shaderLocation: location,
+                                        offset: 0,
+                                        format: getVertexFormat(stride),
+                                },
+                        ],
+                }
         }
         return { vertexBuffers, bufferLayouts }
 }

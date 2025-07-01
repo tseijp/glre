@@ -110,9 +110,7 @@ const generateVertexInputs = (c: NodeContext) => {
         if (!c.arguments || c.arguments.size === 0) return ''
         const inputs = Array.from(c.arguments)
                 .sort(([, a], [, b]) => a.location - b.location)
-                .map(([name, { location, type }]) => 
-                        `@location(${location}) ${name}: ${formatConversions(type, c)}`
-                )
+                .map(([name, { location, type }]) => `@location(${location}) ${name}: ${formatConversions(type, c)}`)
         return inputs.join(', ')
 }
 
@@ -124,8 +122,8 @@ const generateVertexMain = (body: string, head: string, c: NodeContext) => {
                 ret.push('void main() {')
                 ret.push(`gl_Position = ${body};`)
         } else {
-                ret.push('@vertex')
                 ret.push(head)
+                ret.push('@vertex')
                 ret.push('fn main(')
                 ret.push(generateVertexInputs(c))
                 ret.push(') -> @builtin(position) vec4f {')

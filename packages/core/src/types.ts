@@ -33,7 +33,6 @@ export interface AttribData {
         buffer: GPUBuffer
         location: number
         stride: number
-        offset: number
 }
 
 export interface WebGLState {

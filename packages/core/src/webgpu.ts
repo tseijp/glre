@@ -40,7 +40,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                 const stride = value.length / gl.count!
                 const { location } = bindings.attrib()
                 const { array, buffer } = createAttribBuffer(device, value)
-                return { array, buffer, location, stride, offset: location * stride * 4 }
+                return { array, buffer, location, stride }
         })
 
         const update = () => {
@@ -68,9 +68,9 @@ export const webgpu = async (gl: Partial<GL>) => {
         const clean = () => {}
 
         const _attribute = (key = '', value: number[]) => {
-                const { array, buffer, offset } = attribs(key, value)
+                const { array, buffer } = attribs(key, value)
                 array.set(value)
-                device.queue.writeBuffer(buffer, offset, array)
+                device.queue.writeBuffer(buffer, 0, array)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
