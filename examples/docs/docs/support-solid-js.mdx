@@ -208,4 +208,93 @@ function Canvas() {
 ```
 
 </TabItem>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const height = uniform(float(9.2), 'height')
+        const radius = uniform(float(14.5), 'radius')
+        const color1 = uniform(vec3(53 / 255, 97 / 255, 159 / 255), 'color1')
+        const color2 = uniform(vec3(74 / 255, 128 / 255, 191 / 255), 'color2')
+        const eye = uniform(vec3(25, 44, 50), 'eye')
+        const zoom = uniform(float(7.5), 'zoom')
+        const repeat = uniform(float(0), 'repeat')
+
+        const scale = Fn(([x, y, z]) => {
+                return mat3(float(1).div(x), 0, 0, 0, float(1).div(y), 0, 0, 0, float(1).div(z))
+        })
+
+        const repetition = Fn(([p, x]) => {
+                If(repeat.notEqual(0), () => {
+                        p.assign(p.mod(x.mul(repeat)).sub(x.mul(repeat).mul(0.5)))
+                })
+        })
+
+        const cylinderSDF = Fn(([p, h, r, sign]) => {
+                p.y.assign(p.y.sub(sign.mul(height)))
+                const dSphere = p.xy.length().sub(r)
+                const dPlane = sign.mul(dot(p.xy, vec2(-1, 1.64).normalize()))
+                const dx = max(dSphere, dPlane)
+                const dy = abs(p.z).sub(h)
+                return min(max(dx, dy), 0).add(vec2(max(dx, 0), max(dy, 0)).length())
+        })
+
+        const SDF = Fn(([p]) => {
+                repetition(p, vec3(radius))
+                p.assign(scale(1.83, 1, 1).mul(p))
+                p.z.assign(p.z.add(2.6))
+                const d1 = cylinderSDF(p.add(vec3(0, 0, 17)), height, radius, -1)
+                const d2 = cylinderSDF(p.add(vec3(0, 0, -17)), height, radius, 1)
+                return min(d1, d2)
+        })
+
+        const rayMarch = Fn(() => {
+                const look = vec3(0).sub(eye).normalize()
+                const scr = position.xy.sub(iResolution.mul(0.5))
+                const dir = vec3(scr.x, scr.y, 0).div(zoom)
+                const p = eye.add(dir).toVar()
+                const e = vec3(0.0005, 0, 0)
+                const d = SDF(p).toVar()
+
+                Loop(100, ({ i }) => {
+                        If(d.lessThanEqual(e.x), () => {
+                                const dx = SDF(p.add(e.xyy)).sub(d)
+                                const dy = SDF(p.add(e.yxy)).sub(d)
+                                const dz = SDF(p.add(e.yyx)).sub(d)
+                                const norm = vec3(dx, dy, dz).normalize()
+                                const lighting = dot(norm, vec3(0, 1, 0)).add(0.5)
+                                const color = select(p.z.lessThan(0), color2, color1)
+                                return vec4(lighting.mul(color), 1)
+                        })
+                        p.assign(p.add(d.mul(look)))
+                        d.assign(SDF(p))
+                })
+
+                return vec4(0, 0, 0, 1)
+        })
+
+        const gl = useGL({
+                frag: rayMarch(),
+                resize() {
+                        resize(gl)
+                },
+        })
+
+        gl.uniform(
+                useControls({
+                        height: { min: 0, value: 9.2, max: 18.4 },
+                        radius: { min: 0, value: 14.5, max: 29 },
+                        color1: [53 / 255, 97 / 255, 159 / 255],
+                        color2: [74 / 255, 128 / 255, 191 / 255],
+                        eye: [25, 44, 50],
+                        zoom: { min: 0, value: 7.5, max: 15 },
+                        repeat: { min: 0, value: 0, max: 50 },
+                })
+        )
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 </Tabs>
