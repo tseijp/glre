@@ -98,6 +98,7 @@ export type GL = EventState<{
          */
         _uniform?(key: string, value: Uniform, isMatrix?: boolean): GL
         uniform(key: string, value: Uniform, isMatrix?: boolean): GL
+        uniform(node: NodeProxy): GL
         uniform(target: { [key: string]: Uniform }): GL
         _texture?(key: string, value: string): GL
         texture(key: string, value: string): GL

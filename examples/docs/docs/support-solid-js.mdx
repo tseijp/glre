@@ -190,6 +190,8 @@ function Canvas() {
                         return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                 }
                 `,
+                width: 512,
+                height: 512,
                 isWebGL: false,
         })
         gl.uniform(
@@ -274,10 +276,9 @@ function Canvas() {
         })
 
         const gl = useGL({
+                width: 512,
+                height: 512,
                 frag: rayMarch(),
-                resize() {
-                        resize(gl)
-                },
         })
 
         gl.uniform(
