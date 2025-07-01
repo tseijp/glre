@@ -22,7 +22,15 @@ export const code = (target: X, c?: NodeContext | null): string => {
          */
         let head = ''
         if (type === 'attribute') {
-                if (!c.isWebGL) return id
+                if (!c.isWebGL) {
+                        const varType = infer(target, c)
+                        if (!c.arguments) c.arguments = new Map()
+                        c.arguments.set(id, {
+                                location: c.webgpu?.attribs.map.get(id)?.location || 0,
+                                type: varType,
+                        })
+                        return id
+                }
                 if (c.headers.has(id)) return id
                 head = `in ${infer(target, c)} ${id};`
         }

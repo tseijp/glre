@@ -159,11 +159,11 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), sin(iTime).mul(0.5).sub(0.5), 1.0),
+                frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), 0, 1),
                 // or
                 // frag: Fn((p) => {
                 //         const uv = fract(p.xy.div(iResolution).sub(iMouse))
-                //         return vec4(uv, sin(iTime).mul(0.5).sub(0.5), 1.0)
+                //         return vec4(uv, 0, 1)
                 // })(position),
         })
         return <canvas ref={gl.ref} />
@@ -181,9 +181,9 @@ function Canvas() {
 ```jsx live
 function Canvas() {
         const gl = useGL({
+                count: 3,
                 width: 256,
                 height: 256,
-                count: 3,
                 vertex: `
                 #version 300 es
                 in vec4 a_position;
@@ -203,9 +203,9 @@ function Canvas() {
 ```jsx live
 function Canvas() {
         const gl = useGL({
+                count: 3,
                 width: 256,
                 height: 256,
-                count: 3,
                 vertex: `
                 @vertex
                 fn main(@location(0) position: vec2f) -> @builtin(position) vec4f {
@@ -225,15 +225,15 @@ function Canvas() {
 ```jsx live
 function Canvas() {
         const gl = useGL({
+                count: 3,
                 width: 256,
                 height: 256,
-                count: 3,
                 isWebGL: true,
-                vert: attribute(vec4(0), 'a_position'),
+                vert: vec4(attribute(vec2(0), 'a_position'), 0, 1),
                 // or
-                // vert: Fn(() => {
-                //         return attribute(vec4(0), 'a_position')
-                // })(),
+                // vert: Fn(([p0]) => {
+                //         return vec4(p0, 0, 1)
+                // })(attribute(vec2(0), 'a_position')),
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />

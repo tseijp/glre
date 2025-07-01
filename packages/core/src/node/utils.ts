@@ -107,11 +107,13 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
 }
 
 const generateVertexInputs = (c: NodeContext) => {
-        const attributes = []
-        for (const [key, attr] of c.webgpu?.attributes.map!) {
-                attributes.push(`@location(${attr.location}) ${key}: vec4f`) // @TODO FIX type infer
-        }
-        return attributes.join(', ')
+        if (!c.arguments || c.arguments.size === 0) return ''
+        const inputs = Array.from(c.arguments)
+                .sort(([, a], [, b]) => a.location - b.location)
+                .map(([name, { location, type }]) => 
+                        `@location(${location}) ${name}: ${formatConversions(type, c)}`
+                )
+        return inputs.join(', ')
 }
 
 const generateVertexMain = (body: string, head: string, c: NodeContext) => {
