@@ -21,6 +21,8 @@ export const CONSTANTS = [
         'mat2',
         'mat3',
         'mat4',
+        'texture',
+        'sampler2D',
 ] as const
 
 export const CONVERSIONS = [

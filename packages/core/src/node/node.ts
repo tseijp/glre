@@ -47,7 +47,6 @@ export const uniform = (x: X, id?: string) => {
         return node('uniform', { id }, x)
 }
 
-export const varying = (x: X, id?: string) => node('varying', { id }, x)
 export const constant = (x: X, id?: string) => node('constant', { id }, x)
 export const variable = (id: string) => node('variable', { id })
 export const builtin = (id: string) => node('builtin', { id })

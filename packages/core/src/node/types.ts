@@ -35,7 +35,7 @@ export interface NodeContext {
         headers?: Map<string, string>
         onMount?: (name: string) => void
         webgpu?: WebGPUState
-        arguments?: Map<string, { location: number; type: Constants }>
+        arguments?: Map<string, string>
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
@@ -50,7 +50,6 @@ export type NodeTypes =
         // headers
         | 'attribute'
         | 'uniform'
-        | 'varying'
         | 'constant'
         // variables
         | 'variable'
