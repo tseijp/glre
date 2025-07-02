@@ -9,6 +9,31 @@ export type Functions = (typeof FUNCTIONS)[number]
 
 export type Operators = (typeof OPERATOR_KEYS)[number]
 
+export type NodeTypes =
+        // headers
+        | 'attribute'
+        | 'uniform'
+        | 'constant'
+        // variables
+        | 'variable'
+        | 'swizzle'
+        | 'ternary'
+        | 'builtin'
+        | 'conversion'
+        | 'operator'
+        | 'function'
+        | 'struct'
+        | 'structProperty'
+        // scopes
+        | 'scope'
+        | 'assign'
+        | 'loop'
+        | 'define'
+        | 'if'
+        | 'switch'
+        | 'declare'
+        | 'return'
+
 export interface FnLayout {
         name: string
         type: Constants | 'auto'
@@ -44,6 +69,27 @@ export interface NodeContext {
         vertexOutput?: NodeProxy
 }
 
+/**
+ * for NodeProxy type
+ */
+type NodeProxyMethods =
+        | Operators
+        | Functions
+        | Conversions
+        // system property
+        | 'type'
+        | 'props'
+        | 'isProxy'
+        | 'assign'
+        | 'toVar'
+        | 'toString'
+
+export type DynamicPropertiesKey<T extends string> = T extends NodeProxyMethods | Swizzles ? never : T
+
+export type DynamicProperties = {
+        [K in string as DynamicPropertiesKey<K>]: NodeProxy
+}
+
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
 
 export type Swizzles =
@@ -52,32 +98,15 @@ export type Swizzles =
         | _Swizzles<'p' | 'q'>
         | _Swizzles<'s' | 't'>
 
-export type NodeTypes =
-        // headers
-        | 'attribute'
-        | 'uniform'
-        | 'constant'
-        // variables
-        | 'variable'
-        | 'swizzle'
-        | 'ternary'
-        | 'builtin'
-        | 'conversion'
-        | 'operator'
-        | 'function'
-        | 'struct'
-        | 'structProperty'
-        // scopes
-        | 'scope'
-        | 'assign'
-        | 'loop'
-        | 'define'
-        | 'if'
-        | 'switch'
-        | 'declare'
-        | 'return'
+interface BaseNodeProxy {
+        // System properties
+        type: NodeTypes
+        props: NodeProps
+        isProxy: true
+        assign(n: X): NodeProxy
+        toVar(name?: string): NodeProxy
+        toString(c?: NodeContext): string
 
-export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         // Operators
         add(n: X): NodeProxy
         sub(n: X): NodeProxy
@@ -94,11 +123,7 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         or(n: X): NodeProxy
         not(): NodeProxy
 
-        // Variable manipulation
-        assign(n: X): NodeProxy
-        toVar(name?: string): NodeProxy
-
-        // Math function methods
+        // Functions type
         abs(): NodeProxy
         sin(): NodeProxy
         cos(): NodeProxy
@@ -144,7 +169,7 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         dFdy(): NodeProxy
         fwidth(): NodeProxy
 
-        // System properties
+        // Conversations type
         toBool(): NodeProxy
         toUint(): NodeProxy
         toInt(): NodeProxy
@@ -165,10 +190,8 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         toMat2(): NodeProxy
         toMat3(): NodeProxy
         toMat4(): NodeProxy
-        toString(c?: NodeContext): string
-        type: NodeTypes
-        props: NodeProps
-        isProxy: true
 }
+
+export type NodeProxy = BaseNodeProxy & DynamicProperties
 
 export type X = NodeProxy | number | string | boolean | undefined
