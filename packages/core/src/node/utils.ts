@@ -106,14 +106,6 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
         return ret
 }
 
-const generateVertexInputs = (c: NodeContext) => {
-        if (!c.arguments || c.arguments.size === 0) return ''
-        const inputs = Array.from(c.arguments)
-                .sort(([, a], [, b]) => a.location - b.location)
-                .map(([name, { location, type }]) => `@location(${location}) ${name}: ${formatConversions(type, c)}`)
-        return inputs.join(', ')
-}
-
 const generateVertexMain = (body: string, head: string, c: NodeContext) => {
         const ret = []
         if (c.isWebGL) {
@@ -124,9 +116,10 @@ const generateVertexMain = (body: string, head: string, c: NodeContext) => {
         } else {
                 ret.push(head)
                 ret.push('@vertex')
-                ret.push('fn main(')
-                ret.push(generateVertexInputs(c))
-                ret.push(') -> @builtin(position) vec4f {')
+                if (c.arguments && c.arguments.size > 0) {
+                        const inputs = Array.from(c.arguments.values())
+                        ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
+                } else ret.push('fn main() -> @builtin(position) vec4f {')
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
