@@ -38,7 +38,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 // headers
 export const attribute = (x: X, id?: string) => {
         if (!id) id = getId()
-        node('attribute', { id }, x)
+        return node('attribute', { id }, x)
 }
 
 export const uniform = (x: X, id?: string) => {
