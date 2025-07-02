@@ -75,23 +75,24 @@ export const vertexMain = (head: string, body: string, c: NodeContext) => {
                 } else {
                         ret.push(`gl_Position = ${body};`)
                 }
-        } else {
-                ret.push(head)
-                ret.push('@vertex')
-                if (c.arguments && c.arguments.size > 0) {
-                        const inputs = Array.from(c.arguments.values())
-                        if (returnType === 'struct') {
-                                const structType = code(c.vertexOutput!.props.structNode, c)
-                                ret.push(`fn main(${inputs.join(', ')}) -> ${structType} {`)
-                        } else ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
-                } else {
-                        if (returnType === 'struct') {
-                                const structType = code(c.vertexOutput!.props.structNode, c)
-                                ret.push(`fn main() -> ${structType} {`)
-                        } else ret.push('fn main() -> @builtin(position) vec4f {')
-                }
-                ret.push(`  return ${body};`)
+                ret.push('}')
+                return ret.filter(Boolean).join('\n')
         }
+        ret.push(head)
+        ret.push('@vertex')
+        if (c.arguments && c.arguments.size > 0) {
+                const inputs = Array.from(c.arguments.values())
+                if (returnType === 'struct') {
+                        const structType = code(c.vertexOutput!.props.structNode, c)
+                        ret.push(`fn main(${inputs.join(', ')}) -> ${structType} {`)
+                } else ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
+        } else {
+                if (returnType === 'struct') {
+                        const structType = code(c.vertexOutput!.props.structNode, c)
+                        ret.push(`fn main() -> ${structType} {`)
+                } else ret.push('fn main() -> @builtin(position) vec4f {')
+        }
+        ret.push(`  return ${body};`)
         ret.push('}')
         return ret.filter(Boolean).join('\n')
 }
