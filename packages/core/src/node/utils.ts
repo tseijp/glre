@@ -1,6 +1,5 @@
 import { is } from '../utils/helpers'
-import { code } from './code'
-import { infer } from './infer'
+import { code } from './parsers/code'
 import {
         CONSTANTS,
         CONVERSIONS,
@@ -11,6 +10,10 @@ import {
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
 import type { Constants, Conversions, Functions, NodeContext, NodeProxy, Operators, Swizzles, X } from './types'
+
+export const isStruct = (x: NodeProxy) => {
+        return x.type === 'variable' && x.props.structNode
+}
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -75,120 +78,4 @@ export const getBluiltin = (id: string) => {
 export const conversionToConstant = (conversionKey: string): Constants => {
         const index = CONVERSIONS.indexOf(conversionKey as Conversions)
         return index !== -1 ? CONSTANTS[index] : 'float'
-}
-
-const generateHead = (c: NodeContext) => {
-        return Array.from(c.headers!)
-                .map(([, v]) => v)
-                .join('\n')
-}
-
-const GLSL_FRAGMENT_HEAD = `
-#version 300 es
-precision mediump float;
-out vec4 fragColor;
-`.trim()
-
-const WGSL_FRAGMENT_HEAD = `
-@fragment
-fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-`.trim()
-
-const generateFragmentMain = (body: string, head: string, c: NodeContext) => {
-        let ret = ''
-        if (c.isWebGL) {
-                ret += GLSL_FRAGMENT_HEAD
-                if (c.vertexOutput && c.vertexOutput.props.structNode) {
-                        const structNode = c.vertexOutput.props.structNode
-                        const fields = structNode.props.fields || {}
-                        for (const key in fields) {
-                                if (isNodeProxy(fields[key]) && fields[key].type !== 'builtin') {
-                                        const fieldType = infer(fields[key], c)
-                                        ret += `\nin ${fieldType} varying_${key};`
-                                }
-                        }
-                }
-        }
-        if (head) ret += '\n' + head + '\n'
-        if (c.isWebGL) {
-                ret += `void main() {\n`
-                if (c.vertexOutput && c.vertexOutput.props.structNode) c.isVarying = true
-                ret += `  fragColor = ${body};`
-        } else {
-                if (c.vertexOutput && c.vertexOutput.props.structNode) {
-                        const structType = code(c.vertexOutput.props.structNode, c)
-                        ret += `@fragment\nfn main(input: ${structType}) -> @location(0) vec4f {\n`
-                } else ret += WGSL_FRAGMENT_HEAD + '\n'
-                ret += `  return ${body};`
-        }
-        ret += '\n}'
-        return ret
-}
-
-const generateVertexMain = (body: string, head: string, c: NodeContext) => {
-        const ret = []
-        const returnType = c.vertexOutput ? 'struct' : 'vec4'
-        if (c.isWebGL) {
-                ret.push('#version 300 es')
-                if (c.vertexOutput && c.vertexOutput.props.structNode) {
-                        const structNode = c.vertexOutput.props.structNode
-                        const fields = structNode.props.fields || {}
-                        for (const key in fields) {
-                                if (isNodeProxy(fields[key]) && fields[key].type !== 'builtin') {
-                                        const fieldType = infer(fields[key], c)
-                                        ret.push(`out ${fieldType} varying_${key};`)
-                                }
-                        }
-                }
-                ret.push(head)
-                ret.push('void main() {')
-                if (returnType === 'struct') {
-                        const structVar = `${c.vertexOutput!.props.id}`
-                        ret.push(`${code(c.vertexOutput!.props.structNode, c)} ${structVar} = ${body};`)
-                        ret.push(`gl_Position = ${structVar}.position;`)
-                        const structNode = c.vertexOutput!.props.structNode
-                        const fields = structNode?.props.fields || {}
-                        for (const key in fields) {
-                                if (isNodeProxy(fields[key]) && fields[key].type !== 'builtin')
-                                        ret.push(`varying_${key} = ${structVar}.${key};`)
-                        }
-                } else {
-                        ret.push(`gl_Position = ${body};`)
-                }
-        } else {
-                ret.push(head)
-                ret.push('@vertex')
-                if (c.arguments && c.arguments.size > 0) {
-                        const inputs = Array.from(c.arguments.values())
-                        if (returnType === 'struct') {
-                                const structType = code(c.vertexOutput!.props.structNode, c)
-                                ret.push(`fn main(${inputs.join(', ')}) -> ${structType} {`)
-                        } else ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
-                } else {
-                        if (returnType === 'struct') {
-                                const structType = code(c.vertexOutput!.props.structNode, c)
-                                ret.push(`fn main() -> ${structType} {`)
-                        } else ret.push('fn main() -> @builtin(position) vec4f {')
-                }
-                ret.push(`  return ${body};`)
-        }
-        ret.push('}')
-        return ret.filter(Boolean).join('\n')
-}
-
-export const fragment = (x: NodeProxy, c: NodeContext = {}) => {
-        const body = code(x, c)
-        const head = generateHead(c)
-        const main = generateFragmentMain(body, head, c)
-        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
-        return main
-}
-
-export const vertex = (x: NodeProxy, c: NodeContext) => {
-        if (x.type === 'variable' && x.props.structNode) c.vertexOutput = x
-        const body = code(x, c)
-        const head = generateHead(c)
-        const main = generateVertexMain(body, head, c)
-        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
-        return main
 }

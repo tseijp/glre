@@ -1,14 +1,37 @@
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb } from './utils'
 import { is } from '../utils/helpers'
-import type { X } from './types'
-export * from './code'
-export * from './const'
+import { code } from './parsers/code'
+import { fragmentMain, vertexMain } from './parsers/main'
+import type { NodeContext, NodeProxy, X } from './types'
 export * from './infer'
 export * from './node'
 export * from './scope'
 export * from './types'
 export * from './utils'
+
+const generateHead = (c: NodeContext) => {
+        return Array.from(c.headers!)
+                .map(([, v]) => v)
+                .join('\n')
+}
+
+export const fragment = (x: NodeProxy, c: NodeContext = {}) => {
+        const body = code(x, c)
+        const head = generateHead(c)
+        const main = fragmentMain(head, body, c)
+        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
+        return main
+}
+
+export const vertex = (x: NodeProxy, c: NodeContext) => {
+        // if (x.type === 'variable' && x.props.structNode) c.vertexOutput = x // @TODO FIX
+        const body = code(x, c)
+        const head = generateHead(c)
+        const main = vertexMain(head, body, c)
+        console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
+        return main
+}
 
 // Builtin Variables
 export const position = builtin('position')

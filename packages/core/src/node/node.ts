@@ -1,6 +1,15 @@
-import { code } from './code'
+import { code } from './parsers/code'
 import { assign, toVar } from './scope'
-import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId, isNodeProxy } from './utils'
+import {
+        conversionToConstant,
+        isConversion,
+        isFunction,
+        isOperator,
+        isSwizzle,
+        getId,
+        isNodeProxy,
+        isStruct,
+} from './utils'
 import { inferPrimitiveType } from './infer'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
@@ -23,16 +32,15 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
                 if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
-                // @ts-ignore
-                if (type === 'variable' && props.structNode && props[key]) return props[key]
+                if (isStruct(x)) return props[key as string]
         }
         const set = (_: unknown, key: string, y: X) => {
                 if (isSwizzle(key)) {
                         swizzle(key, x).assign(y)
                         return true
                 }
-                if (type === 'variable' && props.structNode) {
-                        node('dynamic', { field: key }, x).assign(y)
+                if (isStruct(x)) {
+                        dynamic(key, x).assign(y)
                         return true
                 }
                 return false
@@ -64,6 +72,7 @@ export const uniform = (x: X, id?: string) => {
         if (!isNodeProxy(x)) x = conversion(inferPrimitiveType(x))
         return node('uniform', { id }, x)
 }
+
 export const constant = (x: X, id?: string) => {
         if (!id) id = getId()
         return node('constant', { id }, x)
