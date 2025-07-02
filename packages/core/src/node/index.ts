@@ -1,4 +1,4 @@
-import { builtin, conversion as c, function_ as f, uniform } from './node'
+import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb } from './utils'
 import { is } from '../utils/helpers'
 import type { X } from './types'
@@ -56,9 +56,9 @@ export const color = (r?: X, g?: X, b?: X) => {
 }
 
 // Default uniforms
-export const iResolution = uniform(vec2(1280, 800), 'iResolution')
-export const iMouse = uniform(vec2(0, 0), 'iMouse')
-export const iTime = uniform(float(0), 'iTime')
+export const iResolution = u(vec2(1280, 800), 'iResolution')
+export const iMouse = u(vec2(0, 0), 'iMouse')
+export const iTime = u(float(0), 'iTime')
 
 // Texture Functions
 export const texture = (x: X, y: X, z?: X) => f('texture', x, y, z)

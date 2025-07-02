@@ -44,9 +44,9 @@ export const createBindings = () => {
                         return { group, binding }
                 },
                 texture: () => {
-                        const baseGroup = Math.ceil(uniform / 12)
-                        const group = baseGroup + Math.floor(texture / 12)
-                        const binding = texture % 12
+                        const baseGroup = Math.floor(uniform / 12) + 1
+                        const group = baseGroup + Math.floor(texture / 6)
+                        const binding = (texture % 6) * 2
                         texture++
                         return { group, binding }
                 },

@@ -3,9 +3,31 @@ import { infer } from './infer'
 import { getBluiltin, getOperator, formatConversions, joins } from './utils'
 import type { Constants, NodeContext, NodeProps, X } from './types'
 
+const codeUniformHead = (c: NodeContext, id: string, varType: string) => {
+        if (varType === 'sampler2D' || varType === 'texture') {
+                if (c.isWebGL) return `uniform sampler2D ${id};`
+                const { group, binding } = c.webgpu?.textures.map.get(id)!
+                return (
+                        `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n` +
+                        `@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d<f32>;`
+                )
+        }
+        if (c.isWebGL) return `uniform ${varType} ${id};`
+        const { group, binding } = c.webgpu?.uniforms.map.get(id)!
+        const wgslType = formatConversions(varType, c)
+        return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
+}
+
+const codeConstantHead = (c: NodeContext, id: string, varType: string, value: string) => {
+        return c.isWebGL
+                ? `const ${varType} ${id} = ${value};`
+                : `const ${id}: ${formatConversions(varType, c)} = ${value};`
+}
+
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
+        if (!c.arguments) c.arguments = new Map()
         if (is.str(target)) return target
         if (is.num(target)) {
                 const ret = `${target}`
@@ -16,15 +38,15 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (!target) return ''
         const { type, props } = target
         const { id = '', children = [] } = props
-        const [x, y, z] = children
+        const [x, y, z, w] = children
         /**
          * headers
          */
+        if (c.headers.has(id)) return id
         let head = ''
         if (type === 'attribute') {
                 if (!c.isWebGL) {
                         const varType = infer(target, c)
-                        if (!c.arguments) c.arguments = new Map()
                         const { location } = c.webgpu?.attribs.map.get(id)!
                         c.arguments.set(id, { location, type: varType })
                         return id
@@ -32,32 +54,11 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (c.headers.has(id)) return id
                 head = `in ${infer(target, c)} ${id};`
         }
-        if (type === 'uniform') {
-                if (c.headers.has(id)) return id
-                const varType = infer(target, c)
-                if (c.isWebGL) {
-                        head = `uniform ${varType} ${id};`
-                } else {
-                        const { group, binding } = c.webgpu?.uniforms.map.get(id)!
-                        const wgslType = formatConversions(varType, c)
-                        head = `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
-                }
-        }
-        if (type === 'constant') {
-                if (c.headers.has(id)) return id
-                const varType = infer(target, c)
-                const value = code(x, c)
-                head = c.isWebGL
-                        ? `const ${varType} ${id} = ${value};`
-                        : `const ${id}: ${formatConversions(varType, c)} = ${value};`
-        }
-        if (type === 'varying') {
-                if (c.headers.has(id)) return id
-                head = `${infer(target, c)} ${id}`
-        }
+        if (type === 'uniform') head = codeUniformHead(c, id, infer(target, c))
+        if (type === 'constant') head = codeConstantHead(c, id, infer(target, c), code(x, c))
+        if (type === 'varying') head = `${infer(target, c)} ${id}`
         if (head) {
                 c.headers.set(id, head)
-                c.onMount?.(id)
                 return id
         }
         /**
@@ -74,6 +75,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         }
         if (type === 'function') {
                 if (x === 'negate') return `(-${joins(children.slice(1), c)})`
+                if (x === 'texture') return codeTexture(c, y, z, w)
                 return `${x}(${joins(children.slice(1), c)})`
         }
         /**
@@ -92,12 +94,24 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'define') {
                 const returnType = infer(target, c)
                 const args = children.slice(1)
-                const ret = `${id}(${args.map((arg) => code(arg, c))})`
+                const ret = `${id}(${joins(args, c)})`
                 if (c.headers.has(id)) return ret
                 c.headers.set(id, codeDefine(props, returnType, c))
                 return ret
         }
         return code(x, c)
+}
+
+const codeTexture = (c: NodeContext, y: X, z: X, w: X) => {
+        if (c.isWebGL) {
+                const args = w ? [y, z, w] : [y, z]
+                return `texture(${joins(args, c)})`
+        }
+        const _y = code(y, c)
+        const args = [_y, _y + 'Sampler', code(z, c)]
+        if (!w) return `textureSample(${args})`
+        args.push(code(w, c))
+        return `textureSampleLevel(${args})`
 }
 
 const codeIf = (c: NodeContext, x: X, y: X, children: X[]) => {

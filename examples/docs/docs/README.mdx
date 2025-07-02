@@ -296,16 +296,15 @@ function Canvas() {
 ```
 
 </TabItem>
-{/*
-<TabItem value="webgpu" label="WebGPU">
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
 ```jsx live
 function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
-                fragment: textureSample(texture2d('iTexture'), sampler(), position.xy / iResolution)
-                isWebGL: false,
+                isWebGL: true,
+                frag: texture(textureUniform('iTexture'), position.xy.div(iResolution)),
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
@@ -313,5 +312,4 @@ function Canvas() {
 ```
 
 </TabItem>
-*/}
 </Tabs>
