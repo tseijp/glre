@@ -69,6 +69,9 @@ export type NodeTypes =
         | 'switch'
         | 'declare'
         | 'return'
+        // texture types
+        | 'texture'
+        | 'sampler'
 
 export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         // Operators

@@ -12,6 +12,7 @@ import {
         SCALAR_RETURN_FUNCTIONS,
         VEC3_RETURN_FUNCTIONS,
         VEC4_RETURN_FUNCTIONS,
+        SAMPLER_TYPES,
 } from './const'
 import { isConstantsType, isNodeProxy } from './utils'
 import type { Constants, NodeContext, NodeProxy, X } from './types'
@@ -31,6 +32,16 @@ const inferBuiltin = (id: string | undefined): Constants => {
 
 const inferFunction = (funcName: string, args: X[], c: NodeContext): Constants => {
         const firstArgType = args.length > 0 ? infer(args[0], c) : 'float'
+        if (funcName === 'texture' || funcName === 'cubeTexture' || funcName === 'textureLod') {
+                const samplerType = firstArgType
+                if (SAMPLER_TYPES.includes(samplerType as any)) return 'vec4'
+                return 'vec4'
+        }
+        if (funcName === 'textureSize') {
+                const samplerType = firstArgType
+                if (SAMPLER_TYPES.includes(samplerType as any)) return 'vec2'
+                return 'vec2'
+        }
         if (FIRST_ARG_TYPE_FUNCTIONS.includes(funcName as any)) return firstArgType
         if (SCALAR_RETURN_FUNCTIONS.includes(funcName as any)) return 'float'
         if (BOOL_RETURN_FUNCTIONS.includes(funcName as any)) return 'bool'
@@ -75,13 +86,17 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         const { type, props } = target
         const { id, children = [], layout, inferFrom } = props
         const [x, y, z] = children
-        if (type === 'conversion') return x as Constants
+        if (type === 'conversion') {
+                if (SAMPLER_TYPES.includes(x as any)) return x as Constants
+                return x as Constants
+        }
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
         if (type === 'swizzle') return inferSwizzle((x as string).length)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
+        if (type === 'texture' || type === 'sampler') return infer(x, c)
         if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
 }

@@ -55,17 +55,31 @@ export const color = (r?: X, g?: X, b?: X) => {
         return vec3(r, g, b)
 }
 
-// Default uniforms
-export const iResolution = uniform(vec2(1280, 800), 'iResolution')
-export const iMouse = uniform(vec2(0, 0), 'iMouse')
+// Sampler type constructors
+export const sampler2D = () => c('sampler2D')
+export const samplerCube = () => c('samplerCube')
+export const sampler = () => c('sampler')
+export const texture2d = () => c('texture_2d')
+export const textureCube = () => c('texture_cube')
+
+// Default uniform
+export const iResolution = uniform(vec2(), 'iResolution')
+export const iMouse = uniform(vec2(), 'iMouse')
 export const iTime = uniform(float(0), 'iTime')
 
-// Texture Functions
-export const texture = (x: X, y: X, z?: X) => f('texture', x, y, z)
-export const cubeTexture = (x: X, y: X, z?: X) => f('cubeTexture', x, y, z)
+// Texture functions with enhanced API
+export const texture = (x: X, y?: X, z?: X) => {
+        return f('texture', x, y, z)
+}
+
+export const textureLod = (x: X, y?: X, z?: X) => {
+        return f('textureLod', x, y, z)
+}
+
+export const cubeTexture = (x: X, y?: X, z?: X) => f('cubeTexture', x, y, z)
 export const textureSize = (x: X, y?: X) => f('textureSize', x, y)
 
-// Math Functions
+// Functions
 export const abs = (x: X) => f('abs', x)
 export const acos = (x: X) => f('acos', x)
 export const all = (x: X) => f('all', x)

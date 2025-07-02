@@ -159,12 +159,12 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), 0, 1),
+                // frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), 0, 1),
                 // or
-                // frag: Fn((p) => {
-                //         const uv = fract(p.xy.div(iResolution).sub(iMouse))
-                //         return vec4(uv, 0, 1)
-                // })(position),
+                frag: Fn(([p]) => {
+                        const uv = fract(p.xy.div(iResolution).sub(iMouse))
+                        return vec4(uv, 0, 1)
+                })(position),
         })
         return <canvas ref={gl.ref} />
 }
@@ -296,16 +296,21 @@ function Canvas() {
 ```
 
 </TabItem>
-{/*
-<TabItem value="webgpu" label="WebGPU">
+<TabItem value="tsl" label="TSL (Node System)">
 
 ```jsx live
 function Canvas() {
+        const iTexture = uniform(sampler2D(), 'iTexture')
         const gl = useGL({
                 width: 256,
                 height: 256,
-                fragment: textureSample(texture2d('iTexture'), sampler(), position.xy / iResolution)
                 isWebGL: false,
+                frag: texture(iTexture, position.xy.div(iResolution)),
+                // or
+                // frag: Fn(([p]) => {
+                //         const uv = p.xy.div(iResolution)
+                //         return texture(iTexture, uv)
+                // })(position),
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
@@ -313,5 +318,4 @@ function Canvas() {
 ```
 
 </TabItem>
-*/}
 </Tabs>

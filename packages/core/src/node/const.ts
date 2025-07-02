@@ -111,6 +111,8 @@ export const HIGHEST_TYPE_FUNCTIONS = ['min', 'max', 'mix', 'clamp', 'step', 'sm
 
 export const VEC4_RETURN_FUNCTIONS = ['texture', 'textureLod', 'textureSize', 'cubeTexture'] as const
 
+export const SAMPLER_TYPES = ['sampler2D', 'samplerCube', 'sampler', 'texture_2d', 'texture_cube'] as const
+
 export const ADDITIONAL_FUNCTIONS = [
         'atan2',
         'degrees',
@@ -158,6 +160,11 @@ export const TYPE_MAPPING = {
         bvec2: 'vec2<bool>',
         bvec3: 'vec3<bool>',
         bvec4: 'vec4<bool>',
+        sampler2D: 'sampler',
+        samplerCube: 'sampler',
+        sampler: 'sampler',
+        texture_2d: 'texture_2d<f32>',
+        texture_cube: 'texture_cube<f32>',
 } as const
 
 export const COMPONENT_COUNT_TO_TYPE = {
