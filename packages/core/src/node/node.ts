@@ -47,10 +47,6 @@ export const uniform = (x: X, id?: string) => {
         return node('uniform', { id }, x)
 }
 
-export const textureUniform = (id: string) => {
-        return node('uniform', { id }, conversion('sampler2D'))
-}
-
 export const constant = (x: X, id?: string) => node('constant', { id }, x)
 export const variable = (id: string) => node('variable', { id })
 export const builtin = (id: string) => node('builtin', { id })
