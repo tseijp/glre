@@ -96,17 +96,15 @@ export const code = (target: X, c?: NodeContext | null): string => {
          * struct
          */
         if (type === 'struct') {
-                const structId = `Struct_${id || getId()}`
+                const structId = `Struct_${id}`
                 if (!c.headers.has(structId)) {
-                        const head = codeStructHead(c, structId, props.fields || {})
+                        const head = codeStructHead(c, structId, props.fields!)
                         c.headers.set(structId, head)
                 }
                 return structId
         }
-        if (type === 'structProperty') {
-                if (c.isWebGL && c.isVarying) {
-                        return props.field || ''
-                }
+        if (type === 'dynamic') {
+                if (c.isWebGL && c.isVarying) return props.field || ''
                 return `${code(x, c)}.${props.field || ''}`
         }
         /**

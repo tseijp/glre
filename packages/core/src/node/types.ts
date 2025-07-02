@@ -23,7 +23,7 @@ export type NodeTypes =
         | 'operator'
         | 'function'
         | 'struct'
-        | 'structProperty'
+        | 'dynamic'
         // scopes
         | 'scope'
         | 'assign'
@@ -73,8 +73,8 @@ export interface NodeContext {
  * for NodeProxy type
  */
 type NodeProxyMethods =
-        | Operators
         | Functions
+        | Operators
         | Conversions
         // system property
         | 'type'
@@ -123,6 +123,28 @@ interface BaseNodeProxy {
         or(n: X): NodeProxy
         not(): NodeProxy
 
+        // Conversations type
+        toBool(): NodeProxy
+        toUint(): NodeProxy
+        toInt(): NodeProxy
+        toFloat(): NodeProxy
+        toBvec2(): NodeProxy
+        toIvec2(): NodeProxy
+        toUvec2(): NodeProxy
+        toVec2(): NodeProxy
+        toBvec3(): NodeProxy
+        toIvec3(): NodeProxy
+        toUvec3(): NodeProxy
+        toVec3(): NodeProxy
+        toBvec4(): NodeProxy
+        toIvec4(): NodeProxy
+        toUvec4(): NodeProxy
+        toVec4(): NodeProxy
+        toColor(): NodeProxy
+        toMat2(): NodeProxy
+        toMat3(): NodeProxy
+        toMat4(): NodeProxy
+
         // Functions type
         abs(): NodeProxy
         sin(): NodeProxy
@@ -168,28 +190,6 @@ interface BaseNodeProxy {
         dFdx(): NodeProxy
         dFdy(): NodeProxy
         fwidth(): NodeProxy
-
-        // Conversations type
-        toBool(): NodeProxy
-        toUint(): NodeProxy
-        toInt(): NodeProxy
-        toFloat(): NodeProxy
-        toBvec2(): NodeProxy
-        toIvec2(): NodeProxy
-        toUvec2(): NodeProxy
-        toVec2(): NodeProxy
-        toBvec3(): NodeProxy
-        toIvec3(): NodeProxy
-        toUvec3(): NodeProxy
-        toVec3(): NodeProxy
-        toBvec4(): NodeProxy
-        toIvec4(): NodeProxy
-        toUvec4(): NodeProxy
-        toVec4(): NodeProxy
-        toColor(): NodeProxy
-        toMat2(): NodeProxy
-        toMat3(): NodeProxy
-        toMat4(): NodeProxy
 }
 
 export type NodeProxy = BaseNodeProxy & DynamicProperties

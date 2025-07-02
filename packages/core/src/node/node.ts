@@ -32,8 +32,7 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                         return true
                 }
                 if (type === 'variable' && props.structNode) {
-                        const prop = node('structProperty', { field: key }, x)
-                        prop.assign(y)
+                        node('dynamic', { field: key }, x).assign(y)
                         return true
                 }
                 return false
@@ -41,6 +40,18 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
         const x = new Proxy({}, { get, set }) as unknown as NodeProxy
         return x
 }
+
+// variables
+export const variable = (id: string) => node('variable', { id })
+export const builtin = (id: string) => node('builtin', { id })
+export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z) // x ? y : z
+
+// Node shorthands
+export const swizzle = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
+export const operator = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
+export const function_ = (key: Functions, ...args: X[]) => node('function', null, key, ...args)
+export const conversion = (key: string, ...args: X[]) => node('conversion', null, key, ...args)
+export const dynamic = (field: string, ...args: X[]) => node('dynamic', { field }, ...args)
 
 // headers
 export const attribute = (x: X, id?: string) => {
@@ -53,29 +64,17 @@ export const uniform = (x: X, id?: string) => {
         if (!isNodeProxy(x)) x = conversion(inferPrimitiveType(x))
         return node('uniform', { id }, x)
 }
+export const constant = (x: X, id?: string) => {
+        if (!id) id = getId()
+        return node('constant', { id }, x)
+}
 
-export const constant = (x: X, id?: string) => node('constant', { id }, x)
-export const variable = (id: string) => node('variable', { id })
-export const builtin = (id: string) => node('builtin', { id })
-
-// Node shorthands
-export const swizzle = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
-export const operator = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
-export const function_ = (key: Functions, ...args: X[]) => node('function', null, key, ...args)
-export const conversion = (key: string, ...args: X[]) => node('conversion', null, key, ...args)
-
-// x ? y : z
-export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
-
-// struct definition
-export const struct = (fields: Record<string, X>) => {
-        const structNode = node('struct', { fields })
+export const struct = (fields: Record<string, X>, id?: string) => {
+        if (!id) id = getId()
+        const structNode = node('struct', { fields, id })
         return () => {
-                const instance = node('variable', { id: getId(), structNode })
-                for (const key in fields) {
-                        const prop = node('structProperty', { field: key }, instance, fields[key])
-                        instance.props[key] = prop
-                }
-                return instance
+                const ret = node('variable', { id: getId(), structNode })
+                for (const field in fields) ret.props[field] = dynamic(field, ret, fields[field]) // ?? props
+                return ret
         }
 }

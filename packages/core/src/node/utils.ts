@@ -112,17 +112,13 @@ const generateFragmentMain = (body: string, head: string, c: NodeContext) => {
         if (head) ret += '\n' + head + '\n'
         if (c.isWebGL) {
                 ret += `void main() {\n`
-                if (c.vertexOutput && c.vertexOutput.props.structNode) {
-                        c.isVarying = true
-                }
+                if (c.vertexOutput && c.vertexOutput.props.structNode) c.isVarying = true
                 ret += `  fragColor = ${body};`
         } else {
                 if (c.vertexOutput && c.vertexOutput.props.structNode) {
                         const structType = code(c.vertexOutput.props.structNode, c)
                         ret += `@fragment\nfn main(input: ${structType}) -> @location(0) vec4f {\n`
-                } else {
-                        ret += WGSL_FRAGMENT_HEAD + '\n'
-                }
+                } else ret += WGSL_FRAGMENT_HEAD + '\n'
                 ret += `  return ${body};`
         }
         ret += '\n}'
@@ -180,7 +176,7 @@ const generateVertexMain = (body: string, head: string, c: NodeContext) => {
         return ret.filter(Boolean).join('\n')
 }
 
-export const fragment = (x: X, c: NodeContext = {}) => {
+export const fragment = (x: NodeProxy, c: NodeContext = {}) => {
         const body = code(x, c)
         const head = generateHead(c)
         const main = generateFragmentMain(body, head, c)
@@ -188,10 +184,8 @@ export const fragment = (x: X, c: NodeContext = {}) => {
         return main
 }
 
-export const vertex = (x: X, c: NodeContext) => {
-        if (isNodeProxy(x) && x.type === 'variable' && x.props.structNode) {
-                c.vertexOutput = x
-        }
+export const vertex = (x: NodeProxy, c: NodeContext) => {
+        if (x.type === 'variable' && x.props.structNode) c.vertexOutput = x
         const body = code(x, c)
         const head = generateHead(c)
         const main = generateVertexMain(body, head, c)
