@@ -1,28 +1,27 @@
 ```jsx live
 function Canvas() {
-        const vertex = Fn(([color]) => {
-                const output = VertexOutput()
-                output.color = color
-                return output
-        })
-        const VertexOutput = struct({
-                position,
-                color: attribute(vec4(0), 'a_color'),
+        const color = attribute(vec4(0), 'color')
+        const output = struct({ position, color })
+        const input = Fn(([p0, p1]) => {
+                const ret = output()
+                ret.color = p0
+                ret.position = p1
+                return ret
         })
         const gl = useGL({
                 count: 3,
                 width: 256,
                 height: 256,
                 isWebGL: false,
-                vert: vertex(attribute(vec4(0), 'a_color')),
-                frag: VertexOutput().color,
+                vert: input(color, position),
+                frag: output().color,
                 // or
                 // frag: Fn(([output]) => {
                 //         return output.color
                 // })(VertexOutput()),
         })
-        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
-        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        gl.attribute('position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
         return <canvas ref={gl.ref} />
 }
 ```

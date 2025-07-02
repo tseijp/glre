@@ -27,6 +27,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         let head = ''
         if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
+        if (type === 'struct') head = parseStructHead(c, id, props.fields!)
         if (type === 'attribute') {
                 const varType = infer(target, c)
                 head = parseAttribHead(c, id, varType)
@@ -42,14 +43,6 @@ export const code = (target: X, c?: NodeContext | null): string => {
         /**
          * struct
          */
-        if (type === 'struct') {
-                const structId = `Struct_${id}`
-                if (!c.headers.has(structId)) {
-                        const head = parseStructHead(c, structId, props.fields!)
-                        c.headers.set(structId, head)
-                }
-                return structId
-        }
         if (type === 'dynamic') {
                 if (c.isWebGL && c.isVarying) return props.field || ''
                 return `${code(x, c)}.${props.field || ''}`

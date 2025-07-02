@@ -79,7 +79,7 @@ export const constant = (x: X, id?: string) => {
 }
 
 export const struct = (fields: Record<string, X>, id?: string) => {
-        if (!id) id = getId()
+        if (!id) id = `S${getId()}`
         const structNode = node('struct', { fields, id })
         return () => {
                 const ret = node('variable', { id: getId(), structNode })
