@@ -1,0 +1,97 @@
+```jsx live
+function Canvas() {
+        const vertex = Fn(([color]) => {
+                const output = VertexOutput()
+                output.color = color
+                return output
+        })
+        const VertexOutput = struct({
+                position,
+                color: attribute(vec4(0), 'a_color'),
+        })
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                isWebGL: false,
+                vert: vertex(attribute(vec4(0), 'a_color')),
+                frag: VertexOutput().color,
+                // or
+                // frag: Fn(([output]) => {
+                //         return output.color
+                // })(VertexOutput()),
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                vertex: `
+                struct VertexOutput {
+                        @builtin(position) position: vec4f,
+                        @location(0) color: vec4f,
+                }
+                @vertex
+                fn main(@location(0) position: vec2f, @location(1) color: vec4f) -> VertexOutput {
+                        var output: VertexOutput;
+                        output.position = vec4f(position, 0.0, 1.0);
+                        output.color = color;
+                        return output;
+                }
+                `,
+                fragment: `
+                struct VertexOutput {
+                        @builtin(position) position: vec4f,
+                        @location(0) color: vec4f,
+                }
+                @fragment
+                fn main(input: VertexOutput) -> @location(0) vec4f {
+                        return input.color;
+                }
+                `,
+                isWebGL: false,
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                vertex: `
+                #version 300 es
+                in vec4 a_position;
+                in vec4 a_color;
+                out vec4 v_color;
+                void main() {
+                        gl_Position = a_position;
+                        v_color = a_color;
+                }
+                `,
+                fragment: `
+                #version 300 es
+                precision mediump float;
+                in vec4 v_color;
+                out vec4 fragColor;
+                void main() {
+                        fragColor = v_color;
+                }
+                `,
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```

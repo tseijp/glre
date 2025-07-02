@@ -1,6 +1,6 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
-import { getBluiltin, getOperator, formatConversions, joins } from './utils'
+import { getBluiltin, getOperator, formatConversions, joins, isNodeProxy, getId } from './utils'
 import type { Constants, NodeContext, NodeProps, X } from './types'
 
 const codeUniformHead = (c: NodeContext, id: string, varType: Constants) => {
@@ -29,6 +29,33 @@ const codeAttribHead = (c: NodeContext, id: string, varType: Constants) => {
         const { location = 0 } = c.webgpu?.attribs.map.get(id) || {}
         const wgslType = formatConversions(varType, c)
         return `@location(${location}) ${id}: ${wgslType}`
+}
+
+const codeStructHead = (c: NodeContext, id: string, fields: Record<string, X>) => {
+        let ret = ''
+        if (c.isWebGL) {
+                ret = `struct ${id} {\n`
+                for (const key in fields) {
+                        const fieldType = infer(fields[key], c)
+                        ret += `  ${fieldType} ${key};\n`
+                }
+                ret += '};'
+        } else {
+                ret = `struct ${id} {\n`
+                let location = 0
+                for (const key in fields) {
+                        const field = fields[key]
+                        const fieldType = infer(field, c)
+                        if (isNodeProxy(field) && field.type === 'builtin') {
+                                ret += `  @builtin(${field.props.id}) ${key}: ${formatConversions(fieldType, c)},\n`
+                        } else {
+                                ret += `  @location(${location}) ${key}: ${formatConversions(fieldType, c)},\n`
+                                location++
+                        }
+                }
+                ret += '}'
+        }
+        return ret
 }
 
 export const code = (target: X, c?: NodeContext | null): string => {
@@ -64,6 +91,23 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (head) {
                 c.headers.set(id, head)
                 return id
+        }
+        /**
+         * struct
+         */
+        if (type === 'struct') {
+                const structId = `Struct_${id || getId()}`
+                if (!c.headers.has(structId)) {
+                        const head = codeStructHead(c, structId, props.fields || {})
+                        c.headers.set(structId, head)
+                }
+                return structId
+        }
+        if (type === 'structProperty') {
+                if (c.isWebGL && c.isVarying) {
+                        return props.field || ''
+                }
+                return `${code(x, c)}.${props.field || ''}`
         }
         /**
          * variables

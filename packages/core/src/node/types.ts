@@ -1,7 +1,7 @@
 import { WebGPUState } from '../types'
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
 
-export type Constants = (typeof CONSTANTS)[number] | 'void'
+export type Constants = (typeof CONSTANTS)[number] | 'void' | 'struct'
 
 export type Conversions = (typeof CONVERSIONS)[number]
 
@@ -26,6 +26,10 @@ export interface NodeProps {
         inferFrom?: X[]
         layout?: FnLayout
         parent?: NodeProxy
+        fields?: Record<string, X>
+        structNode?: NodeProxy
+        field?: string
+        [key: string]: any
 }
 
 export interface NodeContext {
@@ -36,6 +40,8 @@ export interface NodeContext {
         onMount?: (name: string) => void
         webgpu?: WebGPUState
         arguments?: Map<string, string>
+        isVarying?: boolean
+        vertexOutput?: NodeProxy
 }
 
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
@@ -59,6 +65,8 @@ export type NodeTypes =
         | 'conversion'
         | 'operator'
         | 'function'
+        | 'struct'
+        | 'structProperty'
         // scopes
         | 'scope'
         | 'assign'

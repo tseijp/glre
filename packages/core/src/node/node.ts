@@ -23,10 +23,17 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
                 if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
+                // @ts-ignore
+                if (type === 'variable' && props.structNode && props[key]) return props[key]
         }
         const set = (_: unknown, key: string, y: X) => {
                 if (isSwizzle(key)) {
                         swizzle(key, x).assign(y)
+                        return true
+                }
+                if (type === 'variable' && props.structNode) {
+                        const prop = node('structProperty', { field: key }, x)
+                        prop.assign(y)
                         return true
                 }
                 return false
@@ -59,3 +66,16 @@ export const conversion = (key: string, ...args: X[]) => node('conversion', null
 
 // x ? y : z
 export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
+
+// struct definition
+export const struct = (fields: Record<string, X>) => {
+        const structNode = node('struct', { fields })
+        return () => {
+                const instance = node('variable', { id: getId(), structNode })
+                for (const key in fields) {
+                        const prop = node('structProperty', { field: key }, instance, fields[key])
+                        instance.props[key] = prop
+                }
+                return instance
+        }
+}

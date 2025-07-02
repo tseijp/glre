@@ -82,6 +82,9 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
+        if (type === 'struct') return 'struct'
+        if (type === 'structProperty') return infer(y, c)
+        if (type === 'variable' && props.structNode) return 'struct'
         if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
 }

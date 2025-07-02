@@ -1,5 +1,6 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
+import { infer } from './infer'
 import {
         CONSTANTS,
         CONVERSIONS,
@@ -93,13 +94,35 @@ const WGSL_FRAGMENT_HEAD = `
 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
 `.trim()
 
-const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
+const generateFragmentMain = (body: string, head: string, c: NodeContext) => {
         let ret = ''
-        if (isWebGL) ret += GLSL_FRAGMENT_HEAD
+        if (c.isWebGL) {
+                ret += GLSL_FRAGMENT_HEAD
+                if (c.vertexOutput && c.vertexOutput.props.structNode) {
+                        const structNode = c.vertexOutput.props.structNode
+                        const fields = structNode.props.fields || {}
+                        for (const key in fields) {
+                                if (isNodeProxy(fields[key]) && fields[key].type !== 'builtin') {
+                                        const fieldType = infer(fields[key], c)
+                                        ret += `\nin ${fieldType} varying_${key};`
+                                }
+                        }
+                }
+        }
         if (head) ret += '\n' + head + '\n'
-        if (isWebGL) ret += `void main() {\n  fragColor = ${body};`
-        else {
-                ret += WGSL_FRAGMENT_HEAD + '\n'
+        if (c.isWebGL) {
+                ret += `void main() {\n`
+                if (c.vertexOutput && c.vertexOutput.props.structNode) {
+                        c.isVarying = true
+                }
+                ret += `  fragColor = ${body};`
+        } else {
+                if (c.vertexOutput && c.vertexOutput.props.structNode) {
+                        const structType = code(c.vertexOutput.props.structNode, c)
+                        ret += `@fragment\nfn main(input: ${structType}) -> @location(0) vec4f {\n`
+                } else {
+                        ret += WGSL_FRAGMENT_HEAD + '\n'
+                }
                 ret += `  return ${body};`
         }
         ret += '\n}'
@@ -108,18 +131,49 @@ const generateFragmentMain = (body: string, head: string, isWebGL = true) => {
 
 const generateVertexMain = (body: string, head: string, c: NodeContext) => {
         const ret = []
+        const returnType = c.vertexOutput ? 'struct' : 'vec4'
         if (c.isWebGL) {
                 ret.push('#version 300 es')
+                if (c.vertexOutput && c.vertexOutput.props.structNode) {
+                        const structNode = c.vertexOutput.props.structNode
+                        const fields = structNode.props.fields || {}
+                        for (const key in fields) {
+                                if (isNodeProxy(fields[key]) && fields[key].type !== 'builtin') {
+                                        const fieldType = infer(fields[key], c)
+                                        ret.push(`out ${fieldType} varying_${key};`)
+                                }
+                        }
+                }
                 ret.push(head)
                 ret.push('void main() {')
-                ret.push(`gl_Position = ${body};`)
+                if (returnType === 'struct') {
+                        const structVar = `${c.vertexOutput!.props.id}`
+                        ret.push(`${code(c.vertexOutput!.props.structNode, c)} ${structVar} = ${body};`)
+                        ret.push(`gl_Position = ${structVar}.position;`)
+                        const structNode = c.vertexOutput!.props.structNode
+                        const fields = structNode?.props.fields || {}
+                        for (const key in fields) {
+                                if (isNodeProxy(fields[key]) && fields[key].type !== 'builtin')
+                                        ret.push(`varying_${key} = ${structVar}.${key};`)
+                        }
+                } else {
+                        ret.push(`gl_Position = ${body};`)
+                }
         } else {
                 ret.push(head)
                 ret.push('@vertex')
                 if (c.arguments && c.arguments.size > 0) {
                         const inputs = Array.from(c.arguments.values())
-                        ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
-                } else ret.push('fn main() -> @builtin(position) vec4f {')
+                        if (returnType === 'struct') {
+                                const structType = code(c.vertexOutput!.props.structNode, c)
+                                ret.push(`fn main(${inputs.join(', ')}) -> ${structType} {`)
+                        } else ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
+                } else {
+                        if (returnType === 'struct') {
+                                const structType = code(c.vertexOutput!.props.structNode, c)
+                                ret.push(`fn main() -> ${structType} {`)
+                        } else ret.push('fn main() -> @builtin(position) vec4f {')
+                }
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
@@ -129,12 +183,15 @@ const generateVertexMain = (body: string, head: string, c: NodeContext) => {
 export const fragment = (x: X, c: NodeContext = {}) => {
         const body = code(x, c)
         const head = generateHead(c)
-        const main = generateFragmentMain(body, head, c.isWebGL)
+        const main = generateFragmentMain(body, head, c)
         console.log(`// ↓↓↓ generated ↓↓↓\n\n${main}\n\n`)
         return main
 }
 
 export const vertex = (x: X, c: NodeContext) => {
+        if (isNodeProxy(x) && x.type === 'variable' && x.props.structNode) {
+                c.vertexOutput = x
+        }
         const body = code(x, c)
         const head = generateHead(c)
         const main = generateVertexMain(body, head, c)
