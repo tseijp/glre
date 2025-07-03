@@ -1,7 +1,6 @@
 import { code } from './code'
 import { assign, toVar } from './scope'
 import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId, isNodeProxy } from './utils'
-import { inferPrimitiveType } from './infer'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {

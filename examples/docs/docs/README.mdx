@@ -99,6 +99,107 @@ render(() => <App />, document.getElementById('root'))
 </TabItem>
 </Tabs>
 
+## Varying
+
+<Tabs>
+<TabItem value="webgl" label="WebGL">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                vertex: `
+                #version 300 es
+                in vec4 a_position;
+                in vec4 a_color;
+                out vec4 v_color;
+                void main() {
+                        gl_Position = a_position;
+                        v_color = a_color;
+                }
+                `,
+                fragment: `
+                #version 300 es
+                precision mediump float;
+                in vec4 v_color;
+                out vec4 fragColor;
+                void main() {
+                        fragColor = v_color;
+                }
+                `,
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="webgpu" label="WebGPU">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                vertex: `
+                struct Output {
+                        @builtin(position) position: vec4f,
+                        @location(0) v_color: vec4f,
+                }
+                @vertex
+                fn main(@location(0) a_position: vec2f, @location(1) a_color: vec4f) -> Output {
+                        var out: Output;
+                        out.position = vec4f(a_position, 0.0, 1.0);
+                        out.v_color = a_color;
+                        return out;
+                }
+                `,
+                fragment: `
+                struct Output {
+                        @builtin(position) position: vec4f,
+                        @location(0) v_color: vec4f,
+                }
+                @fragment
+                fn main(out: Output) -> @location(0) vec4f {
+                        return out.v_color;
+                }
+                `,
+                isWebGL: false,
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const a_position = attribute(vec4(0), 'a_position')
+        const a_color = attribute(vec4(0), 'color')
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                isWebGL: false,
+                vert: vec4(a_position, 0.0, 1.0),
+                frag: vertexStage(a_color),
+        })
+        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>
+
 ## Uniforms
 
 <Tabs>
@@ -160,11 +261,6 @@ function Canvas() {
                 height: 256,
                 isWebGL: true,
                 frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), 0, 1),
-                // or
-                // frag: Fn((p) => {
-                //         const uv = fract(p.xy.div(iResolution).sub(iMouse))
-                //         return vec4(uv, 0, 1)
-                // })(position),
         })
         return <canvas ref={gl.ref} />
 }
@@ -224,16 +320,13 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
+        const a_position = attribute(vec2(0), 'a_position')
         const gl = useGL({
                 count: 3,
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                vert: vec4(attribute(vec2(0), 'a_position'), 0, 1),
-                // or
-                // vert: Fn(([p0]) => {
-                //         return vec4(p0, 0, 1)
-                // })(attribute(vec2(0), 'a_position')),
+                vert: vec4(a_position, 0, 1),
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
@@ -300,11 +393,12 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
+        const iTexture = uniform(texture2D())
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                frag: texture(textureUniform('iTexture'), position.xy.div(iResolution)),
+                frag: texture(iTexture, position.xy.div(iResolution)),
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />

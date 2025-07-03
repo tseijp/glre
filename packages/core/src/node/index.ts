@@ -7,6 +7,7 @@ export * from './code'
 export * from './node'
 export * from './scope'
 export * from './types'
+export * from './utils'
 
 const GLSL_FRAGMENT_HEAD = `
 #version 300 es
