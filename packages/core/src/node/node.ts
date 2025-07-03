@@ -36,26 +36,15 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 }
 
 // headers
-export const attribute = (x: X, id?: string) => {
-        if (!id) id = getId()
-        return node('attribute', { id }, x)
-}
-
-export const uniform = (x: X, id?: string) => {
-        if (!id) id = getId()
-        if (!isNodeProxy(x)) x = conversion(inferPrimitiveType(x))
-        return node('uniform', { id }, x)
-}
-
-export const constant = (x: X, id?: string) => node('constant', { id }, x)
-export const variable = (id: string) => node('variable', { id })
-export const builtin = (id: string) => node('builtin', { id })
+export const attribute = (x: X, id = getId()) => node('attribute', { id }, x)
+export const constant = (x: X, id = getId()) => node('constant', { id }, x)
+export const uniform = (x: X, id = getId()) => node('uniform', { id }, x)
+export const variable = (id = getId()) => node('variable', { id })
+export const builtin = (id = getId()) => node('builtin', { id })
 
 // Node shorthands
-export const swizzle = (key: Swizzles, arg: X) => node('swizzle', null, key, arg)
-export const operator = (key: Operators, ...args: X[]) => node('operator', null, key, ...args)
-export const function_ = (key: Functions, ...args: X[]) => node('function', null, key, ...args)
-export const conversion = (key: string, ...args: X[]) => node('conversion', null, key, ...args)
-
-// x ? y : z
-export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z)
+export const swizzle = (key: Swizzles, x: X) => node('swizzle', null, key, x)
+export const operator = (key: Operators, ...x: X[]) => node('operator', null, key, ...x)
+export const function_ = (key: Functions, ...x: X[]) => node('function', null, key, ...x)
+export const conversion = (key: string, ...x: X[]) => node('conversion', null, key, ...x)
+export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z) // x ? y : z

@@ -1,14 +1,66 @@
+import { is } from '../utils/helpers'
+import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb } from './utils'
-import { is } from '../utils/helpers'
-import type { X } from './types'
+import type { NodeContext, X } from './types'
 export * from './code'
-export * from './const'
-export * from './infer'
 export * from './node'
 export * from './scope'
 export * from './types'
-export * from './utils'
+
+const GLSL_FRAGMENT_HEAD = `
+#version 300 es
+precision mediump float;
+out vec4 fragColor;
+`.trim()
+
+const WGSL_FRAGMENT_HEAD = `
+@fragment
+fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+`.trim()
+
+const generateHead = (x: X, c: NodeContext) => {
+        const body = code(x, c)
+        const head = Array.from(c.headers!.values()).join('\n')
+        return [head, body]
+}
+
+export const fragment = (x: X, c: NodeContext) => {
+        const [head, body] = generateHead(x, c)
+        let ret = []
+        if (c.isWebGL) {
+                ret.push(GLSL_FRAGMENT_HEAD)
+                if (head) ret.push(head)
+                ret.push(`void main() {\n  fragColor = ${body};`)
+        } else {
+                if (head) ret.push(head)
+                ret.push(WGSL_FRAGMENT_HEAD)
+                ret.push(`  return ${body};`)
+        }
+        ret.push('}')
+        return ret.join('\n')
+}
+
+export const vertex = (x: X, c: NodeContext) => {
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        if (c.isWebGL) {
+                ret.push('#version 300 es')
+                if (head) ret.push(head)
+                ret.push('void main() {')
+                ret.push(`gl_Position = ${body};`)
+        } else {
+                if (head) ret.push(head)
+                ret.push('@vertex')
+                if (c.arguments && c.arguments.size > 0) {
+                        const inputs = Array.from(c.arguments.values())
+                        ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
+                } else ret.push('fn main() -> @builtin(position) vec4f {')
+                ret.push(`  return ${body};`)
+        }
+        ret.push('}')
+        return ret.join('\n')
+}
 
 // Builtin Variables
 export const position = builtin('position')

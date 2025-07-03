@@ -18,34 +18,9 @@ export interface FnLayout {
         }>
 }
 
-export interface NodeProps {
-        id?: string
-        args?: X[]
-        type?: string
-        children?: X[]
-        inferFrom?: X[]
-        layout?: FnLayout
-        parent?: NodeProxy
-}
-
-export interface NodeContext {
-        isWebGL?: boolean
-        binding?: number
-        infers?: WeakMap<NodeProxy, Constants>
-        headers?: Map<string, string>
-        onMount?: (name: string) => void
-        webgpu?: WebGPUState
-        arguments?: Map<string, string>
-}
-
-type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
-
-export type Swizzles =
-        | _Swizzles<'x' | 'y' | 'z' | 'w'>
-        | _Swizzles<'r' | 'g' | 'b' | 'a'>
-        | _Swizzles<'p' | 'q'>
-        | _Swizzles<'s' | 't'>
-
+/**
+ * Node
+ */
 export type NodeTypes =
         // headers
         | 'attribute'
@@ -68,9 +43,64 @@ export type NodeTypes =
         | 'switch'
         | 'declare'
         | 'return'
+export interface NodeProps {
+        id?: string
+        args?: X[]
+        type?: string
+        children?: X[]
+        inferFrom?: X[]
+        layout?: FnLayout
+        parent?: NodeProxy
+}
 
-export interface NodeProxy extends Record<Swizzles, NodeProxy> {
-        // Operators
+export interface NodeContext {
+        isWebGL?: boolean
+        binding?: number
+        infers?: WeakMap<NodeProxy, Constants>
+        headers?: Map<string, string>
+        onMount?: (name: string) => void
+        webgpu?: WebGPUState
+        arguments?: Map<string, string>
+}
+
+/**
+ * NodeProxy
+ */
+type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
+
+export type Swizzles =
+        | _Swizzles<'x' | 'y' | 'z' | 'w'>
+        | _Swizzles<'r' | 'g' | 'b' | 'a'>
+        | _Swizzles<'p' | 'q'>
+        | _Swizzles<'s' | 't'>
+
+type NodeProxyMethods =
+        | Functions
+        | Operators
+        | Conversions
+        | Swizzles
+        // system property
+        | 'type'
+        | 'props'
+        | 'isProxy'
+        | 'assign'
+        | 'toVar'
+        | 'toString'
+
+export type DynamicProperties = {
+        [K in string as K extends NodeProxyMethods ? never : K]: NodeProxy
+}
+
+export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
+        // System properties
+        assign(n: X): NodeProxy
+        toVar(name?: string): NodeProxy
+        toString(c?: NodeContext): string
+        type: NodeTypes
+        props: NodeProps
+        isProxy: true
+
+        // Operators methods
         add(n: X): NodeProxy
         sub(n: X): NodeProxy
         mul(n: X): NodeProxy
@@ -86,11 +116,29 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         or(n: X): NodeProxy
         not(): NodeProxy
 
-        // Variable manipulation
-        assign(n: X): NodeProxy
-        toVar(name?: string): NodeProxy
+        // Conversations methods
+        toBool(): NodeProxy
+        toUint(): NodeProxy
+        toInt(): NodeProxy
+        toFloat(): NodeProxy
+        toBvec2(): NodeProxy
+        toIvec2(): NodeProxy
+        toUvec2(): NodeProxy
+        toVec2(): NodeProxy
+        toBvec3(): NodeProxy
+        toIvec3(): NodeProxy
+        toUvec3(): NodeProxy
+        toVec3(): NodeProxy
+        toBvec4(): NodeProxy
+        toIvec4(): NodeProxy
+        toUvec4(): NodeProxy
+        toVec4(): NodeProxy
+        toColor(): NodeProxy
+        toMat2(): NodeProxy
+        toMat3(): NodeProxy
+        toMat4(): NodeProxy
 
-        // Math function methods
+        // Function methods
         abs(): NodeProxy
         sin(): NodeProxy
         cos(): NodeProxy
@@ -135,32 +183,8 @@ export interface NodeProxy extends Record<Swizzles, NodeProxy> {
         dFdx(): NodeProxy
         dFdy(): NodeProxy
         fwidth(): NodeProxy
-
-        // System properties
-        toBool(): NodeProxy
-        toUint(): NodeProxy
-        toInt(): NodeProxy
-        toFloat(): NodeProxy
-        toBvec2(): NodeProxy
-        toIvec2(): NodeProxy
-        toUvec2(): NodeProxy
-        toVec2(): NodeProxy
-        toBvec3(): NodeProxy
-        toIvec3(): NodeProxy
-        toUvec3(): NodeProxy
-        toVec3(): NodeProxy
-        toBvec4(): NodeProxy
-        toIvec4(): NodeProxy
-        toUvec4(): NodeProxy
-        toVec4(): NodeProxy
-        toColor(): NodeProxy
-        toMat2(): NodeProxy
-        toMat3(): NodeProxy
-        toMat4(): NodeProxy
-        toString(c?: NodeContext): string
-        type: NodeTypes
-        props: NodeProps
-        isProxy: true
 }
+
+export type NodeProxy = BaseNodeProxy & DynamicProperties
 
 export type X = NodeProxy | number | string | boolean | undefined
