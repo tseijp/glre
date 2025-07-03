@@ -55,16 +55,9 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'varying') {
                 const varType = infer(target, c)
                 const location = c.varyings.length
-                c.varyings.push({ id, type: varType, location, node: x })
-                if (c.isWebGL) {
-                        const varyingDecl = `out ${varType} v_${id};`
-                        // c.headers.set(`varying_${id}`, varyingDecl)
-                } else {
-                        const wgslType = formatConversions(varType, c)
-                        const locationDecl = `@location(${location}) ${id}: ${wgslType}`
-                        // c.headers.set(`varying_${id}`, locationDecl)
-                }
-                return id
+                c.varyings.push({ id, type: varType, location, code: code(x, c) })
+                if (c.isWebGL) return `v_${id}`
+                else return `out.${id}`
         }
         if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary') return `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`

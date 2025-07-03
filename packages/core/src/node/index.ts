@@ -15,6 +15,12 @@ precision mediump float;
 out vec4 fragColor;
 `.trim()
 
+const generateHead = (x: X, c: NodeContext) => {
+        const body = code(x, c)
+        const head = Array.from(c.headers!.values()).join('\n')
+        return [head, body]
+}
+
 const generateWGSLStruct = (c: NodeContext) => {
         const fields = [`@builtin(position) position: vec4f`]
         if (c.varyings) {
@@ -27,16 +33,6 @@ const generateWGSLStruct = (c: NodeContext) => {
         return `struct Out {\n  ${fields.join(',\n  ')}\n}\n`
 }
 
-const generateWGSLFragmentHead = () => {
-        return '@fragment\nfn main(out: Out) -> @location(0) vec4f {'
-}
-
-const generateHead = (x: X, c: NodeContext) => {
-        const body = code(x, c)
-        const head = Array.from(c.headers!.values()).join('\n')
-        return [head, body]
-}
-
 export const fragment = (x: X, c: NodeContext) => {
         const [head, body] = generateHead(x, c)
         const ret = []
@@ -47,7 +43,7 @@ export const fragment = (x: X, c: NodeContext) => {
         } else {
                 ret.push(generateWGSLStruct(c))
                 ret.push(head)
-                ret.push(generateWGSLFragmentHead())
+                ret.push('@fragment\nfn main(out: Out) -> @location(0) vec4f {')
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
@@ -64,11 +60,10 @@ export const vertex = (x: X, c: NodeContext) => {
                 ret.push(head)
                 ret.push('void main() {')
                 ret.push(`  gl_Position = ${body};`)
-                if (c.varyings) {
+                if (c.varyings)
                         for (const varying of c.varyings) {
-                                ret.push(`  v_${varying.id} = ${code(varying.node, c)};`)
+                                ret.push(`  v_${varying.id} = ${varying.code};`)
                         }
-                }
         } else {
                 const inputs = Array.from(c.arguments?.values() ?? [])
                 ret.push(generateWGSLStruct(c))
@@ -78,7 +73,7 @@ export const vertex = (x: X, c: NodeContext) => {
                 ret.push('  var out: Out;')
                 ret.push(`  out.position = ${body};`)
                 for (const varying of c.varyings ?? []) {
-                        ret.push(`  out.${varying.id} = ${code(varying.node, c)};`)
+                        ret.push(`  out.${varying.id} = ${varying.code};`)
                 }
                 ret.push('  return out;')
         }

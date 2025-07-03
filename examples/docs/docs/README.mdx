@@ -181,8 +181,8 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const a_position = attribute(vec4(0), 'a_position')
-        const a_color = attribute(vec4(0), 'color')
+        const a_position = attribute(vec2(), 'a_position')
+        const a_color = attribute(vec4(), 'a_color')
         const gl = useGL({
                 count: 3,
                 width: 256,

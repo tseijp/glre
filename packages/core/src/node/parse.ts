@@ -27,6 +27,7 @@ export const parseUniformHead = (c: NodeContext, id: string, varType: Constants)
 export const parseAttribHead = (c: NodeContext, id: string, varType: Constants) => {
         if (c.isWebGL) return `in ${varType} ${id};`
         const { location = 0 } = c.webgpu?.attribs.map.get(id) || {}
+        console.log(c.webgpu?.attribs.map.get(id), location)
         const wgslType = formatConversions(varType, c)
         return `@location(${location}) ${id}: ${wgslType}`
 }
