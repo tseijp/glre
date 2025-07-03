@@ -28,6 +28,7 @@ export type NodeTypes =
         | 'constant'
         // variables
         | 'variable'
+        | 'varying'
         | 'swizzle'
         | 'ternary'
         | 'builtin'
@@ -61,6 +62,7 @@ export interface NodeContext {
         onMount?: (name: string) => void
         webgpu?: WebGPUState
         arguments?: Map<string, string>
+        varyings?: Array<{ id: string; type: Constants; location: number; node: X }>
 }
 
 /**

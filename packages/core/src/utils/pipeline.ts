@@ -68,8 +68,8 @@ export const createPipeline = (
         fs: string | NodeProxy = defaultFragmentWGSL
 ) => {
         const config = { isWebGL: false, webgpu }
-        if (isNodeProxy(vs)) vs = vertex(vs, config)
         if (isNodeProxy(fs)) fs = fragment(fs, config)
+        if (isNodeProxy(vs)) vs = vertex(vs, config)
         const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {

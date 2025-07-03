@@ -16,6 +16,7 @@ import {
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
+        if (!c.varyings) c.varyings = []
         if (!c.arguments) c.arguments = new Map()
         if (is.str(target)) return target
         if (is.num(target)) {
@@ -51,6 +52,20 @@ export const code = (target: X, c?: NodeContext | null): string => {
          * variables
          */
         if (type === 'variable') return id
+        if (type === 'varying') {
+                const varType = infer(target, c)
+                const location = c.varyings.length
+                c.varyings.push({ id, type: varType, location, node: x })
+                if (c.isWebGL) {
+                        const varyingDecl = `out ${varType} v_${id};`
+                        // c.headers.set(`varying_${id}`, varyingDecl)
+                } else {
+                        const wgslType = formatConversions(varType, c)
+                        const locationDecl = `@location(${location}) ${id}: ${wgslType}`
+                        // c.headers.set(`varying_${id}`, locationDecl)
+                }
+                return id
+        }
         if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary') return `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
         if (type === 'builtin') return c?.isWebGL ? getBluiltin(id) : id

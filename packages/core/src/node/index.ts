@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
-import { hex2rgb } from './utils'
+import { hex2rgb, formatConversions } from './utils'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -15,10 +15,21 @@ precision mediump float;
 out vec4 fragColor;
 `.trim()
 
-const WGSL_FRAGMENT_HEAD = `
-@fragment
-fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-`.trim()
+const generateWGSLStruct = (c: NodeContext) => {
+        const fields = [`@builtin(position) position: vec4f`]
+        if (c.varyings) {
+                for (const varying of c.varyings) {
+                        fields.push(
+                                `@location(${varying.location}) ${varying.id}: ${formatConversions(varying.type, c)}`
+                        )
+                }
+        }
+        return `struct Out {\n  ${fields.join(',\n  ')}\n}\n`
+}
+
+const generateWGSLFragmentHead = () => {
+        return '@fragment\nfn main(out: Out) -> @location(0) vec4f {'
+}
 
 const generateHead = (x: X, c: NodeContext) => {
         const body = code(x, c)
@@ -28,18 +39,21 @@ const generateHead = (x: X, c: NodeContext) => {
 
 export const fragment = (x: X, c: NodeContext) => {
         const [head, body] = generateHead(x, c)
-        let ret = []
+        const ret = []
         if (c.isWebGL) {
                 ret.push(GLSL_FRAGMENT_HEAD)
-                if (head) ret.push(head)
+                ret.push(head)
                 ret.push(`void main() {\n  fragColor = ${body};`)
         } else {
-                if (head) ret.push(head)
-                ret.push(WGSL_FRAGMENT_HEAD)
+                ret.push(generateWGSLStruct(c))
+                ret.push(head)
+                ret.push(generateWGSLFragmentHead())
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
-        return ret.join('\n')
+        const main = ret.filter(Boolean).join('\n')
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
 }
 
 export const vertex = (x: X, c: NodeContext) => {
@@ -47,20 +61,31 @@ export const vertex = (x: X, c: NodeContext) => {
         const ret = []
         if (c.isWebGL) {
                 ret.push('#version 300 es')
-                if (head) ret.push(head)
+                ret.push(head)
                 ret.push('void main() {')
-                ret.push(`gl_Position = ${body};`)
+                ret.push(`  gl_Position = ${body};`)
+                if (c.varyings) {
+                        for (const varying of c.varyings) {
+                                ret.push(`  v_${varying.id} = ${code(varying.node, c)};`)
+                        }
+                }
         } else {
-                if (head) ret.push(head)
+                const inputs = Array.from(c.arguments?.values() ?? [])
+                ret.push(generateWGSLStruct(c))
+                ret.push(head)
                 ret.push('@vertex')
-                if (c.arguments && c.arguments.size > 0) {
-                        const inputs = Array.from(c.arguments.values())
-                        ret.push(`fn main(${inputs.join(', ')}) -> @builtin(position) vec4f {`)
-                } else ret.push('fn main() -> @builtin(position) vec4f {')
-                ret.push(`  return ${body};`)
+                ret.push(`fn main(${inputs.join(', ')}) -> Out {`)
+                ret.push('  var out: Out;')
+                ret.push(`  out.position = ${body};`)
+                for (const varying of c.varyings ?? []) {
+                        ret.push(`  out.${varying.id} = ${code(varying.node, c)};`)
+                }
+                ret.push('  return out;')
         }
         ret.push('}')
-        return ret.join('\n')
+        const main = ret.filter(Boolean).join('\n')
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
 }
 
 // Builtin Variables

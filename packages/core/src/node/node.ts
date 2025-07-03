@@ -40,6 +40,7 @@ export const constant = (x: X, id = getId()) => node('constant', { id }, x)
 export const uniform = (x: X, id = getId()) => node('uniform', { id }, x)
 export const variable = (id = getId()) => node('variable', { id })
 export const builtin = (id = getId()) => node('builtin', { id })
+export const vertexStage = (x: X, id = getId()) => node('varying', { id, inferFrom: [x] }, x)
 
 // Node shorthands
 export const swizzle = (key: Swizzles, x: X) => node('swizzle', null, key, x)
