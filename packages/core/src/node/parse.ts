@@ -4,6 +4,56 @@ import { code } from './code'
 import type { Constants, NodeContext, NodeProps, X } from './types'
 
 /**
+ * varying
+ */
+export const parseVaryingHead = (c: NodeContext, direction: 'in' | 'out') => {
+        const ret: string[] = []
+        if (c.varyings) {
+                for (const varying of c.varyings.values()) {
+                        ret.push(`${direction} ${varying.type} v_${varying.id};`)
+                }
+        }
+        return ret.join('\n')
+}
+
+export const parseVaryingMain = (c: NodeContext, stage: 'vertex' | 'fragment') => {
+        const ret: string[] = []
+        if (c.varyings) {
+                for (const varying of c.varyings.values()) {
+                        if (stage === 'vertex') {
+                                ret.push(`  v_${varying.id} = ${varying.code};`)
+                        }
+                        // fragment stage doesn't need assignment code
+                }
+        }
+        return ret.join('\n')
+}
+
+export const parseVaryingWGSL = (c: NodeContext, stage: 'vertex' | 'fragment') => {
+        const ret: string[] = []
+        if (c.varyings) {
+                for (const varying of c.varyings.values()) {
+                        if (stage === 'vertex') {
+                                ret.push(`  out.${varying.id} = ${varying.code};`)
+                        }
+                        // fragment stage doesn't need assignment code
+                }
+        }
+        return ret.join('\n')
+}
+
+export const generateWGSLStruct = (c: NodeContext) => {
+        const fields = [`@builtin(position) position: vec4f`]
+        if (c.varyings)
+                for (const varying of c.varyings.values()) {
+                        fields.push(
+                                `@location(${varying.location}) ${varying.id}: ${formatConversions(varying.type, c)}`
+                        )
+                }
+        return `struct Out {\n  ${fields.join(',\n  ')}\n}\n`
+}
+
+/**
  * headers
  */
 export const parseUniformHead = (c: NodeContext, id: string, varType: Constants) => {
@@ -27,7 +77,6 @@ export const parseUniformHead = (c: NodeContext, id: string, varType: Constants)
 export const parseAttribHead = (c: NodeContext, id: string, varType: Constants) => {
         if (c.isWebGL) return `in ${varType} ${id};`
         const { location = 0 } = c.webgpu?.attribs.map.get(id) || {}
-        console.log(c.webgpu?.attribs.map.get(id), location)
         const wgslType = formatConversions(varType, c)
         return `@location(${location}) ${id}: ${wgslType}`
 }
@@ -95,16 +144,16 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                 for (let i = 0; i < args.length; i++) {
                         argParams.push([`p${i}`, infer(args[i], c)])
                 }
-        let ret = ''
+        const ret = []
         if (c?.isWebGL) {
                 for (const [id, type] of argParams) params.push(`${type} ${id}`)
-                ret += `${returnType} ${id}(${params}) {\n`
+                ret.push(`${returnType} ${id}(${params}) {`)
         } else {
                 for (const [id, type] of argParams) params.push(`${id}: ${formatConversions(type, c)}`)
-                ret += `fn ${id}(${params}) -> ${formatConversions(returnType, c)} {\n`
+                ret.push(`fn ${id}(${params}) -> ${formatConversions(returnType, c)} {`)
         }
         const scopeCode = code(x, c)
-        if (scopeCode) ret += scopeCode
-        ret += '\n}'
-        return ret
+        if (scopeCode) ret.push(scopeCode)
+        ret.push('}')
+        return ret.join('\n')
 }

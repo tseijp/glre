@@ -16,7 +16,7 @@ import {
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
-        if (!c.varyings) c.varyings = []
+        if (!c.varyings) c.varyings = new Map()
         if (!c.arguments) c.arguments = new Map()
         if (is.str(target)) return target
         if (is.num(target)) {
@@ -53,9 +53,15 @@ export const code = (target: X, c?: NodeContext | null): string => {
          */
         if (type === 'variable') return id
         if (type === 'varying') {
+                if (c.varyings.has(id)) {
+                        const existing = c.varyings.get(id)!
+                        if (c.isWebGL) return `v_${existing.id}`
+                        else return `out.${existing.id}`
+                }
                 const varType = infer(target, c)
-                const location = c.varyings.length
-                c.varyings.push({ id, type: varType, location, code: code(x, c) })
+                const location = c.varyings.size
+                const varyingData = { id, type: varType, location, code: code(x, c) }
+                c.varyings.set(id, varyingData)
                 if (c.isWebGL) return `v_${id}`
                 else return `out.${id}`
         }

@@ -1,7 +1,8 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
-import { hex2rgb, formatConversions } from './utils'
+import { hex2rgb } from './utils'
+import { generateWGSLStruct, parseVaryingHead, parseVaryingMain } from './parse'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -21,23 +22,12 @@ const generateHead = (x: X, c: NodeContext) => {
         return [head, body]
 }
 
-const generateWGSLStruct = (c: NodeContext) => {
-        const fields = [`@builtin(position) position: vec4f`]
-        if (c.varyings) {
-                for (const varying of c.varyings) {
-                        fields.push(
-                                `@location(${varying.location}) ${varying.id}: ${formatConversions(varying.type, c)}`
-                        )
-                }
-        }
-        return `struct Out {\n  ${fields.join(',\n  ')}\n}\n`
-}
-
 export const fragment = (x: X, c: NodeContext) => {
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
                 ret.push(GLSL_FRAGMENT_HEAD)
+                ret.push(...parseVaryingHead(c, 'in'))
                 ret.push(head)
                 ret.push(`void main() {\n  fragColor = ${body};`)
         } else {
@@ -57,13 +47,11 @@ export const vertex = (x: X, c: NodeContext) => {
         const ret = []
         if (c.isWebGL) {
                 ret.push('#version 300 es')
+                ret.push(...parseVaryingHead(c, 'out'))
                 ret.push(head)
                 ret.push('void main() {')
                 ret.push(`  gl_Position = ${body};`)
-                if (c.varyings)
-                        for (const varying of c.varyings) {
-                                ret.push(`  v_${varying.id} = ${varying.code};`)
-                        }
+                ret.push(...parseVaryingMain(c, 'vertex'))
         } else {
                 const inputs = Array.from(c.arguments?.values() ?? [])
                 ret.push(generateWGSLStruct(c))
@@ -72,7 +60,7 @@ export const vertex = (x: X, c: NodeContext) => {
                 ret.push(`fn main(${inputs.join(', ')}) -> Out {`)
                 ret.push('  var out: Out;')
                 ret.push(`  out.position = ${body};`)
-                for (const varying of c.varyings ?? []) {
+                for (const varying of c.varyings?.values() ?? []) {
                         ret.push(`  out.${varying.id} = ${varying.code};`)
                 }
                 ret.push('  return out;')
