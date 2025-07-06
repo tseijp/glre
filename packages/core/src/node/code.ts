@@ -11,15 +11,18 @@ import {
         parseIf,
         parseSwitch,
         parseTexture,
+        parseVaryingHead,
 } from './parse'
-import { BUILTIN_TYPES } from './const'
 
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
+        if (!c.varyings) c.varyings = new Map()
         if (!c.headers) c.headers = new Map()
         if (!c.inputs) c.inputs = new Map()
-        if (!c.outputs)
-                c.outputs = new Map([['position', c.isWebGL ? 'vec4 position;' : '@builtin(position) position: vec4f']])
+        if (!c.outputs) {
+                c.outputs = new Map()
+                c.outputs.set('position', c.isWebGL ? 'vec4 position;' : '@builtin(position) position: vec4f') // default builtin outputs
+        }
         if (is.str(target)) return target
         if (is.num(target)) {
                 const ret = `${target}`
@@ -61,47 +64,34 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
         if (type === 'define') {
-                const returnType = infer(target, c)
-                const args = children.slice(1)
-                const ret = `${id}(${joins(args, c)})`
+                const ret = `${id}(${joins(children.slice(1), c)})`
                 if (c.headers.has(id)) return ret
-                c.headers.set(id, parseDefine(c, props, returnType))
+                c.headers.set(id, parseDefine(c, props, infer(target, c)))
                 return ret
-        }
-        /**
-         * inputs and outputs
-         */
-        if (type === 'varying') {
-                const varType = infer(target, c)
-                const location = c.outputs.size
-                if (c.isWebGL) {
-                        c.outputs.set(id, `out ${varType} ${id};`)
-                } else c.outputs.set(id, `@location(${location}) ${id}: ${formatConversions(varType, c)}`)
-                if (c.isWebGL) return id
-                else return `out.${id}`
-        }
-        if (type === 'builtin') {
-                if (c.isWebGL) return getBluiltin(id)
-                const varType = BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES]!
-                if (id === 'position') return 'out.position'
-                c.outputs.set(id, `@builtin(${id}) ${id}: ${formatConversions(varType, c)}`)
-                c.inputs.set(id, `@builtin(${id}) ${id}: ${formatConversions(varType, c)}`)
-                return `input.${id}`
         }
         /**
          * headers
          */
-        if (c.headers.has(id)) return id //
-        let head = ''
-        if (type === 'attribute') {
-                const varType = infer(target, c)
-                head = parseAttribHead(c, id, varType)
-                if (!c.isWebGL && c.inputs) {
-                        const location = c.inputs.size
-                        c.inputs.set(id, `@location(${location}) ${id}: ${formatConversions(varType, c)}`)
-                        return `input.${id}`
-                }
+        if (type === 'varying') {
+                if (c.outputs.has(id)) return c.isWebGL ? `${id}` : `out.${id}`
+                c.outputs.set(id, parseVaryingHead(c, id, infer(target, c)))
+                c.varyings.set(id, code(x, c))
+                return c.isWebGL ? `${id}` : `out.${id}`
         }
+        if (type === 'builtin') {
+                if (c.isWebGL) return getBluiltin(id)
+                if (id === 'position') return 'out.position'
+                const code = `@builtin(${id}) ${id}: ${formatConversions(infer(id, c), c)}`
+                c.outputs.set(id, code)
+                c.inputs.set(id, code)
+                return `in.${id}`
+        }
+        if (type === 'attribute') {
+                c.inputs.set(id, parseAttribHead(c, id, infer(target, c)))
+                return c.isWebGL ? `${id}` : `in.${id}`
+        }
+        if (c.headers.has(id)) return id // must last
+        let head = ''
         if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {

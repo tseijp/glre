@@ -1,4 +1,5 @@
-import { Fn, infer } from './src/node'
+import { Fn } from './src/node'
+import { infer } from './src/node/infer'
 import type { NodeContext, X } from './src/node'
 
 export const build = (fun: () => any) => {

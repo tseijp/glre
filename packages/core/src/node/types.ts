@@ -64,6 +64,7 @@ export interface NodeContext {
         inputs?: Map<string, string>
         outputs?: Map<string, string>
         headers?: Map<string, string>
+        varyings?: Map<string, string>
 }
 
 /**

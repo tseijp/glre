@@ -6,6 +6,10 @@ import type { Constants, NodeContext, NodeProps, X } from './types'
 /**
  * headers
  */
+export const parseVaryingHead = (c: NodeContext, id: string, varType: string) => {
+        return c.isWebGL ? `${varType} ${id};` : `@location(${c.outputs!.size}) ${id}: ${formatConversions(varType, c)}`
+}
+
 export const parseUniformHead = (c: NodeContext, id: string, varType: Constants) => {
         const isTexture = varType === 'sampler2D' || varType === 'texture'
         if (c.isWebGL)
@@ -25,7 +29,7 @@ export const parseUniformHead = (c: NodeContext, id: string, varType: Constants)
 }
 
 export const parseAttribHead = (c: NodeContext, id: string, varType: Constants) => {
-        if (c.isWebGL) return `in ${varType} ${id};`
+        if (c.isWebGL) return `${varType} ${id};`
         const { location = 0 } = c.webgpu?.attribs.map.get(id) || {}
         const wgslType = formatConversions(varType, c)
         return `@location(${location}) ${id}: ${wgslType}`
