@@ -1,5 +1,6 @@
-import { fragment, isNodeProxy, vertex } from '../node'
-import type { NodeProxy } from '../node'
+import { fragment, vertex } from '../node'
+import type { X } from '../node'
+import { is } from './helpers'
 
 const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
@@ -12,16 +13,10 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         console.warn(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (
-        c: WebGLRenderingContext,
-        vs: string | NodeProxy,
-        fs: string | NodeProxy,
-        onError = () => {},
-        gl?: any
-) => {
+export const createProgram = (c: WebGLRenderingContext, vs: X, fs: string | X, onError = () => {}, gl?: any) => {
         const config = { isWebGL: true, gl }
-        if (isNodeProxy(fs)) fs = fragment(fs, config)
-        if (isNodeProxy(vs)) vs = vertex(vs, config)
+        if (!is.str(fs)) fs = fragment(fs, config)
+        if (!is.str(vs)) vs = vertex(vs, config)
         const pg = c.createProgram()
         const _vs = createShader(c, vs, c.VERTEX_SHADER)
         const _fs = createShader(c, fs, c.FRAGMENT_SHADER)
