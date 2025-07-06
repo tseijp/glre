@@ -47,8 +47,8 @@ export const createPipeline = (
         bufferLayouts: GPUVertexBufferLayout[],
         bindGroupLayouts: GPUBindGroupLayout[],
         webgpu: WebGPUState,
-        vs: string | X,
-        fs: string | X
+        vs: X,
+        fs: X
 ) => {
         const config = { isWebGL: false, webgpu }
         if (!is.str(fs)) fs = fragment(fs, config)

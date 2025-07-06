@@ -13,7 +13,7 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         console.warn(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vs: X, fs: string | X, onError = () => {}, gl?: any) => {
+export const createProgram = (c: WebGLRenderingContext, vs: X, fs: X, onError = () => {}, gl?: any) => {
         const config = { isWebGL: true, gl }
         if (!is.str(fs)) fs = fragment(fs, config)
         if (!is.str(vs)) vs = vertex(vs, config)
