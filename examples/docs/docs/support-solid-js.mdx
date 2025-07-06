@@ -214,13 +214,13 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const height = uniform(float(9.2), 'height')
-        const radius = uniform(float(14.5), 'radius')
-        const color1 = uniform(vec3(53 / 255, 97 / 255, 159 / 255), 'color1')
-        const color2 = uniform(vec3(74 / 255, 128 / 255, 191 / 255), 'color2')
-        const eye = uniform(vec3(25, 44, 50), 'eye')
-        const zoom = uniform(float(7.5), 'zoom')
-        const repeat = uniform(float(0), 'repeat')
+        const height = uniform(float(), 'height')
+        const radius = uniform(float(), 'radius')
+        const color1 = uniform(vec3(), 'color1')
+        const color2 = uniform(vec3(), 'color2')
+        const eye = uniform(vec3(), 'eye')
+        const zoom = uniform(float(), 'zoom')
+        const repeat = uniform(float(), 'repeat')
 
         const scale = Fn(([x, y, z]) => {
                 return mat3(float(1).div(x), 0, 0, 0, float(1).div(y), 0, 0, 0, float(1).div(z))
@@ -250,7 +250,7 @@ function Canvas() {
                 return min(d1, d2)
         })
 
-        const rayMarch = Fn(() => {
+        const rayMarch = Fn(([position]) => {
                 const look = vec3(0).sub(eye).normalize()
                 const scr = position.xy.sub(iResolution.mul(0.5))
                 const dir = vec3(scr.x, scr.y, 0).div(zoom)
@@ -273,12 +273,13 @@ function Canvas() {
                 })
 
                 return vec4(0, 0, 0, 1)
-        })
+        })(position)
 
         const gl = useGL({
+                frag: rayMarch,
                 width: 512,
                 height: 512,
-                frag: rayMarch(),
+                isWebGL: true,
         })
 
         gl.uniform(

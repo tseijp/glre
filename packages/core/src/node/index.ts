@@ -26,25 +26,27 @@ const generateStruct = (id: string, map: Map<string, string>) => {
 }
 
 export const vertex = (x: X, c: NodeContext) => {
+        c.headers?.clear()
+        c.isFrag = false // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
                 ret.push('#version 300 es')
-                for (const code of c.inputs!.values()) ret.push(`in ${code}`)
-                for (const code of c.outputs!.values()) ret.push(`out ${code}`)
+                for (const code of c.vertInputs!.values()) ret.push(`in ${code}`)
+                for (const code of c.vertOutputs!.values()) ret.push(`out ${code}`)
                 ret.push(head)
                 ret.push('void main() {')
                 ret.push(`  gl_Position = ${body};`)
-                for (const [id, code] of c.varyings!.entries()) ret.push(`  ${id} = ${code};`)
+                for (const [id, code] of c.vertVaryings!.entries()) ret.push(`  ${id} = ${code};`)
         } else {
-                if (c.inputs?.size) ret.push(generateStruct('In', c.inputs))
-                if (c.outputs?.size) ret.push(generateStruct('Out', c.outputs))
+                if (c.vertInputs?.size) ret.push(generateStruct('In', c.vertInputs))
+                if (c.vertOutputs?.size) ret.push(generateStruct('Out', c.vertOutputs))
                 ret.push(head)
                 ret.push('@vertex')
-                ret.push(`fn main(${c.inputs?.size ? 'in: In' : ''}) -> Out {`)
+                ret.push(`fn main(${c.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
                 ret.push('  var out: Out;')
                 ret.push(`  out.position = ${body};`)
-                for (const [id, code] of c.varyings!.entries()) ret.push(`  out.${id} = ${code};`)
+                for (const [id, code] of c.vertVaryings!.entries()) ret.push(`  out.${id} = ${code};`)
                 ret.push('  return out;')
         }
         ret.push('}')
@@ -54,17 +56,17 @@ export const vertex = (x: X, c: NodeContext) => {
 }
 
 export const fragment = (x: X, c: NodeContext) => {
+        c.headers?.clear()
         c.isFrag = true // for varying inputs or outputs
-        c.inputs?.clear() // ignore vertex inputs @TODO FIX
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
                 ret.push(GLSL_FRAGMENT_HEAD)
-                for (const code of c.outputs!.values()) ret.push(`in ${code}`)
+                for (const code of c.fragInputs!.values()) ret.push(`in ${code}`)
                 ret.push(head)
                 ret.push(`void main() {\n  fragColor = ${body};`)
         } else {
-                if (c.outputs?.size) ret.push(generateStruct('Out', c.outputs))
+                if (c.fragInputs?.size) ret.push(generateStruct('Out', c.fragInputs))
                 ret.push(head)
                 ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
                 ret.push(`  return ${body};`)

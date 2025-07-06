@@ -16,12 +16,16 @@ import {
 
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
-        if (!c.varyings) c.varyings = new Map()
         if (!c.headers) c.headers = new Map()
-        if (!c.inputs) c.inputs = new Map()
-        if (!c.outputs) {
-                c.outputs = new Map()
-                c.outputs.set('position', c.isWebGL ? 'vec4 position;' : '@builtin(position) position: vec4f') // default builtin outputs
+        if (!c.vertVaryings) c.vertVaryings = new Map()
+        if (!c.fragInputs) c.fragInputs = new Map()
+        if (!c.vertInputs) c.vertInputs = new Map()
+        if (!c.vertOutputs) {
+                c.vertOutputs = new Map()
+                if (!c.isWebGL) {
+                        c.fragInputs.set('position', '@builtin(position) position: vec4f')
+                        c.vertOutputs.set('position', '@builtin(position) position: vec4f')
+                }
         }
         if (is.str(target)) return target
         if (is.num(target)) {
@@ -39,7 +43,10 @@ export const code = (target: X, c?: NodeContext | null): string => {
          */
         if (type === 'variable') return id
         if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
-        if (type === 'ternary') return `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
+        if (type === 'ternary')
+                return c.isWebGL
+                        ? `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
+                        : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
         if (type === 'conversion') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
@@ -73,21 +80,24 @@ export const code = (target: X, c?: NodeContext | null): string => {
          * headers
          */
         if (type === 'varying') {
-                if (c.outputs.has(id)) return c.isWebGL ? `${id}` : `out.${id}`
-                c.outputs.set(id, parseVaryingHead(c, id, infer(target, c)))
-                c.varyings.set(id, code(x, c))
+                if (c.vertOutputs.has(id)) return c.isWebGL ? `${id}` : `out.${id}`
+                const field = parseVaryingHead(c, id, infer(target, c))
+                c.fragInputs.set(id, field)
+                c.vertOutputs.set(id, field)
+                c.vertVaryings.set(id, code(x, c))
                 return c.isWebGL ? `${id}` : `out.${id}`
         }
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(id)
                 if (id === 'position') return 'out.position'
-                const code = `@builtin(${id}) ${id}: ${formatConversions(infer(target, c), c)}`
-                // c.outputs.set(id, code) // @TODO FIX: fragment builtin variable
-                c.inputs.set(id, code)
+                const field = `@builtin(${id}) ${id}: ${formatConversions(infer(target, c), c)}`
+                if (c.isFrag) {
+                        c.fragInputs.set(id, field)
+                } else c.vertInputs.set(id, field)
                 return `in.${id}`
         }
         if (type === 'attribute') {
-                c.inputs.set(id, parseAttribHead(c, id, infer(target, c)))
+                c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
                 return c.isWebGL ? `${id}` : `in.${id}`
         }
         if (c.headers.has(id)) return id // must last

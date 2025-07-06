@@ -62,10 +62,11 @@ export interface NodeContext {
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
         webgpu?: WebGPUState
-        inputs?: Map<string, string>
-        outputs?: Map<string, string>
         headers?: Map<string, string>
-        varyings?: Map<string, string>
+        fragInputs?: Map<string, string>
+        vertInputs?: Map<string, string>
+        vertOutputs?: Map<string, string>
+        vertVaryings?: Map<string, string>
 }
 
 /**
