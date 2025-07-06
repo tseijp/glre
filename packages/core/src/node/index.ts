@@ -2,7 +2,6 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb } from './utils'
-import { generateWGSLStruct, parseVaryingHead, parseVaryingMain } from './parse'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -22,19 +21,33 @@ const generateHead = (x: X, c: NodeContext) => {
         return [head, body]
 }
 
-export const fragment = (x: X, c: NodeContext) => {
+const generateStruct = (id: string, map: Map<string, string>) => {
+        return `struct ${id} {\n  ${Array.from(map.values()).join(',\n  ')}\n}`
+}
+
+export const vertex = (x: X, c: NodeContext) => {
+        c.headers?.clear()
+        c.isFrag = false // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
-                ret.push(GLSL_FRAGMENT_HEAD)
-                ret.push(...parseVaryingHead(c, 'in'))
+                ret.push('#version 300 es')
+                for (const code of c.vertInputs!.values()) ret.push(`in ${code}`)
+                for (const code of c.vertOutputs!.values()) ret.push(`out ${code}`)
                 ret.push(head)
-                ret.push(`void main() {\n  fragColor = ${body};`)
+                ret.push('void main() {')
+                ret.push(`  gl_Position = ${body};`)
+                for (const [id, code] of c.vertVaryings!.entries()) ret.push(`  ${id} = ${code};`)
         } else {
-                ret.push(generateWGSLStruct(c))
+                if (c.vertInputs?.size) ret.push(generateStruct('In', c.vertInputs))
+                if (c.vertOutputs?.size) ret.push(generateStruct('Out', c.vertOutputs))
                 ret.push(head)
-                ret.push('@fragment\nfn main(out: Out) -> @location(0) vec4f {')
-                ret.push(`  return ${body};`)
+                ret.push('@vertex')
+                ret.push(`fn main(${c.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
+                ret.push('  var out: Out;')
+                ret.push(`  out.position = ${body};`)
+                for (const [id, code] of c.vertVaryings!.entries()) ret.push(`  out.${id} = ${code};`)
+                ret.push('  return out;')
         }
         ret.push('}')
         const main = ret.filter(Boolean).join('\n')
@@ -42,28 +55,21 @@ export const fragment = (x: X, c: NodeContext) => {
         return main
 }
 
-export const vertex = (x: X, c: NodeContext) => {
+export const fragment = (x: X, c: NodeContext) => {
+        c.headers?.clear()
+        c.isFrag = true // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
-                ret.push('#version 300 es')
-                ret.push(...parseVaryingHead(c, 'out'))
+                ret.push(GLSL_FRAGMENT_HEAD)
+                for (const code of c.fragInputs!.values()) ret.push(`in ${code}`)
                 ret.push(head)
-                ret.push('void main() {')
-                ret.push(`  gl_Position = ${body};`)
-                ret.push(...parseVaryingMain(c, 'vertex'))
+                ret.push(`void main() {\n  fragColor = ${body};`)
         } else {
-                const inputs = Array.from(c.arguments?.values() ?? [])
-                ret.push(generateWGSLStruct(c))
+                if (c.fragInputs?.size) ret.push(generateStruct('Out', c.fragInputs))
                 ret.push(head)
-                ret.push('@vertex')
-                ret.push(`fn main(${inputs.join(', ')}) -> Out {`)
-                ret.push('  var out: Out;')
-                ret.push(`  out.position = ${body};`)
-                for (const varying of c.varyings?.values() ?? []) {
-                        ret.push(`  out.${varying.id} = ${varying.code};`)
-                }
-                ret.push('  return out;')
+                ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
+                ret.push(`  return ${body};`)
         }
         ret.push('}')
         const main = ret.filter(Boolean).join('\n')

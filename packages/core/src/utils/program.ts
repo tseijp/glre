@@ -1,24 +1,6 @@
-import { fragment, isNodeProxy, vertex } from '../node'
-import type { NodeProxy } from '../node'
-
-export const defaultVertexGLSL = /* cpp */ `
-#version 300 es
-void main() {
-  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
-  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
-  gl_Position = vec4(x, y, 0.0, 1.0);
-}
-`
-
-export const defaultFragmentGLSL = /* cpp */ `
-#version 300 es
-precision mediump float;
-uniform vec2 iResolution;
-out vec4 fragColor;
-void main() {
-  fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
+import { fragment, vertex } from '../node'
+import type { X } from '../node'
+import { is } from './helpers'
 
 const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
@@ -31,16 +13,10 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         console.warn(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (
-        c: WebGLRenderingContext,
-        vs: string | NodeProxy = defaultVertexGLSL,
-        fs: string | NodeProxy = defaultFragmentGLSL,
-        onError = () => {},
-        gl?: any
-) => {
+export const createProgram = (c: WebGLRenderingContext, vs: X, fs: X, onError = () => {}, gl?: any) => {
         const config = { isWebGL: true, gl }
-        if (isNodeProxy(fs)) fs = fragment(fs, config)
-        if (isNodeProxy(vs)) vs = vertex(vs, config)
+        if (!is.str(fs)) fs = fragment(fs, config)
+        if (!is.str(vs)) vs = vertex(vs, config)
         const pg = c.createProgram()
         const _vs = createShader(c, vs, c.VERTEX_SHADER)
         const _fs = createShader(c, fs, c.FRAGMENT_SHADER)

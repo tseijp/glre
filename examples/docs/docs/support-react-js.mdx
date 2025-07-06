@@ -138,10 +138,10 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const ellipseRadius = uniform(0.5, 'ellipseRadius')
-        const ellipseXCoord = uniform(1.0, 'ellipseXCoord')
-        const ellipseYCoord = uniform(1.0, 'ellipseYCoord')
-        const ellipseStroke = uniform(0.1, 'ellipseStroke')
+        const ellipseRadius = uniform(float(), 'ellipseRadius')
+        const ellipseXCoord = uniform(float(), 'ellipseXCoord')
+        const ellipseYCoord = uniform(float(), 'ellipseYCoord')
+        const ellipseStroke = uniform(float(), 'ellipseStroke')
 
         const PI = float(3.141592)
 
@@ -199,7 +199,7 @@ function Canvas() {
                 ],
         })
 
-        const frag = Fn(() => {
+        const frag = Fn(([position]) => {
                 const uv = fract(position.xy.div(iResolution)).toVar('uv')
                 const p = uv.mul(2.4).sub(1.2).toVar('p')
                 p.x = p.x.mul(iResolution.x.div(iResolution.y))
@@ -212,9 +212,14 @@ function Canvas() {
                         color.assign(vec4(float(96).div(255), float(219).div(255), float(251).div(255), 0.8))
                 })
                 return color
-        })()
+        })(position)
 
-        const gl = useGL({ frag })
+        const gl = useGL({
+                frag,
+                width: 512,
+                height: 512,
+                isWebGL: true,
+        })
 
         gl.uniform(
                 useControls({
