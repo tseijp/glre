@@ -68,8 +68,8 @@ export const createPipeline = (
         fs: string | NodeProxy = defaultFragmentWGSL
 ) => {
         const config = { isWebGL: false, webgpu }
-        if (isNodeProxy(vs)) vs = vertex(vs, config)
         if (isNodeProxy(fs)) fs = fragment(fs, config)
+        if (isNodeProxy(vs)) vs = vertex(vs, config)
         const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {
@@ -84,6 +84,11 @@ export const createPipeline = (
                 },
                 layout,
                 primitive: { topology: 'triangle-list' },
+                depthStencil: {
+                        depthWriteEnabled: true,
+                        depthCompare: 'less',
+                        format: 'depth24plus',
+                },
         })
 }
 
@@ -136,7 +141,7 @@ export const createBindGroup = (
         return ret
 }
 
-export const createDescriptor = (c: GPUCanvasContext) => {
+export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) => {
         return {
                 colorAttachments: [
                         {
@@ -146,6 +151,12 @@ export const createDescriptor = (c: GPUCanvasContext) => {
                                 storeOp: 'store' as GPUStoreOp,
                         },
                 ],
+                depthStencilAttachment: {
+                        view: depthTexture.createView(),
+                        depthClearValue: 1.0,
+                        depthLoadOp: 'clear' as GPULoadOp,
+                        depthStoreOp: 'store' as GPUStoreOp,
+                },
         } as GPURenderPassDescriptor
 }
 
@@ -153,6 +164,14 @@ export const createTextureSampler = (device: GPUDevice, width = 1280, height = 8
         const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
         return { texture, sampler }
+}
+
+export const createDepthTexture = (device: GPUDevice, width: number, height: number) => {
+        return device.createTexture({
+                size: [width, height],
+                format: 'depth24plus',
+                usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        })
 }
 
 /**

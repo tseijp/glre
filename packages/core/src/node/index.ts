@@ -1,14 +1,75 @@
+import { is } from '../utils/helpers'
+import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb } from './utils'
-import { is } from '../utils/helpers'
-import type { X } from './types'
+import { generateWGSLStruct, parseVaryingHead, parseVaryingMain } from './parse'
+import type { NodeContext, X } from './types'
 export * from './code'
-export * from './const'
-export * from './infer'
 export * from './node'
 export * from './scope'
 export * from './types'
 export * from './utils'
+
+const GLSL_FRAGMENT_HEAD = `
+#version 300 es
+precision mediump float;
+out vec4 fragColor;
+`.trim()
+
+const generateHead = (x: X, c: NodeContext) => {
+        const body = code(x, c)
+        const head = Array.from(c.headers!.values()).join('\n')
+        return [head, body]
+}
+
+export const fragment = (x: X, c: NodeContext) => {
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        if (c.isWebGL) {
+                ret.push(GLSL_FRAGMENT_HEAD)
+                ret.push(...parseVaryingHead(c, 'in'))
+                ret.push(head)
+                ret.push(`void main() {\n  fragColor = ${body};`)
+        } else {
+                ret.push(generateWGSLStruct(c))
+                ret.push(head)
+                ret.push('@fragment\nfn main(out: Out) -> @location(0) vec4f {')
+                ret.push(`  return ${body};`)
+        }
+        ret.push('}')
+        const main = ret.filter(Boolean).join('\n')
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
+}
+
+export const vertex = (x: X, c: NodeContext) => {
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        if (c.isWebGL) {
+                ret.push('#version 300 es')
+                ret.push(...parseVaryingHead(c, 'out'))
+                ret.push(head)
+                ret.push('void main() {')
+                ret.push(`  gl_Position = ${body};`)
+                ret.push(...parseVaryingMain(c, 'vertex'))
+        } else {
+                const inputs = Array.from(c.arguments?.values() ?? [])
+                ret.push(generateWGSLStruct(c))
+                ret.push(head)
+                ret.push('@vertex')
+                ret.push(`fn main(${inputs.join(', ')}) -> Out {`)
+                ret.push('  var out: Out;')
+                ret.push(`  out.position = ${body};`)
+                for (const varying of c.varyings?.values() ?? []) {
+                        ret.push(`  out.${varying.id} = ${varying.code};`)
+                }
+                ret.push('  return out;')
+        }
+        ret.push('}')
+        const main = ret.filter(Boolean).join('\n')
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
+}
 
 // Builtin Variables
 export const position = builtin('position')
