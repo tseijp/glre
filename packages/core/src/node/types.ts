@@ -56,6 +56,7 @@ export interface NodeProps {
 }
 
 export interface NodeContext {
+        isFrag?: boolean
         isWebGL?: boolean
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>

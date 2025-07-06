@@ -1,25 +1,6 @@
 import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
 
-export const defaultVertexGLSL = /* cpp */ `
-#version 300 es
-void main() {
-  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
-  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
-  gl_Position = vec4(x, y, 0.0, 1.0);
-}
-`
-
-export const defaultFragmentGLSL = /* cpp */ `
-#version 300 es
-precision mediump float;
-uniform vec2 iResolution;
-out vec4 fragColor;
-void main() {
-  fragColor = vec4(fract(gl_FragCoord.xy / iResolution), 0, 1);
-}
-`
-
 const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
         if (!shader) throw new Error('Failed to create shader')
@@ -33,8 +14,8 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
 
 export const createProgram = (
         c: WebGLRenderingContext,
-        vs: string | NodeProxy = defaultVertexGLSL,
-        fs: string | NodeProxy = defaultFragmentGLSL,
+        vs: string | NodeProxy,
+        fs: string | NodeProxy,
         onError = () => {},
         gl?: any
 ) => {

@@ -25,26 +25,6 @@ const generateStruct = (id: string, map: Map<string, string>) => {
         return `struct ${id} {\n  ${Array.from(map.values()).join(',\n  ')}\n}`
 }
 
-export const fragment = (x: X, c: NodeContext) => {
-        const [head, body] = generateHead(x, c)
-        const ret = []
-        if (c.isWebGL) {
-                ret.push(GLSL_FRAGMENT_HEAD)
-                for (const code of c.outputs!.values()) ret.push(`in ${code}`)
-                ret.push(head)
-                ret.push(`void main() {\n  fragColor = ${body};`)
-        } else {
-                if (c.outputs?.size) ret.push(generateStruct('Out', c.outputs))
-                ret.push(head)
-                ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
-                ret.push(`  return ${body};`)
-        }
-        ret.push('}')
-        const main = ret.filter(Boolean).join('\n')
-        console.log(`↓↓↓generated↓↓↓\n${main}`)
-        return main
-}
-
 export const vertex = (x: X, c: NodeContext) => {
         const [head, body] = generateHead(x, c)
         const ret = []
@@ -61,11 +41,33 @@ export const vertex = (x: X, c: NodeContext) => {
                 if (c.outputs?.size) ret.push(generateStruct('Out', c.outputs))
                 ret.push(head)
                 ret.push('@vertex')
-                ret.push(`fn main(in: In) -> Out {`)
+                ret.push(`fn main(${c.inputs?.size ? 'in: In' : ''}) -> Out {`)
                 ret.push('  var out: Out;')
                 ret.push(`  out.position = ${body};`)
                 for (const [id, code] of c.varyings!.entries()) ret.push(`  out.${id} = ${code};`)
                 ret.push('  return out;')
+        }
+        ret.push('}')
+        const main = ret.filter(Boolean).join('\n')
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
+}
+
+export const fragment = (x: X, c: NodeContext) => {
+        c.isFrag = true // for varying inputs or outputs
+        c.inputs?.clear() // ignore vertex inputs @TODO FIX
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        if (c.isWebGL) {
+                ret.push(GLSL_FRAGMENT_HEAD)
+                for (const code of c.outputs!.values()) ret.push(`in ${code}`)
+                ret.push(head)
+                ret.push(`void main() {\n  fragColor = ${body};`)
+        } else {
+                if (c.outputs?.size) ret.push(generateStruct('Out', c.outputs))
+                ret.push(head)
+                ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
+                ret.push(`  return ${body};`)
         }
         ret.push('}')
         const main = ret.filter(Boolean).join('\n')

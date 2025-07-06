@@ -2,24 +2,6 @@ import { fragment, isNodeProxy, vertex } from '../node'
 import type { NodeProxy } from '../node'
 import type { AttribData, TextureData, UniformData, WebGPUState } from '../types'
 
-const defaultVertexWGSL = `
-@vertex
-fn main(@builtin(vertex_index) vertex_index: u32) -> @builtin(position) vec4f {
-  let x = f32(vertex_index % 2u) * 4.0 - 1.0;
-  let y = f32(vertex_index / 2u) * 4.0 - 1.0;
-  return vec4f(x, y, 0.0, 1.0);
-}
-`
-
-const defaultFragmentWGSL = `
-@group(0) @binding(0) var<uniform> iResolution: vec2f;
-
-@fragment
-fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-  return vec4f(position.xy / iResolution, 0.0, 1.0);
-}
-`
-
 /**
  * initialize
  */
@@ -64,8 +46,8 @@ export const createPipeline = (
         bufferLayouts: GPUVertexBufferLayout[],
         bindGroupLayouts: GPUBindGroupLayout[],
         webgpu: WebGPUState,
-        vs: string | NodeProxy = defaultVertexWGSL,
-        fs: string | NodeProxy = defaultFragmentWGSL
+        vs: string | NodeProxy,
+        fs: string | NodeProxy
 ) => {
         const config = { isWebGL: false, webgpu }
         if (isNodeProxy(fs)) fs = fragment(fs, config)

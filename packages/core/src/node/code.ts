@@ -81,8 +81,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(id)
                 if (id === 'position') return 'out.position'
-                const code = `@builtin(${id}) ${id}: ${formatConversions(infer(id, c), c)}`
-                c.outputs.set(id, code)
+                const code = `@builtin(${id}) ${id}: ${formatConversions(infer(target, c), c)}`
+                // c.outputs.set(id, code) // @TODO FIX: fragment builtin variable
                 c.inputs.set(id, code)
                 return `in.${id}`
         }
