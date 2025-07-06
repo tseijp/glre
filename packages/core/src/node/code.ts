@@ -12,12 +12,14 @@ import {
         parseSwitch,
         parseTexture,
 } from './parse'
+import { BUILTIN_TYPES } from './const'
 
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
         if (!c.headers) c.headers = new Map()
-        if (!c.varyings) c.varyings = new Map()
-        if (!c.arguments) c.arguments = new Map()
+        if (!c.inputs) c.inputs = new Map()
+        if (!c.outputs)
+                c.outputs = new Map([['position', c.isWebGL ? 'vec4 position;' : '@builtin(position) position: vec4f']])
         if (is.str(target)) return target
         if (is.num(target)) {
                 const ret = `${target}`
@@ -33,22 +35,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
          * variables
          */
         if (type === 'variable') return id
-        if (type === 'varying') {
-                if (c.varyings.has(id)) {
-                        const existing = c.varyings.get(id)!
-                        if (c.isWebGL) return `v_${existing.id}`
-                        else return `out.${existing.id}`
-                }
-                const varType = infer(target, c)
-                const location = c.varyings.size
-                const varyingData = { id, type: varType, location, code: code(x, c) }
-                c.varyings.set(id, varyingData)
-                if (c.isWebGL) return `v_${id}`
-                else return `out.${id}`
-        }
         if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary') return `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
-        if (type === 'builtin') return c?.isWebGL ? getBluiltin(id) : id
         if (type === 'conversion') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
@@ -81,20 +69,41 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 return ret
         }
         /**
+         * inputs and outputs
+         */
+        if (type === 'varying') {
+                const varType = infer(target, c)
+                const location = c.outputs.size
+                if (c.isWebGL) {
+                        c.outputs.set(id, `out ${varType} ${id};`)
+                } else c.outputs.set(id, `@location(${location}) ${id}: ${formatConversions(varType, c)}`)
+                if (c.isWebGL) return id
+                else return `out.${id}`
+        }
+        if (type === 'builtin') {
+                if (c.isWebGL) return getBluiltin(id)
+                const varType = BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES]!
+                if (id === 'position') return 'out.position'
+                c.outputs.set(id, `@builtin(${id}) ${id}: ${formatConversions(varType, c)}`)
+                c.inputs.set(id, `@builtin(${id}) ${id}: ${formatConversions(varType, c)}`)
+                return `input.${id}`
+        }
+        /**
          * headers
          */
-        if (c.headers.has(id)) return id
+        if (c.headers.has(id)) return id //
         let head = ''
-        if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
-        if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (type === 'attribute') {
                 const varType = infer(target, c)
                 head = parseAttribHead(c, id, varType)
-                if (!c.isWebGL) {
-                        c.arguments.set(id, head)
-                        return id
+                if (!c.isWebGL && c.inputs) {
+                        const location = c.inputs.size
+                        c.inputs.set(id, `@location(${location}) ${id}: ${formatConversions(varType, c)}`)
+                        return `input.${id}`
                 }
         }
+        if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
+        if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {
                 c.headers.set(id, head)
                 return id

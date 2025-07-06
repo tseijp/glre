@@ -2,7 +2,6 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb } from './utils'
-import { generateWGSLStruct, parseVaryingHead, parseVaryingMain } from './parse'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -22,18 +21,22 @@ const generateHead = (x: X, c: NodeContext) => {
         return [head, body]
 }
 
+const generateStruct = (id: string, lines: string[]) => {
+        return `struct ${id} {\n  ${lines.join(',\n  ')}\n}`
+}
+
 export const fragment = (x: X, c: NodeContext) => {
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
                 ret.push(GLSL_FRAGMENT_HEAD)
-                ret.push(...parseVaryingHead(c, 'in'))
+                for (const output of c.outputs?.values() || []) ret.push(`in ${output}`)
                 ret.push(head)
                 ret.push(`void main() {\n  fragColor = ${body};`)
         } else {
-                ret.push(generateWGSLStruct(c))
+                ret.push(generateStruct('Out', Array.from(c.outputs?.values() || [])))
                 ret.push(head)
-                ret.push('@fragment\nfn main(out: Out) -> @location(0) vec4f {')
+                ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
@@ -47,22 +50,20 @@ export const vertex = (x: X, c: NodeContext) => {
         const ret = []
         if (c.isWebGL) {
                 ret.push('#version 300 es')
-                ret.push(...parseVaryingHead(c, 'out'))
+                for (const output of c.outputs?.values() || []) ret.push(`out ${output}`)
                 ret.push(head)
                 ret.push('void main() {')
                 ret.push(`  gl_Position = ${body};`)
-                ret.push(...parseVaryingMain(c, 'vertex'))
+                for (const id of c.outputs?.keys() || []) ret.push(`  ${id} = ${id};`)
         } else {
-                const inputs = Array.from(c.arguments?.values() ?? [])
-                ret.push(generateWGSLStruct(c))
+                if (c.inputs?.size) ret.push(generateStruct('In', Array.from(c.inputs?.values() || [])))
+                ret.push(generateStruct('Out', Array.from(c.outputs?.values() || [])))
                 ret.push(head)
                 ret.push('@vertex')
-                ret.push(`fn main(${inputs.join(', ')}) -> Out {`)
+                ret.push(`fn main(input: In) -> Out {`)
                 ret.push('  var out: Out;')
                 ret.push(`  out.position = ${body};`)
-                for (const varying of c.varyings?.values() ?? []) {
-                        ret.push(`  out.${varying.id} = ${varying.code};`)
-                }
+                for (const id of c.outputs?.keys() || []) if (id !== 'position') ret.push(`  out.${id} = ${id};`)
                 ret.push('  return out;')
         }
         ret.push('}')

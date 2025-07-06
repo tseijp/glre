@@ -44,6 +44,7 @@ export type NodeTypes =
         | 'switch'
         | 'declare'
         | 'return'
+
 export interface NodeProps {
         id?: string
         args?: X[]
@@ -58,11 +59,11 @@ export interface NodeContext {
         isWebGL?: boolean
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
-        headers?: Map<string, string>
         onMount?: (name: string) => void
         webgpu?: WebGPUState
-        arguments?: Map<string, string>
-        varyings?: Map<string, { id: string; type: Constants; location: number; code: string }>
+        inputs?: Map<string, string>
+        outputs?: Map<string, string>
+        headers?: Map<string, string>
 }
 
 /**

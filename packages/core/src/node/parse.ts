@@ -4,56 +4,6 @@ import { code } from './code'
 import type { Constants, NodeContext, NodeProps, X } from './types'
 
 /**
- * varying
- */
-export const parseVaryingHead = (c: NodeContext, direction: 'in' | 'out') => {
-        const ret: string[] = []
-        if (c.varyings) {
-                for (const varying of c.varyings.values()) {
-                        ret.push(`${direction} ${varying.type} v_${varying.id};`)
-                }
-        }
-        return ret.join('\n')
-}
-
-export const parseVaryingMain = (c: NodeContext, stage: 'vertex' | 'fragment') => {
-        const ret: string[] = []
-        if (c.varyings) {
-                for (const varying of c.varyings.values()) {
-                        if (stage === 'vertex') {
-                                ret.push(`  v_${varying.id} = ${varying.code};`)
-                        }
-                        // fragment stage doesn't need assignment code
-                }
-        }
-        return ret.join('\n')
-}
-
-export const parseVaryingWGSL = (c: NodeContext, stage: 'vertex' | 'fragment') => {
-        const ret: string[] = []
-        if (c.varyings) {
-                for (const varying of c.varyings.values()) {
-                        if (stage === 'vertex') {
-                                ret.push(`  out.${varying.id} = ${varying.code};`)
-                        }
-                        // fragment stage doesn't need assignment code
-                }
-        }
-        return ret.join('\n')
-}
-
-export const generateWGSLStruct = (c: NodeContext) => {
-        const fields = [`@builtin(position) position: vec4f`]
-        if (c.varyings)
-                for (const varying of c.varyings.values()) {
-                        fields.push(
-                                `@location(${varying.location}) ${varying.id}: ${formatConversions(varying.type, c)}`
-                        )
-                }
-        return `struct Out {\n  ${fields.join(',\n  ')}\n}\n`
-}
-
-/**
  * headers
  */
 export const parseUniformHead = (c: NodeContext, id: string, varType: Constants) => {
