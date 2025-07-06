@@ -30,25 +30,6 @@ export const code = (target: X, c?: NodeContext | null): string => {
         const { id = '', children = [] } = props
         const [x, y, z, w] = children
         /**
-         * headers
-         */
-        if (c.headers.has(id)) return id
-        let head = ''
-        if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
-        if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
-        if (type === 'attribute') {
-                const varType = infer(target, c)
-                head = parseAttribHead(c, id, varType)
-                if (!c.isWebGL) {
-                        c.arguments.set(id, head)
-                        return id
-                }
-        }
-        if (head) {
-                c.headers.set(id, head)
-                return id
-        }
-        /**
          * variables
          */
         if (type === 'variable') return id
@@ -98,6 +79,25 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (c.headers.has(id)) return ret
                 c.headers.set(id, parseDefine(c, props, returnType))
                 return ret
+        }
+        /**
+         * headers
+         */
+        if (c.headers.has(id)) return id
+        let head = ''
+        if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
+        if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
+        if (type === 'attribute') {
+                const varType = infer(target, c)
+                head = parseAttribHead(c, id, varType)
+                if (!c.isWebGL) {
+                        c.arguments.set(id, head)
+                        return id
+                }
+        }
+        if (head) {
+                c.headers.set(id, head)
+                return id
         }
         return code(x, c)
 }

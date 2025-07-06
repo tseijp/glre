@@ -4,6 +4,7 @@ import {
         createAttribBuffer,
         createBindGroup,
         createBindings,
+        createDepthTexture,
         createDescriptor,
         createDevice,
         createPipeline,
@@ -19,6 +20,7 @@ export const webgpu = async (gl: Partial<GL>) => {
         const bindings = createBindings()
         let imageLoading = 0
         let needsUpdate = true
+        let depthTexture: GPUTexture
         let _render = (_pass: GPURenderPassEncoder) => {}
 
         const uniforms = cached((_key, value: number[]) => {
@@ -61,11 +63,19 @@ export const webgpu = async (gl: Partial<GL>) => {
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
-                _render(encoder.beginRenderPass(createDescriptor(c)))
+                _render(encoder.beginRenderPass(createDescriptor(c, depthTexture)))
                 device.queue.submit([encoder.finish()])
         }
 
-        const clean = () => {}
+        const resize = () => {
+                const canvas = gl.el as HTMLCanvasElement
+                depthTexture?.destroy()
+                depthTexture = createDepthTexture(device, canvas.width, canvas.height)
+        }
+
+        const clean = () => {
+                depthTexture?.destroy()
+        }
 
         const _attribute = (key = '', value: number[]) => {
                 const { array, buffer } = attribs(key, value)
@@ -94,7 +104,9 @@ export const webgpu = async (gl: Partial<GL>) => {
                 })
         }
 
+        resize()
+
         const webgpu = { device, uniforms, textures, attribs } as WebGPUState
 
-        return { webgpu, render, clean, _attribute, _uniform, _texture }
+        return { webgpu, render, resize, clean, _attribute, _uniform, _texture }
 }

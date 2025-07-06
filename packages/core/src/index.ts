@@ -46,9 +46,9 @@ export const createGL = (props?: Partial<GL>) => {
         gl.queue = createQueue()
         gl.frame = createFrame()
 
-        gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)))
-        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)))
-        gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)))
+        gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
+        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)), gl)
+        gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {
