@@ -99,7 +99,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 return `in.${id}`
         }
         if (type === 'attribute') {
-                const fun = (value: any) => c.gl?._attribute?.(id, value)
+                const fun = (value: any) => c.gl?.attribute?.(id, value)
                 safeEventCall(x, fun)
                 target.listeners.add(fun)
                 c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
