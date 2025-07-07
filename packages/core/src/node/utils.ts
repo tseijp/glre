@@ -1,5 +1,4 @@
 import { is } from '../utils/helpers'
-import { code } from './code'
 import {
         CONSTANTS,
         CONVERSIONS,
@@ -49,13 +48,6 @@ export const hex2rgb = (hex: number) => {
 let count = 0
 
 export const getId = () => `i${count++}`
-
-export const joins = (children: X[], c: NodeContext) => {
-        return children
-                .filter((x) => !is.und(x) && !is.nul(x))
-                .map((x) => code(x, c))
-                .join(', ')
-}
 
 export const formatConversions = (x: X, c?: NodeContext) => {
         if (!is.str(x)) return ''

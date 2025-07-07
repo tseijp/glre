@@ -1,12 +1,20 @@
-import { infer } from './infer'
-import { formatConversions, joins } from './utils'
+import { is } from '../utils/helpers'
 import { code } from './code'
+import { infer } from './infer'
+import { formatConversions } from './utils'
 import type { Constants, NodeContext, NodeProps, X } from './types'
+
+export const parseArray = (children: X[], c: NodeContext) => {
+        return children
+                .filter((x) => !is.und(x) && !is.nul(x))
+                .map((x) => code(x, c))
+                .join(', ')
+}
 
 export const parseTexture = (c: NodeContext, y: X, z: X, w: X) => {
         if (c.isWebGL) {
                 const args = w ? [y, z, w] : [y, z]
-                return `texture(${joins(args, c)})`
+                return `texture(${parseArray(args, c)})`
         }
         const _y = code(y, c)
         const args = [_y, _y + 'Sampler', code(z, c)]

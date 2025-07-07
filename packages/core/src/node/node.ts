@@ -1,4 +1,3 @@
-import { is } from '../utils/helpers'
 import { code } from './code'
 import { assign, toVar } from './scope'
 import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId } from './utils'
@@ -36,21 +35,9 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
 }
 
 // headers
-export const attribute = (x: X | X[], id = getId()) => {
-        if (!is.arr(x)) x = [x]
-        return node('attribute', { id }, ...x)
-}
-
-export const constant = (x: X | X[], id = getId()) => {
-        if (!is.arr(x)) x = [x]
-        return node('constant', { id }, ...x)
-}
-
-export const uniform = (x: X | X[], id = getId()) => {
-        if (!is.arr(x)) x = [x]
-        return node('uniform', { id }, ...x)
-}
-
+export const attribute = (x: X, id = getId()) => node('attribute', { id }, x)
+export const constant = (x: X, id = getId()) => node('constant', { id }, x)
+export const uniform = (x: X, id = getId()) => node('uniform', { id }, x)
 export const variable = (id = getId()) => node('variable', { id })
 export const builtin = (id = getId()) => node('builtin', { id })
 export const vertexStage = (x: X, id = getId()) => node('varying', { id, inferFrom: [x] }, x)

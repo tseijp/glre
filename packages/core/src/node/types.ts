@@ -194,4 +194,4 @@ export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
 
 export type NodeProxy = BaseNodeProxy & DynamicProperties
 
-export type X = NodeProxy | number | string | boolean | undefined
+export type X = X[] | NodeProxy | number | string | boolean | undefined

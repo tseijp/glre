@@ -1,9 +1,8 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
-import { getBluiltin, getOperator, formatConversions, joins, safeEventCall } from './utils'
-import type { NodeContext, X } from './types'
 import {
         parseAttribHead,
+        parseArray,
         parseConstantHead,
         parseUniformHead,
         parseDeclare,
@@ -13,6 +12,8 @@ import {
         parseTexture,
         parseVaryingHead,
 } from './parse'
+import { getBluiltin, getOperator, formatConversions, safeEventCall } from './utils'
+import type { NodeContext, X } from './types'
 
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
@@ -27,6 +28,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
                         c.vertOutputs.set('position', '@builtin(position) position: vec4f')
                 }
         }
+        if (is.arr(target)) return parseArray(target, c)
         if (is.str(target)) return target
         if (is.num(target)) {
                 const ret = `${target}`
@@ -46,16 +48,16 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'ternary')
                 return c.isWebGL
                         ? `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
-                        : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
-        if (type === 'conversion') return `${formatConversions(x, c)}(${joins(children.slice(1), c)})`
+                        : `select(${code(z, c)}, ${code(y, c)}, ${code(x, c)})`
+        if (type === 'conversion') return `${formatConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
         if (type === 'function') {
-                if (x === 'negate') return `(-${joins(children.slice(1), c)})`
+                if (x === 'negate') return `(-${parseArray(children.slice(1), c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
-                return `${x}(${joins(children.slice(1), c)})`
+                return `${x}(${parseArray(children.slice(1), c)})`
         }
         /**
          * scopes
@@ -71,7 +73,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
         if (type === 'define') {
-                const ret = `${id}(${joins(children.slice(1), c)})`
+                const ret = `${id}(${parseArray(children.slice(1), c)})`
                 if (c.headers.has(id)) return ret
                 c.headers.set(id, parseDefine(c, props, infer(target, c)))
                 return ret
@@ -97,10 +99,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 return `in.${id}`
         }
         if (type === 'attribute') {
-                const fun = (value: any) => {
-                        console.log(value)
-                        c.gl?.attribute?.(id, value)
-                }
+                const fun = (value: any) => c.gl?._attribute?.(id, value)
                 safeEventCall(x, fun)
                 target.listeners.add(fun)
                 c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
