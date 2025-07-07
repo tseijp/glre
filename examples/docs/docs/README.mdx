@@ -390,14 +390,13 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const iTexture = uniform(texture2D())
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: true,
                 frag: texture(iTexture, position.xy.div(iResolution)),
         })
-        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
 }
 ```

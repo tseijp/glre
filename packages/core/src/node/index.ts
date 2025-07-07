@@ -98,7 +98,7 @@ export const screenCoordinate = builtin('screenCoordinate')
 export const screenUV = builtin('screenUV')
 
 // Type constructors
-export const float = (x: X) => c('float', x)
+export const float = (x?: X) => c('float', x)
 export const int = (x: X) => c('int', x)
 export const uint = (x: X) => c('uint', x)
 export const bool = (x: X) => c('bool', x)
@@ -117,7 +117,7 @@ export const uvec4 = (x?: X, y?: X, z?: X, w?: X) => c('uvec4', x, y, z, w)
 export const bvec2 = (x?: X, y?: X) => c('bvec2', x, y)
 export const bvec3 = (x?: X, y?: X, z?: X) => c('bvec3', x, y, z)
 export const bvec4 = (x?: X, y?: X, z?: X, w?: X) => c('bvec4', x, y, z, w)
-export const texture2D = () => c('texture')
+export const texture2D = (x?: X) => c('texture', x)
 export const sampler2D = () => c('sampler2D')
 export const color = (r?: X, g?: X, b?: X) => {
         if (is.num(r) && is.und(g) && is.und(b)) return vec3(...hex2rgb(r))

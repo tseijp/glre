@@ -54,6 +54,7 @@ const inferOperator = (leftType: string, rightType: string, op: string): Constan
 
 export const inferPrimitiveType = (x: any): Constants => {
         if (is.bol(x)) return 'bool'
+        if (is.str(x)) return 'texture'
         if (is.num(x)) return Number.isInteger(x) ? 'int' : 'float'
         if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'float'
         return 'float'

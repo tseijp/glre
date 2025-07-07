@@ -1,6 +1,6 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
-import { getBluiltin, getOperator, formatConversions, joins, isNodeProxy, safeEventCall } from './utils'
+import { getBluiltin, getOperator, formatConversions, joins, safeEventCall } from './utils'
 import type { NodeContext, X } from './types'
 import {
         parseAttribHead,
@@ -109,10 +109,14 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (c.headers.has(id)) return id // must last
         let head = ''
         if (type === 'uniform') {
-                const fun = (value: any) => c.gl?.uniform?.(id, value)
+                const varType = infer(target, c)
+                const isTexture = varType === 'texture'
+                const fun = isTexture
+                        ? (value: any) => c.gl?.texture?.(id, value)
+                        : (value: any) => c.gl?.uniform?.(id, value)
                 safeEventCall(x, fun)
                 target.listeners.add(fun)
-                head = parseUniformHead(c, id, infer(target, c))
+                head = parseUniformHead(c, id, varType)
         }
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {
