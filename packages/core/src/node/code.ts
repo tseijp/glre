@@ -1,6 +1,6 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
-import { getBluiltin, getOperator, formatConversions, joins } from './utils'
+import { getBluiltin, getOperator, formatConversions, joins, isNodeProxy, safeEventCall } from './utils'
 import type { NodeContext, X } from './types'
 import {
         parseAttribHead,
@@ -97,12 +97,23 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 return `in.${id}`
         }
         if (type === 'attribute') {
+                const fun = (value: any) => {
+                        console.log(value)
+                        c.gl?.attribute?.(id, value)
+                }
+                safeEventCall(x, fun)
+                target.listeners.add(fun)
                 c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
                 return c.isWebGL ? `${id}` : `in.${id}`
         }
         if (c.headers.has(id)) return id // must last
         let head = ''
-        if (type === 'uniform') head = parseUniformHead(c, id, infer(target, c))
+        if (type === 'uniform') {
+                const fun = (value: any) => c.gl?.uniform?.(id, value)
+                safeEventCall(x, fun)
+                target.listeners.add(fun)
+                head = parseUniformHead(c, id, infer(target, c))
+        }
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {
                 c.headers.set(id, head)

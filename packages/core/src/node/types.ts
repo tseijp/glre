@@ -105,6 +105,7 @@ export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
         type: NodeTypes
         props: NodeProps
         isProxy: true
+        listeners: Set<(value: any) => void>
 
         // Operators methods
         add(n: X): NodeProxy

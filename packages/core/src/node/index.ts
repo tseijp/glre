@@ -125,9 +125,9 @@ export const color = (r?: X, g?: X, b?: X) => {
 }
 
 // Default uniforms
-export const iResolution = u(vec2(1280, 800), 'iResolution')
-export const iMouse = u(vec2(0, 0), 'iMouse')
-export const iTime = u(float(0), 'iTime')
+export const iResolution = u(vec2(), 'iResolution')
+export const iMouse = u(vec2(), 'iMouse')
+export const iTime = u(float(), 'iTime')
 export const uv = () => position.xy.div(iResolution)
 
 // Texture Functions

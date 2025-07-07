@@ -75,3 +75,12 @@ export const conversionToConstant = (conversionKey: string): Constants => {
         const index = CONVERSIONS.indexOf(conversionKey as Conversions)
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
+
+export const safeEventCall = (x: X, fun: (value: unknown) => void) => {
+        if (!x) return
+        if (!isNodeProxy(x)) return fun(x) // for uniform(1)
+        if (x.type !== 'conversion') return
+        const value = x.props.children?.slice(1).filter(Boolean)
+        if (!value?.length) return // for uniform(vec2())
+        fun(value)
+}
