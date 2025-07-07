@@ -1,6 +1,6 @@
 import { fragment, vertex } from '../node'
 import type { X } from '../node'
-import type { AttribData, TextureData, UniformData, WebGPUState } from '../types'
+import type { AttribData, GL, TextureData, UniformData } from '../types'
 import { is } from './helpers'
 
 /**
@@ -46,11 +46,11 @@ export const createPipeline = (
         format: GPUTextureFormat,
         bufferLayouts: GPUVertexBufferLayout[],
         bindGroupLayouts: GPUBindGroupLayout[],
-        webgpu: WebGPUState,
+        gl: Partial<GL>,
         vs: X,
         fs: X
 ) => {
-        const config = { isWebGL: false, webgpu }
+        const config = { isWebGL: false, gl }
         if (!is.str(fs)) fs = fragment(fs, config)
         if (!is.str(vs)) vs = vertex(vs, config)
         const layout = device.createPipelineLayout({ bindGroupLayouts })

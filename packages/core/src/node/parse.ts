@@ -93,20 +93,20 @@ export const parseUniformHead = (c: NodeContext, id: string, varType: Constants)
                         ? `uniform sampler2D ${id};`
                         : `uniform ${varType} ${id};`
         if (isTexture) {
-                const { group = 1, binding = 0 } = c.webgpu?.textures.map.get(id) || {}
+                const { group = 1, binding = 0 } = c.gl.webgpu?.textures.map.get(id) || {}
                 return (
                         `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n` +
                         `@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d<f32>;`
                 )
         }
-        const { group = 0, binding = 0 } = c.webgpu?.uniforms.map.get(id) || {}
+        const { group = 0, binding = 0 } = c.gl.webgpu?.uniforms.map.get(id) || {}
         const wgslType = formatConversions(varType, c)
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
 
 export const parseAttribHead = (c: NodeContext, id: string, varType: Constants) => {
         if (c.isWebGL) return `${varType} ${id};`
-        const { location = 0 } = c.webgpu?.attribs.map.get(id) || {}
+        const { location = 0 } = c.gl.webgpu?.attribs.map.get(id) || {}
         const wgslType = formatConversions(varType, c)
         return `@location(${location}) ${id}: ${wgslType}`
 }

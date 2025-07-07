@@ -1,4 +1,4 @@
-import { WebGPUState } from '../types'
+import { GL } from '../types'
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
@@ -56,12 +56,12 @@ export interface NodeProps {
 }
 
 export interface NodeContext {
+        gl?: Partial<GL>
         isFrag?: boolean
         isWebGL?: boolean
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
-        webgpu?: WebGPUState
         headers?: Map<string, string>
         fragInputs?: Map<string, string>
         vertInputs?: Map<string, string>

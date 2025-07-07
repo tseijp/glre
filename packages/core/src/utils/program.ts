@@ -1,6 +1,7 @@
 import { fragment, vertex } from '../node'
-import type { X } from '../node'
 import { is } from './helpers'
+import type { X } from '../node'
+import type { GL } from '../types'
 
 const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
@@ -13,7 +14,7 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         console.warn(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vs: X, fs: X, onError = () => {}, gl?: any) => {
+export const createProgram = (c: WebGLRenderingContext, vs: X, fs: X, onError = () => {}, gl: Partial<GL>) => {
         const config = { isWebGL: true, gl }
         if (!is.str(fs)) fs = fragment(fs, config)
         if (!is.str(vs)) vs = vertex(vs, config)
