@@ -1,29 +1,31 @@
 export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
-export const CONSTANTS = [
-        'bool',
-        'uint',
-        'int',
-        'float',
-        'bvec2',
-        'ivec2',
-        'uvec2',
-        'vec2',
-        'bvec3',
-        'ivec3',
-        'uvec3',
-        'vec3',
-        'bvec4',
-        'ivec4',
-        'uvec4',
-        'vec4',
-        'color',
-        'mat2',
-        'mat3',
-        'mat4',
-        'texture',
-        'sampler2D',
-] as const
+export const TYPE_MAPPING = {
+        bool: 'bool',
+        uint: 'u32',
+        int: 'i32',
+        float: 'f32',
+        bvec2: 'vec2<bool>',
+        ivec2: 'vec2i',
+        uvec2: 'vec2u',
+        vec2: 'vec2f',
+        bvec3: 'vec3<bool>',
+        ivec3: 'vec3i',
+        uvec3: 'vec3u',
+        vec3: 'vec3f',
+        bvec4: 'vec4<bool>',
+        ivec4: 'vec4i',
+        uvec4: 'vec4u',
+        vec4: 'vec4f',
+        color: 'color',
+        mat2: 'mat2x2f',
+        mat3: 'mat3x3f',
+        mat4: 'mat4x4f',
+        texture: 'texture_2d<f32>',
+        sampler2D: 'sampler',
+} as const
+
+export const CONSTANTS = Object.keys(TYPE_MAPPING) as unknown as keyof typeof TYPE_MAPPING
 
 export const CONVERSIONS = [
         'toBool',
@@ -139,28 +141,6 @@ export const FUNCTIONS = [
         ...VEC4_RETURN_FUNCTIONS,
         ...ADDITIONAL_FUNCTIONS,
 ] as const
-
-export const TYPE_MAPPING = {
-        float: 'f32',
-        int: 'i32',
-        uint: 'u32',
-        bool: 'bool',
-        vec2: 'vec2f',
-        vec3: 'vec3f',
-        vec4: 'vec4f',
-        mat2: 'mat2x2f',
-        mat3: 'mat3x3f',
-        mat4: 'mat4x4f',
-        ivec2: 'vec2i',
-        ivec3: 'vec3i',
-        ivec4: 'vec4i',
-        uvec2: 'vec2u',
-        uvec3: 'vec3u',
-        uvec4: 'vec4u',
-        bvec2: 'vec2<bool>',
-        bvec3: 'vec3<bool>',
-        bvec4: 'vec4<bool>',
-} as const
 
 export const COMPONENT_COUNT_TO_TYPE = {
         1: 'float',
