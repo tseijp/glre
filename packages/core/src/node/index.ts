@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
-import { builtin, conversion as c, function_ as f, uniform as u } from './node'
-import { hex2rgb } from './utils'
+import { builtin, conversion as c, function_ as f, uniform as u, node } from './node'
+import { hex2rgb, getId } from './utils'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -193,3 +193,13 @@ export const step = (edge: X, x: X) => f('step', edge, x)
 export const tan = (x: X) => f('tan', x)
 export const transformDirection = (dir: X, matrix: X) => f('transformDirection', dir, matrix)
 export const trunc = (x: X) => f('trunc', x)
+
+// Struct functions
+export const struct = (fields: Record<string, X>) => {
+        const id = getId()
+        const structNode = node('struct', { id, fields })
+        // Create constructor function
+        const constructor = () => node('struct', { id: getId(), type: id })
+        Object.assign(constructor, structNode)
+        return constructor as any
+}

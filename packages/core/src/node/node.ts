@@ -24,6 +24,10 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
                 if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
+                // struct member access
+                if (type === 'struct' && typeof key === 'string' && props.fields?.[key]) {
+                        return member(key, x)
+                }
         }
         const set = (_: unknown, key: string, y: X) => {
                 if (key === 'value') listeners.forEach((fun) => fun(y))
@@ -48,3 +52,14 @@ export const operator = (key: Operators, ...x: X[]) => node('operator', null, ke
 export const function_ = (key: Functions, ...x: X[]) => node('function', null, key, ...x)
 export const conversion = (key: string, ...x: X[]) => node('conversion', null, key, ...x)
 export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z) // x ? y : z
+
+// Struct functions
+export const struct = (fields: Record<string, X>) => {
+        const id = getId()
+        const structNode = node('struct', { id, fields })
+        // Create constructor function
+        const constructor = () => node('struct', { id: getId(), type: id })
+        Object.assign(constructor, structNode)
+        return constructor as any
+}
+export const member = (key: string, x: X) => node('member', null, key, x)

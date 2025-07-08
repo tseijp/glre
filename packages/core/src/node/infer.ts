@@ -74,7 +74,7 @@ const inferFromArray = (arr: X[], c: NodeContext): Constants => {
 
 export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         const { type, props } = target
-        const { id, children = [], layout, inferFrom } = props
+        const { id, children = [], layout, inferFrom, fields } = props
         const [x, y, z] = children
         if (type === 'conversion') return x as Constants
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
@@ -84,6 +84,23 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferSwizzle(x.length / c.gl.count)
+        if (type === 'struct') {
+                // struct definition returns struct type
+                if (fields) return 'struct'
+                // struct instance returns the struct type name
+                return props.type as Constants || 'struct'
+        }
+        if (type === 'member') {
+                // infer from the struct field type
+                const structNode = y
+                if (structNode && typeof structNode === 'object' && 'props' in structNode) {
+                        const structFields = structNode.props.fields
+                        if (structFields && typeof x === 'string') {
+                                return infer(structFields[x], c)
+                        }
+                }
+                return 'float' // fallback
+        }
         if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
 }

@@ -59,6 +59,29 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
+        if (type === 'member') return `${code(y, c)}.${code(x, c)}`
+        if (type === 'struct') {
+                // struct instance
+                if (props.type) return props.type
+                // struct definition
+                if (props.fields && c.headers) {
+                        const structName = id
+                        const fields = Object.entries(props.fields)
+                                .map(([name, fieldType]) => {
+                                        const type = typeof fieldType === 'string' ? fieldType : infer(fieldType, c)
+                                        return c.isWebGL 
+                                                ? `${type} ${name};` 
+                                                : `${name}: ${formatConversions(type, c)},`
+                                })
+                                .join('\n  ')
+                        const structDef = c.isWebGL
+                                ? `struct ${structName} {\n  ${fields}\n};`
+                                : `struct ${structName} {\n  ${fields}\n}`
+                        c.headers.set(structName, structDef)
+                        return structName
+                }
+                return id
+        }
         /**
          * scopes
          */

@@ -35,6 +35,9 @@ export type NodeTypes =
         | 'conversion'
         | 'operator'
         | 'function'
+        // struct
+        | 'struct'
+        | 'member'
         // scopes
         | 'scope'
         | 'assign'
@@ -53,6 +56,7 @@ export interface NodeProps {
         inferFrom?: X[]
         layout?: FnLayout
         parent?: NodeProxy
+        fields?: Record<string, X>
 }
 
 export interface NodeContext {

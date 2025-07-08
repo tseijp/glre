@@ -23,6 +23,7 @@ export const TYPE_MAPPING = {
         mat4: 'mat4x4f',
         texture: 'texture_2d<f32>',
         sampler2D: 'sampler',
+        struct: 'struct',
 } as const
 
 export const CONSTANTS = Object.keys(TYPE_MAPPING) as unknown as keyof typeof TYPE_MAPPING
