@@ -1,8 +1,3 @@
-import { fragment, vertex } from '../node'
-import { is } from './helpers'
-import type { X } from '../node'
-import type { GL } from '../types'
-
 const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
         const shader = c.createShader(type)
         if (!shader) throw new Error('Failed to create shader')
@@ -14,22 +9,19 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number) =>
         console.warn(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vs: X, fs: X, onError = () => {}, gl: Partial<GL>) => {
-        const config = { isWebGL: true, gl }
-        if (!is.str(fs)) fs = fragment(fs, config)
-        if (!is.str(vs)) vs = vertex(vs, config)
+export const createProgram = (c: WebGLRenderingContext, vert: string, frag: string, onError = () => {}) => {
         const pg = c.createProgram()
-        const _vs = createShader(c, vs, c.VERTEX_SHADER)
-        const _fs = createShader(c, fs, c.FRAGMENT_SHADER)
-        if (!_vs || !_fs) return onError()
-        c.attachShader(pg, _vs)
-        c.attachShader(pg, _fs)
+        const fs = createShader(c, frag, c.FRAGMENT_SHADER)
+        const vs = createShader(c, vert, c.VERTEX_SHADER)
+        if (!fs || !vs) return onError()
+        c.attachShader(pg, vs)
+        c.attachShader(pg, fs)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
         onError()
-        console.warn(`Could not link pg: ${error}`)
+        console.warn(`Could not link program: ${error}`)
 }
 
 export const createVbo = (c: WebGLRenderingContext, data: number[]) => {

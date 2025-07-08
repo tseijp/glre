@@ -68,6 +68,17 @@ export const conversionToConstant = (conversionKey: string): Constants => {
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
 
+export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isTexture = false) => {
+        if (c.isWebGL) {
+                if (isAttribute) return (value: any) => c.gl?.attribute?.(id, value)
+                if (isTexture) return (value: any) => c.gl?.texture?.(id, value)
+                return (value: any) => c.gl?.uniform?.(id, value)
+        }
+        if (isAttribute) return (value: any) => c.gl?._attribute?.(id, value)
+        if (isTexture) return (value: any) => c.gl?._texture?.(id, value)
+        return (value: any) => c.gl?._uniform?.(id, value)
+}
+
 export const safeEventCall = (x: X, fun: (value: unknown) => void) => {
         if (!x) return
         if (!isNodeProxy(x)) return fun(x) // for uniform(1)

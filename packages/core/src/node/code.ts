@@ -12,7 +12,7 @@ import {
         parseTexture,
         parseVaryingHead,
 } from './parse'
-import { getBluiltin, getOperator, formatConversions, safeEventCall } from './utils'
+import { getBluiltin, getOperator, formatConversions, safeEventCall, getEventFun } from './utils'
 import type { NodeContext, X } from './types'
 
 export const code = (target: X, c?: NodeContext | null): string => {
@@ -99,7 +99,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 return `in.${id}`
         }
         if (type === 'attribute') {
-                const fun = (value: any) => c.gl?.attribute?.(id, value)
+                const fun = getEventFun(c, id, true)
                 safeEventCall(x, fun)
                 target.listeners.add(fun)
                 c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
@@ -109,10 +109,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         let head = ''
         if (type === 'uniform') {
                 const varType = infer(target, c)
-                const isTexture = varType === 'texture'
-                const fun = isTexture
-                        ? (value: any) => c.gl?.texture?.(id, value)
-                        : (value: any) => c.gl?.uniform?.(id, value)
+                const fun = getEventFun(c, id, false, varType === 'texture')
                 safeEventCall(x, fun)
                 target.listeners.add(fun)
                 head = parseUniformHead(c, id, varType)

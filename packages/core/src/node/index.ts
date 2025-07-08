@@ -26,6 +26,7 @@ const generateStruct = (id: string, map: Map<string, string>) => {
 }
 
 export const vertex = (x: X, c: NodeContext) => {
+        if (is.str(x)) return x.trim()
         c.headers?.clear()
         c.isFrag = false // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
@@ -50,12 +51,13 @@ export const vertex = (x: X, c: NodeContext) => {
                 ret.push('  return out;')
         }
         ret.push('}')
-        const main = ret.filter(Boolean).join('\n')
+        const main = ret.filter(Boolean).join('\n').trim()
         console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
 export const fragment = (x: X, c: NodeContext) => {
+        if (is.str(x)) return x.trim()
         c.headers?.clear()
         c.isFrag = true // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
@@ -72,7 +74,7 @@ export const fragment = (x: X, c: NodeContext) => {
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
-        const main = ret.filter(Boolean).join('\n')
+        const main = ret.filter(Boolean).join('\n').trim()
         console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }

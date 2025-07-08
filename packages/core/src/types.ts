@@ -26,6 +26,7 @@ export interface TextureData {
         group: number
         texture: GPUTexture
         sampler: GPUSampler
+        view: GPUTextureView
 }
 
 export interface AttribData {
