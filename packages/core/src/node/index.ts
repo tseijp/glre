@@ -191,3 +191,58 @@ export const step = (edge: X, x: X) => f('step', edge, x)
 export const tan = (x: X) => f('tan', x)
 export const transformDirection = (dir: X, matrix: X) => f('transformDirection', dir, matrix)
 export const trunc = (x: X) => f('trunc', x)
+
+// Compute Shader Built-in Variables
+export const globalInvocationId = builtin('global_invocation_id')
+export const localInvocationId = builtin('local_invocation_id')
+export const workgroupId = builtin('workgroup_id')
+export const workgroupSize = builtin('workgroup_size')
+export const numWorkgroups = builtin('num_workgroups')
+
+// Compute Shader Functions
+export const atomicAdd = (ptr: X, value: X) => f('atomicAdd', ptr, value)
+export const atomicSub = (ptr: X, value: X) => f('atomicSub', ptr, value)
+export const atomicMax = (ptr: X, value: X) => f('atomicMax', ptr, value)
+export const atomicMin = (ptr: X, value: X) => f('atomicMin', ptr, value)
+export const atomicAnd = (ptr: X, value: X) => f('atomicAnd', ptr, value)
+export const atomicOr = (ptr: X, value: X) => f('atomicOr', ptr, value)
+export const atomicXor = (ptr: X, value: X) => f('atomicXor', ptr, value)
+export const atomicExchange = (ptr: X, value: X) => f('atomicExchange', ptr, value)
+export const atomicCompareExchange = (ptr: X, compare: X, value: X) => f('atomicCompareExchange', ptr, compare, value)
+export const workgroupBarrier = () => f('workgroupBarrier')
+export const storageBarrier = () => f('storageBarrier')
+
+export const compute = (x: X, workgroupSize: [number, number, number], c: NodeContext) => {
+        if (is.str(x)) return x.trim()
+        c.headers?.clear()
+        c.isCompute = true
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        
+        if (c.isWebGL) {
+                ret.push('#version 320 es')
+                ret.push(`layout(local_size_x = ${workgroupSize[0]}, local_size_y = ${workgroupSize[1]}, local_size_z = ${workgroupSize[2]}) in;`)
+                // storage buffers, uniforms, etc.
+                for (const code of c.storageBuffers!.values()) ret.push(code)
+                for (const code of c.workgroupVars!.values()) ret.push(code)
+                ret.push(head)
+                ret.push('void main() {')
+                ret.push(`  ${body}`)
+        } else {
+                // storage buffers, uniforms, etc.
+                for (const code of c.storageBuffers!.values()) ret.push(code)
+                for (const code of c.workgroupVars!.values()) ret.push(code)
+                ret.push(head)
+                ret.push(`@compute @workgroup_size(${workgroupSize.join(', ')})`)
+                ret.push('fn main(')
+                ret.push('  @builtin(global_invocation_id) global_id: vec3<u32>,')
+                ret.push('  @builtin(local_invocation_id) local_id: vec3<u32>,')
+                ret.push('  @builtin(workgroup_id) workgroup_id: vec3<u32>')
+                ret.push(') {')
+                ret.push(`  ${body}`)
+        }
+        ret.push('}')
+        const main = ret.filter(Boolean).join('\n').trim()
+        console.log(`↓↓↓generated compute↓↓↓\n${main}`)
+        return main
+}

@@ -35,6 +35,12 @@ export type NodeTypes =
         | 'conversion'
         | 'operator'
         | 'function'
+        // compute
+        | 'compute'
+        | 'workgroup'
+        | 'storage'
+        | 'barrier'
+        | 'atomic'
         // scopes
         | 'scope'
         | 'assign'
@@ -58,6 +64,7 @@ export interface NodeProps {
 export interface NodeContext {
         isFrag?: boolean
         isWebGL?: boolean
+        isCompute?: boolean
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
@@ -67,6 +74,9 @@ export interface NodeContext {
         vertInputs?: Map<string, string>
         vertOutputs?: Map<string, string>
         vertVaryings?: Map<string, string>
+        storageBuffers?: Map<string, string>
+        workgroupVars?: Map<string, string>
+        computeBuiltins?: Map<string, string>
 }
 
 /**

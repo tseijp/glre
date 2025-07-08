@@ -48,3 +48,17 @@ export const operator = (key: Operators, ...x: X[]) => node('operator', null, ke
 export const function_ = (key: Functions, ...x: X[]) => node('function', null, key, ...x)
 export const conversion = (key: string, ...x: X[]) => node('conversion', null, key, ...x)
 export const select = (x: X, y: X, z: X) => node('ternary', null, x, y, z) // x ? y : z
+
+// Compute shader functions
+export const storageBuffer = (type: X, access: 'read' | 'write' | 'read_write' = 'read_write', id = getId()) => {
+        return node('storage', { id, access }, type)
+}
+export const workgroupMemory = (type: X, size?: number, id = getId()) => {
+        return node('workgroup', { id, size }, type)
+}
+export const barrier = (type: 'workgroup' | 'storage' = 'workgroup') => {
+        return node('barrier', { type })
+}
+export const atomicOp = (op: string, ptr: X, value: X) => {
+        return node('atomic', { op }, ptr, value)
+}

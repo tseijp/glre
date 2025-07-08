@@ -116,3 +116,45 @@ export const parseConstantHead = (c: NodeContext, id: string, varType: Constants
                 ? `const ${varType} ${id} = ${value};`
                 : `const ${id}: ${formatConversions(varType, c)} = ${value};`
 }
+
+export const parseStorageBuffer = (c: NodeContext, id: string, type: string, access: string) => {
+        if (c.isWebGL) {
+                // GLSL SSBO
+                const qualifier = access === 'read' ? 'readonly' : access === 'write' ? 'writeonly' : ''
+                return `layout(std430, binding = ${c.binding || 0}) ${qualifier} buffer ${id}Buffer { ${type} ${id}[]; };`
+        } else {
+                // WGSL storage buffer
+                const { group = 0, binding = 0 } = c.webgpu?.storage?.map.get(id) || {}
+                const wgslType = formatConversions(type, c)
+                return `@group(${group}) @binding(${binding}) var<storage, ${access}> ${id}: array<${wgslType}>;`
+        }
+}
+
+export const parseWorkgroupStorage = (c: NodeContext, id: string, type: string, size?: number) => {
+        if (c.isWebGL) {
+                // GLSL shared memory
+                return size ? `shared ${type} ${id}[${size}];` : `shared ${type} ${id};`
+        } else {
+                // WGSL workgroup storage
+                const wgslType = formatConversions(type, c)
+                return size ? `var<workgroup> ${id}: array<${wgslType}, ${size}>;` : `var<workgroup> ${id}: ${wgslType};`
+        }
+}
+
+export const parseBarrier = (c: NodeContext, type: string) => {
+        if (c.isWebGL) {
+                return type === 'workgroup' ? 'groupMemoryBarrier();' : 'memoryBarrierBuffer();'
+        } else {
+                return type === 'workgroup' ? 'workgroupBarrier();' : 'storageBarrier();'
+        }
+}
+
+export const parseComputeEntry = (c: NodeContext, workgroupSize: [number, number, number]) => {
+        if (c.isWebGL) {
+                // GLSL compute shader
+                return `#version 320 es\nlayout(local_size_x = ${workgroupSize[0]}, local_size_y = ${workgroupSize[1]}, local_size_z = ${workgroupSize[2]}) in;`
+        } else {
+                // WGSL compute shader
+                return `@compute @workgroup_size(${workgroupSize.join(', ')})`
+        }
+}

@@ -23,6 +23,10 @@ export const CONSTANTS = [
         'mat4',
         'texture',
         'sampler2D',
+        'workgroup_shared',
+        'storage_buffer',
+        'atomic_uint',
+        'atomic_int',
 ] as const
 
 export const CONVERSIONS = [
@@ -129,6 +133,20 @@ export const ADDITIONAL_FUNCTIONS = [
         'transformDirection',
 ] as const
 
+export const COMPUTE_FUNCTIONS = [
+        'atomicAdd',
+        'atomicSub',
+        'atomicMax',
+        'atomicMin',
+        'atomicAnd',
+        'atomicOr',
+        'atomicXor',
+        'atomicExchange',
+        'atomicCompareExchange',
+        'workgroupBarrier',
+        'storageBarrier',
+] as const
+
 export const FUNCTIONS = [
         ...SCALAR_RETURN_FUNCTIONS,
         ...BOOL_RETURN_FUNCTIONS,
@@ -138,6 +156,7 @@ export const FUNCTIONS = [
         ...HIGHEST_TYPE_FUNCTIONS,
         ...VEC4_RETURN_FUNCTIONS,
         ...ADDITIONAL_FUNCTIONS,
+        ...COMPUTE_FUNCTIONS,
 ] as const
 
 export const TYPE_MAPPING = {
@@ -160,6 +179,10 @@ export const TYPE_MAPPING = {
         bvec2: 'vec2<bool>',
         bvec3: 'vec3<bool>',
         bvec4: 'vec4<bool>',
+        workgroup_shared: 'workgroup',
+        storage_buffer: 'storage',
+        atomic_uint: 'atomic<u32>',
+        atomic_int: 'atomic<i32>',
 } as const
 
 export const COMPONENT_COUNT_TO_TYPE = {
@@ -182,6 +205,13 @@ export const BUILTIN_TYPES = {
         sample_mask: 'uint',
         point_coord: 'vec2',
 
+        // Compute shader builtin variables
+        global_invocation_id: 'vec3',
+        local_invocation_id: 'vec3',
+        workgroup_id: 'vec3',
+        workgroup_size: 'vec3',
+        num_workgroups: 'vec3',
+
         // TSL compatible variables
         positionLocal: 'vec3',
         positionWorld: 'vec3',
@@ -201,6 +231,11 @@ export const BUILTIN_TYPES = {
         gl_SampleID: 'uint',
         gl_SampleMask: 'uint',
         gl_PointCoord: 'vec2',
+        gl_GlobalInvocationID: 'vec3',
+        gl_LocalInvocationID: 'vec3',
+        gl_WorkGroupID: 'vec3',
+        gl_WorkGroupSize: 'vec3',
+        gl_NumWorkGroups: 'vec3',
 
         // Common variables
         normal: 'vec3',

@@ -12,6 +12,9 @@ import {
         parseSwitch,
         parseTexture,
         parseVaryingHead,
+        parseStorageBuffer,
+        parseWorkgroupStorage,
+        parseBarrier,
 } from './parse'
 
 export const code = (target: X, c?: NodeContext | null): string => {
@@ -27,6 +30,9 @@ export const code = (target: X, c?: NodeContext | null): string => {
                         c.vertOutputs.set('position', '@builtin(position) position: vec4f')
                 }
         }
+        if (!c.storageBuffers) c.storageBuffers = new Map()
+        if (!c.workgroupVars) c.workgroupVars = new Map()
+        if (!c.computeBuiltins) c.computeBuiltins = new Map()
         if (is.str(target)) return target
         if (is.num(target)) {
                 const ret = `${target}`
@@ -99,6 +105,31 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'attribute') {
                 c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
                 return c.isWebGL ? `${id}` : `in.${id}`
+        }
+        /**
+         * compute shader
+         */
+        if (type === 'storage') {
+                const varType = infer(target, c)
+                const access = props.access || 'read_write'
+                const head = parseStorageBuffer(c, id, varType, access)
+                c.storageBuffers.set(id, head)
+                return `${id}[${code(x, c)}]`
+        }
+        if (type === 'workgroup') {
+                const varType = infer(target, c)
+                const size = props.size
+                const head = parseWorkgroupStorage(c, id, varType, size)
+                c.workgroupVars.set(id, head)
+                return id
+        }
+        if (type === 'barrier') {
+                const barrierType = props.type || 'workgroup'
+                return parseBarrier(c, barrierType)
+        }
+        if (type === 'atomic') {
+                const op = props.op || 'atomicAdd'
+                return `${op}(${code(x, c)}, ${code(y, c)})`
         }
         if (c.headers.has(id)) return id // must last
         let head = ''
