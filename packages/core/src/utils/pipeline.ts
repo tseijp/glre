@@ -76,7 +76,7 @@ const createBindGroup = (device: GPUDevice, uniforms: Iterable<UniformData>, tex
                 layouts.push(layout)
                 bindings.push(binding)
         }
-        for (const { binding, buffer, group: i, ...args } of uniforms) {
+        for (const { binding, buffer, group: i } of uniforms) {
                 add(i, { binding, visibility: 3, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
         }
         for (const { binding: b, group: i, sampler, view } of textures) {
