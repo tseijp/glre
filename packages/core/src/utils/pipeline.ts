@@ -1,4 +1,4 @@
-import type { AttribData, TextureData, UniformData, WebGPUState } from '../types'
+import type { AttribData, TextureData, UniformData } from '../types'
 
 /**
  * initialize
@@ -39,7 +39,7 @@ export const createBindings = () => {
 }
 
 /**
- * pipeline
+ * pipeline update
  */
 const getVertexFormat = (stride: number): GPUVertexFormat => {
         if (stride === 2) return 'float32x2'
@@ -48,7 +48,7 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-const createVertexBuffers = (attribs: Iterable<AttribData>) => {
+export const createVertexBuffers = (attribs: Iterable<AttribData>) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
         for (const { buffer, location, stride } of attribs) {
@@ -67,7 +67,11 @@ const createVertexBuffers = (attribs: Iterable<AttribData>) => {
         return { vertexBuffers, bufferLayouts }
 }
 
-const createBindGroup = (device: GPUDevice, uniforms: Iterable<UniformData>, textures: Iterable<TextureData>) => {
+export const createBindGroup = (
+        device: GPUDevice,
+        uniforms: Iterable<UniformData>,
+        textures: Iterable<TextureData>
+) => {
         const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
         const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
         const add = (i: number, layout: GPUBindGroupLayoutEntry, binding: GPUBindGroupEntry) => {
@@ -93,13 +97,12 @@ const createBindGroup = (device: GPUDevice, uniforms: Iterable<UniformData>, tex
 export const createPipeline = (
         device: GPUDevice,
         format: GPUTextureFormat,
+        bufferLayouts: GPUVertexBufferLayout[],
+        bindGroupLayouts: GPUBindGroupLayout[],
         vs: string,
-        fs: string,
-        { attribs, uniforms, textures }: WebGPUState
+        fs: string
 ) => {
-        const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map.values())
-        const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms.map.values(), textures.map.values())
-        const pipeline = device.createRenderPipeline({
+        return device.createRenderPipeline({
                 vertex: {
                         module: device.createShaderModule({ label: 'vert', code: vs }),
                         entryPoint: 'main',
@@ -118,7 +121,6 @@ export const createPipeline = (
                         format: 'depth24plus',
                 },
         })
-        return { pipeline, bindGroups, vertexBuffers }
 }
 
 /**

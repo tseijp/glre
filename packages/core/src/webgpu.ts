@@ -3,19 +3,21 @@ import { is } from './utils/helpers'
 import {
         createAttribBuffer,
         createBindings,
+        createBindGroup,
         createDepthTexture,
         createDescriptor,
         createDevice,
         createPipeline,
         createTextureSampler,
         createUniformBuffer,
+        createVertexBuffers,
 } from './utils/pipeline'
 import type { GL, WebGPUState } from './types'
 import { fragment, vertex } from './node'
 
 export const webgpu = async (gl: Partial<GL>) => {
-        const c = gl.el!.getContext('webgpu') as GPUCanvasContext
-        const { device, format } = await createDevice(c)
+        const context = gl.el!.getContext('webgpu') as GPUCanvasContext
+        const { device, format } = await createDevice(context)
         const bindings = createBindings()
         let frag: string
         let vert: string
@@ -47,7 +49,13 @@ export const webgpu = async (gl: Partial<GL>) => {
         })
 
         const update = () => {
-                const { pipeline, bindGroups, vertexBuffers } = createPipeline(device, format, vert, frag, state)
+                const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map.values())
+                const { bindGroups, bindGroupLayouts } = createBindGroup(
+                        device,
+                        uniforms.map.values(),
+                        textures.map.values()
+                )
+                const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vert, frag)
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
@@ -67,7 +75,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
-                flush(encoder.beginRenderPass(createDescriptor(c, depthTexture)))
+                flush(encoder.beginRenderPass(createDescriptor(context, depthTexture)))
                 device.queue.submit([encoder.finish()])
         }
 
@@ -107,7 +115,13 @@ export const webgpu = async (gl: Partial<GL>) => {
 
         resize()
 
-        const state = { device, uniforms, textures, attribs } as WebGPUState
-
-        return { webgpu: state, render, resize, clean, _attribute, _uniform, _texture }
+        return {
+                webgpu: { device, uniforms, textures, attribs } as WebGPUState,
+                render,
+                resize,
+                clean,
+                _attribute,
+                _uniform,
+                _texture,
+        }
 }
