@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
-import { builtin, conversion as c, function_ as f, uniform as u, node } from './node'
-import { hex2rgb, getId } from './utils'
+import { builtin, conversion as c, function_ as f, uniform as u } from './node'
+import { hex2rgb } from './utils'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -101,9 +101,9 @@ export const screenUV = builtin('screenUV')
 
 // Type constructors
 export const float = (x?: X) => c('float', x)
-export const int = (x: X) => c('int', x)
-export const uint = (x: X) => c('uint', x)
-export const bool = (x: X) => c('bool', x)
+export const int = (x?: X) => c('int', x)
+export const uint = (x?: X) => c('uint', x)
+export const bool = (x?: X) => c('bool', x)
 export const vec2 = (x?: X, y?: X) => c('vec2', x, y)
 export const vec3 = (x?: X, y?: X, z?: X) => c('vec3', x, y, z)
 export const vec4 = (x?: X, y?: X, z?: X, w?: X) => c('vec4', x, y, z, w)

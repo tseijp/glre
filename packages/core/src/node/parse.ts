@@ -106,13 +106,13 @@ export const parseStruct = (
         if (c.isWebGL) {
                 if (initialValues) {
                         const ordered = []
-                        for (const key in fields || {}) ordered.push(initialValues[key] || '0')
+                        for (const key in fields) ordered.push(initialValues[key])
                         return `${id} ${instanceId} = ${id}(${parseArray(ordered, c)});`
                 } else return `${id} ${instanceId};`
         } else {
                 if (initialValues) {
                         const ordered = []
-                        for (const key in fields || {}) ordered.push(initialValues[key] || '0')
+                        for (const key in fields) ordered.push(initialValues[key])
                         return `var ${instanceId}: ${id} = ${id}(${parseArray(ordered, c)});`
                 } else return `var ${instanceId}: ${id};`
         }

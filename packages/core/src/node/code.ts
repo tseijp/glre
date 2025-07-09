@@ -80,7 +80,6 @@ export const code = (target: X, c?: NodeContext | null): string => {
         }
         if (type === 'struct') {
                 const instanceId = (x as NodeProxy).props.id
-                if (!c.headers.has(id)) c.headers.set(id, parseStructHead(c, id, fields))
                 return parseStruct(c, id, instanceId, fields, initialValues)
         }
         /**
