@@ -36,6 +36,16 @@ export const Return = (x: X) => {
         return y
 }
 
+// Struct functions
+export const struct = (fields: Record<string, NodeProxy>, id = getId()) => {
+        return (initialValues: Record<string, NodeProxy> = {}, instanceId = getId()) => {
+                const x = node('variable', { id: instanceId, inferFrom: [id] })
+                const y = node('struct', { id, fields, initialValues }, x)
+                addToScope(y)
+                return x
+        }
+}
+
 const scoped = (x: NodeProxy, fun: () => NodeProxy | void, y = define) => {
         // cache to revert
         const _scope = scope

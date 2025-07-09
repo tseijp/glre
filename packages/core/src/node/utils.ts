@@ -32,10 +32,9 @@ export const isNodeProxy = (x: unknown): x is NodeProxy => {
         return x.isProxy
 }
 
-export const isConstantsType = (type?: Constants | 'auto'): type is Constants => {
-        if (!type) return false
-        if (type === 'auto') return false
-        return true
+export const isConstants = (type?: unknown): type is Constants => {
+        if (!is.str(type)) return false
+        return CONSTANTS.includes(type)
 }
 
 export const hex2rgb = (hex: number) => {
@@ -52,7 +51,7 @@ export const getId = () => `i${count++}`
 export const formatConversions = (x: X, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
-        return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING]
+        return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING] || x // for struct type
 }
 
 export const getOperator = (op: X) => {
@@ -86,4 +85,45 @@ export const safeEventCall = (x: X, fun: (value: unknown) => void) => {
         const value = x.props.children?.slice(1).filter(Boolean)
         if (!value?.length) return // for uniform(vec2())
         fun(value)
+}
+
+export const initNodeContext = (c: NodeContext) => {
+        if (!c.code) {
+                c.code = {
+                        headers: new Map(),
+                        fragInputs: new Map(),
+                        vertInputs: new Map(),
+                        vertOutputs: new Map(),
+                        vertVaryings: new Map(),
+                        dependencies: new Map(),
+                }
+                if (!c.isWebGL) {
+                        c.code.fragInputs.set('position', '@builtin(position) position: vec4f')
+                        c.code.vertOutputs.set('position', '@builtin(position) position: vec4f')
+                }
+        }
+        return c
+}
+
+export const addDependency = (c: NodeContext, id = '', type: string) => {
+        if (!c.code?.dependencies?.has(id)) c.code!.dependencies.set(id, new Set())
+        if (!isConstants(type)) c.code!.dependencies.get(id)!.add(type)
+}
+
+export const sortHeadersByDependencies = (headers: Map<string, string>, dependencies: Map<string, Set<string>>) => {
+        const sorted: [string, string][] = []
+        const visited = new Set<string>()
+        const visiting = new Set<string>()
+        const visit = (id: string) => {
+                if (visiting.has(id)) return
+                if (visited.has(id)) return
+                visiting.add(id)
+                const deps = dependencies.get(id) || new Set()
+                for (const dep of deps) if (headers.has(dep)) visit(dep)
+                visiting.delete(id)
+                visited.add(id)
+                if (headers.has(id)) sorted.push([id, headers.get(id)!])
+        }
+        for (const [id] of headers) visit(id)
+        return sorted
 }

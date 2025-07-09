@@ -29,12 +29,14 @@ export type NodeTypes =
         // variables
         | 'variable'
         | 'varying'
-        | 'swizzle'
         | 'ternary'
         | 'builtin'
         | 'conversion'
         | 'operator'
         | 'function'
+        // struct
+        | 'struct'
+        | 'member'
         // scopes
         | 'scope'
         | 'assign'
@@ -53,6 +55,9 @@ export interface NodeProps {
         inferFrom?: X[]
         layout?: FnLayout
         parent?: NodeProxy
+        // for struct
+        fields?: Record<string, NodeProxy>
+        initialValues?: Record<string, NodeProxy>
 }
 
 export interface NodeContext {
@@ -62,11 +67,14 @@ export interface NodeContext {
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
-        headers?: Map<string, string>
-        fragInputs?: Map<string, string>
-        vertInputs?: Map<string, string>
-        vertOutputs?: Map<string, string>
-        vertVaryings?: Map<string, string>
+        code?: {
+                headers: Map<string, string>
+                fragInputs: Map<string, string>
+                vertInputs: Map<string, string>
+                vertOutputs: Map<string, string>
+                vertVaryings: Map<string, string>
+                dependencies: Map<string, Set<string>>
+        }
 }
 
 /**
@@ -93,8 +101,8 @@ type NodeProxyMethods =
         | 'toVar'
         | 'toString'
 
-export type DynamicProperties = {
-        [K in string as K extends NodeProxyMethods ? never : K]: NodeProxy
+export type ReadNodeProxy = {
+        [K in string as K extends NodeProxyMethods ? never : K]: X
 }
 
 export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
@@ -192,6 +200,6 @@ export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
         fwidth(): NodeProxy
 }
 
-export type NodeProxy = BaseNodeProxy & DynamicProperties
+export type NodeProxy = BaseNodeProxy & ReadNodeProxy
 
-export type X = X[] | NodeProxy | number | string | boolean | undefined
+export type X = X[] | (NodeProxy | number | string | boolean | undefined)
