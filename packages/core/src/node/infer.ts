@@ -13,7 +13,7 @@ import {
         VEC3_RETURN_FUNCTIONS,
         VEC4_RETURN_FUNCTIONS,
 } from './const'
-import { isConstantsType, isNodeProxy, isSwizzle } from './utils'
+import { isConstants, isNodeProxy, isSwizzle } from './utils'
 import type { Constants, NodeContext, NodeProxy, X } from './types'
 
 const getHighestPriorityType = (args: X[], c: NodeContext) => {
@@ -86,7 +86,7 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
-        if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
+        if (type === 'define' && isConstants(layout?.type)) return layout?.type
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
         if (type === 'member') {
                 if (isSwizzle(x)) return inferFromCount(x.length)

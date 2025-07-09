@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
-import { hex2rgb } from './utils'
+import { hex2rgb, sortHeadersByDependencies } from './utils'
 import type { NodeContext, X } from './types'
 export * from './code'
 export * from './node'
@@ -17,7 +17,11 @@ out vec4 fragColor;
 
 const generateHead = (x: X, c: NodeContext) => {
         const body = code(x, c)
-        const head = Array.from(c.headers!.values()).join('\n')
+        let head = ''
+        if (c.isWebGL && c.dependencies) {
+                const sorted = sortHeadersByDependencies(c.headers!, c.dependencies)
+                head = sorted.map(([, value]) => value).join('\n')
+        } else head = Array.from(c.headers!.values()).join('\n')
         return [head, body]
 }
 

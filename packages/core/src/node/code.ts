@@ -23,6 +23,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (!c.vertVaryings) c.vertVaryings = new Map()
         if (!c.fragInputs) c.fragInputs = new Map()
         if (!c.vertInputs) c.vertInputs = new Map()
+        if (!c.dependencies) c.dependencies = new Map()
         if (!c.vertOutputs) {
                 c.vertOutputs = new Map()
                 if (!c.isWebGL) {
@@ -79,8 +80,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 return `${id}(${parseArray(children.slice(1), c)})`
         }
         if (type === 'struct') {
-                const instanceId = (x as NodeProxy).props.id
-                return parseStruct(c, id, instanceId, fields, initialValues)
+                if (!c.headers.has(id)) c.headers.set(id, parseStructHead(c, id, fields))
+                return parseStruct(c, id, (x as NodeProxy).props.id, fields, initialValues)
         }
         /**
          * headers

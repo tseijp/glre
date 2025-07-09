@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { infer } from './infer'
-import { formatConversions } from './utils'
+import { formatConversions, isConstants, addDependency } from './utils'
 import type { Constants, NodeContext, NodeProps, NodeProxy, X } from './types'
 
 export const parseArray = (children: X[], c: NodeContext) => {
@@ -73,10 +73,14 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                 }
         const ret = []
         if (c?.isWebGL) {
-                for (const [id, type] of argParams) params.push(`${type} ${id}`)
+                for (const [paramId, type] of argParams) {
+                        addDependency(c, id!, type)
+                        params.push(`${type} ${paramId}`)
+                }
+                addDependency(c, id!, returnType)
                 ret.push(`${returnType} ${id}(${params}) {`)
         } else {
-                for (const [id, type] of argParams) params.push(`${id}: ${formatConversions(type, c)}`)
+                for (const [paramId, type] of argParams) params.push(`${paramId}: ${formatConversions(type, c)}`)
                 ret.push(`fn ${id}(${params}) -> ${formatConversions(returnType, c)} {`)
         }
         const scopeCode = code(x, c)
@@ -90,6 +94,7 @@ export const parseStructHead = (c: NodeContext, id: string, fields: Record<strin
         for (const key in fields) {
                 const fieldType = fields[key]
                 const type = infer(fieldType, c)
+                if (c.isWebGL) addDependency(c, id, type)
                 lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${formatConversions(type, c)},`)
         }
         const ret = lines.join('\n  ')

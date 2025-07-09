@@ -72,6 +72,7 @@ export interface NodeContext {
         vertInputs?: Map<string, string>
         vertOutputs?: Map<string, string>
         vertVaryings?: Map<string, string>
+        dependencies?: Map<string, Set<string>>
 }
 
 /**
