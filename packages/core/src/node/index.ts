@@ -194,12 +194,12 @@ export const tan = (x: X) => f('tan', x)
 export const transformDirection = (dir: X, matrix: X) => f('transformDirection', dir, matrix)
 export const trunc = (x: X) => f('trunc', x)
 
-// Struct functions
-export const struct = (fields: Record<string, X>) => {
-        const id = getId()
-        const structNode = node('struct', { id, fields })
-        // Create constructor function
-        const constructor = () => node('struct', { id: getId(), type: id })
-        Object.assign(constructor, structNode)
-        return constructor as any
-}
+// // Struct functions
+// export const struct = (fields: Record<string, X>) => {
+//         const id = getId()
+//         const structNode = node('struct', { id, fields })
+//         // Create constructor function
+//         const constructor = () => node('struct', { id: getId(), type: id })
+//         Object.assign(constructor, structNode)
+//         return constructor as any
+// }

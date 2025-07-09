@@ -2,7 +2,7 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { infer } from './infer'
 import { formatConversions } from './utils'
-import type { Constants, NodeContext, NodeProps, X } from './types'
+import type { Constants, NodeContext, NodeProps, NodeProxy, X } from './types'
 
 export const parseArray = (children: X[], c: NodeContext) => {
         return children
@@ -51,10 +51,10 @@ export const parseSwitch = (c: NodeContext, x: X, children: X[]) => {
 }
 
 export const parseDeclare = (c: NodeContext, x: X, y: X) => {
-        const varType = infer(x, c)
+        const type = infer(x, c)
         const varName = (y as any)?.props?.id
-        if (c.isWebGL) return `${varType} ${varName} = ${code(x, c)};`
-        const wgslType = formatConversions(varType)
+        if (c.isWebGL) return `${type} ${varName} = ${code(x, c)};`
+        const wgslType = formatConversions(type)
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
@@ -85,21 +85,30 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
         return ret.join('\n')
 }
 
+export const parseStruct = (c: NodeContext, id: string, fields: Record<string, NodeProxy> = {}) => {
+        const lines: string[] = []
+        for (const key in fields) {
+                const fieldType = fields[key]
+                const type = infer(fieldType, c)
+                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${formatConversions(type, c)},`)
+        }
+        const ret = lines.join('\n  ')
+        return `struct ${id} {\n  ${ret}\n};`
+}
+
 /**
  * headers
  */
-export const parseVaryingHead = (c: NodeContext, id: string, varType: string) => {
-        return c.isWebGL
-                ? `${varType} ${id};`
-                : `@location(${c.vertVaryings!.size}) ${id}: ${formatConversions(varType, c)}`
+export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
+        return c.isWebGL ? `${type} ${id};` : `@location(${c.vertVaryings!.size}) ${id}: ${formatConversions(type, c)}`
 }
 
-export const parseUniformHead = (c: NodeContext, id: string, varType: Constants) => {
-        const isTexture = varType === 'sampler2D' || varType === 'texture'
+export const parseUniformHead = (c: NodeContext, id: string, type: Constants) => {
+        const isTexture = type === 'sampler2D' || type === 'texture'
         if (c.isWebGL)
                 return isTexture //
                         ? `uniform sampler2D ${id};`
-                        : `uniform ${varType} ${id};`
+                        : `uniform ${type} ${id};`
         if (isTexture) {
                 const { group = 1, binding = 0 } = c.gl?.webgpu?.textures.map.get(id) || {}
                 return (
@@ -108,19 +117,17 @@ export const parseUniformHead = (c: NodeContext, id: string, varType: Constants)
                 )
         }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.uniforms.map.get(id) || {}
-        const wgslType = formatConversions(varType, c)
+        const wgslType = formatConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
 
-export const parseAttribHead = (c: NodeContext, id: string, varType: Constants) => {
-        if (c.isWebGL) return `${varType} ${id};`
+export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
+        if (c.isWebGL) return `${type} ${id};`
         const { location = 0 } = c.gl?.webgpu?.attribs.map.get(id) || {}
-        const wgslType = formatConversions(varType, c)
+        const wgslType = formatConversions(type, c)
         return `@location(${location}) ${id}: ${wgslType}`
 }
 
-export const parseConstantHead = (c: NodeContext, id: string, varType: Constants, value: string) => {
-        return c.isWebGL
-                ? `const ${varType} ${id} = ${value};`
-                : `const ${id}: ${formatConversions(varType, c)} = ${value};`
+export const parseConstantHead = (c: NodeContext, id: string, type: Constants, value: string) => {
+        return c.isWebGL ? `const ${type} ${id} = ${value};` : `const ${id}: ${formatConversions(type, c)} = ${value};`
 }

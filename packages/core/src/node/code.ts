@@ -1,19 +1,20 @@
 import { is } from '../utils/helpers'
 import { infer } from './infer'
 import {
-        parseAttribHead,
         parseArray,
+        parseAttribHead,
         parseConstantHead,
-        parseUniformHead,
         parseDeclare,
         parseDefine,
         parseIf,
+        parseStruct,
         parseSwitch,
         parseTexture,
         parseVaryingHead,
+        parseUniformHead,
 } from './parse'
 import { getBluiltin, getOperator, formatConversions, safeEventCall, getEventFun } from './utils'
-import type { NodeContext, X } from './types'
+import type { NodeContext, NodeProxy, X } from './types'
 
 export const code = (target: X, c?: NodeContext | null): string => {
         if (!c) c = {}
@@ -38,13 +39,13 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return ''
         const { type, props } = target
-        const { id = '', children = [] } = props
+        const { id = '', children = [], fields } = props
         const [x, y, z, w] = children
         /**
          * variables
          */
         if (type === 'variable') return id
-        if (type === 'swizzle') return `${code(y, c)}.${code(x, c)}`
+        if (type === 'member') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary')
                 return c.isWebGL
                         ? `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
@@ -58,29 +59,6 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 if (x === 'negate') return `(-${parseArray(children.slice(1), c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 return `${x}(${parseArray(children.slice(1), c)})`
-        }
-        if (type === 'member') return `${code(y, c)}.${code(x, c)}`
-        if (type === 'struct') {
-                // struct instance
-                if (props.type) return props.type
-                // struct definition
-                if (props.fields && c.headers) {
-                        const structName = id
-                        const fields = Object.entries(props.fields)
-                                .map(([name, fieldType]) => {
-                                        const type = typeof fieldType === 'string' ? fieldType : infer(fieldType, c)
-                                        return c.isWebGL 
-                                                ? `${type} ${name};` 
-                                                : `${name}: ${formatConversions(type, c)},`
-                                })
-                                .join('\n  ')
-                        const structDef = c.isWebGL
-                                ? `struct ${structName} {\n  ${fields}\n};`
-                                : `struct ${structName} {\n  ${fields}\n}`
-                        c.headers.set(structName, structDef)
-                        return structName
-                }
-                return id
         }
         /**
          * scopes
@@ -99,6 +77,13 @@ export const code = (target: X, c?: NodeContext | null): string => {
                 const ret = `${id}(${parseArray(children.slice(1), c)})`
                 if (c.headers.has(id)) return ret
                 c.headers.set(id, parseDefine(c, props, infer(target, c)))
+                return ret
+        }
+        if (type === 'struct') {
+                const instanceId = (x as NodeProxy).props.id
+                const ret = c.isWebGL ? `${id} ${instanceId};` : `let ${instanceId}: ${id}`
+                if (c.headers.has(id)) return ret
+                c.headers.set(id, parseStruct(c, id, fields))
                 return ret
         }
         /**

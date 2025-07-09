@@ -29,7 +29,6 @@ export type NodeTypes =
         // variables
         | 'variable'
         | 'varying'
-        | 'swizzle'
         | 'ternary'
         | 'builtin'
         | 'conversion'
@@ -56,7 +55,7 @@ export interface NodeProps {
         inferFrom?: X[]
         layout?: FnLayout
         parent?: NodeProxy
-        fields?: Record<string, X>
+        fields?: Record<string, NodeProxy>
 }
 
 export interface NodeContext {
