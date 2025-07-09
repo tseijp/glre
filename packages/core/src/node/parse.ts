@@ -127,7 +127,7 @@ export const parseStruct = (
  * headers
  */
 export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
-        return c.isWebGL ? `${type} ${id};` : `@location(${c.vertVaryings!.size}) ${id}: ${formatConversions(type, c)}`
+        return c.isWebGL ? `${type} ${id};` : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${formatConversions(type, c)}`
 }
 
 export const parseUniformHead = (c: NodeContext, id: string, type: Constants) => {

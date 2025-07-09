@@ -67,12 +67,14 @@ export interface NodeContext {
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
-        headers?: Map<string, string>
-        fragInputs?: Map<string, string>
-        vertInputs?: Map<string, string>
-        vertOutputs?: Map<string, string>
-        vertVaryings?: Map<string, string>
-        dependencies?: Map<string, Set<string>>
+        code?: {
+                headers: Map<string, string>
+                fragInputs: Map<string, string>
+                vertInputs: Map<string, string>
+                vertOutputs: Map<string, string>
+                vertVaryings: Map<string, string>
+                dependencies: Map<string, Set<string>>
+        }
 }
 
 /**

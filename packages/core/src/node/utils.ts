@@ -87,9 +87,27 @@ export const safeEventCall = (x: X, fun: (value: unknown) => void) => {
         fun(value)
 }
 
+export const initNodeContext = (c: NodeContext) => {
+        if (!c.code) {
+                c.code = {
+                        headers: new Map(),
+                        fragInputs: new Map(),
+                        vertInputs: new Map(),
+                        vertOutputs: new Map(),
+                        vertVaryings: new Map(),
+                        dependencies: new Map(),
+                }
+                if (!c.isWebGL) {
+                        c.code.fragInputs.set('position', '@builtin(position) position: vec4f')
+                        c.code.vertOutputs.set('position', '@builtin(position) position: vec4f')
+                }
+        }
+        return c
+}
+
 export const addDependency = (c: NodeContext, id = '', type: string) => {
-        if (!c.dependencies?.has(id)) c.dependencies!.set(id, new Set())
-        if (!isConstants(type)) c.dependencies!.get(id)!.add(type)
+        if (!c.code?.dependencies?.has(id)) c.code!.dependencies.set(id, new Set())
+        if (!isConstants(type)) c.code!.dependencies.get(id)!.add(type)
 }
 
 export const sortHeadersByDependencies = (headers: Map<string, string>, dependencies: Map<string, Set<string>>) => {
