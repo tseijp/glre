@@ -98,7 +98,6 @@ export const Switch = (x: X) => {
                         switchNode.props.children!.push(scope)
                 },
         })
-
         return ret()
 }
 
@@ -122,9 +121,6 @@ export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
                 scoped(x, () => fun(paramVars), y)
                 return y
         }
-        ret.setLayout = (newLayout: FnLayout) => {
-                layout = newLayout
-                return ret
-        }
+        ret.setLayout = (_layout: FnLayout) => void (layout = _layout)
         return ret
 }

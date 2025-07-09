@@ -181,8 +181,8 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const a_position = attribute(vec2(), 'a_position')
-        const a_color = attribute(vec4(), 'a_color')
+        const a_position = attribute([0, 0.73, -1, -1, 1, -1])
+        const a_color = attribute([1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
         const gl = useGL({
                 count: 3,
                 width: 256,
@@ -191,8 +191,6 @@ function Canvas() {
                 vert: vec4(a_position, 0.0, 1.0),
                 frag: vertexStage(a_color),
         })
-        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
-        gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
         return <canvas ref={gl.ref} />
 }
 ```
@@ -320,7 +318,7 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const a_position = attribute(vec2(0), 'a_position')
+        const a_position = attribute([0, 0.73, -1, -1, 1, -1])
         const gl = useGL({
                 count: 3,
                 width: 256,
@@ -328,7 +326,6 @@ function Canvas() {
                 isWebGL: true,
                 vert: vec4(a_position, 0, 1),
         })
-        gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
 }
 ```
@@ -393,14 +390,13 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const iTexture = uniform(texture2D())
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: true,
                 frag: texture(iTexture, position.xy.div(iResolution)),
         })
-        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
 }
 ```

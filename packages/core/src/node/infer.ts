@@ -54,7 +54,8 @@ const inferOperator = (leftType: string, rightType: string, op: string): Constan
 
 export const inferPrimitiveType = (x: any): Constants => {
         if (is.bol(x)) return 'bool'
-        if (is.num(x)) return 'float'
+        if (is.str(x)) return 'texture'
+        if (is.num(x)) return Number.isInteger(x) ? 'int' : 'float'
         if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'float'
         return 'float'
 }
@@ -82,6 +83,7 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
+        if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferSwizzle(x.length / c.gl.count)
         if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
 }
@@ -89,6 +91,7 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
 export const infer = (target: X, c?: NodeContext | null): Constants => {
         if (!c) c = {}
         if (!isNodeProxy(target)) return inferPrimitiveType(target)
+        if (is.arr(target)) return inferSwizzle(target.length)
         if (!c.infers) c.infers = new WeakMap<NodeProxy, Constants>()
         if (c.infers.has(target)) return c.infers.get(target)!
         const ret = inferImpl(target, c)

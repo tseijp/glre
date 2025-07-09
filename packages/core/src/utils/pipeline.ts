@@ -1,7 +1,4 @@
-import { fragment, vertex } from '../node'
-import type { X } from '../node'
-import type { AttribData, TextureData, UniformData, WebGPUState } from '../types'
-import { is } from './helpers'
+import type { AttribData, TextureData, UniformData } from '../types'
 
 /**
  * initialize
@@ -41,31 +38,82 @@ export const createBindings = () => {
         }
 }
 
+/**
+ * pipeline update
+ */
+const getVertexFormat = (stride: number): GPUVertexFormat => {
+        if (stride === 2) return 'float32x2'
+        if (stride === 3) return 'float32x3'
+        if (stride === 4) return 'float32x4'
+        return 'float32'
+}
+
+export const createVertexBuffers = (attribs: Iterable<AttribData>) => {
+        const vertexBuffers: GPUBuffer[] = []
+        const bufferLayouts: GPUVertexBufferLayout[] = []
+        for (const { buffer, location, stride } of attribs) {
+                vertexBuffers[location] = buffer
+                bufferLayouts[location] = {
+                        arrayStride: stride * 4,
+                        attributes: [
+                                {
+                                        shaderLocation: location,
+                                        offset: 0,
+                                        format: getVertexFormat(stride),
+                                },
+                        ],
+                }
+        }
+        return { vertexBuffers, bufferLayouts }
+}
+
+export const createBindGroup = (
+        device: GPUDevice,
+        uniforms: Iterable<UniformData>,
+        textures: Iterable<TextureData>
+) => {
+        const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
+        const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
+        const add = (i: number, layout: GPUBindGroupLayoutEntry, binding: GPUBindGroupEntry) => {
+                if (!groups.has(i)) groups.set(i, { layouts: [], bindings: [] })
+                const { layouts, bindings } = groups.get(i)!
+                layouts.push(layout)
+                bindings.push(binding)
+        }
+        for (const { binding, buffer, group: i } of uniforms) {
+                add(i, { binding, visibility: 3, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+        }
+        for (const { binding: b, group: i, sampler, view } of textures) {
+                add(i, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
+                add(i, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
+        }
+        for (const [i, { layouts, bindings }] of groups) {
+                ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: layouts })
+                ret.bindGroups[i] = device.createBindGroup({ layout: ret.bindGroupLayouts[i], entries: bindings })
+        }
+        return ret
+}
+
 export const createPipeline = (
         device: GPUDevice,
         format: GPUTextureFormat,
         bufferLayouts: GPUVertexBufferLayout[],
         bindGroupLayouts: GPUBindGroupLayout[],
-        webgpu: WebGPUState,
-        vs: X,
-        fs: X
+        vs: string,
+        fs: string
 ) => {
-        const config = { isWebGL: false, webgpu }
-        if (!is.str(fs)) fs = fragment(fs, config)
-        if (!is.str(vs)) vs = vertex(vs, config)
-        const layout = device.createPipelineLayout({ bindGroupLayouts })
         return device.createRenderPipeline({
                 vertex: {
-                        module: device.createShaderModule({ code: vs.trim() }),
+                        module: device.createShaderModule({ label: 'vert', code: vs }),
                         entryPoint: 'main',
                         buffers: bufferLayouts,
                 },
                 fragment: {
-                        module: device.createShaderModule({ code: fs.trim() }),
+                        module: device.createShaderModule({ label: 'frag', code: fs }),
                         entryPoint: 'main',
                         targets: [{ format }],
                 },
-                layout,
+                layout: device.createPipelineLayout({ bindGroupLayouts }),
                 primitive: { topology: 'triangle-list' },
                 depthStencil: {
                         depthWriteEnabled: true,
@@ -91,39 +139,6 @@ export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
         return { array, buffer }
 }
 
-/**
- * uniforms
- */
-export const createBindGroup = (
-        device: GPUDevice,
-        uniforms: Map<string, UniformData>,
-        textures: Map<string, TextureData>
-) => {
-        const groups = new Map<number, any>()
-        const getGroup = (i = 0) => {
-                if (!groups.has(i)) groups.set(i, { entries0: [], entries1: [] })
-                return groups.get(i)
-        }
-        for (const { binding, buffer, group: i } of uniforms.values()) {
-                const { entries0, entries1 } = getGroup(i)
-                entries0.push({ binding, visibility: 3, buffer: { type: 'uniform' } })
-                entries1.push({ binding, resource: { buffer } })
-        }
-        for (const { binding, group: i, sampler, texture } of textures.values()) {
-                const { entries0, entries1 } = getGroup(i)
-                entries0.push({ binding, visibility: 2, sampler: {} })
-                entries0.push({ binding: binding + 1, visibility: 2, texture: {} })
-                entries1.push({ binding, resource: sampler })
-                entries1.push({ binding: binding + 1, resource: texture.createView() })
-        }
-        const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
-        for (const [i, { entries0, entries1 }] of groups) {
-                ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: entries0 })
-                ret.bindGroups[i] = device.createBindGroup({ layout: ret.bindGroupLayouts[i], entries: entries1 })
-        }
-        return ret
-}
-
 export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) => {
         return {
                 colorAttachments: [
@@ -143,6 +158,9 @@ export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) 
         } as GPURenderPassDescriptor
 }
 
+/**
+ * textures
+ */
 export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
         const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
@@ -155,33 +173,4 @@ export const createDepthTexture = (device: GPUDevice, width: number, height: num
                 format: 'depth24plus',
                 usage: GPUTextureUsage.RENDER_ATTACHMENT,
         })
-}
-
-/**
- * attribs
- */
-const getVertexFormat = (stride: number): GPUVertexFormat => {
-        if (stride === 2) return 'float32x2'
-        if (stride === 3) return 'float32x3'
-        if (stride === 4) return 'float32x4'
-        return 'float32'
-}
-
-export const createVertexBuffers = (attribs: Map<string, AttribData>) => {
-        const vertexBuffers: GPUBuffer[] = []
-        const bufferLayouts: GPUVertexBufferLayout[] = []
-        for (const [, { buffer, location, stride }] of attribs) {
-                vertexBuffers[location] = buffer
-                bufferLayouts[location] = {
-                        arrayStride: stride * 4,
-                        attributes: [
-                                {
-                                        shaderLocation: location,
-                                        offset: 0,
-                                        format: getVertexFormat(stride),
-                                },
-                        ],
-                }
-        }
-        return { vertexBuffers, bufferLayouts }
 }

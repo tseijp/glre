@@ -1,4 +1,4 @@
-import { WebGPUState } from '../types'
+import { GL } from '../types'
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
@@ -56,12 +56,12 @@ export interface NodeProps {
 }
 
 export interface NodeContext {
+        gl?: Partial<GL>
         isFrag?: boolean
         isWebGL?: boolean
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
-        webgpu?: WebGPUState
         headers?: Map<string, string>
         fragInputs?: Map<string, string>
         vertInputs?: Map<string, string>
@@ -105,6 +105,7 @@ export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
         type: NodeTypes
         props: NodeProps
         isProxy: true
+        listeners: Set<(value: any) => void>
 
         // Operators methods
         add(n: X): NodeProxy
@@ -193,4 +194,4 @@ export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
 
 export type NodeProxy = BaseNodeProxy & DynamicProperties
 
-export type X = NodeProxy | number | string | boolean | undefined
+export type X = X[] | NodeProxy | number | string | boolean | undefined

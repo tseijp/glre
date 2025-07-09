@@ -1,5 +1,4 @@
 import { is } from '../utils/helpers'
-import { code } from './code'
 import {
         CONSTANTS,
         CONVERSIONS,
@@ -50,13 +49,6 @@ let count = 0
 
 export const getId = () => `i${count++}`
 
-export const joins = (children: X[], c: NodeContext) => {
-        return children
-                .filter((x) => !is.und(x) && !is.nul(x))
-                .map((x) => code(x, c))
-                .join(', ')
-}
-
 export const formatConversions = (x: X, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
@@ -74,4 +66,24 @@ export const getBluiltin = (id: string) => {
 export const conversionToConstant = (conversionKey: string): Constants => {
         const index = CONVERSIONS.indexOf(conversionKey as Conversions)
         return index !== -1 ? CONSTANTS[index] : 'float'
+}
+
+export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isTexture = false) => {
+        if (c.isWebGL) {
+                if (isAttribute) return (value: any) => c.gl?.attribute?.(id, value)
+                if (isTexture) return (value: any) => c.gl?.texture?.(id, value)
+                return (value: any) => c.gl?.uniform?.(id, value)
+        }
+        if (isAttribute) return (value: any) => c.gl?._attribute?.(id, value)
+        if (isTexture) return (value: any) => c.gl?._texture?.(id, value)
+        return (value: any) => c.gl?._uniform?.(id, value)
+}
+
+export const safeEventCall = (x: X, fun: (value: unknown) => void) => {
+        if (!x) return
+        if (!isNodeProxy(x)) return fun(x) // for uniform(1)
+        if (x.type !== 'conversion') return
+        const value = x.props.children?.slice(1).filter(Boolean)
+        if (!value?.length) return // for uniform(vec2())
+        fun(value)
 }

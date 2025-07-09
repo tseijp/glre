@@ -1,12 +1,17 @@
 import { nested as cached } from 'reev'
+import { fragment, vertex } from './node'
 import { is } from './utils/helpers'
 import { createAttrib, createIbo, createProgram, createTexture, createVbo, getStride } from './utils/program'
 import type { GL, WebGLState } from './types'
 
 export const webgl = async (gl: Partial<GL>) => {
         const c = gl.el!.getContext('webgl2')!
-        const pg = createProgram(c, gl.vs, gl.fs, () => void (gl.isLoop = false), gl)!
+        const config = { isWebGL: true, gl }
+        const fs = fragment(gl.fs, config)
+        const vs = vertex(gl.vs, config)
+        const pg = createProgram(c, vs, fs, () => void (gl.isLoop = false))!
         c.useProgram(pg)
+
         let _activeUnit = 0
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
         const attribs = cached((key) => c.getAttribLocation(pg, key))

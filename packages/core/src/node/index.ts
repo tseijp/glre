@@ -26,6 +26,7 @@ const generateStruct = (id: string, map: Map<string, string>) => {
 }
 
 export const vertex = (x: X, c: NodeContext) => {
+        if (is.str(x)) return x.trim()
         c.headers?.clear()
         c.isFrag = false // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
@@ -50,12 +51,13 @@ export const vertex = (x: X, c: NodeContext) => {
                 ret.push('  return out;')
         }
         ret.push('}')
-        const main = ret.filter(Boolean).join('\n')
+        const main = ret.filter(Boolean).join('\n').trim()
         console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
 export const fragment = (x: X, c: NodeContext) => {
+        if (is.str(x)) return x.trim()
         c.headers?.clear()
         c.isFrag = true // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
@@ -72,7 +74,7 @@ export const fragment = (x: X, c: NodeContext) => {
                 ret.push(`  return ${body};`)
         }
         ret.push('}')
-        const main = ret.filter(Boolean).join('\n')
+        const main = ret.filter(Boolean).join('\n').trim()
         console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
@@ -98,7 +100,7 @@ export const screenCoordinate = builtin('screenCoordinate')
 export const screenUV = builtin('screenUV')
 
 // Type constructors
-export const float = (x: X) => c('float', x)
+export const float = (x?: X) => c('float', x)
 export const int = (x: X) => c('int', x)
 export const uint = (x: X) => c('uint', x)
 export const bool = (x: X) => c('bool', x)
@@ -117,7 +119,7 @@ export const uvec4 = (x?: X, y?: X, z?: X, w?: X) => c('uvec4', x, y, z, w)
 export const bvec2 = (x?: X, y?: X) => c('bvec2', x, y)
 export const bvec3 = (x?: X, y?: X, z?: X) => c('bvec3', x, y, z)
 export const bvec4 = (x?: X, y?: X, z?: X, w?: X) => c('bvec4', x, y, z, w)
-export const texture2D = () => c('texture')
+export const texture2D = (x?: X) => c('texture', x)
 export const sampler2D = () => c('sampler2D')
 export const color = (r?: X, g?: X, b?: X) => {
         if (is.num(r) && is.und(g) && is.und(b)) return vec3(...hex2rgb(r))
@@ -125,9 +127,9 @@ export const color = (r?: X, g?: X, b?: X) => {
 }
 
 // Default uniforms
-export const iResolution = u(vec2(1280, 800), 'iResolution')
-export const iMouse = u(vec2(0, 0), 'iMouse')
-export const iTime = u(float(0), 'iTime')
+export const iResolution = u(vec2(), 'iResolution')
+export const iMouse = u(vec2(), 'iMouse')
+export const iTime = u(float(), 'iTime')
 export const uv = () => position.xy.div(iResolution)
 
 // Texture Functions

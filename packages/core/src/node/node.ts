@@ -1,6 +1,6 @@
 import { code } from './code'
 import { assign, toVar } from './scope'
-import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId, isNodeProxy } from './utils'
+import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId } from './utils'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
@@ -10,6 +10,7 @@ const toPrimitive = (x: X, hint: string) => {
 export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) => {
         if (!props) props = {}
         if (args.length) props.children = args
+        const listeners = new Set<(value: any) => void>()
         const get = (_: unknown, key: string | Symbol) => {
                 if (key === 'type') return type
                 if (key === 'props') return props
@@ -18,17 +19,16 @@ export const node = (type: NodeTypes, props?: NodeProps | null, ...args: X[]) =>
                 if (key === 'isProxy') return true
                 if (key === 'toString') return code.bind(null, x)
                 if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
+                if (key === 'listeners') return listeners
                 if (isSwizzle(key)) return swizzle(key, x)
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
                 if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
         }
         const set = (_: unknown, key: string, y: X) => {
-                if (isSwizzle(key)) {
-                        swizzle(key, x).assign(y)
-                        return true
-                }
-                return false
+                if (key === 'value') listeners.forEach((fun) => fun(y))
+                if (isSwizzle(key)) swizzle(key, x).assign(y)
+                return true
         }
         const x = new Proxy({}, { get, set }) as unknown as NodeProxy
         return x
