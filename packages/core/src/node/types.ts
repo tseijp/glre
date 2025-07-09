@@ -55,7 +55,9 @@ export interface NodeProps {
         inferFrom?: X[]
         layout?: FnLayout
         parent?: NodeProxy
+        // for struct
         fields?: Record<string, NodeProxy>
+        initialValues?: Record<string, NodeProxy>
 }
 
 export interface NodeContext {

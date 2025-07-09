@@ -38,10 +38,9 @@ export const Return = (x: X) => {
 
 // Struct functions
 export const struct = (fields: Record<string, NodeProxy>, id = getId()) => {
-        return (defaultFields: Record<string, NodeProxy> = {}, instanceId = getId()) => {
+        return (initialValues: Record<string, NodeProxy> = {}, instanceId = getId()) => {
                 const x = node('variable', { id: instanceId })
-                const y = node('struct', { id, fields }, x)
-                for (const key in defaultFields) assign(x[key], defaultFields[key])
+                const y = node('struct', { id, fields, initialValues }, x)
                 addToScope(y)
                 return x
         }

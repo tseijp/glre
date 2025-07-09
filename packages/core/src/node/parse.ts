@@ -85,7 +85,7 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
         return ret.join('\n')
 }
 
-export const parseStruct = (c: NodeContext, id: string, fields: Record<string, NodeProxy> = {}) => {
+export const parseStructHead = (c: NodeContext, id: string, fields: Record<string, NodeProxy> = {}) => {
         const lines: string[] = []
         for (const key in fields) {
                 const fieldType = fields[key]
@@ -94,6 +94,28 @@ export const parseStruct = (c: NodeContext, id: string, fields: Record<string, N
         }
         const ret = lines.join('\n  ')
         return `struct ${id} {\n  ${ret}\n};`
+}
+
+export const parseStruct = (
+        c: NodeContext,
+        id: string,
+        instanceId = '',
+        fields?: Record<string, NodeProxy>,
+        initialValues?: Record<string, NodeProxy>
+) => {
+        if (c.isWebGL) {
+                if (initialValues) {
+                        const ordered = []
+                        for (const key in fields || {}) ordered.push(initialValues[key] || '0')
+                        return `${id} ${instanceId} = ${id}(${parseArray(ordered, c)});`
+                } else return `${id} ${instanceId};`
+        } else {
+                if (initialValues) {
+                        const ordered = []
+                        for (const key in fields || {}) ordered.push(initialValues[key] || '0')
+                        return `var ${instanceId}: ${id} = ${id}(${parseArray(ordered, c)});`
+                } else return `var ${instanceId}: ${id};`
+        }
 }
 
 /**

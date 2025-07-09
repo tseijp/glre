@@ -8,6 +8,7 @@ import {
         parseDefine,
         parseIf,
         parseStruct,
+        parseStructHead,
         parseSwitch,
         parseTexture,
         parseVaryingHead,
@@ -39,7 +40,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return ''
         const { type, props } = target
-        const { id = '', children = [], fields } = props
+        const { id = '', children = [], fields, initialValues } = props
         const [x, y, z, w] = children
         /**
          * variables
@@ -74,17 +75,13 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
         if (type === 'define') {
-                const ret = `${id}(${parseArray(children.slice(1), c)})`
-                if (c.headers.has(id)) return ret
-                c.headers.set(id, parseDefine(c, props, infer(target, c)))
-                return ret
+                if (!c.headers.has(id)) c.headers.set(id, parseDefine(c, props, infer(target, c)))
+                return `${id}(${parseArray(children.slice(1), c)})`
         }
         if (type === 'struct') {
                 const instanceId = (x as NodeProxy).props.id
-                const ret = c.isWebGL ? `${id} ${instanceId};` : `let ${instanceId}: ${id}`
-                if (c.headers.has(id)) return ret
-                c.headers.set(id, parseStruct(c, id, fields))
-                return ret
+                if (!c.headers.has(id)) c.headers.set(id, parseStructHead(c, id, fields))
+                return parseStruct(c, id, instanceId, fields, initialValues)
         }
         /**
          * headers
