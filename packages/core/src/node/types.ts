@@ -101,8 +101,8 @@ type NodeProxyMethods =
         | 'toVar'
         | 'toString'
 
-export type DynamicProperties = {
-        [K in string as K extends NodeProxyMethods ? never : K]: NodeProxy
+export type ReadNodeProxy = {
+        [K in string as K extends NodeProxyMethods ? never : K]: X
 }
 
 export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
@@ -200,6 +200,6 @@ export interface BaseNodeProxy extends Record<Swizzles, NodeProxy> {
         fwidth(): NodeProxy
 }
 
-export type NodeProxy = BaseNodeProxy & DynamicProperties
+export type NodeProxy = BaseNodeProxy & ReadNodeProxy
 
-export type X = X[] | NodeProxy | number | string | boolean | undefined
+export type X = X[] | (NodeProxy | number | string | boolean | undefined)

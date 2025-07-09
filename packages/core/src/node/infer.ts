@@ -66,12 +66,9 @@ const inferFromCount = (count: number): Constants => {
 
 const inferFromArray = (arr: X[], c: NodeContext): Constants => {
         if (arr.length === 0) return 'void'
-        const first = arr[0]
-        // If the first element is a string, it might be a struct type name
-        if (typeof first === 'string') {
-                return first as Constants
-        }
-        const ret = infer(first, c)
+        const [x] = arr
+        if (is.str(x)) return x as Constants // for struct
+        const ret = infer(x, c)
         for (const x of arr.slice(1))
                 if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
         return ret
@@ -94,7 +91,7 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
                         const field = y.props.fields?.[x] // for variable node of struct member
                         if (field) return infer(field, c)
                 }
-                return 'float' // fallback
+                return 'float' // fallback @TODO FIX
         }
         if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
