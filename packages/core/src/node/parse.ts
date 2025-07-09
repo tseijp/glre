@@ -58,7 +58,7 @@ export const parseDeclare = (c: NodeContext, x: X, y: X) => {
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
-export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Constants) => {
+export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Constants | string) => {
         const { id, children = [], layout } = props
         const [x, ...args] = children
         const argParams: [name: string, type: string][] = []

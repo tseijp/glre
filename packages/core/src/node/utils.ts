@@ -52,7 +52,7 @@ export const getId = () => `i${count++}`
 export const formatConversions = (x: X, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
-        return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING]
+        return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING] || x // for struct type
 }
 
 export const getOperator = (op: X) => {

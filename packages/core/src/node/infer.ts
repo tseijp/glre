@@ -13,7 +13,7 @@ import {
         VEC3_RETURN_FUNCTIONS,
         VEC4_RETURN_FUNCTIONS,
 } from './const'
-import { isConstantsType, isNodeProxy } from './utils'
+import { isConstantsType, isNodeProxy, isSwizzle } from './utils'
 import type { Constants, NodeContext, NodeProxy, X } from './types'
 
 const getHighestPriorityType = (args: X[], c: NodeContext) => {
@@ -60,44 +60,39 @@ export const inferPrimitiveType = (x: any): Constants => {
         return 'float'
 }
 
-const inferSwizzle = (count: number): Constants => {
+const inferFromCount = (count: number): Constants => {
         return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE]!
 }
 
 const inferFromArray = (arr: X[], c: NodeContext): Constants => {
         if (arr.length === 0) return 'void'
-        const ret = infer(arr[0], c)
+        const first = arr[0]
+        // If the first element is a string, it might be a struct type name
+        if (typeof first === 'string') {
+                return first as Constants
+        }
+        const ret = infer(first, c)
         for (const x of arr.slice(1))
-                if (ret !== infer(x)) throw new Error(`glre node system error: defined scope return mismatch`)
+                if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
         return ret
 }
 
 export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
         const { type, props } = target
-        const { id, children = [], layout, inferFrom, fields } = props
+        const { id, children = [], layout, inferFrom } = props
         const [x, y, z] = children
         if (type === 'conversion') return x as Constants
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
-        if (type === 'swizzle') return inferSwizzle((x as string).length)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'define' && isConstantsType(layout?.type)) return layout?.type
-        if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferSwizzle(x.length / c.gl.count)
-        if (type === 'struct') {
-                // struct definition returns struct type
-                if (fields) return 'struct'
-                // struct instance returns the struct type name
-                return props.type as Constants || 'struct'
-        }
+        if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
         if (type === 'member') {
-                // infer from the struct field type
-                const structNode = y
-                if (structNode && typeof structNode === 'object' && 'props' in structNode) {
-                        const structFields = structNode.props.fields
-                        if (structFields && typeof x === 'string') {
-                                return infer(structFields[x], c)
-                        }
+                if (isSwizzle(x)) return inferFromCount(x.length)
+                if (isNodeProxy(y) && is.str(x)) {
+                        const field = y.props.fields?.[x] // for variable node of struct member
+                        if (field) return infer(field, c)
                 }
                 return 'float' // fallback
         }
@@ -108,7 +103,7 @@ export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
 export const infer = (target: X, c?: NodeContext | null): Constants => {
         if (!c) c = {}
         if (!isNodeProxy(target)) return inferPrimitiveType(target)
-        if (is.arr(target)) return inferSwizzle(target.length)
+        if (is.arr(target)) return inferFromCount(target.length)
         if (!c.infers) c.infers = new WeakMap<NodeProxy, Constants>()
         if (c.infers.has(target)) return c.infers.get(target)!
         const ret = inferImpl(target, c)

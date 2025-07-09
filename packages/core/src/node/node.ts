@@ -1,8 +1,8 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { assign, toVar } from './scope'
-import { conversionToConstant, isConversion, isFunction, isOperator, isSwizzle, getId } from './utils'
-import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, Swizzles, X } from './types'
+import { conversionToConstant, isConversion, isFunction, isOperator, getId } from './utils'
+import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, X } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
         if (hint === 'string') return code(x)
