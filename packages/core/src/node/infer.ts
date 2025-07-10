@@ -74,7 +74,7 @@ const inferFromArray = (arr: X[], c: NodeContext): Constants => {
         return ret
 }
 
-export const inferImpl = (target: NodeProxy, c: NodeContext): Constants => {
+export const inferImpl = (target: NodeProxy<any>, c: NodeContext): Constants => {
         const { type, props } = target
         const { id, children = [], layout, inferFrom } = props
         const [x, y, z] = children
@@ -101,7 +101,7 @@ export const infer = (target: X, c?: NodeContext | null): Constants => {
         if (!c) c = {}
         if (!isNodeProxy(target)) return inferPrimitiveType(target)
         if (is.arr(target)) return inferFromCount(target.length)
-        if (!c.infers) c.infers = new WeakMap<NodeProxy, Constants>()
+        if (!c.infers) c.infers = new WeakMap<NodeProxy<any>, Constants>()
         if (c.infers.has(target)) return c.infers.get(target)!
         const ret = inferImpl(target, c)
         c.infers.set(target, ret)

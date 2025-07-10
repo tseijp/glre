@@ -67,12 +67,12 @@ export type GL = EventState<{
         mouse: [number, number]
         count: number
         el: HTMLCanvasElement
-        vs: string | NodeProxy
-        fs: string | NodeProxy
-        vert: string | NodeProxy
-        frag: string | NodeProxy
-        vertex: string | NodeProxy
-        fragment: string | NodeProxy
+        vs: string | NodeProxy<'vec4'>
+        fs: string | NodeProxy<'vec4'>
+        vert: string | NodeProxy<'vec4'>
+        frag: string | NodeProxy<'vec4'>
+        vertex: string | NodeProxy<'vec4'>
+        fragment: string | NodeProxy<'vec4'>
 
         /**
          * core state

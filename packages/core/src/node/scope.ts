@@ -1,12 +1,11 @@
-import { int } from '.'
 import { conversion, node } from './node'
 import { getId } from './utils'
-import type { FnLayout, NodeProps, NodeProxy, X } from './types'
+import type { FnLayout, NodeProps, NodeProxy, X, Constants } from './types'
 
-let scope: NodeProxy | null = null
-let define: NodeProxy | null = null
+let scope: NodeProxy<any> | null = null
+let define: NodeProxy<any> | null = null
 
-const addToScope = (x: NodeProxy) => {
+const addToScope = (x: NodeProxy<any>) => {
         if (!scope) return
         if (!scope.props.children) scope.props.children = []
         scope.props.children.push(x)
@@ -16,29 +15,29 @@ const addToScope = (x: NodeProxy) => {
         props.inferFrom.push(x)
 }
 
-export const toVar = (x: X, id?: string) => {
+export const toVar = <T extends Constants = any>(x: X, id?: string): NodeProxy<T> => {
         if (!id) id = getId()
-        const y = node('variable', { id, inferFrom: [x] })
+        const y = node<T>('variable', { id, inferFrom: [x] })
         const z = node('declare', null, x, y)
         addToScope(z)
         return y
 }
 
-export const assign = (x: X, y: X) => {
+export const assign = <T>(x: T, y: X): T => {
         const z = node('assign', null, x, y)
         addToScope(z)
         return x
 }
 
-export const Return = (x: X) => {
-        const y = node('return', { inferFrom: [x] }, x)
+export const Return = <T extends Constants = any>(x: X): NodeProxy<T> => {
+        const y = node<T>('return', { inferFrom: [x] }, x)
         addToScope(y)
         return y
 }
 
 // Struct functions
-export const struct = (fields: Record<string, NodeProxy>, id = getId()) => {
-        return (initialValues: Record<string, NodeProxy> = {}, instanceId = getId()) => {
+export const struct = (fields: Record<string, NodeProxy<any>>, id = getId()) => {
+        return (initialValues: Record<string, NodeProxy<any>> = {}, instanceId = getId()) => {
                 const x = node('variable', { id: instanceId, inferFrom: [id] })
                 const y = node('struct', { id, fields, initialValues }, x)
                 addToScope(y)
@@ -46,7 +45,7 @@ export const struct = (fields: Record<string, NodeProxy>, id = getId()) => {
         }
 }
 
-const scoped = (x: NodeProxy, fun: () => NodeProxy | void, y = define) => {
+const scoped = (x: NodeProxy<any>, fun: () => NodeProxy<any> | void, y = define) => {
         // cache to revert
         const _scope = scope
         const _define = define
@@ -82,9 +81,9 @@ export const If = (x: X, fun: () => void) => {
         return ret()
 }
 
-export const Loop = (x: X, fun: (params: { i: NodeProxy }) => void) => {
+export const Loop = (x: X, fun: (params: { i: NodeProxy<'int'> }) => void) => {
         const y = node('scope')
-        scoped(y, () => fun({ i: node('variable', { id: 'i', inferFrom: [int(0)] }) }))
+        scoped(y, () => fun({ i: node<'int'>('variable', { id: 'i', inferFrom: [conversion('int', 0)] }) }))
         const ret = node('loop', null, x, y)
         addToScope(ret)
         return ret
@@ -111,12 +110,15 @@ export const Switch = (x: X) => {
         return ret()
 }
 
-export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
+export const Fn = <T extends Constants = any>(fun: (paramVars: NodeProxy<any>[]) => NodeProxy<T>): {
+        (...args: X[]): NodeProxy<T>
+        setLayout: (layout: FnLayout) => void
+} => {
         let layout: FnLayout
-        const ret = (...args: X[]) => {
+        const ret = (...args: X[]): NodeProxy<T> => {
                 const id = layout?.name || getId()
                 const x = node('scope')
-                const paramVars: NodeProxy[] = []
+                const paramVars: NodeProxy<any>[] = []
                 const paramDefs: NodeProps[] = []
                 if (layout?.inputs)
                         for (const input of layout.inputs) {
@@ -127,7 +129,7 @@ export const Fn = (fun: (paramVars: NodeProxy[]) => NodeProxy) => {
                                 paramDefs.push({ id: `p${i}`, inferFrom: [args[i]] })
                         }
                 for (const props of paramDefs) paramVars.push(node('variable', props))
-                const y = node('define', { id, layout }, x, ...args)
+                const y = node<T>('define', { id, layout }, x, ...args)
                 scoped(x, () => fun(paramVars), y)
                 return y
         }

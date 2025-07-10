@@ -70,7 +70,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         }
         if (type === 'struct') {
                 if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
-                return parseStruct(c, id, (x as NodeProxy).props.id, fields, initialValues)
+                return parseStruct(c, id, (x as NodeProxy<any>).props.id, fields, initialValues)
         }
         /**
          * headers

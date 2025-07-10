@@ -26,7 +26,7 @@ export const isConversion = (key: unknown): key is Conversions => {
         return CONVERSIONS.includes(key as Conversions)
 }
 
-export const isNodeProxy = (x: unknown): x is NodeProxy => {
+export const isNodeProxy = (x: unknown): x is NodeProxy<any> => {
         if (!x) return false
         if (typeof x !== 'object') return false // @ts-ignore
         return x.isProxy
