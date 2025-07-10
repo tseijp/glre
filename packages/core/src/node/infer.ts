@@ -25,11 +25,11 @@ const getHighestPriorityType = <T extends Constants>(args: X<T>[], c: NodeContex
         }, 'float') as T
 }
 
-const inferBuiltin = <T extends Constants>(id: string | undefined): T => {
+const inferBuiltin = <T extends Constants>(id: string | undefined) => {
         return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES] as T
 }
 
-const inferFunction = <T extends Constants>(funcName: string, args: X<T>[], c: NodeContext): T => {
+const inferFunction = <T extends Constants>(funcName: string, args: X<T>[], c: NodeContext) => {
         const firstArgType = args.length > 0 ? infer(args[0], c) : 'float'
         if (FIRST_ARG_TYPE_FUNCTIONS.includes(funcName as any)) return firstArgType as T
         if (SCALAR_RETURN_FUNCTIONS.includes(funcName as any)) return 'float' as T
@@ -52,7 +52,7 @@ const inferOperator = <T extends Constants>(leftType: string, rightType: string,
         return (leftPriority >= rightPriority ? leftType : rightType) as T
 }
 
-export const inferPrimitiveType = (x: any): Constants => {
+export const inferPrimitiveType = (x: X): Constants => {
         if (is.bol(x)) return 'bool'
         if (is.str(x)) return 'texture'
         if (is.num(x)) return Number.isInteger(x) ? 'int' : 'float'
@@ -60,14 +60,14 @@ export const inferPrimitiveType = (x: any): Constants => {
         return 'float'
 }
 
-const inferFromCount = (count: number): Constants => {
-        return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE]!
+const inferFromCount = <T extends Constants>(count: number) => {
+        return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
 }
 
-const inferFromArray = <T extends Constants>(arr: X<T>[], c: NodeContext): Constants => {
-        if (arr.length === 0) return 'void'
+const inferFromArray = <T extends Constants>(arr: X<T>[], c: NodeContext) => {
+        if (arr.length === 0) return 'void' as T
         const [x] = arr
-        if (is.str(x)) return x as Constants // for struct
+        if (is.str(x)) return x as T // for struct
         const ret = infer(x, c)
         for (const x of arr.slice(1))
                 if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
@@ -78,7 +78,7 @@ export const inferImpl = <T extends Constants>(target: NodeProxy<T>, c: NodeCont
         const { type, props } = target
         const { id, children = [], layout, inferFrom } = props
         const [x, y, z] = children
-        if (type === 'conversion') return x as T
+        if (type === 'conversion') return x
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'function') return inferFunction(x as string, children.slice(1), c)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
@@ -88,10 +88,10 @@ export const inferImpl = <T extends Constants>(target: NodeProxy<T>, c: NodeCont
         if (type === 'member') {
                 if (isSwizzle(x)) return inferFromCount(x.length)
                 if (isNodeProxy(y) && is.str(x)) {
-                        const field = y.props.fields?.[x] // for variable node of struct member
+                        const field = (y as any).props.fields?.[x] // for variable node of struct member
                         if (field) return infer(field, c)
                 }
-                return 'float' // fallback @TODO FIX
+                return 'float' as T // fallback @TODO FIX
         }
         if (inferFrom) return inferFromArray(inferFrom, c)
         return infer(x, c)
@@ -100,10 +100,10 @@ export const inferImpl = <T extends Constants>(target: NodeProxy<T>, c: NodeCont
 export const infer = <T extends Constants>(target: X<T>, c?: NodeContext | null): T => {
         if (!c) c = {}
         if (!isNodeProxy(target)) return inferPrimitiveType(target) as T
-        if (is.arr(target)) return inferFromCount(target.length) as T
-        if (!c.infers) c.infers = new WeakMap<NodeProxy, Constants>()
+        if (is.arr(target)) return inferFromCount(target.length)
+        if (!c.infers) c.infers = new WeakMap<NodeProxy<T>, Constants>()
         if (c.infers.has(target)) return c.infers.get(target) as T
         const ret = inferImpl(target, c)
         c.infers.set(target, ret)
-        return ret as T
+        return ret
 }

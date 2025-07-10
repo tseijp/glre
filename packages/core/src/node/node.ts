@@ -8,7 +8,7 @@ const toPrimitive = (x: X, hint: string) => {
         if (hint === 'string') return code(x)
 }
 
-export const node = <T extends Constants>(type: NodeTypes, props?: NodeProps | null, ...args: X[]): NodeProxy<T> => {
+export const node = <T extends Constants>(type: NodeTypes, props?: NodeProps | null, ...args: X[]) => {
         if (!props) props = {}
         if (args.length) props.children = args
         const listeners = new Set<(value: any) => void>()
@@ -37,21 +37,26 @@ export const node = <T extends Constants>(type: NodeTypes, props?: NodeProps | n
 }
 
 // headers with proper type inference
-export const attribute = <T extends Constants>(x: X, id = getId()): NodeProxy<T> => node<T>('attribute', { id }, x)
-export const constant = <T extends Constants>(x: X, id = getId()): NodeProxy<T> => node<T>('constant', { id }, x)
-export const uniform = <T extends Constants>(x: X, id = getId()): NodeProxy<T> => node<T>('uniform', { id }, x)
-export const variable = <T extends Constants>(id = getId()): NodeProxy<T> => node<T>('variable', { id })
-export const builtin = <T extends Constants>(id = getId()): NodeProxy<T> => node<T>('builtin', { id })
-export const vertexStage = <T extends Constants>(x: X, id = getId()): NodeProxy<T> =>
-        node<T>('varying', { id, inferFrom: [x] }, x)
+export const member = <T extends Constants>(key: string, x: X) => node<T>('member', null, key, x)
+export const select = <T extends Constants>(x: X, y: X, z: X) => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
+export const attribute = <T extends Constants>(x: X, id = getId()) => node<T>('attribute', { id }, x)
+export const constant = <T extends Constants>(x: X, id = getId()) => node<T>('constant', { id }, x)
+export const uniform = <T extends Constants>(x: X, id = getId()) => node<T>('uniform', { id }, x)
+export const variable = <T extends Constants>(id = getId()) => node<T>('variable', { id })
+export const builtin = <T extends Constants>(id = getId()) => node<T>('builtin', { id })
+export const vertexStage = <T extends Constants>(x: X, id = getId()) => {
+        return node<T>('varying', { id, inferFrom: [x] }, x)
+}
 
 // Node shorthands with proper typing
-export const operator = <T extends Constants>(key: Operators, ...x: X[]): NodeProxy<T> =>
-        node<T>('operator', null, key, ...x)
-export const function_ = <T extends Constants>(key: Functions, ...x: X[]): NodeProxy<T> =>
-        node<T>('function', null, key, ...x)
-export const conversion = <T extends Constants>(key: string, ...x: X[]): NodeProxy<T> =>
-        node<T>('conversion', null, key, ...x)
+export const operator = <T extends Constants>(key: Operators, ...x: X[]) => {
+        return node<T>('operator', null, key, ...x)
+}
 
-export const member = <T extends Constants>(key: string, x: X): NodeProxy<T> => node<T>('member', null, key, x)
-export const select = <T extends Constants>(x: X, y: X, z: X): NodeProxy<T> => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
+export const function_ = <T extends Constants>(key: Functions, ...x: X[]) => {
+        return node<T>('function', null, key, ...x)
+}
+
+export const conversion = <T extends Constants>(key: string, ...x: X[]) => {
+        return node<T>('conversion', null, key, ...x)
+}

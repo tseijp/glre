@@ -2,7 +2,7 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb, sortHeadersByDependencies } from './utils'
-import type { Constants, NodeContext, X, NodeProxy } from './types'
+import type { Constants as C, NodeContext, X, NodeProxy } from './types'
 export * from './code'
 export * from './node'
 export * from './scope'
@@ -84,24 +84,24 @@ export const fragment = (x: X, c: NodeContext) => {
 }
 
 // Builtin Variables
-export const position = builtin('position')
-export const vertexIndex = builtin('vertex_index')
-export const instanceIndex = builtin('instance_index')
-export const frontFacing = builtin('front_facing')
-export const fragDepth = builtin('frag_depth')
-export const sampleIndex = builtin('sample_index')
-export const sampleMask = builtin('sample_mask')
-export const pointCoord = builtin('point_coord')
+export const position = builtin<'vec4'>('position')
+export const vertexIndex = builtin<'uint'>('vertex_index')
+export const instanceIndex = builtin<'uint'>('instance_index')
+export const frontFacing = builtin<'bool'>('front_facing')
+export const fragDepth = builtin<'float'>('frag_depth')
+export const sampleIndex = builtin<'uint'>('sample_index')
+export const sampleMask = builtin<'uint'>('sample_mask')
+export const pointCoord = builtin<'vec2'>('point_coord')
 
 // TSL Compatible Builtin Variables
-export const normalLocal = builtin('normalLocal')
-export const normalWorld = builtin('normalWorld')
-export const normalView = builtin('normalView')
-export const positionLocal = builtin('position')
-export const positionWorld = builtin('positionWorld')
-export const positionView = builtin('positionView')
-export const screenCoordinate = builtin('screenCoordinate')
-export const screenUV = builtin('screenUV')
+export const positionLocal = builtin<'vec3'>('position')
+export const positionWorld = builtin<'vec3'>('positionWorld')
+export const positionView = builtin<'vec3'>('positionView')
+export const normalLocal = builtin<'vec3'>('normalLocal')
+export const normalWorld = builtin<'vec3'>('normalWorld')
+export const normalView = builtin<'vec3'>('normalView')
+export const screenCoordinate = builtin<'vec2'>('screenCoordinate')
+export const screenUV = builtin<'vec2'>('screenUV')
 
 // Type constructors with proper type inference
 export const float = (x?: X): NodeProxy<'float'> => c('float', x)
@@ -134,86 +134,80 @@ export const color = (r?: X, g?: X, b?: X): NodeProxy<'vec3'> => {
 export const iResolution: NodeProxy<'vec2'> = u(vec2(), 'iResolution')
 export const iMouse: NodeProxy<'vec2'> = u(vec2(), 'iMouse')
 export const iTime: NodeProxy<'float'> = u(float(), 'iTime')
-export const uv = (): NodeProxy<'vec2'> => position.xy.div(iResolution)
+export const uv = position.xy.div(iResolution)
 
 // Texture Functions with proper return types
-export const texture = (x: X, y: X, z?: X): NodeProxy<'vec4'> => f('texture', x, y, z)
-export const cubeTexture = (x: X, y: X, z?: X): NodeProxy<'vec4'> => f('cubeTexture', x, y, z)
-export const textureSize = (x: X, y?: X): NodeProxy<'vec4'> => f('textureSize', x, y)
-
-export type Preserve<T extends X, Float extends Constants = 'float'> = T extends NodeProxy<infer U>
-        ? NodeProxy<U>
-        : NodeProxy<Float>
+export const texture = (x: X, y: X, z?: X) => f<'vec4'>('texture', x, y, z)
+export const cubeTexture = (x: X, y: X, z?: X) => f<'vec4'>('cubeTexture', x, y, z)
+export const textureSize = (x: X, y?: X) => f<'vec4'>('textureSize', x, y)
 
 // Math Functions with proper return type inference
-// Preserve type functions (return same type as input)
-export const abs = <T extends X>(x: T) => f('abs', x) as Preserve<T>
-export const sign = <T extends X>(x: T) => f('sign', x) as Preserve<T>
-export const floor = <T extends X>(x: T) => f('floor', x) as Preserve<T>
-export const ceil = <T extends X>(x: T) => f('ceil', x) as Preserve<T>
-export const round = <T extends X>(x: T) => f('round', x) as Preserve<T>
-export const fract = <T extends X>(x: T) => f('fract', x) as Preserve<T>
-export const trunc = <T extends X>(x: T) => f('trunc', x) as Preserve<T>
-export const sin = <T extends X>(x: T) => f('sin', x) as Preserve<T>
-export const cos = <T extends X>(x: T) => f('cos', x) as Preserve<T>
-export const tan = <T extends X>(x: T) => f('tan', x) as Preserve<T>
-export const asin = <T extends X>(x: T) => f('asin', x) as Preserve<T>
-export const acos = <T extends X>(x: T) => f('acos', x) as Preserve<T>
-export const atan = <T extends X>(x: T) => f('atan', x) as Preserve<T>
-export const exp = <T extends X>(x: T) => f('exp', x) as Preserve<T>
-export const exp2 = <T extends X>(x: T) => f('exp2', x) as Preserve<T>
-export const log = <T extends X>(x: T) => f('log', x) as Preserve<T>
-export const log2 = <T extends X>(x: T) => f('log2', x) as Preserve<T>
-export const sqrt = <T extends X>(x: T) => f('sqrt', x) as Preserve<T>
-export const inverseSqrt = <T extends X>(x: T) => f('inverseSqrt', x) as Preserve<T>
-export const normalize = <T extends X>(x: T) => f('normalize', x) as Preserve<T>
-export const oneMinus = <T extends X>(x: T) => f('oneMinus', x) as Preserve<T>
-export const saturate = <T extends X>(x: T) => f('saturate', x) as Preserve<T>
-export const negate = <T extends X>(x: T) => f('negate', x) as Preserve<T>
-export const reciprocal = <T extends X>(x: T) => f('reciprocal', x) as Preserve<T>
-export const dFdx = <T extends X>(x: T) => f('dFdx', x) as Preserve<T>
-export const dFdy = <T extends X>(x: T) => f('dFdy', x) as Preserve<T>
-export const fwidth = <T extends X>(x: T) => f('fwidth', x) as Preserve<T>
+export const abs = <T extends C>(x: X<T>) => f<T>('abs', x)
+export const sign = <T extends C>(x: X<T>) => f<T>('sign', x)
+export const floor = <T extends C>(x: X<T>) => f<T>('floor', x)
+export const ceil = <T extends C>(x: X<T>) => f<T>('ceil', x)
+export const round = <T extends C>(x: X<T>) => f<T>('round', x)
+export const fract = <T extends C>(x: X<T>) => f<T>('fract', x)
+export const trunc = <T extends C>(x: X<T>) => f<T>('trunc', x)
+export const sin = <T extends C>(x: X<T>) => f<T>('sin', x)
+export const cos = <T extends C>(x: X<T>) => f<T>('cos', x)
+export const tan = <T extends C>(x: X<T>) => f<T>('tan', x)
+export const asin = <T extends C>(x: X<T>) => f<T>('asin', x)
+export const acos = <T extends C>(x: X<T>) => f<T>('acos', x)
+export const atan = <T extends C>(x: X<T>) => f<T>('atan', x)
+export const exp = <T extends C>(x: X<T>) => f<T>('exp', x)
+export const exp2 = <T extends C>(x: X<T>) => f<T>('exp2', x)
+export const log = <T extends C>(x: X<T>) => f<T>('log', x)
+export const log2 = <T extends C>(x: X<T>) => f<T>('log2', x)
+export const sqrt = <T extends C>(x: X<T>) => f<T>('sqrt', x)
+export const inverseSqrt = <T extends C>(x: X<T>) => f<T>('inverseSqrt', x)
+export const normalize = <T extends C>(x: X<T>) => f<T>('normalize', x)
+export const oneMinus = <T extends C>(x: X<T>) => f<T>('oneMinus', x)
+export const saturate = <T extends C>(x: X<T>) => f<T>('saturate', x)
+export const negate = <T extends C>(x: X<T>) => f<T>('negate', x)
+export const reciprocal = <T extends C>(x: X<T>) => f<T>('reciprocal', x)
+export const dFdx = <T extends C>(x: X<T>) => f<T>('dFdx', x)
+export const dFdy = <T extends C>(x: X<T>) => f<T>('dFdy', x)
+export const fwidth = <T extends C>(x: X<T>) => f<T>('fwidth', x)
 
 // Scalar return functions
-export const length = (x: X): NodeProxy<'float'> => f('length', x)
-export const lengthSq = (x: X): NodeProxy<'float'> => f('lengthSq', x)
-export const distance = (x: X, y: X): NodeProxy<'float'> => f('distance', x, y)
-export const dot = (x: X, y: X): NodeProxy<'float'> => f('dot', x, y)
+export const length = (x: X) => f<'float'>('length', x)
+export const lengthSq = (x: X) => f<'float'>('lengthSq', x)
+export const distance = (x: X, y: X) => f<'float'>('distance', x, y)
+export const dot = (x: X, y: X) => f<'float'>('dot', x, y)
 
 // Bool return functions
-export const all = (x: X) => f('all', x) as NodeProxy<'bool'>
-export const any = (x: X) => f('any', x) as NodeProxy<'bool'>
+export const all = <T extends C>(x: X<T>) => f<'bool'>('all', x)
+export const any = <T extends C>(x: X<T>) => f<'bool'>('any', x)
 
 // Specific return type functions
-export const cross = (x: X, y: X): NodeProxy<'vec3'> => f('cross', x, y)
+export const cross = <T extends C>(x: X<T>, y: X<T>) => f<'vec3'>('cross', x, y)
 
 // Two argument functions with first arg type
-export const reflect = <T extends X>(I: T, N: X) => f('reflect', I, N) as Preserve<T>
-export const refract = <T extends X>(I: T, N: X, eta: X) => f('refract', I, N, eta) as Preserve<T>
+export const reflect = <T extends C>(I: X, N: X) => f<T>('reflect', I, N)
+export const refract = <T extends C>(I: X, N: X, eta: X) => f<T>('refract', I, N, eta)
 
 // Multi-argument functions with highest priority type (simplified as first arg type)
-export const min = <T extends X>(x: T, y: X) => f('min', x, y) as Preserve<T>
-export const max = <T extends X>(x: T, y: X) => f('max', x, y) as Preserve<T>
-export const mix = <T extends X>(x: T, y: X, a: X) => f('mix', x, y, a) as Preserve<T>
-export const clamp = <T extends X>(x: T, min: X, max: X) => f('clamp', x, min, max) as Preserve<T>
-export const step = <T extends X>(edge: X, x: T) => f('step', edge, x) as Preserve<T>
-export const smoothstep = <T extends X>(e0: X, e1: X, x: T) => f('smoothstep', e0, e1, x) as Preserve<T>
+export const min = <T extends C>(x: X<T>, y: X) => f<T>('min', x, y)
+export const max = <T extends C>(x: X<T>, y: X) => f<T>('max', x, y)
+export const mix = <T extends C>(x: X<T>, y: X, a: X) => f<T>('mix', x, y, a)
+export const clamp = <T extends C>(x: X<T>, min: X, max: X) => f<T>('clamp', x, min, max)
+export const step = <T extends C>(edge: X, x: X<T>) => f<T>('step', edge, x)
+export const smoothstep = <T extends C>(e0: X, e1: X, x: X<T>) => f<T>('smoothstep', e0, e1, x)
 
 // Additional functions with variable return types
-export const atan2 = <T extends X>(y: T, x: X) => f('atan', y, x) as Preserve<T>
-export const pow = <T extends X>(x: T, y: X) => f('pow', x, y) as Preserve<T>
-export const pow2 = <T extends X>(x: T) => f('pow2', x) as Preserve<T>
-export const pow3 = <T extends X>(x: T) => f('pow3', x) as Preserve<T>
-export const pow4 = <T extends X>(x: T) => f('pow4', x) as Preserve<T>
+export const atan2 = <T extends C>(y: X, x: X) => f<T>('atan', y, x)
+export const pow = <T extends C>(x: X<T>, y: X) => f<T>('pow', x, y)
+export const pow2 = <T extends C>(x: X<T>) => f<T>('pow2', x)
+export const pow3 = <T extends C>(x: X<T>) => f<T>('pow3', x)
+export const pow4 = <T extends C>(x: X<T>) => f<T>('pow4', x)
 
 // Utility functions
-export const bitcast = <T extends X>(x: T, y: X) => f('bitcast', x, y) as Preserve<T>
-export const cbrt = <T extends X>(x: T) => f('cbrt', x) as Preserve<T>
-export const degrees = <T extends X>(radians: T) => f('degrees', radians) as Preserve<T>
-export const radians = <T extends X>(degrees: T) => f('radians', degrees) as Preserve<T>
-export const difference = <T extends X>(x: T, y: X) => f('difference', x, y) as Preserve<T>
-export const equals = (x: X, y: X) => f('equals', x, y) as NodeProxy<'bool'>
-export const faceforward = <T extends X>(N: T, I: X, Nref: X) => f('faceforward', N, I, Nref) as Preserve<T>
-export const transformDirection = <T extends X>(dir: T, matrix: X) =>
-        f('transformDirection', dir, matrix) as Preserve<T>
+export const bitcast = <T extends C>(x: X<T>, y: X) => f<T>('bitcast', x, y)
+export const cbrt = <T extends C>(x: X<T>) => f<T>('cbrt', x)
+export const degrees = <T extends C>(radians: X) => f<T>('degrees', radians)
+export const radians = <T extends C>(degrees: X) => f<T>('radians', degrees)
+export const difference = <T extends C>(x: X<T>, y: X) => f<T>('difference', x, y)
+export const equals = (x: X, y: X): NodeProxy<'bool'> => f('equals', x, y)
+export const faceforward = <T extends C>(N: X, I: X, Nref: X) => f<T>('faceforward', N, I, Nref)
+export const transformDirection = <T extends C>(dir: X, matrix: X) => f<T>('transformDirection', dir, matrix)

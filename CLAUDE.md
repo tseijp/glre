@@ -401,42 +401,42 @@ In operations between vector types, higher-dimensional vector types take priorit
 
 | Operator Method | Symbol | Description    | Return Type          |
 | --------------- | ------ | -------------- | -------------------- |
-| `.add(n)`       | `+`    | Addition       | Higher priority type |
-| `.sub(n)`       | `-`    | Subtraction    | Higher priority type |
-| `.mul(n)`       | `*`    | Multiplication | Higher priority type |
-| `.div(n)`       | `/`    | Division       | Higher priority type |
-| `.mod(n)`       | `%`    | Modulo         | Higher priority type |
+| `.add(x)`       | `+`    | Addition       | Higher priority type |
+| `.sub(x)`       | `-`    | Subtraction    | Higher priority type |
+| `.mul(x)`       | `*`    | Multiplication | Higher priority type |
+| `.div(x)`       | `/`    | Division       | Higher priority type |
+| `.mod(x)`       | `%`    | Modulo         | Higher priority type |
 
 ### Comparison Operators
 
 | Operator Method        | Symbol | Description           | Return Type |
 | ---------------------- | ------ | --------------------- | ----------- |
-| `.equal(n)`            | `==`   | Equality              | `bool`      |
-| `.notEqual(n)`         | `!=`   | Inequality            | `bool`      |
-| `.lessThan(n)`         | `<`    | Less than             | `bool`      |
-| `.greaterThan(n)`      | `>`    | Greater than          | `bool`      |
-| `.lessThanEqual(n)`    | `<=`   | Less than or equal    | `bool`      |
-| `.greaterThanEqual(n)` | `>=`   | Greater than or equal | `bool`      |
+| `.equal(x)`            | `==`   | Equality              | `bool`      |
+| `.notEqual(x)`         | `!=`   | Inequality            | `bool`      |
+| `.lessThan(x)`         | `<`    | Less than             | `bool`      |
+| `.greaterThan(x)`      | `>`    | Greater than          | `bool`      |
+| `.lessThanEqual(x)`    | `<=`   | Less than or equal    | `bool`      |
+| `.greaterThanEqual(x)` | `>=`   | Greater than or equal | `bool`      |
 
 ### Logical Operators
 
 | Operator Method | Symbol | Description | Return Type |
 | --------------- | ------ | ----------- | ----------- |
-| `.and(n)`       | `&&`   | Logical AND | `bool`      |
-| `.or(n)`        | `\|\|` | Logical OR  | `bool`      |
+| `.and(x)`       | `&&`   | Logical AND | `bool`      |
+| `.or(x)`        | `\|\|` | Logical OR  | `bool`      |
 | `.not()`        | `!`    | Logical NOT | `bool`      |
-| `.xor(n)`       | `^^`   | Logical XOR | `bool`      |
+| `.xor(x)`       | `^^`   | Logical XOR | `bool`      |
 
 ### Bitwise Operators
 
 | Operator Method  | Symbol | Description | Return Type |
 | ---------------- | ------ | ----------- | ----------- |
-| `.bitAnd(n)`     | `&`    | Bitwise AND | Input type  |
-| `.bitOr(n)`      | `\|`   | Bitwise OR  | Input type  |
-| `.bitXor(n)`     | `^`    | Bitwise XOR | Input type  |
+| `.bitAnd(x)`     | `&`    | Bitwise AND | Input type  |
+| `.bitOr(x)`      | `\|`   | Bitwise OR  | Input type  |
+| `.bitXor(x)`     | `^`    | Bitwise XOR | Input type  |
 | `.bitNot()`      | `~`    | Bitwise NOT | Input type  |
-| `.shiftLeft(n)`  | `<<`   | Left shift  | Input type  |
-| `.shiftRight(n)` | `>>`   | Right shift | Input type  |
+| `.shiftLeft(x)`  | `<<`   | Left shift  | Input type  |
+| `.shiftRight(x)` | `>>`   | Right shift | Input type  |
 
 ## Mathematical Function Library
 
