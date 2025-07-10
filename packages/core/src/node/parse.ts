@@ -1,7 +1,7 @@
 import { is } from '../utils/helpers'
 import { code } from './code'
 import { infer } from './infer'
-import { formatConversions, isConstants, addDependency } from './utils'
+import { formatConversions, addDependency } from './utils'
 import type { Constants, NodeContext, NodeProps, NodeProxy, X } from './types'
 
 export const parseArray = (children: X[], c: NodeContext) => {
@@ -127,7 +127,9 @@ export const parseStruct = (
  * headers
  */
 export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
-        return c.isWebGL ? `${type} ${id};` : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${formatConversions(type, c)}`
+        return c.isWebGL
+                ? `${type} ${id};`
+                : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${formatConversions(type, c)}`
 }
 
 export const parseUniformHead = (c: NodeContext, id: string, type: Constants) => {
