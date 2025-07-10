@@ -103,20 +103,6 @@ type InferOperatorType<L extends Constants, R extends Constants, Op extends stri
                 : R
         : 'float'
 
-type InferFunctionReturn<F extends string, Args extends readonly Constants[]> = F extends
-        | 'dot'
-        | 'distance'
-        | 'length'
-        | 'lengthSq'
-        ? 'float'
-        : F extends 'all' | 'any'
-        ? 'bool'
-        : F extends 'cross'
-        ? 'vec3'
-        : F extends 'texture' | 'cubeTexture' | 'textureSize'
-        ? 'vec4'
-        : Args[0]
-
 type StringLength<S extends string> = S extends `${infer _}${infer Rest}`
         ? Rest extends ''
                 ? 1
@@ -270,8 +256,8 @@ interface BaseNodeProxy<T extends Constants> {
         cross<U extends Constants>(y: X<U>): NodeProxy<'vec3'>
 
         // Two argument functions with variable return types
-        atan2<U extends Constants>(x: X<U>): NodeProxy<InferFunctionReturn<'atan2', [T, U]>>
-        pow<U extends Constants>(y: X<U>): NodeProxy<InferFunctionReturn<'pow', [T, U]>>
+        atan2<U extends Constants>(x: X<U>): NodeProxy<T>
+        pow<U extends Constants>(y: X<U>): NodeProxy<T>
         distance<U extends Constants>(y: X<U>): NodeProxy<'float'>
         dot<U extends Constants>(y: X<U>): NodeProxy<'float'>
         reflect<U extends Constants>(N: X<U>): NodeProxy<T>
