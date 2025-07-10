@@ -81,17 +81,7 @@ export interface NodeContext {
 /**
  * infer
  */
-type InferOperatorType<L extends Constants, R extends Constants, Op extends string> = Op extends
-        | 'equal'
-        | 'notEqual'
-        | 'lessThan'
-        | 'lessThanEqual'
-        | 'greaterThan'
-        | 'greaterThanEqual'
-        ? 'bool'
-        : Op extends 'and' | 'or'
-        ? 'bool'
-        : L extends R
+type InferOperatorType<L extends Constants, R extends Constants> = L extends R
         ? L
         : L extends 'vec2' | 'vec3' | 'vec4'
         ? R extends 'float' | 'int'
@@ -168,11 +158,11 @@ interface BaseNodeProxy<T extends Constants> {
         __nodeType: T
 
         // Operators methods
-        add<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'add'>>
-        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'sub'>>
-        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'mul'>>
-        div<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'div'>>
-        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'mod'>>
+        add<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        div<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
         equal<U extends Constants>(x: X<U>): NodeProxy<'bool'>
         notEqual<U extends Constants>(x: X<U>): NodeProxy<'bool'>
         lessThan<U extends Constants>(x: X<U>): NodeProxy<'bool'>
@@ -188,8 +178,8 @@ interface BaseNodeProxy<T extends Constants> {
         bitOr(x: X<T>): NodeProxy<T>
         bitXor(x: X<T>): NodeProxy<T>
         bitNot(): NodeProxy<T>
-        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'shiftLeft'>>
-        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U, 'shiftRight'>>
+        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
 
         // Conversion methods
         toBool(): NodeProxy<'bool'>
@@ -264,12 +254,12 @@ interface BaseNodeProxy<T extends Constants> {
         refract<U extends Constants>(N: X<U>, eta: any): NodeProxy<T>
 
         // Multi-argument functions that return highest priority type
-        min<U extends Constants>(y: X<U>): NodeProxy<InferOperatorType<T, U, 'add'>>
-        max<U extends Constants>(y: X<U>): NodeProxy<InferOperatorType<T, U, 'add'>>
-        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperatorType<T, U, 'add'>>
-        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperatorType<T, U, 'add'>>
-        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperatorType<T, U, 'add'>>
-        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperatorType<T, U, 'add'>>
+        min<U extends Constants>(y: X<U>): NodeProxy<InferOperatorType<T, U>>
+        max<U extends Constants>(y: X<U>): NodeProxy<InferOperatorType<T, U>>
+        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperatorType<T, U>>
+        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperatorType<T, U>>
+        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperatorType<T, U>>
+        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperatorType<T, U>>
 
         // Power functions
         pow2(): NodeProxy<T>
