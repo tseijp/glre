@@ -57,6 +57,6 @@ export const function_ = <T extends Constants>(key: Functions, ...x: X[]) => {
         return node<T>('function', null, key, ...x)
 }
 
-export const conversion = <T extends Constants>(key: string, ...x: X[]) => {
+export const conversion = <T extends Constants>(key: T, ...x: X[]) => {
         return node<T>('conversion', null, key, ...x)
 }

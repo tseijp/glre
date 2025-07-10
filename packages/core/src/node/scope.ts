@@ -110,10 +110,10 @@ export const Switch = (x: NodeProxy) => {
         return ret()
 }
 
-export const Fn = <T extends Constants>(
+export const Fn = <T extends Constants, Args extends Constants[]>(
         fun: (paramVars: NodeProxy[]) => NodeProxy<T>
 ): {
-        (...args: X[]): NodeProxy<T>
+        (...args: X<Args[number]>[]): NodeProxy<T>
         setLayout: (layout: FnLayout) => void
 } => {
         let layout: FnLayout
