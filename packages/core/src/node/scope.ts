@@ -2,10 +2,10 @@ import { conversion, node } from './node'
 import { getId } from './utils'
 import type { FnLayout, NodeProps, NodeProxy, X, Constants } from './types'
 
-let scope: NodeProxy<any> | null = null
-let define: NodeProxy<any> | null = null
+let scope: NodeProxy | null = null
+let define: NodeProxy | null = null
 
-const addToScope = (x: NodeProxy<any>) => {
+const addToScope = (x: NodeProxy) => {
         if (!scope) return
         if (!scope.props.children) scope.props.children = []
         scope.props.children.push(x)
@@ -15,7 +15,7 @@ const addToScope = (x: NodeProxy<any>) => {
         props.inferFrom.push(x)
 }
 
-export const toVar = <T extends Constants = any>(x: X, id?: string): NodeProxy<T> => {
+export const toVar = <T extends Constants>(x: X, id?: string): NodeProxy<T> => {
         if (!id) id = getId()
         const y = node<T>('variable', { id, inferFrom: [x] })
         const z = node('declare', null, x, y)
@@ -23,7 +23,7 @@ export const toVar = <T extends Constants = any>(x: X, id?: string): NodeProxy<T
         return y
 }
 
-export const assign = <T>(x: T, y: X): T => {
+export const assign = <T extends Constants>(x: X<T>, y: X<T>): X<T> => {
         const z = node('assign', null, x, y)
         addToScope(z)
         return x
@@ -36,8 +36,8 @@ export const Return = <T extends Constants = any>(x: X): NodeProxy<T> => {
 }
 
 // Struct functions
-export const struct = (fields: Record<string, NodeProxy<any>>, id = getId()) => {
-        return (initialValues: Record<string, NodeProxy<any>> = {}, instanceId = getId()) => {
+export const struct = (fields: Record<string, NodeProxy>, id = getId()) => {
+        return (initialValues: Record<string, NodeProxy> = {}, instanceId = getId()) => {
                 const x = node('variable', { id: instanceId, inferFrom: [id] })
                 const y = node('struct', { id, fields, initialValues }, x)
                 addToScope(y)
@@ -45,7 +45,7 @@ export const struct = (fields: Record<string, NodeProxy<any>>, id = getId()) => 
         }
 }
 
-const scoped = (x: NodeProxy<any>, fun: () => NodeProxy<any> | void, y = define) => {
+const scoped = (x: NodeProxy, fun: () => NodeProxy | void, y = define) => {
         // cache to revert
         const _scope = scope
         const _define = define
@@ -60,7 +60,7 @@ const scoped = (x: NodeProxy<any>, fun: () => NodeProxy<any> | void, y = define)
         define = _define
 }
 
-export const If = (x: X, fun: () => void) => {
+export const If = (x: NodeProxy, fun: () => void) => {
         const y = node('scope')
         scoped(y, fun)
         const ifNode = node('if', null, x, y)
@@ -81,7 +81,7 @@ export const If = (x: X, fun: () => void) => {
         return ret()
 }
 
-export const Loop = (x: X, fun: (params: { i: NodeProxy<'int'> }) => void) => {
+export const Loop = (x: NodeProxy, fun: (params: { i: NodeProxy<'int'> }) => void) => {
         const y = node('scope')
         scoped(y, () => fun({ i: node<'int'>('variable', { id: 'i', inferFrom: [conversion('int', 0)] }) }))
         const ret = node('loop', null, x, y)
@@ -89,7 +89,7 @@ export const Loop = (x: X, fun: (params: { i: NodeProxy<'int'> }) => void) => {
         return ret
 }
 
-export const Switch = (x: X) => {
+export const Switch = (x: NodeProxy) => {
         const switchNode = node('switch', null, x)
         addToScope(switchNode)
         const ret = () => ({
@@ -110,7 +110,9 @@ export const Switch = (x: X) => {
         return ret()
 }
 
-export const Fn = <T extends Constants = any>(fun: (paramVars: NodeProxy<any>[]) => NodeProxy<T>): {
+export const Fn = <T extends Constants>(
+        fun: (paramVars: NodeProxy[]) => NodeProxy<T>
+): {
         (...args: X[]): NodeProxy<T>
         setLayout: (layout: FnLayout) => void
 } => {
@@ -118,7 +120,7 @@ export const Fn = <T extends Constants = any>(fun: (paramVars: NodeProxy<any>[])
         const ret = (...args: X[]): NodeProxy<T> => {
                 const id = layout?.name || getId()
                 const x = node('scope')
-                const paramVars: NodeProxy<any>[] = []
+                const paramVars: NodeProxy[] = []
                 const paramDefs: NodeProps[] = []
                 if (layout?.inputs)
                         for (const input of layout.inputs) {

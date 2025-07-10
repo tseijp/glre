@@ -15,9 +15,9 @@ import {
         parseUniformHead,
 } from './parse'
 import { getBluiltin, getOperator, formatConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
-import type { NodeContext, NodeProxy, X } from './types'
+import type { Constants, NodeContext, X } from './types'
 
-export const code = (target: X, c?: NodeContext | null): string => {
+export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
         if (is.arr(target)) return parseArray(target, c)
@@ -70,7 +70,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         }
         if (type === 'struct') {
                 if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
-                return parseStruct(c, id, (x as NodeProxy<any>).props.id, fields, initialValues)
+                return parseStruct(c, id, x.props.id, fields, initialValues)
         }
         /**
          * headers
