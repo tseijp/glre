@@ -143,7 +143,7 @@ type NodeProxyMethods =
         | 'toVar'
         | 'toString'
 
-interface BaseNodeProxy<T extends Constants> {
+export interface BaseNodeProxy<T extends Constants> {
         // System properties
         assign(x: any): NodeProxy<T>
         toVar(name?: string): NodeProxy<T>
