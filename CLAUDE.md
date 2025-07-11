@@ -180,7 +180,7 @@ Use TypeScript as type hints, avoiding code complexity from elaborate type defin
 Maintain JavaScript as the primary language while gaining type inference benefits,
 balancing implementation flexibility with development efficiency.
 
-When complex types are needed, temporarily use any and leverage the as keyword for type bridging.
+When complex types are needed, temporarily use leverage the as keyword for type bridging.
 Prioritize implementation simplicity over type safety to reduce cognitive load and focus on problem-solving.
 
 ## Code Structure and File Organization
@@ -255,11 +255,6 @@ initialization-destruction, and setting-getting to improve system comprehensibil
 
 ### Type Safety Implementation
 
-Prioritize implementation simplicity over strict type definitions,
-explicitly indicating types with the as keyword when necessary.
-When complex type inference is required,
-temporarily use any to proceed with implementation, then gradually refine types.
-
 Prioritize interface definitions to clarify object structure.
 Utilize union type enumeration expressions and avoid enum keyword usage.
 
@@ -267,8 +262,6 @@ Utilize union type enumeration expressions and avoid enum keyword usage.
 
 Use const arrow functions instead of function declarations.
 This unification clarifies function characteristics and prevents unintended behavior from hoisting.
-
-good: `const processData = (input) => input.map(transform)`
 
 ## Error Handling and Logging Restrictions
 
