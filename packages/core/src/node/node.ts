@@ -38,13 +38,13 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
 
 // headers with proper type inference
 export const member = <T extends C>(key: string, x: X) => node<T>('member', null, key, x)
-export const select = <T extends C>(x: X, y: X, z: X) => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
+export const select = <T extends C>(x: X<T>, y: X<T>, z: X) => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
 export const attribute = <T extends C>(x: X, id = getId()) => node<T>('attribute', { id }, x)
-export const constant = <T extends C>(x: X, id = getId()) => node<T>('constant', { id }, x)
-export const uniform = <T extends C>(x: X, id = getId()) => node<T>('uniform', { id }, x)
+export const constant = <T extends C>(x: X<T>, id = getId()) => node<T>('constant', { id }, x)
+export const uniform = <T extends C>(x: X<T>, id = getId()) => node<T>('uniform', { id }, x)
 export const variable = <T extends C>(id = getId()) => node<T>('variable', { id })
 export const builtin = <T extends C>(id = getId()) => node<T>('builtin', { id })
-export const vertexStage = <T extends C>(x: X, id = getId()) => {
+export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
         return node<T>('varying', { id, inferFrom: [x] }, x)
 }
 
