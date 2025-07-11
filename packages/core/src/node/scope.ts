@@ -15,7 +15,7 @@ const addToScope = (x: NodeProxy) => {
         props.inferFrom.push(x)
 }
 
-export const toVar = <T extends Constants>(x: X, id?: string): NodeProxy<T> => {
+export const toVar = <T extends Constants>(x: X<T>, id?: string): NodeProxy<T> => {
         if (!id) id = getId()
         const y = node<T>('variable', { id, inferFrom: [x] })
         const z = node('declare', null, x, y)
@@ -29,7 +29,7 @@ export const assign = <T extends Constants>(x: X<T>, y: X<T>): X<T> => {
         return x
 }
 
-export const Return = <T extends Constants = any>(x: X): NodeProxy<T> => {
+export const Return = <T extends Constants>(x: X<T>): NodeProxy<T> => {
         const y = node<T>('return', { inferFrom: [x] }, x)
         addToScope(y)
         return y
@@ -110,12 +110,12 @@ export const Switch = (x: NodeProxy) => {
         return ret()
 }
 
-export const Fn = <T extends Constants, Args extends Constants[]>(
-        fun: (paramVars: NodeProxy[]) => NodeProxy<T> | void,
+export const Fn = <ReturnType extends Constants, Args extends Constants[]>(
+        fun: (paramVars: NodeProxy[]) => NodeProxy<ReturnType> | void,
         defaultId = getId()
 ) => {
         let layout: FnLayout
-        const ret = (...args: X<Args[number]>[]): NodeProxy<T> => {
+        const ret = (...args: X<Args[number]>[]): NodeProxy<ReturnType> => {
                 const id = layout?.name || defaultId
                 const x = node('scope')
                 const paramVars: NodeProxy[] = []
@@ -129,7 +129,7 @@ export const Fn = <T extends Constants, Args extends Constants[]>(
                                 paramDefs.push({ id: `p${i}`, inferFrom: [args[i]] })
                         }
                 for (const props of paramDefs) paramVars.push(node('variable', props))
-                const y = node<T>('define', { id, layout }, x, ...args)
+                const y = node<ReturnType>('define', { id, layout }, x, ...args)
                 scoped(x, () => fun(paramVars), y)
                 return y
         }

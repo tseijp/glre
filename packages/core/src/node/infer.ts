@@ -25,12 +25,12 @@ const inferOperator = <T extends C>(L: string, R: string, op: string): T => {
         return L as T
 }
 
-export const inferPrimitiveType = (x: X): C => {
-        if (is.bol(x)) return 'bool'
-        if (is.str(x)) return 'texture'
-        if (is.num(x)) return 'float' // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
-        if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'float'
-        return 'float'
+export const inferPrimitiveType = <T extends C>(x: X) => {
+        if (is.bol(x)) return 'bool' as T
+        if (is.str(x)) return 'texture' as T
+        if (is.num(x)) return 'float' as T // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
+        if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        return 'float' as T
 }
 
 const inferFromCount = <T extends C>(count: number) => {
@@ -47,8 +47,8 @@ const inferFromArray = <T extends C>(arr: X<T>[], c: NodeContext) => {
         return ret
 }
 
-export const inferFunction = (x: X) => {
-        return FUNCTION_RETURN_TYPES[x as keyof typeof FUNCTION_RETURN_TYPES]
+export const inferFunction = <T extends C>(x: X) => {
+        return FUNCTION_RETURN_TYPES[x as keyof typeof FUNCTION_RETURN_TYPES] as T
 }
 
 export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T => {
@@ -59,7 +59,7 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
-        if (type === 'function') return (inferFunction(x) as T) || infer(y, c)
+        if (type === 'function') return inferFunction(x) || infer(y, c)
         if (type === 'define' && isConstants(layout?.type)) return layout?.type as T
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
         if (type === 'member') {
@@ -76,7 +76,7 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
 
 export const infer = <T extends C>(target: X<T>, c?: NodeContext | null): T => {
         if (!c) c = {}
-        if (!isNodeProxy(target)) return inferPrimitiveType(target) as T
+        if (!isNodeProxy(target)) return inferPrimitiveType(target)
         if (is.arr(target)) return inferFromCount(target.length)
         if (!c.infers) c.infers = new WeakMap<NodeProxy<T>, C>()
         if (c.infers.has(target)) return c.infers.get(target) as T

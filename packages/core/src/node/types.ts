@@ -136,7 +136,6 @@ type NodeProxyMethods =
         | 'assign'
         | 'toVar'
         | 'toString'
-        | '__nodeType'
 
 interface BaseNodeProxy<T extends Constants> {
         // System properties
@@ -147,7 +146,6 @@ interface BaseNodeProxy<T extends Constants> {
         props: NodeProps
         isProxy: true
         listeners: Set<(value: any) => void>
-        __nodeType: T
 
         // Operators methods
         add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
