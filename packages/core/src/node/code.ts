@@ -61,8 +61,8 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'loop')
                 return c.isWebGL
-                        ? `for (int i = 0; i < ${x}; i += 1) {\n${code(y, c)}\n}`
-                        : `for (var i: i32 = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
+                        ? `for (int i = 0; i < ${code(x, c)}; i += 1) {\n${code(y, c)}\n}`
+                        : `for (var i: i32 = 0; i < ${code(x, c)}; i++) {\n${code(y, c)}\n}`
         if (type === 'if') return parseIf(c, x, y, children)
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
