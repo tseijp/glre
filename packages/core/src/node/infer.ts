@@ -17,11 +17,17 @@ const inferBuiltin = <T extends C>(id: string | undefined) => {
 const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
         if (COMPARISON_OPERATORS.includes(op as any) || LOGICAL_OPERATORS.includes(op as any)) return 'bool' as T
         if (L === R) return L
+        // broadcast
         if (L === 'float' || L === 'int') return R
         if (R === 'float' || R === 'int') return L
+        // mat * vec → vec
         if (L === 'mat4' && R === 'vec4') return R
         if (L === 'mat3' && R === 'vec3') return R
         if (L === 'mat2' && R === 'vec2') return R
+        // vec * mat → vec
+        if (L === 'vec4' && R === 'mat4') return L
+        if (L === 'vec3' && R === 'mat3') return L
+        if (L === 'vec2' && R === 'mat2') return L
         return L
 }
 

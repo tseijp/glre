@@ -85,11 +85,17 @@ export interface NodeContext {
 // prettier-ignore
 type InferOperator<L extends Constants, R extends Constants> =
         L extends R ? L :
+        // broadcast
         L extends 'float' | 'int' ? R :
         R extends 'float' | 'int' ? L :
-        L extends 'mat4' ? R extends 'vec4' ? R : L :
-        L extends 'mat3' ? R extends 'vec3' ? R : L :
-        L extends 'mat2' ? R extends 'vec2' ? R : L : L
+        // mat * vec → vec
+        L extends 'mat4' ? R extends 'vec4' ? R /* default */ : L :
+        L extends 'mat3' ? R extends 'vec3' ? R /* default */ : L :
+        L extends 'mat2' ? R extends 'vec2' ? R /* default */ : L :
+        // vec * mat → vec
+        L extends 'vec4' ? R extends 'mat4' ? L /* default */ : L :
+        L extends 'vec3' ? R extends 'mat3' ? L /* default */ : L :
+        L extends 'vec2' ? R extends 'mat2' ? L /* default */ : L : L
 
 type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
         ? Rest extends ''
