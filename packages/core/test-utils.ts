@@ -6,7 +6,7 @@ export const build = (fun: () => any) => {
         const config = {} as NodeContext
         const ret = Fn(fun).setLayout({ name: 'fn', type: 'auto' })()
         ret.toString(config)
-        const def = config.headers?.get('fn')
+        const def = config.code?.headers?.get('fn')
         return def
 }
 

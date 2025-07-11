@@ -15,9 +15,9 @@ import {
         parseUniformHead,
 } from './parse'
 import { getBluiltin, getOperator, formatConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
-import type { NodeContext, NodeProxy, X } from './types'
+import type { Constants, NodeContext, X } from './types'
 
-export const code = (target: X, c?: NodeContext | null): string => {
+export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
         if (is.arr(target)) return parseArray(target, c)
@@ -25,6 +25,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (is.num(target)) {
                 const ret = `${target}`
                 if (ret.includes('.')) return ret
+                // Check if this number should be an integer based on the inferred type
+                // For now, keep the original behavior to maintain compatibility
                 return ret + '.0'
         }
         if (is.bol(target)) return target ? 'true' : 'false'
@@ -39,8 +41,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'member') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary')
                 return c.isWebGL
-                        ? `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
-                        : `select(${code(z, c)}, ${code(y, c)}, ${code(x, c)})`
+                        ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
+                        : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
         if (type === 'conversion') return `${formatConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
@@ -59,8 +61,8 @@ export const code = (target: X, c?: NodeContext | null): string => {
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'loop')
                 return c.isWebGL
-                        ? `for (int i = 0; i < ${x}; i += 1) {\n${code(y, c)}\n}`
-                        : `for (var i: i32 = 0; i < ${x}; i++) {\n${code(y, c)}\n}`
+                        ? `for (int i = 0; i < ${code(x, c)}; i += 1) {\n${code(y, c)}\n}`
+                        : `for (var i: i32 = 0; i < ${code(x, c)}; i++) {\n${code(y, c)}\n}`
         if (type === 'if') return parseIf(c, x, y, children)
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
@@ -70,7 +72,7 @@ export const code = (target: X, c?: NodeContext | null): string => {
         }
         if (type === 'struct') {
                 if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
-                return parseStruct(c, id, (x as NodeProxy).props.id, fields, initialValues)
+                return parseStruct(c, id, x.props.id, fields, initialValues)
         }
         /**
          * headers

@@ -26,7 +26,7 @@ export const isConversion = (key: unknown): key is Conversions => {
         return CONVERSIONS.includes(key as Conversions)
 }
 
-export const isNodeProxy = (x: unknown): x is NodeProxy => {
+export const isNodeProxy = <T extends Constants>(x: unknown): x is NodeProxy<T> => {
         if (!x) return false
         if (typeof x !== 'object') return false // @ts-ignore
         return x.isProxy
@@ -48,13 +48,13 @@ let count = 0
 
 export const getId = () => `i${count++}`
 
-export const formatConversions = (x: X, c?: NodeContext) => {
+export const formatConversions = <T extends Constants>(x: X<T>, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING] || x // for struct type
 }
 
-export const getOperator = (op: X) => {
+export const getOperator = (op: X<string>) => {
         return OPERATORS[op as keyof typeof OPERATORS] || op
 }
 
@@ -78,7 +78,7 @@ export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isT
         return (value: any) => c.gl?._uniform?.(id, value)
 }
 
-export const safeEventCall = (x: X, fun: (value: unknown) => void) => {
+export const safeEventCall = <T extends Constants>(x: X<T>, fun: (value: unknown) => void) => {
         if (!x) return
         if (!isNodeProxy(x)) return fun(x) // for uniform(1)
         if (x.type !== 'conversion') return
