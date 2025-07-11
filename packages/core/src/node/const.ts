@@ -74,11 +74,19 @@ export const OPERATORS = {
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-export const SCALAR_RETURN_FUNCTIONS = ['dot', 'distance', 'length', 'lengthSq', 'determinant', 'luminance'] as const
-
-export const BOOL_RETURN_FUNCTIONS = ['all', 'any'] as const
-
-export const PRESERVE_TYPE_FUNCTIONS = [
+// All shader functions (type inference now handled by inferFrom)
+export const FUNCTIONS = [
+        // Float return functions
+        'dot',
+        'distance',
+        'length',
+        'lengthSq',
+        'determinant',
+        'luminance',
+        // Bool return functions
+        'all',
+        'any',
+        // Component-wise functions (preserve input type)
         'abs',
         'sign',
         'floor',
@@ -92,6 +100,12 @@ export const PRESERVE_TYPE_FUNCTIONS = [
         'asin',
         'acos',
         'atan',
+        'sinh',
+        'cosh',
+        'tanh',
+        'asinh',
+        'acosh',
+        'atanh',
         'exp',
         'exp2',
         'log',
@@ -106,41 +120,36 @@ export const PRESERVE_TYPE_FUNCTIONS = [
         'dFdx',
         'dFdy',
         'fwidth',
-] as const
-
-export const VEC3_RETURN_FUNCTIONS = ['cross'] as const
-
-export const FIRST_ARG_TYPE_FUNCTIONS = ['reflect', 'refract'] as const
-
-export const HIGHEST_TYPE_FUNCTIONS = ['min', 'max', 'mix', 'clamp', 'step', 'smoothstep'] as const
-
-export const VEC4_RETURN_FUNCTIONS = ['texture', 'textureLod', 'textureSize', 'cubeTexture'] as const
-
-export const ADDITIONAL_FUNCTIONS = [
-        'atan2',
         'degrees',
+        'radians',
+        // Vector functions
+        'cross',
+        'reflect',
+        'refract',
+        // Multi-argument functions
+        'min',
+        'max',
+        'mix',
+        'clamp',
+        'step',
+        'smoothstep',
+        'pow',
+        'atan2',
+        // Texture functions
+        'texture',
+        'textureLod',
+        'textureSize',
+        'cubeTexture',
+        // Utility functions
         'faceforward',
         'bitcast',
         'cbrt',
         'difference',
         'equals',
-        'pow',
         'pow2',
         'pow3',
         'pow4',
-        'radians',
         'transformDirection',
-] as const
-
-export const FUNCTIONS = [
-        ...SCALAR_RETURN_FUNCTIONS,
-        ...BOOL_RETURN_FUNCTIONS,
-        ...PRESERVE_TYPE_FUNCTIONS,
-        ...VEC3_RETURN_FUNCTIONS,
-        ...FIRST_ARG_TYPE_FUNCTIONS,
-        ...HIGHEST_TYPE_FUNCTIONS,
-        ...VEC4_RETURN_FUNCTIONS,
-        ...ADDITIONAL_FUNCTIONS,
 ] as const
 
 export const COMPONENT_COUNT_TO_TYPE = {

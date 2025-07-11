@@ -25,6 +25,8 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (is.num(target)) {
                 const ret = `${target}`
                 if (ret.includes('.')) return ret
+                // Check if this number should be an integer based on the inferred type
+                // For now, keep the original behavior to maintain compatibility
                 return ret + '.0'
         }
         if (is.bol(target)) return target ? 'true' : 'false'

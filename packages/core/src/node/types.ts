@@ -81,63 +81,24 @@ export interface NodeContext {
 /**
  * infer
  */
-type InferOperatorType<L extends Constants, R extends Constants> =
-        // Matrix-Vector multiplication rules
-        L extends 'mat4'
-                ? R extends 'vec4'
-                        ? 'vec4'
-                        : R extends 'vec3'
-                        ? 'vec3'
-                        : L
-                : L extends 'mat3'
-                ? R extends 'vec3'
-                        ? 'vec3'
-                        : R extends 'vec2'
-                        ? 'vec2'
-                        : L
-                : L extends 'mat2'
-                ? R extends 'vec2'
-                        ? 'vec2'
-                        : L
-                : // Vector-Matrix multiplication rules
-                L extends 'vec4'
-                ? R extends 'mat4'
-                        ? 'vec4'
-                        : R extends 'float' | 'int'
-                        ? L
-                        : L
-                : L extends 'vec3'
-                ? R extends 'mat3'
-                        ? 'vec3'
-                        : R extends 'mat4'
-                        ? 'vec4'
-                        : R extends 'float' | 'int'
-                        ? L
-                        : L
-                : L extends 'vec2'
-                ? R extends 'mat2'
-                        ? 'vec2'
-                        : R extends 'mat3'
-                        ? 'vec3'
-                        : R extends 'float' | 'int'
-                        ? L
-                        : L
-                : // Scalar-Vector broadcasting
-                L extends 'float' | 'int'
-                ? R extends 'vec2' | 'vec3' | 'vec4' | 'mat2' | 'mat3' | 'mat4'
-                        ? R
-                        : L
-                : R extends 'float' | 'int'
-                ? L extends 'vec2' | 'vec3' | 'vec4' | 'mat2' | 'mat3' | 'mat4'
-                        ? L
-                        : R
-                : // Same types
-                L extends R
-                ? L
-                : // Default fallback
-                  'float'
 
-type StringLength<S extends string> = S extends `${infer _}${infer Rest}`
+type InferOperator<L extends Constants, R extends Constants> = L extends R
+        ? L
+        : L extends `${string}vec${string}`
+        ? R extends `${string}vec${string}`
+                ? L
+                : L
+        : R extends `${string}vec${string}`
+        ? R
+        : L extends 'mat4' | 'mat3' | 'mat2'
+        ? L
+        : R extends 'mat4' | 'mat3' | 'mat2'
+        ? R
+        : L extends 'float'
+        ? L
+        : R
+
+type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
         ? Rest extends ''
                 ? 1
                 : Rest extends `${infer _}${infer Rest2}`
@@ -151,11 +112,11 @@ type StringLength<S extends string> = S extends `${infer _}${infer Rest}`
                 : never
         : 0
 
-type InferSwizzleType<S extends string> = StringLength<S> extends 4
+type InferSwizzleType<S extends string> = _StringLength<S> extends 4
         ? 'vec4'
-        : StringLength<S> extends 3
+        : _StringLength<S> extends 3
         ? 'vec3'
-        : StringLength<S> extends 2
+        : _StringLength<S> extends 2
         ? 'vec2'
         : 'float'
 
@@ -184,12 +145,6 @@ type NodeProxyMethods =
         | 'toString'
         | '__nodeType'
 
-type ReadNodeProxy = {
-        [K in string as K extends NodeProxyMethods ? never : K]: any
-} & {
-        [K in Swizzles]: NodeProxy<InferSwizzleType<K>>
-}
-
 interface BaseNodeProxy<T extends Constants> {
         // System properties
         assign(x: any): NodeProxy<T>
@@ -202,11 +157,11 @@ interface BaseNodeProxy<T extends Constants> {
         __nodeType: T
 
         // Operators methods
-        add<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
-        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
-        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
-        div<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
-        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        div<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
         equal<U extends Constants>(x: X<U>): Bool
         notEqual<U extends Constants>(x: X<U>): Bool
         lessThan<U extends Constants>(x: X<U>): Bool
@@ -222,8 +177,8 @@ interface BaseNodeProxy<T extends Constants> {
         bitOr(x: X<T>): NodeProxy<T>
         bitXor(x: X<T>): NodeProxy<T>
         bitNot(): NodeProxy<T>
-        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
-        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
+        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
 
         // Conversion methods
         toBool(): Bool
@@ -298,17 +253,23 @@ interface BaseNodeProxy<T extends Constants> {
         refract<U extends Constants>(N: X<U>, eta: any): NodeProxy<T>
 
         // Multi-argument functions that return highest priority type
-        min<U extends Constants>(y: X<U>): NodeProxy<InferOperatorType<T, U>>
-        max<U extends Constants>(y: X<U>): NodeProxy<InferOperatorType<T, U>>
-        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperatorType<T, U>>
-        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperatorType<T, U>>
-        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperatorType<T, U>>
-        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperatorType<T, U>>
+        min<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
+        max<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
+        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperator<T, U>>
+        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperator<T, U>>
+        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperator<T, U>>
+        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperator<T, U>>
 
         // Power functions
         pow2(): NodeProxy<T>
         pow3(): NodeProxy<T>
         pow4(): NodeProxy<T>
+}
+
+type ReadNodeProxy = {
+        [K in string as K extends NodeProxyMethods ? never : K]: any
+} & {
+        [K in Swizzles]: NodeProxy<InferSwizzleType<K>>
 }
 
 // Internal NodeProxy implementation (renamed from original)
@@ -337,6 +298,7 @@ export type Mat4 = NodeProxyImpl<'mat4'>
 export type Texture = NodeProxyImpl<'texture'>
 export type Sampler2D = NodeProxyImpl<'sampler2D'>
 export type Struct = NodeProxyImpl<'struct'>
+
 export interface ConstantsToType {
         bool: Bool
         uint: UInt
