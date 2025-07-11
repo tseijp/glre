@@ -14,15 +14,15 @@ const inferBuiltin = <T extends C>(id: string | undefined) => {
 }
 
 // Unified logic with types.ts InferOperator type
-const inferOperator = <T extends C>(L: string, R: string, op: string): T => {
+const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
         if (COMPARISON_OPERATORS.includes(op as any) || LOGICAL_OPERATORS.includes(op as any)) return 'bool' as T
-        if (L === R) return L as T
-        if (L === 'float' || L === 'int') return R as T
-        if (R === 'float' || R === 'int') return L as T
-        if (L === 'mat4' && R === 'vec4') return 'vec4' as T
-        if (L === 'mat3' && R === 'vec3') return 'vec3' as T
-        if (L === 'mat2' && R === 'vec2') return 'vec2' as T
-        return L as T
+        if (L === R) return L
+        if (L === 'float' || L === 'int') return R
+        if (R === 'float' || R === 'int') return L
+        if (L === 'mat4' && R === 'vec4') return R
+        if (L === 'mat3' && R === 'vec3') return R
+        if (L === 'mat2' && R === 'vec2') return R
+        return L
 }
 
 export const inferPrimitiveType = <T extends C>(x: X) => {
@@ -56,7 +56,7 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         const { id, children = [], inferFrom, layout } = props
         const [x, y, z] = children
         if (type === 'conversion') return x
-        if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
+        if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'function') return inferFunction(x) || infer(y, c)

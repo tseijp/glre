@@ -87,9 +87,9 @@ type InferOperator<L extends Constants, R extends Constants> =
         L extends R ? L :
         L extends 'float' | 'int' ? R :
         R extends 'float' | 'int' ? L :
-        L extends 'mat4' ? R extends 'vec4' ? 'vec4' : L :
-        L extends 'mat3' ? R extends 'vec3' ? 'vec3' : L :
-        L extends 'mat2' ? R extends 'vec2' ? 'vec2' : L :  L
+        L extends 'mat4' ? R extends 'vec4' ? R : L :
+        L extends 'mat3' ? R extends 'vec3' ? R : L :
+        L extends 'mat2' ? R extends 'vec2' ? R : L : L
 
 type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
         ? Rest extends ''
