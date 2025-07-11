@@ -312,32 +312,32 @@ interface BaseNodeProxy<T extends Constants> {
 }
 
 // Internal NodeProxy implementation (renamed from original)
-type BaseNodeProxyImpl<T extends Constants = string> = BaseNodeProxy<T> & ReadNodeProxy
+type NodeProxyImpl<T extends Constants = string> = BaseNodeProxy<T> & ReadNodeProxy
 
-export type Bool = BaseNodeProxyImpl<'bool'>
-export type UInt = BaseNodeProxyImpl<'uint'>
-export type Int = BaseNodeProxyImpl<'int'>
-export type Float = BaseNodeProxyImpl<'float'>
-export type BVec2 = BaseNodeProxyImpl<'bvec2'>
-export type IVec2 = BaseNodeProxyImpl<'ivec2'>
-export type UVec2 = BaseNodeProxyImpl<'uvec2'>
-export type Vec2 = BaseNodeProxyImpl<'vec2'>
-export type BVec3 = BaseNodeProxyImpl<'bvec3'>
-export type IVec3 = BaseNodeProxyImpl<'ivec3'>
-export type UVec3 = BaseNodeProxyImpl<'uvec3'>
-export type Vec3 = BaseNodeProxyImpl<'vec3'>
-export type BVec4 = BaseNodeProxyImpl<'bvec4'>
-export type IVec4 = BaseNodeProxyImpl<'ivec4'>
-export type UVec4 = BaseNodeProxyImpl<'uvec4'>
-export type Vec4 = BaseNodeProxyImpl<'vec4'>
-export type Color = BaseNodeProxyImpl<'color'>
-export type Mat2 = BaseNodeProxyImpl<'mat2'>
-export type Mat3 = BaseNodeProxyImpl<'mat3'>
-export type Mat4 = BaseNodeProxyImpl<'mat4'>
-export type Texture = BaseNodeProxyImpl<'texture'>
-export type Sampler2D = BaseNodeProxyImpl<'sampler2D'>
-export type Struct = BaseNodeProxyImpl<'struct'>
-export type ConstantsToType = {
+export type Bool = NodeProxyImpl<'bool'>
+export type UInt = NodeProxyImpl<'uint'>
+export type Int = NodeProxyImpl<'int'>
+export type Float = NodeProxyImpl<'float'>
+export type BVec2 = NodeProxyImpl<'bvec2'>
+export type IVec2 = NodeProxyImpl<'ivec2'>
+export type UVec2 = NodeProxyImpl<'uvec2'>
+export type Vec2 = NodeProxyImpl<'vec2'>
+export type BVec3 = NodeProxyImpl<'bvec3'>
+export type IVec3 = NodeProxyImpl<'ivec3'>
+export type UVec3 = NodeProxyImpl<'uvec3'>
+export type Vec3 = NodeProxyImpl<'vec3'>
+export type BVec4 = NodeProxyImpl<'bvec4'>
+export type IVec4 = NodeProxyImpl<'ivec4'>
+export type UVec4 = NodeProxyImpl<'uvec4'>
+export type Vec4 = NodeProxyImpl<'vec4'>
+export type Color = NodeProxyImpl<'color'>
+export type Mat2 = NodeProxyImpl<'mat2'>
+export type Mat3 = NodeProxyImpl<'mat3'>
+export type Mat4 = NodeProxyImpl<'mat4'>
+export type Texture = NodeProxyImpl<'texture'>
+export type Sampler2D = NodeProxyImpl<'sampler2D'>
+export type Struct = NodeProxyImpl<'struct'>
+export interface ConstantsToType {
         bool: Bool
         uint: UInt
         int: Int
@@ -365,6 +365,6 @@ export type ConstantsToType = {
 
 export type NodeProxy<T extends Constants = string> = T extends keyof ConstantsToType
         ? ConstantsToType[T]
-        : BaseNodeProxyImpl<T>
+        : NodeProxyImpl<T>
 
 export type X<T extends Constants = string> = number | string | boolean | undefined | NodeProxy<T> | X[]
