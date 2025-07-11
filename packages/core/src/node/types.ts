@@ -48,14 +48,14 @@ export type NodeTypes =
         | 'declare'
         | 'return'
 
-export interface NodeProps<T extends Record<string, NodeProxy<string>> = {}> {
+export interface NodeProps<T extends Record<string, NodeProxy> = {}> {
         id?: string
         args?: any[]
         type?: string
         children?: any[]
         inferFrom?: any[]
         layout?: FnLayout
-        parent?: NodeProxy<string>
+        parent?: NodeProxy
         // for struct
         fields?: T
         initialValues?: T
@@ -66,7 +66,7 @@ export interface NodeContext {
         isFrag?: boolean
         isWebGL?: boolean
         binding?: number
-        infers?: WeakMap<NodeProxy<any>, Constants>
+        infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
         code?: {
                 headers: Map<string, string>
@@ -81,17 +81,61 @@ export interface NodeContext {
 /**
  * infer
  */
-type InferOperatorType<L extends Constants, R extends Constants> = L extends R
-        ? L
-        : L extends 'vec2' | 'vec3' | 'vec4'
-        ? R extends 'float' | 'int'
+type InferOperatorType<L extends Constants, R extends Constants> =
+        // Matrix-Vector multiplication rules
+        L extends 'mat4'
+                ? R extends 'vec4'
+                        ? 'vec4'
+                        : R extends 'vec3'
+                        ? 'vec3'
+                        : L
+                : L extends 'mat3'
+                ? R extends 'vec3'
+                        ? 'vec3'
+                        : R extends 'vec2'
+                        ? 'vec2'
+                        : L
+                : L extends 'mat2'
+                ? R extends 'vec2'
+                        ? 'vec2'
+                        : L
+                : // Vector-Matrix multiplication rules
+                L extends 'vec4'
+                ? R extends 'mat4'
+                        ? 'vec4'
+                        : R extends 'float' | 'int'
+                        ? L
+                        : L
+                : L extends 'vec3'
+                ? R extends 'mat3'
+                        ? 'vec3'
+                        : R extends 'mat4'
+                        ? 'vec4'
+                        : R extends 'float' | 'int'
+                        ? L
+                        : L
+                : L extends 'vec2'
+                ? R extends 'mat2'
+                        ? 'vec2'
+                        : R extends 'mat3'
+                        ? 'vec3'
+                        : R extends 'float' | 'int'
+                        ? L
+                        : L
+                : // Scalar-Vector broadcasting
+                L extends 'float' | 'int'
+                ? R extends 'vec2' | 'vec3' | 'vec4' | 'mat2' | 'mat3' | 'mat4'
+                        ? R
+                        : L
+                : R extends 'float' | 'int'
+                ? L extends 'vec2' | 'vec3' | 'vec4' | 'mat2' | 'mat3' | 'mat4'
+                        ? L
+                        : R
+                : // Same types
+                L extends R
                 ? L
-                : L
-        : R extends 'vec2' | 'vec3' | 'vec4'
-        ? L extends 'float' | 'int'
-                ? R
-                : R
-        : 'float'
+                : // Default fallback
+                  'float'
 
 type StringLength<S extends string> = S extends `${infer _}${infer Rest}`
         ? Rest extends ''
@@ -163,15 +207,15 @@ interface BaseNodeProxy<T extends Constants> {
         mul<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
         div<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
         mod<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
-        equal<U extends Constants>(x: X<U>): NodeProxy<'bool'>
-        notEqual<U extends Constants>(x: X<U>): NodeProxy<'bool'>
-        lessThan<U extends Constants>(x: X<U>): NodeProxy<'bool'>
-        lessThanEqual<U extends Constants>(x: X<U>): NodeProxy<'bool'>
-        greaterThan<U extends Constants>(x: X<U>): NodeProxy<'bool'>
-        greaterThanEqual<U extends Constants>(x: X<U>): NodeProxy<'bool'>
-        and(x: X<'bool'>): NodeProxy<'bool'>
-        or(x: X<'bool'>): NodeProxy<'bool'>
-        not(): NodeProxy<'bool'>
+        equal<U extends Constants>(x: X<U>): Bool
+        notEqual<U extends Constants>(x: X<U>): Bool
+        lessThan<U extends Constants>(x: X<U>): Bool
+        lessThanEqual<U extends Constants>(x: X<U>): Bool
+        greaterThan<U extends Constants>(x: X<U>): Bool
+        greaterThanEqual<U extends Constants>(x: X<U>): Bool
+        and(x: X<'bool'>): Bool
+        or(x: X<'bool'>): Bool
+        not(): Bool
 
         // Bitwise operators
         bitAnd(x: X<T>): NodeProxy<T>
@@ -182,26 +226,26 @@ interface BaseNodeProxy<T extends Constants> {
         shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperatorType<T, U>>
 
         // Conversion methods
-        toBool(): NodeProxy<'bool'>
-        toUint(): NodeProxy<'uint'>
-        toInt(): NodeProxy<'int'>
-        toFloat(): NodeProxy<'float'>
-        toBvec2(): NodeProxy<'bvec2'>
-        toIvec2(): NodeProxy<'ivec2'>
-        toUvec2(): NodeProxy<'uvec2'>
-        toVec2(): NodeProxy<'vec2'>
-        toBvec3(): NodeProxy<'bvec3'>
-        toIvec3(): NodeProxy<'ivec3'>
-        toUvec3(): NodeProxy<'uvec3'>
-        toVec3(): NodeProxy<'vec3'>
-        toBvec4(): NodeProxy<'bvec4'>
-        toIvec4(): NodeProxy<'ivec4'>
-        toUvec4(): NodeProxy<'uvec4'>
-        toVec4(): NodeProxy<'vec4'>
-        toColor(): NodeProxy<'color'>
-        toMat2(): NodeProxy<'mat2'>
-        toMat3(): NodeProxy<'mat3'>
-        toMat4(): NodeProxy<'mat4'>
+        toBool(): Bool
+        toUint(): UInt
+        toInt(): Int
+        toFloat(): Float
+        toBvec2(): BVec2
+        toIvec2(): IVec2
+        toUvec2(): UVec2
+        toVec2(): Vec2
+        toBvec3(): BVec3
+        toIvec3(): IVec3
+        toUvec3(): UVec3
+        toVec3(): Vec3
+        toBvec4(): BVec4
+        toIvec4(): IVec4
+        toUvec4(): UVec4
+        toVec4(): Vec4
+        toColor(): Color
+        toMat2(): Mat2
+        toMat3(): Mat3
+        toMat4(): Mat4
 
         // Mathematical function methods (preserve type functions)
         abs(): NodeProxy<T>
@@ -233,23 +277,23 @@ interface BaseNodeProxy<T extends Constants> {
         fwidth(): NodeProxy<T>
 
         // Scalar return functions
-        length(): NodeProxy<'float'>
-        lengthSq(): NodeProxy<'float'>
-        determinant(): NodeProxy<'float'>
-        luminance(): NodeProxy<'float'>
+        length(): Float
+        lengthSq(): Float
+        determinant(): Float
+        luminance(): Float
 
         // Bool return functions
-        all(): NodeProxy<'bool'>
-        any(): NodeProxy<'bool'>
+        all(): Bool
+        any(): Bool
 
         // Specific return type functions
-        cross<U extends Constants>(y: X<U>): NodeProxy<'vec3'>
+        cross<U extends Constants>(y: X<U>): Vec3
 
         // Two argument functions with variable return types
         atan2<U extends Constants>(x: X<U>): NodeProxy<T>
         pow<U extends Constants>(y: X<U>): NodeProxy<T>
-        distance<U extends Constants>(y: X<U>): NodeProxy<'float'>
-        dot<U extends Constants>(y: X<U>): NodeProxy<'float'>
+        distance<U extends Constants>(y: X<U>): Float
+        dot<U extends Constants>(y: X<U>): Float
         reflect<U extends Constants>(N: X<U>): NodeProxy<T>
         refract<U extends Constants>(N: X<U>, eta: any): NodeProxy<T>
 
@@ -267,6 +311,60 @@ interface BaseNodeProxy<T extends Constants> {
         pow4(): NodeProxy<T>
 }
 
-export type NodeProxy<T extends Constants = string> = BaseNodeProxy<T> & ReadNodeProxy
+// Internal NodeProxy implementation (renamed from original)
+type BaseNodeProxyImpl<T extends Constants = string> = BaseNodeProxy<T> & ReadNodeProxy
+
+export type Bool = BaseNodeProxyImpl<'bool'>
+export type UInt = BaseNodeProxyImpl<'uint'>
+export type Int = BaseNodeProxyImpl<'int'>
+export type Float = BaseNodeProxyImpl<'float'>
+export type BVec2 = BaseNodeProxyImpl<'bvec2'>
+export type IVec2 = BaseNodeProxyImpl<'ivec2'>
+export type UVec2 = BaseNodeProxyImpl<'uvec2'>
+export type Vec2 = BaseNodeProxyImpl<'vec2'>
+export type BVec3 = BaseNodeProxyImpl<'bvec3'>
+export type IVec3 = BaseNodeProxyImpl<'ivec3'>
+export type UVec3 = BaseNodeProxyImpl<'uvec3'>
+export type Vec3 = BaseNodeProxyImpl<'vec3'>
+export type BVec4 = BaseNodeProxyImpl<'bvec4'>
+export type IVec4 = BaseNodeProxyImpl<'ivec4'>
+export type UVec4 = BaseNodeProxyImpl<'uvec4'>
+export type Vec4 = BaseNodeProxyImpl<'vec4'>
+export type Color = BaseNodeProxyImpl<'color'>
+export type Mat2 = BaseNodeProxyImpl<'mat2'>
+export type Mat3 = BaseNodeProxyImpl<'mat3'>
+export type Mat4 = BaseNodeProxyImpl<'mat4'>
+export type Texture = BaseNodeProxyImpl<'texture'>
+export type Sampler2D = BaseNodeProxyImpl<'sampler2D'>
+export type Struct = BaseNodeProxyImpl<'struct'>
+export type ConstantsToType = {
+        bool: Bool
+        uint: UInt
+        int: Int
+        float: Float
+        bvec2: BVec2
+        ivec2: IVec2
+        uvec2: UVec2
+        vec2: Vec2
+        bvec3: BVec3
+        ivec3: IVec3
+        uvec3: UVec3
+        vec3: Vec3
+        bvec4: BVec4
+        ivec4: IVec4
+        uvec4: UVec4
+        vec4: Vec4
+        color: Color
+        mat2: Mat2
+        mat3: Mat3
+        mat4: Mat4
+        texture: Texture
+        sampler2D: Sampler2D
+        struct: Struct
+}
+
+export type NodeProxy<T extends Constants = string> = T extends keyof ConstantsToType
+        ? ConstantsToType[T]
+        : BaseNodeProxyImpl<T>
 
 export type X<T extends Constants = string> = number | string | boolean | undefined | NodeProxy<T> | X[]

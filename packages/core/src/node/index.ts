@@ -2,7 +2,7 @@ import { is } from '../utils/helpers'
 import { code } from './code'
 import { builtin, conversion as c, function_ as f, uniform as u } from './node'
 import { hex2rgb, sortHeadersByDependencies } from './utils'
-import type { Constants as C, NodeContext, X, NodeProxy } from './types'
+import type { Constants as C, NodeContext, X, Vec2, Float, Bool } from './types'
 export * from './code'
 export * from './node'
 export * from './scope'
@@ -131,9 +131,9 @@ export const color = (r?: X, g?: X, b?: X) => {
 }
 
 // Default uniforms with proper typing
-export const iResolution: NodeProxy<'vec2'> = u(vec2(), 'iResolution')
-export const iMouse: NodeProxy<'vec2'> = u(vec2(), 'iMouse')
-export const iTime: NodeProxy<'float'> = u(float(), 'iTime')
+export const iResolution: Vec2 = u(vec2(), 'iResolution')
+export const iMouse: Vec2 = u(vec2(), 'iMouse')
+export const iTime: Float = u(float(), 'iTime')
 export const uv = position.xy.div(iResolution)
 
 // Texture Functions with proper return types
@@ -208,6 +208,6 @@ export const cbrt = <T extends C>(x: X<T>) => f<T>('cbrt', x)
 export const degrees = <T extends C>(radians: X) => f<T>('degrees', radians)
 export const radians = <T extends C>(degrees: X) => f<T>('radians', degrees)
 export const difference = <T extends C>(x: X<T>, y: X) => f<T>('difference', x, y)
-export const equals = (x: X, y: X): NodeProxy<'bool'> => f('equals', x, y)
+export const equals = (x: X, y: X): Bool => f('equals', x, y)
 export const faceforward = <T extends C>(N: X, I: X, Nref: X) => f<T>('faceforward', N, I, Nref)
 export const transformDirection = <T extends C>(dir: X, matrix: X) => f<T>('transformDirection', dir, matrix)

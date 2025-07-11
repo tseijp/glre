@@ -1,6 +1,6 @@
 import { conversion, node } from './node'
 import { getId } from './utils'
-import type { FnLayout, NodeProps, NodeProxy, X, Constants } from './types'
+import type { FnLayout, NodeProps, NodeProxy, X, Constants, Int } from './types'
 
 let scope: NodeProxy | null = null
 let define: NodeProxy | null = null
@@ -81,7 +81,7 @@ export const If = (x: NodeProxy, fun: () => void) => {
         return ret()
 }
 
-export const Loop = (x: NodeProxy, fun: (params: { i: NodeProxy<'int'> }) => void) => {
+export const Loop = (x: NodeProxy, fun: (params: { i: Int }) => void) => {
         const y = node('scope')
         scoped(y, () => fun({ i: node<'int'>('variable', { id: 'i', inferFrom: [conversion('int', 0)] }) }))
         const ret = node('loop', null, x, y)

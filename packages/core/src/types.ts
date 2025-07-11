@@ -1,6 +1,6 @@
 import type { EventState, Nested } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
-import type { NodeProxy } from './node'
+import type { NodeProxy, Vec4 } from './node'
 export type { Fun, Queue, Frame }
 export type PrecisionMode = 'highp' | 'mediump' | 'lowp'
 export type GLClearMode = 'COLOR_BUFFER_BIT' | 'DEPTH_BUFFER_BIT' | 'STENCIL_BUFFER_BIT'
@@ -67,12 +67,12 @@ export type GL = EventState<{
         mouse: [number, number]
         count: number
         el: HTMLCanvasElement
-        vs: string | NodeProxy<'vec4'>
-        fs: string | NodeProxy<'vec4'>
-        vert: string | NodeProxy<'vec4'>
-        frag: string | NodeProxy<'vec4'>
-        vertex: string | NodeProxy<'vec4'>
-        fragment: string | NodeProxy<'vec4'>
+        vs: string | Vec4
+        fs: string | Vec4
+        vert: string | Vec4
+        frag: string | Vec4
+        vertex: string | Vec4
+        fragment: string | Vec4
 
         /**
          * core state
