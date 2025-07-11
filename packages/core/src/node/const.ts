@@ -161,6 +161,24 @@ export const COMPONENT_COUNT_TO_TYPE = {
         16: 'mat4',
 } as const
 
+// Function return type mapping for method chaining
+export const FUNCTION_RETURN_TYPES = {
+        // Always return vec4
+        texture: 'vec4',
+        cubeTexture: 'vec4',
+        textureSize: 'vec4',
+        // Always return float
+        length: 'float',
+        lengthSq: 'float',
+        distance: 'float',
+        dot: 'float',
+        // Always return bool
+        all: 'bool',
+        any: 'bool',
+        // Always return vec3
+        cross: 'vec3',
+} as const
+
 export const BUILTIN_TYPES = {
         // WGSL builtin variables
         position: 'vec4',

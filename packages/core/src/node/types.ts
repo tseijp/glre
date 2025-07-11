@@ -81,22 +81,15 @@ export interface NodeContext {
 /**
  * infer
  */
-
-type InferOperator<L extends Constants, R extends Constants> = L extends R
-        ? L
-        : L extends `${string}vec${string}`
-        ? R extends `${string}vec${string}`
-                ? L
-                : L
-        : R extends `${string}vec${string}`
-        ? R
-        : L extends 'mat4' | 'mat3' | 'mat2'
-        ? L
-        : R extends 'mat4' | 'mat3' | 'mat2'
-        ? R
-        : L extends 'float'
-        ? L
-        : R
+// Unified logic with infer.ts inferOperator function
+// prettier-ignore
+type InferOperator<L extends Constants, R extends Constants> =
+        L extends R ? L :
+        L extends 'float' | 'int' ? R :
+        R extends 'float' | 'int' ? L :
+        L extends 'mat4' ? R extends 'vec4' ? 'vec4' : L :
+        L extends 'mat3' ? R extends 'vec3' ? 'vec3' : L :
+        L extends 'mat2' ? R extends 'vec2' ? 'vec2' : L :  L
 
 type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
         ? Rest extends ''

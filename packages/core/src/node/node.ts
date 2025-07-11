@@ -23,7 +23,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
                 if (key === 'listeners') return listeners
                 if (key === '__nodeType') return undefined // Will be set by factory functions
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
-                if (isFunction(key)) return (...y: X[]) => function_([x], key, x, ...y)
+                if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
                 if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
                 if (is.str(key)) return member(key, x) // for struct and swizzling
         }
@@ -53,8 +53,8 @@ export const operator = <T extends C>(key: Operators, ...x: X[]) => {
         return node<T>('operator', null, key, ...x)
 }
 
-export const function_ = <T extends C>(inferFrom: X[], key: Functions, ...x: X[]) => {
-        return node<T>('function', { inferFrom }, key, ...x)
+export const function_ = <T extends C>(key: Functions, ...x: X[]) => {
+        return node<T>('function', null, key, ...x)
 }
 
 export const conversion = <T extends C>(key: T, ...x: X[]) => {

@@ -1,5 +1,11 @@
 import { is } from '../utils/helpers'
-import { BUILTIN_TYPES, COMPARISON_OPERATORS, COMPONENT_COUNT_TO_TYPE, CONSTANTS, LOGICAL_OPERATORS } from './const'
+import {
+        BUILTIN_TYPES,
+        COMPARISON_OPERATORS,
+        COMPONENT_COUNT_TO_TYPE,
+        FUNCTION_RETURN_TYPES,
+        LOGICAL_OPERATORS,
+} from './const'
 import { isConstants, isNodeProxy, isSwizzle } from './utils'
 import type { Constants as C, NodeContext, NodeProxy, X } from './types'
 
@@ -7,18 +13,22 @@ const inferBuiltin = <T extends C>(id: string | undefined) => {
         return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES] as T
 }
 
+// Unified logic with types.ts InferOperator type
 const inferOperator = <T extends C>(L: string, R: string, op: string): T => {
         if (COMPARISON_OPERATORS.includes(op as any) || LOGICAL_OPERATORS.includes(op as any)) return 'bool' as T
         if (L === R) return L as T
-        if (L.includes('vec') || R.includes('vec')) return (L.includes('vec') ? L : R) as T
-        if (L.includes('mat') || R.includes('mat')) return (L.includes('mat') ? L : R) as T
-        return (L === 'float' ? L : R) as T
+        if (L === 'float' || L === 'int') return R as T
+        if (R === 'float' || R === 'int') return L as T
+        if (L === 'mat4' && R === 'vec4') return 'vec4' as T
+        if (L === 'mat3' && R === 'vec3') return 'vec3' as T
+        if (L === 'mat2' && R === 'vec2') return 'vec2' as T
+        return L as T
 }
 
 export const inferPrimitiveType = (x: X): C => {
         if (is.bol(x)) return 'bool'
         if (is.str(x)) return 'texture'
-        if (is.num(x)) return Number.isInteger(x) ? 'int' : 'float'
+        if (is.num(x)) return 'float' // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
         if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] || 'float'
         return 'float'
 }
@@ -37,6 +47,10 @@ const inferFromArray = <T extends C>(arr: X<T>[], c: NodeContext) => {
         return ret
 }
 
+export const inferFunction = (x: X) => {
+        return FUNCTION_RETURN_TYPES[x as keyof typeof FUNCTION_RETURN_TYPES]
+}
+
 export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T => {
         const { type, props } = target
         const { id, children = [], inferFrom, layout } = props
@@ -45,7 +59,7 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x as string)
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
-        if (type === 'function' && inferFrom) return inferFromArray(inferFrom, c)
+        if (type === 'function') return (inferFunction(x) as T) || infer(y, c)
         if (type === 'define' && isConstants(layout?.type)) return layout?.type as T
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
         if (type === 'member') {

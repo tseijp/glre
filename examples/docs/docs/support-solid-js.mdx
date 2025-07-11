@@ -93,9 +93,9 @@ function Canvas() {
                         }
                 }
                 `,
-                resize() {
-                        resize(gl)
-                },
+                width: 256,
+                height: 256,
+                isWebGL: true,
         })
         gl.uniform(
                 useControls({
@@ -104,7 +104,7 @@ function Canvas() {
                         color1: [53 / 255, 97 / 255, 159 / 255],
                         color2: [74 / 255, 128 / 255, 191 / 255],
                         eye: [25, 44, 50],
-                        zoom: { min: 0, value: 7.5, max: 15 },
+                        zoom: { min: 0, value: 2.5, max: 5 },
                         repeat: { min: 0, value: 0, max: 50 },
                 })
         )
@@ -190,8 +190,8 @@ function Canvas() {
                         return vec4<f32>(0.0, 0.0, 0.0, 1.0);
                 }
                 `,
-                width: 512,
-                height: 512,
+                width: 256,
+                height: 256,
                 isWebGL: false,
         })
         gl.uniform(
@@ -201,7 +201,7 @@ function Canvas() {
                         color1: [53 / 255, 97 / 255, 159 / 255],
                         color2: [74 / 255, 128 / 255, 191 / 255],
                         eye: [25, 44, 50],
-                        zoom: { min: 0, value: 7.5, max: 15 },
+                        zoom: { min: 0, value: 2.5, max: 5 },
                         repeat: { min: 0, value: 0, max: 50 },
                 })
         )
@@ -224,13 +224,13 @@ function Canvas() {
 
         const scale = Fn(([x, y, z]) => {
                 return mat3(float(1).div(x), 0, 0, 0, float(1).div(y), 0, 0, 0, float(1).div(z))
-        })
+        }, 'scale')
 
         const repetition = Fn(([p, x]) => {
                 If(repeat.notEqual(0), () => {
                         p.assign(p.mod(x.mul(repeat)).sub(x.mul(repeat).mul(0.5)))
                 })
-        })
+        }, 'repetition')
 
         const cylinderSDF = Fn(([p, h, r, sign]) => {
                 p.y.assign(p.y.sub(sign.mul(height)))
@@ -239,7 +239,7 @@ function Canvas() {
                 const dx = max(dSphere, dPlane)
                 const dy = abs(p.z).sub(h)
                 return min(max(dx, dy), 0).add(vec2(max(dx, 0), max(dy, 0)).length())
-        })
+        }, 'cylinderSDF')
 
         const SDF = Fn(([p]) => {
                 repetition(p, vec3(radius))
@@ -248,7 +248,7 @@ function Canvas() {
                 const d1 = cylinderSDF(p.add(vec3(0, 0, 17)), height, radius, -1)
                 const d2 = cylinderSDF(p.add(vec3(0, 0, -17)), height, radius, 1)
                 return min(d1, d2)
-        })
+        }, 'SDF')
 
         const rayMarch = Fn(([position]) => {
                 const look = vec3(0).sub(eye).normalize()
@@ -258,14 +258,14 @@ function Canvas() {
                 const e = vec3(0.0005, 0, 0)
                 const d = SDF(p).toVar()
 
-                Loop(100, ({ i }) => {
+                Loop(int(100), ({ i }) => {
                         If(d.lessThanEqual(e.x), () => {
                                 const dx = SDF(p.add(e.xyy)).sub(d)
                                 const dy = SDF(p.add(e.yxy)).sub(d)
                                 const dz = SDF(p.add(e.yyx)).sub(d)
                                 const norm = vec3(dx, dy, dz).normalize()
                                 const lighting = dot(norm, vec3(0, 1, 0)).add(0.5)
-                                const color = select(p.z.lessThan(0), color2, color1)
+                                const color = select(color1, color2, p.z.lessThan(0))
                                 return vec4(lighting.mul(color), 1)
                         })
                         p.assign(p.add(d.mul(look)))
@@ -273,12 +273,12 @@ function Canvas() {
                 })
 
                 return vec4(0, 0, 0, 1)
-        })(position)
+        }, 'rayMarch')(position)
 
         const gl = useGL({
                 frag: rayMarch,
-                width: 512,
-                height: 512,
+                width: 256,
+                height: 256,
                 isWebGL: true,
         })
 
@@ -289,7 +289,7 @@ function Canvas() {
                         color1: [53 / 255, 97 / 255, 159 / 255],
                         color2: [74 / 255, 128 / 255, 191 / 255],
                         eye: [25, 44, 50],
-                        zoom: { min: 0, value: 7.5, max: 15 },
+                        zoom: { min: 0, value: 2.5, max: 5 },
                         repeat: { min: 0, value: 0, max: 50 },
                 })
         )

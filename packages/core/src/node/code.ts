@@ -41,8 +41,8 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'member') return `${code(y, c)}.${code(x, c)}`
         if (type === 'ternary')
                 return c.isWebGL
-                        ? `(${code(x, c)} ? ${code(y, c)} : ${code(z, c)})`
-                        : `select(${code(z, c)}, ${code(y, c)}, ${code(x, c)})`
+                        ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
+                        : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
         if (type === 'conversion') return `${formatConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`

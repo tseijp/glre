@@ -111,14 +111,11 @@ export const Switch = (x: NodeProxy) => {
 }
 
 export const Fn = <T extends Constants, Args extends Constants[]>(
-        fun: (paramVars: NodeProxy[]) => NodeProxy<T>,
+        fun: (paramVars: NodeProxy[]) => NodeProxy<T> | void,
         defaultId = getId()
-): {
-        (...args: X<Args[number]>[]): NodeProxy<T>
-        setLayout: (layout: FnLayout) => void
-} => {
+) => {
         let layout: FnLayout
-        const ret = (...args: X[]): NodeProxy<T> => {
+        const ret = (...args: X<Args[number]>[]): NodeProxy<T> => {
                 const id = layout?.name || defaultId
                 const x = node('scope')
                 const paramVars: NodeProxy[] = []
@@ -136,6 +133,9 @@ export const Fn = <T extends Constants, Args extends Constants[]>(
                 scoped(x, () => fun(paramVars), y)
                 return y
         }
-        ret.setLayout = (_layout: FnLayout) => void (layout = _layout)
+        ret.setLayout = (_layout: FnLayout) => {
+                layout = _layout
+                return ret
+        }
         return ret
 }
