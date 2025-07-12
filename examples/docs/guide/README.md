@@ -1,0 +1,175 @@
+# GLRE Learning Guide
+
+Complete guide for creating visual effects with TypeScript.
+
+## Introduction
+
+GLRE enables you to create beautiful real-time graphics using JavaScript and TypeScript.
+No complex technical knowledge required - just programming skills to create stunning visual effects.
+
+## Learning Path
+
+### 🌱 Fundamentals
+
+Learn the basics of visual programming with TypeScript
+
+| Step  | Topic                                                        | What You'll Learn                          |
+| ----- | ------------------------------------------------------------ | ------------------------------------------ |
+| **1** | [Getting Started](fundamentals/01-getting-started.md)           | Environment setup and first steps          |
+| **2** | [Colors and Coordinates](fundamentals/02-colors-coordinates.md) | Color specification and screen coordinates |
+| **3** | [Time and Animation](fundamentals/03-time-animation.md)         | Creating dynamic visual expressions        |
+
+### 🎨 Techniques
+
+Master practical drawing techniques
+
+| Step  | Topic                                                    | What You'll Learn                   |
+| ----- | -------------------------------------------------------- | ----------------------------------- |
+| **4** | [Shapes and Patterns](techniques/04-shapes-patterns.md)     | Basic shapes and repeating patterns |
+| **5** | [Images and Textures](techniques/05-images-textures.md)     | Loading and processing images       |
+| **6** | [Interactive Effects](techniques/06-interactive-effects.md) | Responding to mouse and keyboard    |
+
+### 🚀 Advanced
+
+Learn sophisticated visual techniques
+
+| Step  | Topic                                                  | What You'll Learn                  |
+| ----- | ------------------------------------------------------ | ---------------------------------- |
+| **7** | [3D Graphics](advanced/07-3d-graphics.md)                 | Creating three-dimensional visuals |
+| **8** | [Particles and Physics](advanced/08-particles-physics.md) | Dynamic systems and simulations    |
+
+## Learning Flow
+
+### Recommended Order
+
+```
+Getting Started
+      ↓
+Colors and Coordinates
+      ↓
+Time and Animation
+      ↓
+Shapes and Patterns
+      ↓
+Images and Textures
+      ↓
+Interactive Effects
+      ↓
+3D Graphics
+      ↓
+Particles and Physics
+```
+
+### Chapter Structure
+
+| Section                  | Content                           |
+| ------------------------ | --------------------------------- |
+| **Overview**             | What you'll learn in this chapter |
+| **Basic Examples**       | Simple code examples and results  |
+| **Detailed Explanation** | In-depth concepts and techniques  |
+| **Application Examples** | More complex real-world examples  |
+
+## Learning Prerequisites
+
+### Required Knowledge
+
+| Technology     | Level | Description                                      |
+| -------------- | ----- | ------------------------------------------------ |
+| **JavaScript** | ★★★☆☆ | Basic variables and functions                    |
+| **TypeScript** | ★★☆☆☆ | Basic type annotations                           |
+| **Math**       | ★☆☆☆☆ | Elementary arithmetic (addition, multiplication) |
+| **HTML/CSS**   | ★☆☆☆☆ | Basic web page structure                         |
+
+### Development Environment
+
+```javascript
+// Minimal setup
+import { createGL } from 'glre'
+
+const gl = createGL()
+```
+
+### Browser Requirements
+
+| Browser     | Minimum Version | Recommended |
+| ----------- | --------------- | ----------- |
+| **Chrome**  | 80+             | Latest      |
+| **Firefox** | 75+             | Latest      |
+| **Safari**  | 14+             | Latest      |
+| **Edge**    | 80+             | Latest      |
+
+## Tutorial Features
+
+### Progressive Learning
+
+Each chapter builds on previous knowledge, allowing you to learn techniques step by step.
+
+### Hands-On Approach
+
+Not just theory - write actual code and see immediate results on screen.
+
+### Visual Understanding
+
+Code results are instantly visible, making concepts intuitive to grasp.
+
+## Frequently Asked Questions
+
+### Q: Is this suitable for programming beginners?
+
+A: Yes. If you understand JavaScript basics (variables, functions, objects), you can start. No complex math knowledge required.
+
+### Q: How long does it take to learn?
+
+A: Individual results vary, but with 2-3 hours per week:
+
+- Fundamentals: 2-3 weeks
+- Techniques: 3-4 weeks
+- Advanced: 4-6 weeks
+
+### Q: Can I publish my creations?
+
+A: Yes. Visuals created with GLRE can be freely published by embedding them in web pages.
+
+### Q: What should I do when I get errors?
+
+A: Check the "Common Issues" section at the end of each chapter, or refer to the [Troubleshooting Guide](/api/ref/troubleshooting-guide).
+
+## Community and Support
+
+### Learning Resources
+
+- 📚 **Official Documentation**: Technical reference
+- 🎨 **Sample Gallery**: Various visual examples
+- 💬 **Community Forum**: Q&A exchange
+
+### Learning Tips
+
+1. **Take small steps**: Don't try to learn everything at once
+2. **Actually write code**: Don't just copy-paste, write it yourself
+3. **Enjoy trial and error**: Mistakes and unexpected results are part of learning
+4. **Create projects**: Combine learned techniques to build original works
+
+## Mathematical Concepts Made Simple
+
+### Understanding Numbers in Graphics
+
+In visual programming, we work with different types of numbers:
+
+- **Coordinates**: Numbers that tell us where something is on screen
+- **Colors**: Numbers that represent how bright red, green, and blue should be
+- **Time**: Numbers that change continuously to create animation
+- **Angles**: Numbers that control rotation (like the hands of a clock)
+
+### No Advanced Math Required
+
+You don't need to understand complex mathematics. GLRE handles the difficult parts automatically. You just need to understand:
+
+- Adding and subtracting numbers
+- Multiplying numbers (making things bigger/smaller)
+- What coordinates mean (like finding a location on a map)
+
+## Next Steps
+
+When you're ready, start with [Getting Started](fundamentals/01-getting-started.md) to begin your journey.
+
+Enjoy exploring the world of visual programming with TypeScript!
