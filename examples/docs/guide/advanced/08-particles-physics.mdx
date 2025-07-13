@@ -1,26 +1,28 @@
-# パーティクルと物理
+# Particles and Physics
 
-動的なパーティクルシステムと物理シミュレーションを使った表現を学びましょう。
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-## パーティクルシステムの基礎
+Learn to create dynamic particle systems and physics simulations for expressive visuals.
 
-### 基本的なパーティクル
+## Particle System Fundamentals
+
+### Basic Particles
 
 ```javascript
-// パーティクルデータの構造
+// Particle data structure
 class Particle {
         constructor(x, y, z) {
                 this.position = [x, y, z]
                 this.velocity = [0, 0, 0]
                 this.acceleration = [0, 0, 0]
-                this.life = 1.0
-                this.maxLife = 1.0
-                this.size = 1.0
+                this.life = 1
+                this.maxLife = 1
+                this.size = 1
                 this.color = [1, 1, 1, 1]
         }
 
         update(deltaTime) {
-                // 物理計算
+                // Physics calculation
                 this.velocity[0] += this.acceleration[0] * deltaTime
                 this.velocity[1] += this.acceleration[1] * deltaTime
                 this.velocity[2] += this.acceleration[2] * deltaTime
@@ -29,19 +31,19 @@ class Particle {
                 this.position[1] += this.velocity[1] * deltaTime
                 this.position[2] += this.velocity[2] * deltaTime
 
-                // ライフタイム
+                // Lifetime
                 this.life -= deltaTime
 
                 return this.life > 0
         }
 }
 
-// パーティクルシステム
+// Particle system
 class ParticleSystem {
         constructor(maxParticles) {
                 this.particles = []
                 this.maxParticles = maxParticles
-                this.emissionRate = 10 // パーティクル/秒
+                this.emissionRate = 10 // particles/second
                 this.emissionTimer = 0
         }
 
@@ -49,17 +51,17 @@ class ParticleSystem {
                 for (let i = 0; i < count && this.particles.length < this.maxParticles; i++) {
                         const particle = new Particle((Math.random() - 0.5) * 2, 0, (Math.random() - 0.5) * 2)
 
-                        // 初期速度をランダムに設定
+                        // Set random initial velocity
                         particle.velocity = [
                                 (Math.random() - 0.5) * 4,
                                 Math.random() * 8 + 2,
                                 (Math.random() - 0.5) * 4,
                         ]
 
-                        // 重力
+                        // Gravity
                         particle.acceleration = [0, -9.8, 0]
 
-                        // ライフタイム
+                        // Lifetime
                         particle.life = particle.maxLife = Math.random() * 3 + 1
 
                         this.particles.push(particle)
@@ -67,14 +69,14 @@ class ParticleSystem {
         }
 
         update(deltaTime) {
-                // 自動発生
+                // Auto emission
                 this.emissionTimer += deltaTime
-                if (this.emissionTimer >= 1.0 / this.emissionRate) {
+                if (this.emissionTimer >= 1 / this.emissionRate) {
                         this.emit(1)
                         this.emissionTimer = 0
                 }
 
-                // パーティクル更新
+                // Update particles
                 this.particles = this.particles.filter((particle) => particle.update(deltaTime))
         }
 
@@ -85,60 +87,54 @@ class ParticleSystem {
         getColors() {
                 return this.particles.flatMap((p) => {
                         const life = p.life / p.maxLife
-                        return [1, life, life * 0.5, life] // 色とアルファ
+                        return [1, life, life * 0.5, life] // Color and alpha
                 })
         }
 }
 ```
 
-### パーティクルの描画
+### Particle Rendering
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const particlePositions = uniform('particlePositions')
+        const particleColors = uniform('particleColors')
+        const particleCount = uniform('particleCount')
+        let finalColor = vec4(0.05, 0.05, 0.1, 1) // Background color
+        // Render each particle
+        Loop(100, ({ i }) => {
+                // Max 100 particles
+                If(float(i).lessThan(particleCount), () => {
+                        const particlePos = vec3(
+                                particlePositions[i * 3],
+                                particlePositions[i * 3 + 1],
+                                particlePositions[i * 3 + 2]
+                        )
+                        const particleColor = vec4(
+                                particleColors[i * 4],
+                                particleColors[i * 4 + 1],
+                                particleColors[i * 4 + 2],
+                                particleColors[i * 4 + 3]
+                        )
+                        // 3D to 2D projection (simplified)
+                        const screenPos = particlePos.xy.div(particlePos.z.mul(0.1).add(1))
+                        const distance = length(uv.sub(screenPos))
+                        const particle = smoothstep(0.1, 0, distance)
+                        // Alpha blending
+                        const alpha = particle.mul(particleColor.a)
+                        finalColor.assign(mix(finalColor, particleColor, alpha))
+                })
+        })
+        return finalColor
+}`}
+/>
 
 ```javascript
 const particleSystem = new ParticleSystem(1000)
 
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const particlePositions = uniform('particlePositions')
-                const particleColors = uniform('particleColors')
-                const particleCount = uniform('particleCount')
-
-                let finalColor = vec4(0.05, 0.05, 0.1, 1.0) // 背景色
-
-                // 各パーティクルを描画
-                Loop(100, ({ i }) => {
-                        // 最大100パーティクル
-                        If(float(i).lessThan(particleCount), () => {
-                                const particlePos = vec3(
-                                        particlePositions[i * 3],
-                                        particlePositions[i * 3 + 1],
-                                        particlePositions[i * 3 + 2]
-                                )
-
-                                const particleColor = vec4(
-                                        particleColors[i * 4],
-                                        particleColors[i * 4 + 1],
-                                        particleColors[i * 4 + 2],
-                                        particleColors[i * 4 + 3]
-                                )
-
-                                // 3Dから2Dへの投影（簡易版）
-                                const screenPos = particlePos.xy.div(particlePos.z.mul(0.1).add(1.0))
-
-                                const distance = length(pos.xy.sub(screenPos))
-                                const particle = smoothstep(0.1, 0.0, distance)
-
-                                // アルファブレンディング
-                                const alpha = particle.mul(particleColor.a)
-                                finalColor.assign(mix(finalColor, particleColor, alpha))
-                        })
-                })
-
-                return finalColor
-        },
-})
-
-// アニメーションループ
+// Animation loop
 let lastTime = 0
 gl('loop', () => {
         const currentTime = performance.now() / 1000
@@ -156,9 +152,9 @@ gl('loop', () => {
 })
 ```
 
-## 物理効果
+## Physics Effects
 
-### 重力と風
+### Gravity and Wind
 
 ```javascript
 class PhysicsParticleSystem extends ParticleSystem {
@@ -173,12 +169,12 @@ class PhysicsParticleSystem extends ParticleSystem {
                 super.update(deltaTime)
 
                 this.particles.forEach((particle) => {
-                        // 重力の適用
+                        // Apply gravity
                         particle.acceleration[0] = this.gravity[0] + this.wind[0]
                         particle.acceleration[1] = this.gravity[1] + this.wind[1]
                         particle.acceleration[2] = this.gravity[2] + this.wind[2]
 
-                        // 空気抵抗
+                        // Air resistance
                         particle.velocity[0] *= this.damping
                         particle.velocity[1] *= this.damping
                         particle.velocity[2] *= this.damping
@@ -190,45 +186,45 @@ class PhysicsParticleSystem extends ParticleSystem {
         }
 }
 
-// 風の制御
+// Wind control
 const physicsSystem = new PhysicsParticleSystem(500)
 
 gl('mousemove', (event, x, y) => {
-        // マウス位置で風向きを制御
+        // Control wind direction with mouse position
         const windX = x * 5
         const windZ = y * 5
         physicsSystem.setWind(windX, 0, windZ)
 })
 ```
 
-### 衝突検出
+### Collision Detection
 
 ```javascript
 class CollisionParticleSystem extends PhysicsParticleSystem {
         constructor(maxParticles) {
                 super(maxParticles)
                 this.ground = -3
-                this.restitution = 0.7 // 反発係数
+                this.restitution = 0.7 // Coefficient of restitution
         }
 
         update(deltaTime) {
                 super.update(deltaTime)
 
                 this.particles.forEach((particle) => {
-                        // 地面との衝突
+                        // Ground collision
                         if (particle.position[1] <= this.ground) {
                                 particle.position[1] = this.ground
                                 particle.velocity[1] = -particle.velocity[1] * this.restitution
 
-                                // 摩擦
+                                // Friction
                                 particle.velocity[0] *= 0.8
                                 particle.velocity[2] *= 0.8
                         }
 
-                        // 壁との衝突
+                        // Wall collision
                         const wallSize = 5
                         for (let axis = 0; axis < 3; axis += 2) {
-                                // X, Z軸
+                                // X, Z axes
                                 if (particle.position[axis] > wallSize) {
                                         particle.position[axis] = wallSize
                                         particle.velocity[axis] = -particle.velocity[axis] * this.restitution
@@ -242,7 +238,7 @@ class CollisionParticleSystem extends PhysicsParticleSystem {
 }
 ```
 
-### パーティクル間の相互作用
+### Particle Interactions
 
 ```javascript
 class InteractiveParticleSystem extends CollisionParticleSystem {
@@ -250,11 +246,11 @@ class InteractiveParticleSystem extends CollisionParticleSystem {
                 super(maxParticles)
                 this.attraction = 0.1
                 this.repulsion = 0.5
-                this.interactionRadius = 1.0
+                this.interactionRadius = 1
         }
 
         update(deltaTime) {
-                // パーティクル間の力計算
+                // Calculate inter-particle forces
                 for (let i = 0; i < this.particles.length; i++) {
                         const particleA = this.particles[i]
 
@@ -289,28 +285,52 @@ class InteractiveParticleSystem extends CollisionParticleSystem {
 }
 ```
 
-## 特殊効果
+## Special Effects
 
-### 火のエフェクト
+### Fire Effect
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const particlePositions = uniform('particlePositions')
+        const particleCount = uniform('particleCount')
+        let fireColor = vec3(0)
+        Loop(50, ({ i }) => {
+                If(float(i).lessThan(particleCount), () => {
+                        const particlePos = vec2(particlePositions[i * 3], particlePositions[i * 3 + 1])
+                        const distance = length(uv.sub(particlePos))
+                        const life = particlePositions[i * 3 + 2] // Store lifetime in Z
+                        // Fire colors (red→yellow→transparent)
+                        const heat = smoothstep(0.3, 0, distance).mul(life)
+                        const red = heat
+                        const green = heat.mul(heat) // Square for yellow emphasis
+                        const blue = heat.mul(heat).mul(heat) // Cube to suppress blue
+                        fireColor.assign(fireColor.add(vec3(red, green, blue)))
+                })
+        })
+        return vec4(fireColor, 1)
+}`}
+/>
 
 ```javascript
 class FireParticleSystem extends ParticleSystem {
         emit(count = 1) {
                 for (let i = 0; i < count && this.particles.length < this.maxParticles; i++) {
                         const particle = new Particle(
-                                (Math.random() - 0.5) * 0.5, // 狭い範囲から発生
+                                (Math.random() - 0.5) * 0.5, // Emit from narrow range
                                 0,
                                 (Math.random() - 0.5) * 0.5
                         )
 
-                        // 上向きの速度
+                        // Upward velocity
                         particle.velocity = [
                                 (Math.random() - 0.5) * 2,
                                 Math.random() * 6 + 2,
                                 (Math.random() - 0.5) * 2,
                         ]
 
-                        // 浮力（上昇気流）
+                        // Buoyancy (updraft)
                         particle.acceleration = [0, 2, 0]
 
                         particle.life = particle.maxLife = Math.random() * 2 + 0.5
@@ -323,38 +343,9 @@ class FireParticleSystem extends ParticleSystem {
 
 const fireSystem = new FireParticleSystem(200)
 fireSystem.emissionRate = 30
-
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const particlePositions = uniform('particlePositions')
-                const particleCount = uniform('particleCount')
-
-                let fireColor = vec3(0.0)
-
-                Loop(50, ({ i }) => {
-                        If(float(i).lessThan(particleCount), () => {
-                                const particlePos = vec2(particlePositions[i * 3], particlePositions[i * 3 + 1])
-
-                                const distance = length(pos.xy.sub(particlePos))
-                                const life = particlePositions[i * 3 + 2] // ライフタイムを Z に格納
-
-                                // 火の色（赤→黄→透明）
-                                const heat = smoothstep(0.3, 0.0, distance).mul(life)
-                                const red = heat
-                                const green = heat.mul(heat) // 2乗で黄色を強調
-                                const blue = heat.mul(heat).mul(heat) // 3乗で青みを抑制
-
-                                fireColor.assign(fireColor.add(vec3(red, green, blue)))
-                        })
-                })
-
-                return vec4(fireColor, 1.0)
-        },
-})
 ```
 
-### 水のエフェクト
+### Water Effect
 
 ```javascript
 class WaterParticleSystem extends ParticleSystem {
@@ -378,7 +369,7 @@ class WaterParticleSystem extends ParticleSystem {
         }
 
         update(deltaTime) {
-                // 粘性力の計算
+                // Calculate viscosity forces
                 this.particles.forEach((particleA, i) => {
                         let viscosityForce = [0, 0, 0]
                         let neighborCount = 0
@@ -390,7 +381,7 @@ class WaterParticleSystem extends ParticleSystem {
                                         const dz = particleB.position[2] - particleA.position[2]
                                         const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
 
-                                        if (distance < 1.0) {
+                                        if (distance < 1) {
                                                 viscosityForce[0] +=
                                                         (particleB.velocity[0] - particleA.velocity[0]) * this.viscosity
                                                 viscosityForce[1] +=
@@ -414,7 +405,32 @@ class WaterParticleSystem extends ParticleSystem {
 }
 ```
 
-### 煙のエフェクト
+### Smoke Effect
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const particleData = uniform('particleData') // [x, y, z, size, life]
+        const particleCount = uniform('particleCount')
+        let smokeColor = vec4(0)
+        Loop(25, ({ i }) => {
+                If(float(i).lessThan(particleCount), () => {
+                        const particlePos = vec2(particleData[i * 5], particleData[i * 5 + 1])
+                        const size = particleData[i * 5 + 3]
+                        const life = particleData[i * 5 + 4]
+                        const distance = length(uv.sub(particlePos))
+                        const smoke = smoothstep(size, size.mul(0.3), distance)
+                        // Gray and semi-transparent
+                        const intensity = smoke.mul(life).mul(0.3)
+                        const smokeGray = vec4(vec3(0.7), intensity)
+                        // Alpha blending
+                        smokeColor.assign(mix(smokeColor, smokeGray, intensity))
+                })
+        })
+        return smokeColor
+}`}
+/>
 
 ```javascript
 class SmokeParticleSystem extends ParticleSystem {
@@ -433,7 +449,7 @@ class SmokeParticleSystem extends ParticleSystem {
                                 (Math.random() - 0.5) * 1,
                         ]
 
-                        particle.acceleration = [0, 0.5, 0] // 軽く上昇
+                        particle.acceleration = [0, 0.5, 0] // Light upward movement
                         particle.life = particle.maxLife = Math.random() * 4 + 2
                         particle.size = Math.random() * 0.5 + 0.2
 
@@ -445,14 +461,14 @@ class SmokeParticleSystem extends ParticleSystem {
                 const time = performance.now() / 1000
 
                 this.particles.forEach((particle) => {
-                        // 乱流効果
+                        // Turbulence effect
                         const noiseX = Math.sin(particle.position[1] * 0.1 + time) * this.turbulence
                         const noiseZ = Math.cos(particle.position[1] * 0.1 + time * 1.3) * this.turbulence
 
                         particle.acceleration[0] = noiseX
                         particle.acceleration[2] = noiseZ
 
-                        // 拡散
+                        // Expansion
                         particle.size += deltaTime * 0.5
                 })
 
@@ -461,44 +477,14 @@ class SmokeParticleSystem extends ParticleSystem {
 }
 
 const smokeSystem = new SmokeParticleSystem(100)
-
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const particleData = uniform('particleData') // [x, y, z, size, life]
-                const particleCount = uniform('particleCount')
-
-                let smokeColor = vec4(0.0)
-
-                Loop(25, ({ i }) => {
-                        If(float(i).lessThan(particleCount), () => {
-                                const particlePos = vec2(particleData[i * 5], particleData[i * 5 + 1])
-                                const size = particleData[i * 5 + 3]
-                                const life = particleData[i * 5 + 4]
-
-                                const distance = length(pos.xy.sub(particlePos))
-                                const smoke = smoothstep(size, size.mul(0.3), distance)
-
-                                // グレーで半透明
-                                const intensity = smoke.mul(life).mul(0.3)
-                                const smokeGray = vec4(vec3(0.7), intensity)
-
-                                // アルファブレンディング
-                                smokeColor.assign(mix(smokeColor, smokeGray, intensity))
-                        })
-                })
-
-                return smokeColor
-        },
-})
 ```
 
-## GPU パーティクル
+## GPU Particles
 
-### Compute Shader を使った高速化
+### Acceleration with Compute Shaders
 
 ```javascript
-// WebGPU を使用した場合
+// Using WebGPU
 const computeShader = `
 @compute @workgroup_size(64)
 fn main(@builtin(global_invocation_id) id: vec3u) {
@@ -506,37 +492,36 @@ fn main(@builtin(global_invocation_id) id: vec3u) {
     if (index >= arrayLength(&particles)) {
         return;
     }
-    
+
     var particle = particles[index];
-    
-    // 物理計算
+
+    // Physics calculation
     particle.velocity += particle.acceleration * uniforms.deltaTime;
     particle.position += particle.velocity * uniforms.deltaTime;
-    
-    // ライフタイム
+
+    // Lifetime
     particle.life -= uniforms.deltaTime;
-    
-    // 重力
+
+    // Gravity
     particle.acceleration.y = -9.8;
-    
+
     particles[index] = particle;
 }
 `
 
 const gl = createGL({
-        isWebGL: false, // WebGPU必須
+        isWebGL: false, // WebGPU required
         compute: computeShader,
 
         fragment: () => {
-                // GPU上のパーティクルデータを使用して描画
-                const pos = builtin('position')
-                // ... GPU パーティクルの描画ロジック
+                // Render using GPU particle data
+                // ... GPU particle rendering logic
 
-                return vec4(1.0, 0.5, 0.2, 1.0)
+                return vec4(1, 0.5, 0.2, 1)
         },
 })
 
-// 大量のパーティクル（10万個）
+// Massive particle count (100,000)
 const particleCount = 100000
 const particleData = new Float32Array(particleCount * 8) // position, velocity, life, size
 
@@ -546,14 +531,14 @@ gl('loop', () => {
         const deltaTime = 1 / 60
         gl.uniform('deltaTime', deltaTime)
 
-        // Compute shader実行
+        // Execute compute shader
         gl.compute.dispatch(Math.ceil(particleCount / 64), 1, 1)
 })
 ```
 
-## パフォーマンス最適化
+## Performance Optimization
 
-### オブジェクトプールパターン
+### Object Pool Pattern
 
 ```javascript
 class PooledParticleSystem {
@@ -561,7 +546,7 @@ class PooledParticleSystem {
                 this.pool = []
                 this.active = []
 
-                // 事前にパーティクルを作成
+                // Pre-create particles
                 for (let i = 0; i < maxParticles; i++) {
                         this.pool.push(new Particle(0, 0, 0))
                 }
@@ -570,7 +555,7 @@ class PooledParticleSystem {
         emit() {
                 if (this.pool.length > 0) {
                         const particle = this.pool.pop()
-                        // パーティクルの初期化
+                        // Initialize particle
                         particle.reset()
                         this.active.push(particle)
                 }
@@ -581,7 +566,7 @@ class PooledParticleSystem {
                         const particle = this.active[i]
 
                         if (!particle.update(deltaTime)) {
-                                // パーティクルを プールに戻す
+                                // Return particle to pool
                                 this.active.splice(i, 1)
                                 this.pool.push(particle)
                         }
@@ -590,24 +575,24 @@ class PooledParticleSystem {
 }
 ```
 
-### レベル・オブ・ディテール
+### Level of Detail
 
 ```javascript
 class LODParticleSystem extends ParticleSystem {
         update(deltaTime) {
                 const cameraDistance = this.getCameraDistance()
 
-                // 距離に応じてパーティクル数を調整
+                // Adjust particle count based on distance
                 let maxParticles
                 if (cameraDistance < 10) {
-                        maxParticles = 1000 // 高品質
+                        maxParticles = 1000 // High quality
                 } else if (cameraDistance < 50) {
-                        maxParticles = 500 // 中品質
+                        maxParticles = 500 // Medium quality
                 } else {
-                        maxParticles = 100 // 低品質
+                        maxParticles = 100 // Low quality
                 }
 
-                // 余分なパーティクルを削除
+                // Remove excess particles
                 while (this.particles.length > maxParticles) {
                         this.particles.pop()
                 }
@@ -617,27 +602,27 @@ class LODParticleSystem extends ParticleSystem {
 }
 ```
 
-## 実践課題
+## Practical Exercises
 
-### 課題 1: 雨のエフェクト
+### Exercise 1: Rain Effect
 
-リアルな雨粒と水たまりの反射を作成してください。
+Create realistic raindrops and puddle reflections.
 
-### 課題 2: 爆発エフェクト
+### Exercise 2: Explosion Effect
 
-段階的な爆発（衝撃波 → 火花 → 煙）を作成してください。
+Create a staged explosion (shockwave → sparks → smoke).
 
-### 課題 3: 魔法エフェクト
+### Exercise 3: Magic Effect
 
-光の粒子と魔法陣を組み合わせたエフェクトを作成してください。
+Create an effect combining light particles with magic circles.
 
-## よくある問題と解決策
+## Common Issues and Solutions
 
-### パフォーマンスの低下
+### Performance Degradation
 
 ```javascript
-// 問題: パーティクル数が多すぎる
-// 解決: 動的な数の調整
+// Problem: Too many particles
+// Solution: Dynamic count adjustment
 
 class AdaptiveParticleSystem extends ParticleSystem {
         constructor(maxParticles) {
@@ -650,14 +635,14 @@ class AdaptiveParticleSystem extends ParticleSystem {
         update(deltaTime) {
                 this.currentFPS = 1 / deltaTime
 
-                // FPSに応じてパーティクル数を調整
+                // Adjust particle count based on FPS
                 if (this.currentFPS < this.targetFPS) {
                         this.adaptiveCount = Math.max(50, this.adaptiveCount - 10)
                 } else if (this.currentFPS > this.targetFPS + 10) {
                         this.adaptiveCount = Math.min(this.maxParticles, this.adaptiveCount + 10)
                 }
 
-                // 余分なパーティクルを削除
+                // Remove excess particles
                 while (this.particles.length > this.adaptiveCount) {
                         this.particles.pop()
                 }
@@ -667,10 +652,10 @@ class AdaptiveParticleSystem extends ParticleSystem {
 }
 ```
 
-### メモリリーク
+### Memory Leaks
 
 ```javascript
-// パーティクルシステムのクリーンアップ
+// Particle system cleanup
 class ManagedParticleSystem extends ParticleSystem {
         destroy() {
                 this.particles = []
@@ -678,22 +663,22 @@ class ManagedParticleSystem extends ParticleSystem {
         }
 }
 
-// 使用後は必ずクリーンアップ
+// Always cleanup after use
 window.addEventListener('beforeunload', () => {
         particleSystem.destroy()
 })
 ```
 
-## 次のステップ
+## What You've Learned
 
-パーティクルと物理をマスターしました！これで GLRE の主要な機能を全て学習完了です。
+- ✅ Particle system design
+- ✅ Physics simulation (gravity, collision, interaction)
+- ✅ Special effects (fire, water, smoke)
+- ✅ GPU particles
+- ✅ Performance optimization
 
-このチュートリアルで学んだこと：
+## Next Steps
 
-- ✅ パーティクルシステムの設計
-- ✅ 物理シミュレーション（重力、衝突、相互作用）
-- ✅ 特殊効果（火、水、煙）
-- ✅ GPU パーティクル
-- ✅ パフォーマンス最適化
+You've now mastered particles and physics! This completes your learning of all major GLRE features.
 
-次の章では、大規模なプロジェクトでも高いパフォーマンスを維持するための技法を学習します。
+In the next chapter, you'll learn techniques for maintaining high performance even in large-scale projects.

@@ -1,4 +1,6 @@
-# インタラクティブな表現
+# Interactive Effects
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 マウスやキーボードの操作に反応するビジュアル表現を作成しましょう。
 
@@ -6,23 +8,20 @@
 
 ### マウス座標の取得
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // マウス位置からの距離
+        const distance = length(uv.sub(iMouse.add(0.5)))
+        // 距離に応じた色
+        const intensity = oneMinus(distance)
+        const color = vec3(intensity, intensity.mul(0.8), intensity.mul(1.2))
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const mouse = uniform('iMouse') // マウス座標（-1～1の正規化済み）
-
-                // マウス位置からの距離
-                const distance = length(pos.xy.sub(mouse))
-
-                // 距離に応じた色
-                const intensity = oneMinus(distance)
-                const color = vec3(intensity, intensity.mul(0.8), intensity.mul(1.2))
-
-                return vec4(color, 1.0)
-        },
-})
-
 // マウス移動イベントの設定
 gl('mousemove', (event, x, y) => {
         const [width, height] = gl.size
@@ -37,63 +36,59 @@ gl('mousemove', (event, x, y) => {
 
 ### マウスクリックの検出
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const clicking = uniform(float(), 'isClicking')
+        const distance = length(pos.xy.sub(iMouse))
+        // クリック時に効果を強化
+        const baseIntensity = oneMinus(distance)
+        const clickMultiplier = clicking.mul(2).add(1)
+        const intensity = baseIntensity.mul(clickMultiplier)
+        const color = vec3(intensity, intensity.mul(0.6), intensity.mul(0.4))
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
+// マウスイベントの設定
 let isClicking = false
 
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const mouse = uniform('iMouse')
-                const clicking = uniform('isClicking')
-
-                const distance = length(pos.xy.sub(mouse))
-
-                // クリック時に効果を強化
-                const baseIntensity = oneMinus(distance)
-                const clickMultiplier = clicking.mul(2.0).add(1.0)
-                const intensity = baseIntensity.mul(clickMultiplier)
-
-                const color = vec3(intensity, intensity.mul(0.6), intensity.mul(0.4))
-
-                return vec4(color, 1.0)
-        },
-})
-
-// マウスイベントの設定
 gl('mousedown', () => {
         isClicking = true
-        gl.uniform('isClicking', 1.0)
+        gl.uniform('isClicking', 1)
 })
 
 gl('mouseup', () => {
         isClicking = false
-        gl.uniform('isClicking', 0.0)
+        gl.uniform('isClicking', 0)
 })
 ```
 
 ### ドラッグ操作
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const dragVector = uniform(float(), 'dragVector')
+        // ドラッグベクトルによる歪み
+        const distortion = dragVector.mul(0.5)
+        const distortedPos = pos.xy.add(distortion)
+        // 歪んだ座標でのパターン
+        const pattern = sin(distortedPos.x.mul(8)).mul(sin(distortedPos.y.mul(8)))
+        const color = vec3(pattern)
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
 let isDragging = false
 let dragStart = [0, 0]
 let dragCurrent = [0, 0]
-
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const dragVector = uniform('dragVector')
-
-                // ドラッグベクトルによる歪み
-                const distortion = dragVector.mul(0.5)
-                const distortedPos = pos.xy.add(distortion)
-
-                // 歪んだ座標でのパターン
-                const pattern = sin(distortedPos.x.mul(8.0)).mul(sin(distortedPos.y.mul(8.0)))
-                const color = vec3(pattern.mul(0.5).add(0.5))
-
-                return vec4(color, 1.0)
-        },
-})
 
 gl('mousedown', (event, x, y) => {
         isDragging = true
@@ -109,7 +104,7 @@ gl('mousemove', (event, x, y) => {
 
                 const dragVector = [dragCurrent[0] - dragStart[0], dragCurrent[1] - dragStart[1]]
 
-                gl.uniform('dragVector', dragVector)
+                gl.uniform(dragVector, 'dragVector')
         }
 })
 
@@ -123,36 +118,33 @@ gl('mouseup', () => {
 
 ### キー入力の検出
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const colorMode = uniform(float(), 'colorMode')
+        // キー入力に応じた色の変更
+        const baseColor = vec3(0.5, 0.5, 0.8)
+        const redBoost = step(0.5, colorMode.x) // 'R'キー
+        const greenBoost = step(0.5, colorMode.y) // 'G'キー
+        const blueBoost = step(0.5, colorMode.z) // 'B'キー
+        const color = vec3(
+                baseColor.r.add(redBoost.mul(0.5)),
+                baseColor.g.add(greenBoost.mul(0.5)),
+                baseColor.b.add(blueBoost.mul(0.5))
+        )
+        // パターンの描画
+        const pattern = sin(pos.x.mul(10)).mul(sin(pos.y.mul(10)))
+        const finalColor = color.mul(pattern)
+        return vec4(finalColor, 1)
+}`}
+/>
+
 ```javascript
+// キーボードイベント
 let pressedKeys = new Set()
 
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const colorMode = uniform('colorMode')
-
-                // キー入力に応じた色の変更
-                const baseColor = vec3(0.5, 0.5, 0.8)
-
-                const redBoost = step(0.5, colorMode.x) // 'R'キー
-                const greenBoost = step(0.5, colorMode.y) // 'G'キー
-                const blueBoost = step(0.5, colorMode.z) // 'B'キー
-
-                const color = vec3(
-                        baseColor.r.add(redBoost.mul(0.5)),
-                        baseColor.g.add(greenBoost.mul(0.5)),
-                        baseColor.b.add(blueBoost.mul(0.5))
-                )
-
-                // パターンの描画
-                const pattern = sin(pos.x.mul(10.0)).mul(sin(pos.y.mul(10.0)))
-                const finalColor = color.mul(pattern.mul(0.5).add(0.5))
-
-                return vec4(finalColor, 1.0)
-        },
-})
-
-// キーボードイベント
 document.addEventListener('keydown', (event) => {
         pressedKeys.add(event.code)
         updateColorMode()
@@ -165,9 +157,9 @@ document.addEventListener('keyup', (event) => {
 
 const updateColorMode = () => {
         const colorMode = [
-                pressedKeys.has('KeyR') ? 1.0 : 0.0,
-                pressedKeys.has('KeyG') ? 1.0 : 0.0,
-                pressedKeys.has('KeyB') ? 1.0 : 0.0,
+                pressedKeys.has('KeyR') ? 1 : 0,
+                pressedKeys.has('KeyG') ? 1 : 0,
+                pressedKeys.has('KeyB') ? 1 : 0,
         ]
         gl.uniform('colorMode', colorMode)
 }
@@ -175,45 +167,45 @@ const updateColorMode = () => {
 
 ### 矢印キーでのパラメータ調整
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime
+        const pos = position
+        const freq = uniform(float(), 'frequency')
+        const amp = uniform(float(), 'amplitude')
+        const speed = uniform(float(), 'speed')
+        // パラメータを使った波のアニメーション
+        const wave = sin(pos.x.mul(freq).add(time.mul(speed))).mul(amp)
+        const color = vec3(wave.add(0.5))
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
 let parameters = {
-        frequency: 5.0,
+        frequency: 5,
         amplitude: 0.5,
-        speed: 1.0,
+        speed: 1,
 }
-
-const gl = createGL({
-        fragment: () => {
-                const time = uniform('iTime')
-                const pos = builtin('position')
-                const freq = uniform('frequency')
-                const amp = uniform('amplitude')
-                const speed = uniform('speed')
-
-                // パラメータを使った波のアニメーション
-                const wave = sin(pos.x.mul(freq).add(time.mul(speed))).mul(amp)
-                const color = vec3(wave.add(0.5))
-
-                return vec4(color, 1.0)
-        },
-})
 
 document.addEventListener('keydown', (event) => {
         switch (event.code) {
                 case 'ArrowUp':
-                        parameters.frequency = Math.min(parameters.frequency + 0.5, 20.0)
+                        parameters.frequency = Math.min(parameters.frequency + 0.5, 20)
                         break
                 case 'ArrowDown':
-                        parameters.frequency = Math.max(parameters.frequency - 0.5, 1.0)
+                        parameters.frequency = Math.max(parameters.frequency - 0.5, 1)
                         break
                 case 'ArrowLeft':
                         parameters.speed = Math.max(parameters.speed - 0.1, 0.1)
                         break
                 case 'ArrowRight':
-                        parameters.speed = Math.min(parameters.speed + 0.1, 5.0)
+                        parameters.speed = Math.min(parameters.speed + 0.1, 5)
                         break
                 case 'Space':
-                        parameters.amplitude = parameters.amplitude === 0.5 ? 1.0 : 0.5
+                        parameters.amplitude = parameters.amplitude === 0.5 ? 1 : 0.5
                         break
         }
 
@@ -228,37 +220,35 @@ document.addEventListener('keydown', (event) => {
 
 ### 基本的なタッチ操作
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const touch1 = uniform(float(), 'touch1')
+        const touch2 = uniform(float(), 'touch2')
+        const touchCount = uniform(float(), 'touchCount')
+        let color = vec3(0.1, 0.1, 0.2) // 背景色
+        // 第1タッチポイント
+        If(touchCount.greaterThan(0.5), () => {
+                const distance1 = length(pos.xy.sub(touch1))
+                const effect1 = smoothstep(0.5, 0, distance1)
+                color.assign(color.add(vec3(effect1, effect1.mul(0.8), effect1.mul(0.6))))
+        })
+        // 第2タッチポイント
+        If(touchCount.greaterThan(1.5), () => {
+                const distance2 = length(pos.xy.sub(touch2))
+                const effect2 = smoothstep(0.5, 0, distance2)
+                color.assign(color.add(vec3(effect2.mul(0.6), effect2, effect2.mul(0.8))))
+        })
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
+// タッチイベント
 let touches = []
 
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const touch1 = uniform('touch1')
-                const touch2 = uniform('touch2')
-                const touchCount = uniform('touchCount')
-
-                let color = vec3(0.1, 0.1, 0.2) // 背景色
-
-                // 第1タッチポイント
-                If(touchCount.greaterThan(0.5), () => {
-                        const distance1 = length(pos.xy.sub(touch1))
-                        const effect1 = smoothstep(0.5, 0.0, distance1)
-                        color.assign(color.add(vec3(effect1, effect1.mul(0.8), effect1.mul(0.6))))
-                })
-
-                // 第2タッチポイント
-                If(touchCount.greaterThan(1.5), () => {
-                        const distance2 = length(pos.xy.sub(touch2))
-                        const effect2 = smoothstep(0.5, 0.0, distance2)
-                        color.assign(color.add(vec3(effect2.mul(0.6), effect2, effect2.mul(0.8))))
-                })
-
-                return vec4(color, 1.0)
-        },
-})
-
-// タッチイベント
 const handleTouches = (event) => {
         const rect = gl.canvas.getBoundingClientRect()
         touches = []
@@ -282,26 +272,25 @@ gl.canvas.addEventListener('touchend', handleTouches)
 
 ### ピンチ操作
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const scale = uniform(float(), 'pinchScale')
+        const center = uniform(float(), 'pinchCenter')
+        // ピンチによるズーム効果
+        const scaledPos = pos.xy.sub(center).mul(scale).add(center)
+        // パターンの描画
+        const pattern = sin(scaledPos.x.mul(8)).mul(sin(scaledPos.y.mul(8)))
+        const color = vec3(pattern)
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
-let pinchDistance = 1.0
+let pinchDistance = 1
 let pinchCenter = [0, 0]
-
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const scale = uniform('pinchScale')
-                const center = uniform('pinchCenter')
-
-                // ピンチによるズーム効果
-                const scaledPos = pos.xy.sub(center).mul(scale).add(center)
-
-                // パターンの描画
-                const pattern = sin(scaledPos.x.mul(8.0)).mul(sin(scaledPos.y.mul(8.0)))
-                const color = vec3(pattern.mul(0.5).add(0.5))
-
-                return vec4(color, 1.0)
-        },
-})
 
 const calculatePinch = (touches) => {
         if (touches.length >= 2) {
@@ -350,30 +339,29 @@ gl.canvas.addEventListener('touchmove', (event) => {
 
 ### 加速度センサー
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const accel = uniform(float(), 'acceleration')
+        // 重力方向による効果
+        const gravity = normalize(accel)
+        const gravityEffect = dot(pos.xy, gravity.xy)
+        // 重力方向にグラデーション
+        const color = vec3(
+                gravityEffect,
+                abs(gravityEffect),
+                oneMinus(gravityEffect)
+        )
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
+// 加速度センサーの使用
 let acceleration = [0, 0, 0]
 
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const accel = uniform('acceleration')
-
-                // 重力方向による効果
-                const gravity = normalize(accel)
-                const gravityEffect = dot(pos.xy, gravity.xy)
-
-                // 重力方向にグラデーション
-                const color = vec3(
-                        gravityEffect.mul(0.5).add(0.5),
-                        abs(gravityEffect),
-                        oneMinus(gravityEffect).mul(0.5).add(0.5)
-                )
-
-                return vec4(color, 1.0)
-        },
-})
-
-// 加速度センサーの使用
 if ('DeviceMotionEvent' in window) {
         window.addEventListener('devicemotion', (event) => {
                 const accel = event.accelerationIncludingGravity
@@ -387,30 +375,28 @@ if ('DeviceMotionEvent' in window) {
 
 ### ジャイロスコープ
 
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const rotation = uniform(float(), 'deviceRotation')
+        // デバイスの回転に応じた座標変換
+        const angle = rotation.z.mul(01) // 角度を調整
+        const cosA = cos(angle)
+        const sinA = sin(angle)
+        const rotatedPos = vec2(pos.x.mul(cosA).sub(pos.y.mul(sinA)), pos.x.mul(sinA).add(pos.y.mul(cosA)))
+        // 回転した座標でのパターン
+        const pattern = sin(rotatedPos.x.mul(10)).mul(sin(rotatedPos.y.mul(10)))
+        const color = vec3(pattern)
+        return vec4(color, 1)
+}`}
+/>
+
 ```javascript
+// ジャイロスコープの使用
 let orientation = [0, 0, 0]
 
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const rotation = uniform('deviceRotation')
-
-                // デバイスの回転に応じた座標変換
-                const angle = rotation.z.mul(0.01) // 角度を調整
-                const cosA = cos(angle)
-                const sinA = sin(angle)
-
-                const rotatedPos = vec2(pos.x.mul(cosA).sub(pos.y.mul(sinA)), pos.x.mul(sinA).add(pos.y.mul(cosA)))
-
-                // 回転した座標でのパターン
-                const pattern = sin(rotatedPos.x.mul(10.0)).mul(sin(rotatedPos.y.mul(10.0)))
-                const color = vec3(pattern.mul(0.5).add(0.5))
-
-                return vec4(color, 1.0)
-        },
-})
-
-// ジャイロスコープの使用
 if ('DeviceOrientationEvent' in window) {
         window.addEventListener('deviceorientation', (event) => {
                 orientation = [
@@ -474,18 +460,37 @@ const gestureRecognizer = new GestureRecognizer()
 // ジェスチャーに応じたエフェクト
 const gl = createGL({
         fragment: () => {
-                const pos = builtin('position')
+                const pos = position
                 const gestureType = uniform('gestureType')
 
                 // ジェスチャーに応じた視覚効果
                 // 実装に応じてカスタマイズ
 
-                return vec4(vec3(0.5), 1.0)
+                return vec4(vec3(0.5), 1)
         },
 })
 ```
 
 ### パーティクルのマウス追従
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = position
+        const particles = uniform(float(), 'particlePositions')
+        let color = vec3(0.05, 0.05, 0.1) // 背景色
+        // パーティクルの描画
+        Loop(25, ({ i }) => {
+                // 50個のパーティクル（x,y で2要素ずつ）
+                const particlePos = vec2(particles[i * 2], particles[i * 2 + 1])
+                const distance = length(pos.xy.sub(particlePos))
+                const particle = smoothstep(0.05, 0, distance)
+                color.assign(color.add(vec3(particle).mul(0.8)))
+        })
+        return vec4(color, 1)
+}`}
+/>
 
 ```javascript
 class ParticleSystem {
@@ -536,28 +541,6 @@ class ParticleSystem {
 }
 
 const particleSystem = new ParticleSystem(50)
-
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-                const particles = uniform('particlePositions')
-
-                let color = vec3(0.05, 0.05, 0.1) // 背景色
-
-                // パーティクルの描画
-                Loop(25, ({ i }) => {
-                        // 50個のパーティクル（x,y で2要素ずつ）
-                        const particlePos = vec2(particles[i * 2], particles[i * 2 + 1])
-
-                        const distance = length(pos.xy.sub(particlePos))
-                        const particle = smoothstep(0.05, 0.0, distance)
-
-                        color.assign(color.add(vec3(particle).mul(0.8)))
-                })
-
-                return vec4(color, 1.0)
-        },
-})
 
 // アニメーションループ
 gl('loop', () => {

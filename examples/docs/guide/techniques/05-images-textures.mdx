@@ -1,0 +1,475 @@
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Images and Textures
+
+外部画像を読み込んで加工する方法と、テクスチャを使った表現技法を学びましょう。
+
+## 画像の読み込み
+
+### 基本的な画像読み込み
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const uv = position.xy.div(iResolution) // 正しいUV座標の計算
+        // テクスチャからピクセル色を取得
+        const textureColor = texture(iTexture, uv)
+        return textureColor
+}`}
+/>
+
+### UV 座標の理解
+
+UV 座標は画像上の位置を表す座標系です：
+
+```
+(0,0) -------- (1,0)
+  |              |
+  |     画像     |
+  |              |
+(0,1) -------- (1,1)
+```
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uvColor = vec4(uv.x, uv.y, 0, 1)
+        return uvColor
+}`}
+/>
+
+## 画像フィルタ
+
+### ぼかし効果
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        
+        // ぼかしフィルタ関数
+        const blurFilter = Fn(([uv, pixelSize, blurRadius]) => {
+                let blurColor = vec4(0)
+                const samples = float(9)
+                // 3x3のサンプリングを展開
+                Loop(9, ({ i }) => {
+                        const row = mod(float(i), float(3))
+                        const col = floor(float(i).div(float(3)))
+                        const offset = vec2(
+                                row.sub(float(1)).mul(pixelSize.x).mul(blurRadius),
+                                col.sub(float(1)).mul(pixelSize.y).mul(blurRadius)
+                        )
+                        const sampleUV = uv.add(offset)
+                        const sampleColor = texture(iTexture, sampleUV)
+                        blurColor.assign(blurColor.add(sampleColor))
+                })
+                // 平均を取る
+                return blurColor.div(samples)
+        })
+        
+        // ピクセルサイズ
+        const pixelSize = vec2(float(1)).div(iResolution)
+        const blurRadius = float(5)
+        // ぼかしフィルタを適用
+        const blurColor = blurFilter(uv, pixelSize, blurRadius)
+        return blurColor
+}`}
+/>
+
+### エッジ検出
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        
+        // エッジ検出フィルタ関数
+        const edgeDetector = Fn(([uv, pixelSize]) => {
+                // Sobelフィルタのカーネル値
+                const sobelXValues = [-1, 0, 1, -2, 0, 2, -1, 0, 1]
+                const sobelYValues = [-1, -2, -1, 0, 0, 0, 1, 2, 1]
+                let gradientX = float(0)
+                let gradientY = float(0)
+                Loop(9, ({ i }) => {
+                        const row = mod(float(i), float(3))
+                        const col = floor(float(i).div(float(3)))
+                        const offset = vec2(
+                                row.sub(float(1)).mul(pixelSize.x),
+                                col.sub(float(1)).mul(pixelSize.y)
+                        )
+                        const sampleColor = texture(iTexture, uv.add(offset))
+                        const luminance = dot(sampleColor.rgb, vec3(0.299, 0.587, 0.114))
+                        gradientX.assign(gradientX.add(luminance.mul(float(sobelXValues[i]))))
+                        gradientY.assign(gradientY.add(luminance.mul(float(sobelYValues[i]))))
+                })
+                return sqrt(gradientX.mul(gradientX).add(gradientY.mul(gradientY)))
+        })
+        
+        const pixelSize = vec2(1).div(iResolution)
+        // エッジ検出を適用
+        const edgeStrength = edgeDetector(uv, pixelSize)
+        return vec4(vec3(edgeStrength), 1)
+}`}
+/>
+
+### セピア調
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const originalColor = texture(iTexture, uv)
+        // セピア調変換行列
+        const sepiaR = originalColor.r
+                .mul(float(0.393))
+                .add(originalColor.g.mul(float(0.769)))
+                .add(originalColor.b.mul(float(0.189)))
+        const sepiaG = originalColor.r
+                .mul(float(0.349))
+                .add(originalColor.g.mul(float(0.686)))
+                .add(originalColor.b.mul(float(0.168)))
+        const sepiaB = originalColor.r
+                .mul(float(0.272))
+                .add(originalColor.g.mul(float(0.534)))
+                .add(originalColor.b.mul(float(0.131)))
+        const sepiaColor = vec4(sepiaR, sepiaG, sepiaB, originalColor.a)
+        return sepiaColor
+}`}
+/>
+
+## テクスチャ座標の操作
+
+### テクスチャの繰り返し
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // 座標を拡大して繰り返し
+        const scale = float(3)
+        const repeatedUV = fract(uv.mul(scale))
+        const textureColor = texture(iTexture, repeatedUV)
+        return textureColor
+}`}
+/>
+
+### テクスチャの回転
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // 中心を原点とした座標(-0.5 to 0.5)
+        const centeredUV = uv.sub(vec2(0.5))
+        // 回転
+        const angle = iTime.mul(float(0.5))
+        const cosA = cos(angle)
+        const sinA = sin(angle)
+        const rotatedUV = vec2(
+                centeredUV.x.mul(cosA).sub(centeredUV.y.mul(sinA)),
+                centeredUV.x.mul(sinA).add(centeredUV.y.mul(cosA))
+        ).add(vec2(0.5))
+        // 範囲外を繰り返しにする
+        const wrappedUV = fract(rotatedUV)
+        const textureColor = texture(iTexture, wrappedUV)
+        return textureColor
+}`}
+/>
+
+### 魚眼レンズ効果
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const radius = length(position.xy)
+        const angle = atan2(position.y, position.x)
+        // 魚眼効果の計算
+        const distortedRadius = radius.mul(radius).mul(float(0.5)).add(radius.mul(float(0.5)))
+        const distortedPos = vec2(cos(angle).mul(distortedRadius), sin(angle).mul(distortedRadius))
+        const uv = distortedPos.div(iResolution)
+        // 範囲外は黒にする
+        const inBounds = step(radius, float(1))
+        const textureColor = texture(iTexture, uv).mul(inBounds)
+        return textureColor
+}`}
+/>
+
+## マルチテクスチャ
+
+### 複数画像の合成
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const texture1 = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const texture2 = uniform('https://picsum.photos/512/512?random=1')
+        const maskTexture = uniform('https://picsum.photos/512/512?random=2')
+        // 複数のテクスチャを読み込み
+        const tex1 = texture(texture1, uv)
+        const tex2 = texture(texture2, uv)
+        const maskTex = texture(maskTexture, uv)
+        // マスクを使った合成
+        const mask = maskTex.r
+        const blendedColor = mix(tex1, tex2, mask)
+        return blendedColor
+}`}
+/>
+
+```javascript
+// JavaScriptでの複数テクスチャの設定例
+gl.texture('texture1', './images/background.jpg')
+gl.texture('texture2', './images/overlay.jpg')
+gl.texture('maskTexture', './images/mask.jpg')
+```
+
+### グラデーションマスク
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const texture1 = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const texture2 = uniform('https://picsum.photos/512/512?random=3')
+        const tex1 = texture(texture1, uv)
+        const tex2 = texture(texture2, uv)
+        // プロシージャルなグラデーションマスク
+        const gradient = uv.x // 左から右へのグラデーション
+        // 滑らかな境界
+        const smoothGradient = smoothstep(0.2, 0.8, gradient)
+        const blendedColor = mix(tex1, tex2, smoothGradient)
+        return blendedColor
+}`}
+/>
+
+## 動的テクスチャ効果
+
+### テクスチャスクロール
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // スクロール速度
+        const scrollSpeed = vec2(float(0.1), float(0.05))
+        // 時間によるオフセット
+        const offset = iTime.mul(scrollSpeed)
+        uv = uv.add(offset)
+        const textureColor = texture(iTexture, fract(uv))
+        return textureColor
+}`}
+/>
+
+### 波打つテクスチャ
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // 波による歪み
+        const waveAmplitude = float(05)
+        const waveFrequency = float(8)
+        const waveSpeed = float(2)
+        const waveX = sin(uv.y.mul(waveFrequency).add(iTime.mul(waveSpeed))).mul(waveAmplitude)
+        const waveY = sin(uv.x.mul(waveFrequency).add(iTime.mul(waveSpeed))).mul(waveAmplitude)
+        uv = uv.add(vec2(waveX, waveY))
+        const textureColor = texture(iTexture, uv)
+        return textureColor
+}`}
+/>
+
+### パーティクルテクスチャ
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://picsum.photos/512/512?random=4')
+        
+        // パーティクル層生成関数
+        const generateParticleLayers = Fn(([uv, time]) => {
+                let finalColor = vec4(0)
+                // 複数のパーティクル層
+                Loop(3, ({ layer }) => {
+                        const layerFloat = float(layer)
+                        // 各層の設定
+                        const scale = layerFloat.add(float(1)).mul(float(2))
+                        const speed = layerFloat.mul(float(0.3)).add(float(0.1))
+                        // スクロール
+                        const scrollOffset = vec2(float(0), time.mul(speed))
+                        let layerUV = uv.mul(scale).add(scrollOffset)
+                        layerUV = fract(layerUV)
+                        // テクスチャサンプリング
+                        const layerColor = texture(iTexture, layerUV)
+                        // ブレンド
+                        const alpha = layerColor.a.mul(float(0.3)).div(layerFloat.add(float(1)))
+                        finalColor.assign(finalColor.add(layerColor.mul(alpha)))
+                })
+                return finalColor
+        })
+        
+        // パーティクル層を生成
+        const finalColor = generateParticleLayers(uv, iTime)
+        return finalColor
+}`}
+/>
+
+## テクスチャ作成技法
+
+### プロシージャルテクスチャ
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // 木目調パターン
+        const rings = sin(length(uv.sub(0.5)).mul(50))
+                .mul(0.5)
+                .add(0.5)
+        const grain = sin(uv.x.mul(200)).mul(sin(uv.y.mul(180)))
+        const woodPattern = rings.add(grain.mul(0.1))
+        // 木の色調
+        const woodColor = vec3(0.6, 0.4, 0.2).mul(woodPattern)
+        return vec4(woodColor, 1)
+}`}
+/>
+
+### ノイズテクスチャ
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // 簡単なノイズ関数
+        const noise = Fn(([uv]) => {
+                return fract(sin(dot(uv, vec2(12.9898, 78.233))).mul(43758.5453))
+        })
+        
+        // マルチオクターブノイズ生成関数
+        const generateMultiOctaveNoise = Fn(([uv]) => {
+                let noiseValue = float(0)
+                let amplitude = float(0.5)
+                let frequency = float(2)
+                Loop(6, ({ i }) => {
+                        noiseValue.assign(noiseValue.add(noise(uv.mul(frequency)).mul(amplitude)))
+                        amplitude.assign(amplitude.mul(0.5))
+                        frequency.assign(frequency.mul(2))
+                })
+                return noiseValue
+        })
+        
+        // マルチオクターブノイズを生成
+        const noiseValue = generateMultiOctaveNoise(uv)
+        const color = vec3(noiseValue)
+        return vec4(color, 1)
+}`}
+/>
+
+## パフォーマンス最適化
+
+### テクスチャ圧縮
+
+```javascript
+// 複数のテクスチャ品質を用意
+const loadOptimizedTexture = (name, basePath) => {
+        // デバイスの性能に応じて画質を選択
+        const isHighEnd = navigator.hardwareConcurrency > 4
+        const quality = isHighEnd ? 'high' : 'medium'
+
+        gl.texture(name, `${basePath}_${quality}.jpg`)
+}
+
+loadOptimizedTexture('mainTexture', './images/background')
+```
+
+### ミップマップの活用
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // 距離に応じたLOD
+        const distance = length(position.xy)
+        const lod = distance.mul(3)
+        // ミップマップレベルを指定してサンプリング
+        const textureColor = texture(iTexture, uv, lod)
+        return textureColor
+}`}
+/>
+
+## 実践課題
+
+### 課題 1: フォトフィルタ
+
+Instagram 風のフィルタ効果を複数作成してください。
+
+### 課題 2: テクスチャアニメーション
+
+複数のテクスチャを使って、映画のクレジットロール風のアニメーションを作成してください。
+
+### 課題 3: インタラクティブ画像処理
+
+マウスの位置に応じて画像フィルタの強度が変化するエフェクトを作成してください。
+
+## よくある問題と解決策
+
+### 画像が表示されない
+
+```javascript
+// 画像の読み込み完了を待つ
+gl.texture('mainTexture', './images/sample.jpg')
+        .then(() => {
+                console.log('テクスチャの読み込み完了')
+        })
+        .catch((error) => {
+                console.error('テクスチャの読み込み失敗:', error)
+        })
+```
+
+### UV 座標が期待通りでない
+
+```javascript
+// UV座標のデバッグ表示
+const debugUV = () => {
+        // UV座標を色で表示
+        return vec4(uv.x, uv.y, 0, 1)
+}
+```
+
+### テクスチャがぼやける
+
+```javascript
+// テクスチャフィルタリングの設定
+gl.texture('mainTexture', './images/sample.jpg', {
+        minFilter: 'nearest', // ピクセルアート用
+        magFilter: 'nearest',
+})
+```
+
+## 次のステップ
+
+画像とテクスチャの操作をマスターしたら、次は[インタラクティブな表現](06-interactive-effects.md)で、ユーザー操作に反応するエフェクトを学びましょう。
+
+このチュートリアルで学んだこと：
+
+- ✅ 画像の読み込みと UV 座標
+- ✅ 画像フィルタ（ぼかし、エッジ検出、セピア）
+- ✅ テクスチャ座標の操作
+- ✅ マルチテクスチャ合成
+- ✅ 動的テクスチャ効果
+- ✅ プロシージャルテクスチャ作成
+
+次の章では、マウスやキーボードの操作に反応するインタラクティブなビジュアル表現を学習します。

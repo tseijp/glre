@@ -49,7 +49,8 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
         if (type === 'function') {
-                if (x === 'negate') return `(-${parseArray(children.slice(1), c)})`
+                if (x === 'negate') return `(-${code(y, c)})`
+                if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 return `${x}(${parseArray(children.slice(1), c)})`
         }

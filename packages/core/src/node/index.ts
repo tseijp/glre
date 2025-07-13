@@ -196,6 +196,7 @@ export const reflect = <T extends C>(I: X<T>, N: X) => f<T>('reflect', I, N)
 export const refract = <T extends C>(I: X<T>, N: X, eta: X) => f<T>('refract', I, N, eta)
 
 // Functions with highest priority type among arguments (using first arg for simplicity)
+export const mod = <T extends C>(x: X<T>, y: X) => f<T>('mod', x, y)
 export const min = <T extends C>(x: X<T>, y: X) => f<T>('min', x, y)
 export const max = <T extends C>(x: X<T>, y: X) => f<T>('max', x, y)
 export const mix = <T extends C>(x: X<T>, y: X, a: X) => f<T>('mix', x, y, a)
@@ -204,7 +205,7 @@ export const step = <T extends C>(edge: X, x: X<T>) => f<T>('step', edge, x)
 export const smoothstep = <T extends C>(e0: X, e1: X, x: X<T>) => f<T>('smoothstep', e0, e1, x)
 
 // Two-argument functions with highest priority type
-export const atan2 = <T extends C>(y: X<T>, x: X) => f<T>('atan2', y, x)
+export const atan2 = <T extends C>(y: X<T>, x: X) => f<T>('atan', y, x)
 export const pow = <T extends C>(x: X<T>, y: X) => f<T>('pow', x, y)
 
 // Component-wise power functions
@@ -219,3 +220,4 @@ export const difference = <T extends C>(x: X<T>, y: X) => f<T>('difference', x, 
 export const equals = (x: X, y: X) => f<'bool'>('equals', x, y)
 export const faceforward = <T extends C>(N: X<T>, I: X, Nref: X) => f<T>('faceforward', N, I, Nref)
 export const transformDirection = <T extends C>(dir: X<T>, matrix: X) => f<T>('transformDirection', dir, matrix)
+export const PI = float(3.14)

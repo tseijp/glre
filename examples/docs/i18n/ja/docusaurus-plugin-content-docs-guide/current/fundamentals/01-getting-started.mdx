@@ -1,5 +1,7 @@
 # 基本概念とセットアップ
 
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
 GLRE を使ったビジュアルプログラミングの世界へようこそ！
 
 ## GLRE とは
@@ -71,16 +73,7 @@ console.log('GLRE が正常に動作しています！')
 
 まずは画面全体を好きな色で塗りつぶしてみましょう。
 
-```javascript
-import { createGL, vec4 } from 'glre'
-
-// 青い画面を作成
-const gl = createGL({
-        fragment: () => {
-                return vec4(0.2, 0.4, 0.8, 1.0) // 青色 (R, G, B, A)
-        },
-})
-```
+<FragmentEditor code="vec4(0.2, 0.4, 0.8, 1.0)" />
 
 ### 色の指定方法
 

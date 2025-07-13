@@ -1,5 +1,7 @@
 # Getting Started
 
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
 Welcome to visual programming with GLRE!
 
 ## What is GLRE?
@@ -47,52 +49,30 @@ You can create beautiful visual effects with just programming knowledge - no nee
 </html>
 ```
 
-### NPM Project Setup
-
-```bash
-# Create project
-npm init -y
-npm install glre
-
-# TypeScript environment (recommended)
-npm install -D typescript @types/node
-```
-
-```javascript
-// main.js
-import { createGL } from 'glre'
-
-const gl = createGL()
-console.log('GLRE is working!')
-```
-
 ## Your First Visual
 
 ### Solid Color Screen
 
 Let's start by filling the entire screen with your favorite color.
 
-```javascript
-import { createGL, vec4 } from 'glre'
-
-// Create a blue screen
-const gl = createGL({
-        fragment: () => {
-                return vec4(0.2, 0.4, 0.8, 1.0) // Blue color (R, G, B, A)
-        },
-})
-```
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        return vec4(0.2, 0.4, 0.8, 1)
+}`}
+/>
 
 ### Understanding Colors
 
 Colors are specified using four numbers (RGBA):
 
-| Component     | Meaning        | Range     | Example                |
-| ------------- | -------------- | --------- | ---------------------- |
-| **R (Red)**   | How much red   | 0.0 - 1.0 | 1.0 = bright red       |
-| **G (Green)** | How much green | 0.0 - 1.0 | 1.0 = bright green     |
-| **B (Blue)**  | How much blue  | 0.0 - 1.0 | 1.0 = bright blue      |
-| **A (Alpha)** | Transparency   | 0.0 - 1.0 | 1.0 = completely solid |
+| Component     | Meaning        | Range | Example              |
+| ------------- | -------------- | ----- | -------------------- |
+| **R (Red)**   | How much red   | 0 - 1 | 1 = bright red       |
+| **G (Green)** | How much green | 0 - 1 | 1 = bright green     |
+| **B (Blue)**  | How much blue  | 0 - 1 | 1 = bright blue      |
+| **A (Alpha)** | Transparency   | 0 - 1 | 1 = completely solid |
 
 Think of it like mixing paint:
 
@@ -117,26 +97,21 @@ const colors = {
 
 Let's make colors change across the screen based on position.
 
-```javascript
-const gl = createGL({
-        fragment: () => {
-                // Get screen coordinates (from -1 to 1)
-                const position = builtin('position')
-
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
                 // Use X coordinate to change color
-                const x = position.x
-                const color = vec4(x.mul(0.5).add(0.5), 0.2, 0.8, 1.0)
-
-                return color
-        },
-})
-```
+                const x = uv.x
+                return vec4(x, 0.4, 0.8, 1)
+}`}
+/>
 
 In this example:
 
-- `position.x` gets the horizontal position on screen
-- Left edge is -1, right edge is 1
-- `mul(0.5).add(0.5)` converts -1→1 range to 0→1 range
+- `uv.x` gets the horizontal position on screen (0-1 range)
+- Left edge is 0, right edge is 1
+- The color changes smoothly from left to right
 
 ## Understanding Coordinates
 
@@ -145,37 +120,32 @@ In this example:
 GLRE uses this coordinate system:
 
 ```
-     (-1, 1) -------- (1, 1)
+     (0, 1) -------- (1, 1)
         |              |
         |    Screen    |
         |              |
-     (-1, -1) ------- (1, -1)
+     (0, 0) -------- (1, 0)
 ```
 
 Think of it like a map:
 
-- Center of screen is (0, 0)
-- Left and right edges are -1 and 1
-- Top and bottom edges are 1 and -1
+- Left edge is 0, right edge is 1
+- Bottom edge is 0, top edge is 1
 
 ### Using Position
 
-```javascript
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-
-                // Get coordinate components
-                const x = pos.x // Horizontal position
-                const y = pos.y // Vertical position
-
-                // Distance from center
-                const distance = length(vec2(x, y))
-
-                return vec4(distance, distance, distance, 1.0)
-        },
-})
-```
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Get coordinate components
+        const x = uv.x // Horizontal position
+        const y = uv.y // Vertical position
+        // Distance from left bottom
+        const distance = length(vec2(x, y))
+        return vec4(vec3(distance), 1)
+}`}
+/>
 
 ### Working with Vectors
 
@@ -188,13 +158,13 @@ const x_component = point2D.x
 const y_component = point2D.y
 
 // 3D vector (like RGB color)
-const point3D = vec3(1.0, 0.5, 0.2)
+const point3D = vec3(1, 0.5, 0.2)
 const red = point3D.x // or point3D.r
 const green = point3D.y // or point3D.g
 const blue = point3D.z // or point3D.b
 
 // 4D vector (RGBA color)
-const color = vec4(0.8, 0.2, 0.6, 1.0)
+const color = vec4(0.8, 0.2, 0.6, 1)
 const rgb = color.xyz // First 3 components
 const alpha = color.w // Transparency
 ```
@@ -205,12 +175,12 @@ const alpha = color.w // Transparency
 
 ```javascript
 // Addition
-const a = float(2.0)
-const b = float(3.0)
-const sum = a.add(b) // 2.0 + 3.0 = 5.0
+const a = float(2)
+const b = float(3)
+const sum = a.add(b) // 2 + 3 = 5
 
 // Multiplication
-const doubled = a.mul(2) // 2.0 * 2 = 4.0
+const doubled = a.mul(2) // 2 * 2 = 4
 
 // Sine wave (creates smooth up-and-down motion)
 const wave = sin(a) // Creates values between -1 and 1
@@ -231,42 +201,34 @@ This creates smooth, repeating motion perfect for animation.
 
 ### Rainbow Gradient
 
-```javascript
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-
-                // Convert X coordinate to 0-1 range
-                const x = pos.x.mul(0.5).add(0.5)
-
-                // Create rainbow colors using sine waves
-                const r = sin(x.mul(6.28)).mul(0.5).add(0.5)
-                const g = sin(x.mul(6.28).add(2.09)).mul(0.5).add(0.5)
-                const b = sin(x.mul(6.28).add(4.18)).mul(0.5).add(0.5)
-
-                return vec4(r, g, b, 1.0)
-        },
-})
-```
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Use X coordinate (already 0-1 range)
+        const x = uv.x
+        // Create rainbow colors using sine waves
+        const r = sin(x.mul(6))
+        const g = sin(x.mul(6).add(2))
+        const b = sin(x.mul(6).add(4))
+        return vec4(r, g, b, 1)
+}`}
+/>
 
 ### Radial Gradient
 
-```javascript
-const gl = createGL({
-        fragment: () => {
-                const pos = builtin('position')
-
-                // Distance from center
-                const distance = length(pos.xy)
-
-                // Change color based on distance
-                const intensity = distance
-                const color = vec3(intensity, intensity.mul(0.5), intensity.mul(0.2))
-
-                return vec4(color, 1.0)
-        },
-})
-```
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Distance from center
+        const distance = length(uv.sub(0.5))
+        // Change color based on distance
+        const intensity = distance
+        const color = vec3(intensity, intensity.mul(0.5), intensity.mul(0.2))
+        return vec4(color, 1)
+}`}
+/>
 
 ## Common Issues and Solutions
 
