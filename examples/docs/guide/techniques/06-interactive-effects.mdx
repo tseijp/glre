@@ -1,623 +1,378 @@
 # Interactive Effects
 
-import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+import Tabs from '@theme/Tabs'
+import TabItem from '@theme/TabItem'
 
 マウスやキーボードの操作に反応するビジュアル表現を作成しましょう。
 
-## マウス操作の基本
+## インタラクション基礎
 
-### マウス座標の取得
+<Tabs>
+<TabItem value="mouse" label="マウス操作">
 
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
+```jsx live
+function Canvas() {
         // マウス位置からの距離
         const distance = length(uv.sub(iMouse.add(0.5)))
-        // 距離に応じた色
-        const intensity = oneMinus(distance)
+        // クリック状態
+        const clicking = uniform(0, 'isClicking')
+        // 距離に応じた色（クリック時強化）
+        const intensity = oneMinus(distance).mul(clicking.add(1))
         const color = vec3(intensity, intensity.mul(0.8), intensity.mul(1.2))
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-// マウス移動イベントの設定
-gl('mousemove', (event, x, y) => {
-        const [width, height] = gl.size
-
-        // 画面座標を -1～1 に正規化
-        const normalizedX = (x / width) * 2 - 1
-        const normalizedY = -((y / height) * 2 - 1) // Y軸を反転
-
-        gl.uniform('iMouse', [normalizedX, normalizedY])
-})
+        
+        const gl = useGL({
+                width: 512,
+                height: 512,
+                frag: vec4(color, 1),
+                mount: () => {
+                        let isClicking = false
+                        
+                        gl('mousemove', (event, x, y) => {
+                                const [width, height] = gl.size
+                                const normalizedX = (x / width) * 2 - 1
+                                const normalizedY = -((y / height) * 2 - 1)
+                                gl.uniform('iMouse', [normalizedX, normalizedY])
+                        })
+                        
+                        gl('mousedown', () => {
+                                isClicking = true
+                                gl.uniform('isClicking', 1)
+                        })
+                        
+                        gl('mouseup', () => {
+                                isClicking = false
+                                gl.uniform('isClicking', 0)
+                        })
+                }
+        })
+        
+        return <canvas ref={gl.ref} />
+}
 ```
 
-### マウスクリックの検出
+</TabItem>
+<TabItem value="keyboard" label="キーボード操作">
 
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const clicking = uniform(float(), 'isClicking')
-        const distance = length(pos.xy.sub(iMouse))
-        // クリック時に効果を強化
-        const baseIntensity = oneMinus(distance)
-        const clickMultiplier = clicking.mul(2).add(1)
-        const intensity = baseIntensity.mul(clickMultiplier)
-        const color = vec3(intensity, intensity.mul(0.6), intensity.mul(0.4))
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-// マウスイベントの設定
-let isClicking = false
-
-gl('mousedown', () => {
-        isClicking = true
-        gl.uniform('isClicking', 1)
-})
-
-gl('mouseup', () => {
-        isClicking = false
-        gl.uniform('isClicking', 0)
-})
-```
-
-### ドラッグ操作
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const dragVector = uniform(float(), 'dragVector')
-        // ドラッグベクトルによる歪み
-        const distortion = dragVector.mul(0.5)
-        const distortedPos = pos.xy.add(distortion)
-        // 歪んだ座標でのパターン
-        const pattern = sin(distortedPos.x.mul(8)).mul(sin(distortedPos.y.mul(8)))
-        const color = vec3(pattern)
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-let isDragging = false
-let dragStart = [0, 0]
-let dragCurrent = [0, 0]
-
-gl('mousedown', (event, x, y) => {
-        isDragging = true
-        const [width, height] = gl.size
-        dragStart = [(x / width) * 2 - 1, -((y / height) * 2 - 1)]
-        dragCurrent = [...dragStart]
-})
-
-gl('mousemove', (event, x, y) => {
-        if (isDragging) {
-                const [width, height] = gl.size
-                dragCurrent = [(x / width) * 2 - 1, -((y / height) * 2 - 1)]
-
-                const dragVector = [dragCurrent[0] - dragStart[0], dragCurrent[1] - dragStart[1]]
-
-                gl.uniform(dragVector, 'dragVector')
-        }
-})
-
-gl('mouseup', () => {
-        isDragging = false
-        gl.uniform('dragVector', [0, 0])
-})
-```
-
-## キーボード操作
-
-### キー入力の検出
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const colorMode = uniform(float(), 'colorMode')
+```jsx live
+function Canvas() {
+        const colorMode = uniform(vec3(0), 'colorMode')
+        const frequency = uniform(5, 'frequency')
+        
         // キー入力に応じた色の変更
-        const baseColor = vec3(0.5, 0.5, 0.8)
+        const baseColor = vec3(0.3, 0.3, 0.5)
         const redBoost = step(0.5, colorMode.x) // 'R'キー
         const greenBoost = step(0.5, colorMode.y) // 'G'キー
         const blueBoost = step(0.5, colorMode.z) // 'B'キー
+        
         const color = vec3(
-                baseColor.r.add(redBoost.mul(0.5)),
-                baseColor.g.add(greenBoost.mul(0.5)),
-                baseColor.b.add(blueBoost.mul(0.5))
+                baseColor.r.add(redBoost.mul(0.7)),
+                baseColor.g.add(greenBoost.mul(0.7)),
+                baseColor.b.add(blueBoost.mul(0.7))
         )
-        // パターンの描画
-        const pattern = sin(pos.x.mul(10)).mul(sin(pos.y.mul(10)))
-        const finalColor = color.mul(pattern)
-        return vec4(finalColor, 1)
-}`}
-/>
-
-```javascript
-// キーボードイベント
-let pressedKeys = new Set()
-
-document.addEventListener('keydown', (event) => {
-        pressedKeys.add(event.code)
-        updateColorMode()
-})
-
-document.addEventListener('keyup', (event) => {
-        pressedKeys.delete(event.code)
-        updateColorMode()
-})
-
-const updateColorMode = () => {
-        const colorMode = [
-                pressedKeys.has('KeyR') ? 1 : 0,
-                pressedKeys.has('KeyG') ? 1 : 0,
-                pressedKeys.has('KeyB') ? 1 : 0,
-        ]
-        gl.uniform('colorMode', colorMode)
-}
-```
-
-### 矢印キーでのパラメータ調整
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime
-        const pos = position
-        const freq = uniform(float(), 'frequency')
-        const amp = uniform(float(), 'amplitude')
-        const speed = uniform(float(), 'speed')
-        // パラメータを使った波のアニメーション
-        const wave = sin(pos.x.mul(freq).add(time.mul(speed))).mul(amp)
-        const color = vec3(wave.add(0.5))
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-let parameters = {
-        frequency: 5,
-        amplitude: 0.5,
-        speed: 1,
-}
-
-document.addEventListener('keydown', (event) => {
-        switch (event.code) {
-                case 'ArrowUp':
-                        parameters.frequency = Math.min(parameters.frequency + 0.5, 20)
-                        break
-                case 'ArrowDown':
-                        parameters.frequency = Math.max(parameters.frequency - 0.5, 1)
-                        break
-                case 'ArrowLeft':
-                        parameters.speed = Math.max(parameters.speed - 0.1, 0.1)
-                        break
-                case 'ArrowRight':
-                        parameters.speed = Math.min(parameters.speed + 0.1, 5)
-                        break
-                case 'Space':
-                        parameters.amplitude = parameters.amplitude === 0.5 ? 1 : 0.5
-                        break
-        }
-
-        // パラメータを更新
-        gl.uniform('frequency', parameters.frequency)
-        gl.uniform('amplitude', parameters.amplitude)
-        gl.uniform('speed', parameters.speed)
-})
-```
-
-## タッチ操作（モバイル対応）
-
-### 基本的なタッチ操作
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const touch1 = uniform(float(), 'touch1')
-        const touch2 = uniform(float(), 'touch2')
-        const touchCount = uniform(float(), 'touchCount')
-        let color = vec3(0.1, 0.1, 0.2) // 背景色
-        // 第1タッチポイント
-        If(touchCount.greaterThan(0.5), () => {
-                const distance1 = length(pos.xy.sub(touch1))
-                const effect1 = smoothstep(0.5, 0, distance1)
-                color.assign(color.add(vec3(effect1, effect1.mul(0.8), effect1.mul(0.6))))
+        
+        // パターンの描画（矢印キーで周波数調整）
+        const pattern = sin(position.x.mul(frequency)).mul(sin(position.y.mul(frequency)))
+        const finalColor = color.mul(pattern.add(0.5))
+        
+        const gl = useGL({
+                width: 512,
+                height: 512,
+                frag: vec4(finalColor, 1)
         })
-        // 第2タッチポイント
-        If(touchCount.greaterThan(1.5), () => {
-                const distance2 = length(pos.xy.sub(touch2))
-                const effect2 = smoothstep(0.5, 0, distance2)
-                color.assign(color.add(vec3(effect2.mul(0.6), effect2, effect2.mul(0.8))))
-        })
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-// タッチイベント
-let touches = []
-
-const handleTouches = (event) => {
-        const rect = gl.canvas.getBoundingClientRect()
-        touches = []
-
-        for (let i = 0; i < event.touches.length && i < 2; i++) {
-                const touch = event.touches[i]
-                const x = ((touch.clientX - rect.left) / rect.width) * 2 - 1
-                const y = -(((touch.clientY - rect.top) / rect.height) * 2 - 1)
-                touches.push([x, y])
+        
+        // regeのuseKeyを使用
+        let pressedKeys = new Set()
+        let currentFreq = 5
+        
+        const updateUniforms = () => {
+                const colorMode = [
+                        pressedKeys.has('KeyR') ? 1 : 0,
+                        pressedKeys.has('KeyG') ? 1 : 0,
+                        pressedKeys.has('KeyB') ? 1 : 0,
+                ]
+                gl.uniform('colorMode', colorMode)
+                gl.uniform('frequency', currentFreq)
         }
-
-        gl.uniform('touchCount', touches.length)
-        gl.uniform('touch1', touches[0] || [0, 0])
-        gl.uniform('touch2', touches[1] || [0, 0])
+        
+        const keyState = useKey((state) => {
+                if (state.event && state.event.type === 'keydown') {
+                        pressedKeys.add(state.code)
+                        
+                        // 矢印キーで周波数調整
+                        if (state.code === 'ArrowUp') {
+                                currentFreq = Math.min(currentFreq + 1, 20)
+                        }
+                        if (state.code === 'ArrowDown') {
+                                currentFreq = Math.max(currentFreq - 1, 1)
+                        }
+                        
+                        updateUniforms()
+                }
+        })
+        
+        return <canvas ref={(el) => {
+                gl.ref(el)
+                keyState.ref(el)
+        }} />
 }
-
-gl.canvas.addEventListener('touchstart', handleTouches)
-gl.canvas.addEventListener('touchmove', handleTouches)
-gl.canvas.addEventListener('touchend', handleTouches)
 ```
 
-### ピンチ操作
+</TabItem>
+<TabItem value="drag" label="ドラッグ操作">
 
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const scale = uniform(float(), 'pinchScale')
-        const center = uniform(float(), 'pinchCenter')
+```jsx live
+function Canvas() {
+        const dragVector = uniform(vec2(0), 'dragVector')
+        const isDragging = uniform(0, 'isDragging')
+        
+        // ドラッグベクトルによる歪み
+        const distortion = dragVector.mul(0.8)
+        const distortedPos = position.xy.add(distortion)
+        
+        // 歪んだ座標でのパターン
+        const pattern1 = sin(distortedPos.x.mul(8))
+        const pattern2 = sin(distortedPos.y.mul(8))
+        const finalPattern = pattern1.mul(pattern2)
+        
+        // ドラッグの強度と状態で色を変化
+        const dragStrength = length(dragVector)
+        const dragEffect = isDragging.mul(0.5).add(1)
+        const color = vec3(
+                finalPattern.add(0.5).mul(dragEffect),
+                finalPattern.add(0.5).mul(oneMinus(dragStrength)).mul(dragEffect),
+                oneMinus(finalPattern.add(0.5)).mul(dragStrength.add(0.3)).mul(dragEffect)
+        )
+        
+        const gl = useGL({
+                width: 512,
+                height: 512,
+                frag: vec4(color, 1)
+        })
+        
+        // regeのuseDragを使用（マウス＋タッチ自動対応）
+        const dragState = useDrag((state) => {
+                if (state.isDragStart) {
+                        gl.uniform('isDragging', 1)
+                } else if (state.isDragging) {
+                        // state.movement は累積的な移動量
+                        const [width, height] = gl.size
+                        const movement = state.movement || [0, 0]
+                        const normalizedMovement = [
+                                (movement[0] / width) * 4, // 感度調整
+                                -(movement[1] / height) * 4
+                        ]
+                        gl.uniform('dragVector', normalizedMovement)
+                } else if (state.isDragEnd) {
+                        gl.uniform('isDragging', 0)
+                        gl.uniform('dragVector', [0, 0])
+                }
+        })
+        
+        return <canvas ref={(el) => {
+                gl.ref(el)
+                dragState.ref(el)
+        }} />
+}
+```
+
+</TabItem>
+</Tabs>
+
+## 応用インタラクション
+
+<Tabs>
+<TabItem value="touch" label="タッチ操作">
+
+```jsx live
+function Canvas() {
+        const pinchCenter = uniform(vec2(0), 'pinchCenter')
+        const pinchScale = uniform(1, 'pinchScale')
+        const isActive = uniform(0, 'isActive')
+        
         // ピンチによるズーム効果
-        const scaledPos = pos.xy.sub(center).mul(scale).add(center)
+        const scaledPos = position.xy.sub(pinchCenter).mul(pinchScale).add(pinchCenter)
+        
         // パターンの描画
         const pattern = sin(scaledPos.x.mul(8)).mul(sin(scaledPos.y.mul(8)))
-        const color = vec3(pattern)
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-let pinchDistance = 1
-let pinchCenter = [0, 0]
-
-const calculatePinch = (touches) => {
-        if (touches.length >= 2) {
-                const touch1 = touches[0]
-                const touch2 = touches[1]
-
-                // 距離の計算
-                const dx = touch2[0] - touch1[0]
-                const dy = touch2[1] - touch1[1]
-                const distance = Math.sqrt(dx * dx + dy * dy)
-
-                // 中心点の計算
-                const centerX = (touch1[0] + touch2[0]) / 2
-                const centerY = (touch1[1] + touch2[1]) / 2
-
-                return { distance, center: [centerX, centerY] }
-        }
-
-        return null
+        
+        // ピンチアクティブ時の色変化
+        const activeEffect = isActive.mul(0.5).add(1)
+        const color = vec3(
+                pattern.add(0.5).mul(activeEffect),
+                pattern.add(0.5).mul(0.8).mul(activeEffect),
+                oneMinus(pattern.add(0.5)).mul(activeEffect)
+        )
+        
+        const gl = useGL({
+                width: 512,
+                height: 512,
+                frag: vec4(color, 1)
+        })
+        
+        // regeのusePinchを使用（マルチタッチ対応）
+        const pinchState = usePinch((state) => {
+                if (state.isPinchStart) {
+                        gl.uniform('isActive', 1)
+                        const [width, height] = gl.size
+                        const value = state.value || [0, 0]
+                        const center = [
+                                (value[0] / width) * 2 - 1,
+                                -(value[1] / height) * 2 - 1
+                        ]
+                        gl.uniform('pinchCenter', center)
+                } else if (state.isPinching) {
+                        // state.scale は2要素配列 [scaleX, scaleY]
+                        const scale = state.scale || [1, 1]
+                        const scaleValue = Math.min(scale[0], scale[1])
+                        gl.uniform('pinchScale', Math.max(0.5, Math.min(3.0, scaleValue)))
+                        
+                        const [width, height] = gl.size
+                        const value = state.value || [0, 0]
+                        const center = [
+                                (value[0] / width) * 2 - 1,
+                                -(value[1] / height) * 2 - 1
+                        ]
+                        gl.uniform('pinchCenter', center)
+                } else if (state.isPinchEnd) {
+                        gl.uniform('isActive', 0)
+                        gl.uniform('pinchScale', 1)
+                        gl.uniform('pinchCenter', [0, 0])
+                }
+        })
+        
+        return <canvas ref={(el) => {
+                gl.ref(el)
+                pinchState.ref(el)
+        }} />
 }
-
-let initialPinch = null
-
-gl.canvas.addEventListener('touchstart', (event) => {
-        if (event.touches.length === 2) {
-                const pinch = calculatePinch(touches)
-                if (pinch) {
-                        initialPinch = pinch
-                }
-        }
-})
-
-gl.canvas.addEventListener('touchmove', (event) => {
-        if (event.touches.length === 2 && initialPinch) {
-                const currentPinch = calculatePinch(touches)
-                if (currentPinch) {
-                        const scale = currentPinch.distance / initialPinch.distance
-                        gl.uniform('pinchScale', scale)
-                        gl.uniform('pinchCenter', currentPinch.center)
-                }
-        }
-})
 ```
 
-## デバイスセンサー
+</TabItem>
+<TabItem value="sensor" label="デバイスセンサー">
 
-### 加速度センサー
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const accel = uniform(float(), 'acceleration')
+```jsx live
+function Canvas() {
+        const accel = uniform(vec3(0, -1, 0), 'acceleration')
+        const rotation = uniform(0, 'rotation')
+        
         // 重力方向による効果
         const gravity = normalize(accel)
-        const gravityEffect = dot(pos.xy, gravity.xy)
-        // 重力方向にグラデーション
-        const color = vec3(
-                gravityEffect,
-                abs(gravityEffect),
-                oneMinus(gravityEffect)
-        )
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-// 加速度センサーの使用
-let acceleration = [0, 0, 0]
-
-if ('DeviceMotionEvent' in window) {
-        window.addEventListener('devicemotion', (event) => {
-                const accel = event.accelerationIncludingGravity
-                if (accel) {
-                        acceleration = [accel.x || 0, accel.y || 0, accel.z || 0]
-                        gl.uniform('acceleration', acceleration)
-                }
-        })
-}
-```
-
-### ジャイロスコープ
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const rotation = uniform(float(), 'deviceRotation')
-        // デバイスの回転に応じた座標変換
-        const angle = rotation.z.mul(01) // 角度を調整
+        const gravityEffect = dot(position.xy, gravity.xy)
+        
+        // デバイス回転による座標変換
+        const angle = rotation.mul(0.01)
         const cosA = cos(angle)
         const sinA = sin(angle)
-        const rotatedPos = vec2(pos.x.mul(cosA).sub(pos.y.mul(sinA)), pos.x.mul(sinA).add(pos.y.mul(cosA)))
-        // 回転した座標でのパターン
-        const pattern = sin(rotatedPos.x.mul(10)).mul(sin(rotatedPos.y.mul(10)))
-        const color = vec3(pattern)
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-// ジャイロスコープの使用
-let orientation = [0, 0, 0]
-
-if ('DeviceOrientationEvent' in window) {
-        window.addEventListener('deviceorientation', (event) => {
-                orientation = [
-                        event.alpha || 0, // Z軸周りの回転
-                        event.beta || 0, // X軸周りの回転
-                        event.gamma || 0, // Y軸周りの回転
-                ]
-                gl.uniform('deviceRotation', orientation)
-        })
-}
-```
-
-## 高度なインタラクション
-
-### マルチタッチジェスチャー
-
-```javascript
-class GestureRecognizer {
-        constructor() {
-                this.touches = new Map()
-                this.gestures = []
-        }
-
-        addTouch(id, x, y) {
-                this.touches.set(id, { x, y, startTime: Date.now() })
-        }
-
-        updateTouch(id, x, y) {
-                if (this.touches.has(id)) {
-                        const touch = this.touches.get(id)
-                        touch.x = x
-                        touch.y = y
-                }
-        }
-
-        removeTouch(id) {
-                this.touches.delete(id)
-        }
-
-        detectSwipe() {
-                // スワイプジェスチャーの検出ロジック
-                for (const [id, touch] of this.touches) {
-                        const duration = Date.now() - touch.startTime
-                        if (duration > 100 && duration < 500) {
-                                // スワイプ判定
-                                return { type: 'swipe', direction: this.getSwipeDirection(touch) }
+        const rotatedPos = vec2(
+                position.x.mul(cosA).sub(position.y.mul(sinA)),
+                position.x.mul(sinA).add(position.y.mul(cosA))
+        )
+        
+        // 重力とパターンの組み合わせ
+        const pattern = sin(rotatedPos.x.mul(8)).mul(sin(rotatedPos.y.mul(8)))
+        const color = vec3(
+                gravityEffect.add(0.5).mul(pattern.add(0.5)),
+                abs(gravityEffect).mul(pattern.add(0.5)),
+                oneMinus(gravityEffect).add(0.5).mul(pattern.add(0.5))
+        )
+        
+        const gl = useGL({
+                width: 512,
+                height: 512,
+                frag: vec4(color, 1),
+                mount: () => {
+                        // 加速度センサー
+                        if ('DeviceMotionEvent' in window) {
+                                window.addEventListener('devicemotion', (event) => {
+                                        const accel = event.accelerationIncludingGravity
+                                        if (accel) {
+                                                gl.uniform('acceleration', [accel.x || 0, accel.y || -1, accel.z || 0])
+                                        }
+                                })
+                        }
+                        
+                        // ジャイロスコープ
+                        if ('DeviceOrientationEvent' in window) {
+                                window.addEventListener('deviceorientation', (event) => {
+                                        gl.uniform('rotation', event.gamma || 0)
+                                })
                         }
                 }
-                return null
-        }
-
-        getSwipeDirection(touch) {
-                // スワイプ方向の計算
-                // 実装省略
-                return 'left'
-        }
-}
-
-const gestureRecognizer = new GestureRecognizer()
-
-// ジェスチャーに応じたエフェクト
-const gl = createGL({
-        fragment: () => {
-                const pos = position
-                const gestureType = uniform('gestureType')
-
-                // ジェスチャーに応じた視覚効果
-                // 実装に応じてカスタマイズ
-
-                return vec4(vec3(0.5), 1)
-        },
-})
-```
-
-### パーティクルのマウス追従
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = position
-        const particles = uniform(float(), 'particlePositions')
-        let color = vec3(0.05, 0.05, 0.1) // 背景色
-        // パーティクルの描画
-        Loop(25, ({ i }) => {
-                // 50個のパーティクル（x,y で2要素ずつ）
-                const particlePos = vec2(particles[i * 2], particles[i * 2 + 1])
-                const distance = length(pos.xy.sub(particlePos))
-                const particle = smoothstep(0.05, 0, distance)
-                color.assign(color.add(vec3(particle).mul(0.8)))
         })
-        return vec4(color, 1)
-}`}
-/>
-
-```javascript
-class ParticleSystem {
-        constructor(count) {
-                this.particles = []
-                for (let i = 0; i < count; i++) {
-                        this.particles.push({
-                                x: Math.random() * 2 - 1,
-                                y: Math.random() * 2 - 1,
-                                vx: 0,
-                                vy: 0,
-                        })
-                }
-        }
-
-        update(mouseX, mouseY) {
-                this.particles.forEach((particle) => {
-                        // マウスに向かう力
-                        const dx = mouseX - particle.x
-                        const dy = mouseY - particle.y
-                        const distance = Math.sqrt(dx * dx + dy * dy)
-
-                        if (distance > 0) {
-                                const force = 0.001 / (distance + 0.1)
-                                particle.vx += dx * force
-                                particle.vy += dy * force
-                        }
-
-                        // 摩擦
-                        particle.vx *= 0.99
-                        particle.vy *= 0.99
-
-                        // 位置更新
-                        particle.x += particle.vx
-                        particle.y += particle.vy
-
-                        // 境界処理
-                        if (particle.x < -1) particle.x = 1
-                        if (particle.x > 1) particle.x = -1
-                        if (particle.y < -1) particle.y = 1
-                        if (particle.y > 1) particle.y = -1
-                })
-        }
-
-        getPositions() {
-                return this.particles.flatMap((p) => [p.x, p.y])
-        }
-}
-
-const particleSystem = new ParticleSystem(50)
-
-// アニメーションループ
-gl('loop', () => {
-        particleSystem.update(mouseX, mouseY)
-        gl.uniform('particlePositions', particleSystem.getPositions())
-})
-```
-
-## 実践課題
-
-### 課題 1: インタラクティブペイント
-
-マウスドラッグで絵を描けるアプリケーションを作成してください。
-
-### 課題 2: 音楽ビジュアライザー
-
-音声入力に反応するビジュアライザーを作成してください。
-
-### 課題 3: ゲーム UI
-
-簡単なゲームの UI エフェクト（ボタンホバー、メニューアニメーション）を作成してください。
-
-## よくある問題と解決策
-
-### イベントの重複実行
-
-```javascript
-// 問題: 同じイベントが複数回登録される
-// 解決: イベントリスナーの適切な管理
-
-class InteractionManager {
-        constructor(gl) {
-                this.gl = gl
-                this.boundEvents = new Map()
-        }
-
-        addMouseMove(handler) {
-                if (!this.boundEvents.has('mousemove')) {
-                        const boundHandler = (event, x, y) => handler(event, x, y)
-                        this.gl('mousemove', boundHandler)
-                        this.boundEvents.set('mousemove', boundHandler)
-                }
-        }
-
-        removeAll() {
-                this.boundEvents.clear()
-        }
+        
+        return <canvas ref={gl.ref} />
 }
 ```
 
-### パフォーマンスの問題
+</TabItem>
+<TabItem value="particles" label="パーティクルシステム">
 
-```javascript
-// イベント処理の最適化
-let lastUpdateTime = 0
-const UPDATE_INTERVAL = 16 // 60FPS
-
-gl('mousemove', (event, x, y) => {
-        const now = Date.now()
-        if (now - lastUpdateTime > UPDATE_INTERVAL) {
-                updateMousePosition(x, y)
-                lastUpdateTime = now
-        }
-})
+```jsx live
+function Canvas() {
+        const mouse = uniform(vec2(0), 'mouse')
+        const isHovering = uniform(0, 'isHovering')
+        
+        // マウス位置からのパーティクル効果
+        const mouseDistance = length(position.xy.sub(mouse))
+        const mouseEffect = smoothstep(0.8, 0.2, mouseDistance)
+        
+        // 動的なパターン
+        const time = iTime
+        const wave = sin(position.x.mul(5).add(time)).mul(sin(position.y.mul(5).add(time.mul(0.7))))
+        const pulseEffect = sin(time.mul(2)).mul(0.5).add(0.5)
+        
+        // ホバー状態による強化
+        const hoverBoost = isHovering.mul(0.5).add(1)
+        
+        // 色の合成
+        const baseColor = vec3(0.05, 0.05, 0.2)
+        const waveColor = vec3(wave.add(0.5)).mul(0.3).mul(hoverBoost)
+        const mouseColor = vec3(mouseEffect, mouseEffect.mul(0.7), mouseEffect.mul(1.3))
+                .mul(pulseEffect).mul(hoverBoost)
+        const finalColor = baseColor.add(waveColor).add(mouseColor)
+        
+        const gl = useGL({
+                width: 512,
+                height: 512,
+                frag: vec4(finalColor, 1)
+        })
+        
+        // regeのuseHoverを使用（マウス＋タッチ対応）
+        const hoverState = useHover((state) => {
+                if (state.isHoverStart) {
+                        gl.uniform('isHovering', 1)
+                } else if (state.isHovering) {
+                        const [width, height] = gl.size
+                        const value = state.value || [0, 0]
+                        const normalizedMouse = [
+                                (value[0] / width) * 2 - 1,
+                                -(value[1] / height) * 2 - 1
+                        ]
+                        gl.uniform('mouse', normalizedMouse)
+                } else if (state.isHoverEnd) {
+                        gl.uniform('isHovering', 0)
+                        gl.uniform('mouse', [0, 0])
+                }
+        })
+        
+        return <canvas ref={(el) => {
+                gl.ref(el)
+                hoverState.ref(el)
+        }} />
+}
 ```
+
+</TabItem>
+</Tabs>
 
 ## 次のステップ
 
-インタラクティブな表現をマスターしたら、次は[3D 表現と空間](../advanced/07-3d-graphics.md)で、立体的なビジュアルを学びましょう。
+インタラクティブな表現をマスターしたら、次は[3D 表現と空間](../advanced/07-3d-graphics.mdx)で、立体的なビジュアルを学びましょう。
 
 このチュートリアルで学んだこと：
 
-- ✅ マウス操作（移動、クリック、ドラッグ）
-- ✅ キーボード入力の処理
-- ✅ タッチ操作とジェスチャー
-- ✅ デバイスセンサーの活用
-- ✅ 高度なインタラクション
-- ✅ パフォーマンス最適化
+- ✅ **基礎インタラクション**: マウス、キーボード、ドラッグ操作
+- ✅ **応用操作**: タッチ、デバイスセンサー、パーティクルシステム  
+- ✅ **実装パターン**: useGLのmountイベントによる統合管理
 
-次の章では、3 次元空間での表現や、立体的なオブジェクトの操作方法を学習します。
+次の章では、3次元空間での表現や立体的なオブジェクトの操作方法を学習します。

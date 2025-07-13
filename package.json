@@ -26,8 +26,8 @@
         "devDependencies": {
                 "@changesets/cli": "*",
                 "jest": "*",
-                "tsup": "*",
                 "ts-jest": "*",
+                "tsup": "*",
                 "typescript": "*"
         },
         "engines": {
@@ -36,5 +36,8 @@
         "workspaces": [
                 "examples/*",
                 "packages/*"
-        ]
+        ],
+        "dependencies": {
+                "rege": "^0.2.0"
+        }
 }
