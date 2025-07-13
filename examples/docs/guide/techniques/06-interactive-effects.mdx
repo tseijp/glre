@@ -23,31 +23,36 @@ function Canvas() {
         const gl = useGL({
                 width: 512,
                 height: 512,
-                frag: vec4(color, 1),
-                mount: () => {
-                        let isClicking = false
-                        
-                        gl('mousemove', (event, x, y) => {
-                                const [width, height] = gl.size
-                                const normalizedX = (x / width) * 2 - 1
-                                const normalizedY = -((y / height) * 2 - 1)
-                                gl.uniform('iMouse', [normalizedX, normalizedY])
-                        })
-                        
-                        gl('mousedown', () => {
-                                isClicking = true
-                                gl.uniform('isClicking', 1)
-                        })
-                        
-                        gl('mouseup', () => {
-                                isClicking = false
-                                gl.uniform('isClicking', 0)
-                        })
+                frag: vec4(color, 1)
+        })
+        
+        // regeのuseDragを使用（クリック検出）
+        const dragState = useDrag((state) => {
+                if (state.isDragStart) {
+                        gl.uniform('isClicking', 1)
+                } else if (state.isDragEnd) {
+                        gl.uniform('isClicking', 0)
                 }
         })
         
-        return <canvas ref={gl.ref} />
-}
+        // regeのuseHoverを使用（マウス位置追跡）
+        const hoverState = useHover((state) => {
+                if (state.isHovering) {
+                        const [width, height] = gl.size
+                        const value = state.value || [0, 0]
+                        const normalizedMouse = [
+                                (value[0] / width) * 2 - 1,
+                                -(value[1] / height) * 2 - 1
+                        ]
+                        gl.uniform('iMouse', normalizedMouse)
+                }
+        })
+        
+        return <canvas ref={(el) => {
+                gl.ref(el)
+                dragState.ref(el)
+                hoverState.ref(el)
+        }} />
 ```
 
 </TabItem>
@@ -279,26 +284,37 @@ function Canvas() {
         const gl = useGL({
                 width: 512,
                 height: 512,
-                frag: vec4(color, 1),
-                mount: () => {
-                        // 加速度センサー
-                        if ('DeviceMotionEvent' in window) {
-                                window.addEventListener('devicemotion', (event) => {
-                                        const accel = event.accelerationIncludingGravity
-                                        if (accel) {
-                                                gl.uniform('acceleration', [accel.x || 0, accel.y || -1, accel.z || 0])
-                                        }
-                                })
-                        }
-                        
-                        // ジャイロスコープ
-                        if ('DeviceOrientationEvent' in window) {
-                                window.addEventListener('deviceorientation', (event) => {
-                                        gl.uniform('rotation', event.gamma || 0)
-                                })
+                frag: vec4(color, 1)
+        })
+        
+        // デバイスセンサーイベントの設定
+        React.useEffect(() => {
+                // 加速度センサー
+                const handleDeviceMotion = (event) => {
+                        const accel = event.accelerationIncludingGravity
+                        if (accel) {
+                                gl.uniform('acceleration', [accel.x || 0, accel.y || -1, accel.z || 0])
                         }
                 }
-        })
+                
+                // ジャイロスコープ
+                const handleDeviceOrientation = (event) => {
+                        gl.uniform('rotation', event.gamma || 0)
+                }
+                
+                if ('DeviceMotionEvent' in window) {
+                        window.addEventListener('devicemotion', handleDeviceMotion)
+                }
+                
+                if ('DeviceOrientationEvent' in window) {
+                        window.addEventListener('deviceorientation', handleDeviceOrientation)
+                }
+                
+                return () => {
+                        window.removeEventListener('devicemotion', handleDeviceMotion)
+                        window.removeEventListener('deviceorientation', handleDeviceOrientation)
+                }
+        }, [gl])
         
         return <canvas ref={gl.ref} />
 }
