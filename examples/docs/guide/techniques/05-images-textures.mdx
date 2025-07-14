@@ -50,7 +50,6 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        
         // ぼかしフィルタ関数
         const blurFilter = Fn(([uv, pixelSize, blurRadius]) => {
                 let blurColor = vec4(0)
@@ -70,7 +69,6 @@ const fragment = () => {
                 // 平均を取る
                 return blurColor.div(samples)
         })
-        
         // ピクセルサイズ
         const pixelSize = vec2(float(1)).div(iResolution)
         const blurRadius = float(5)
@@ -87,7 +85,6 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        
         // エッジ検出フィルタ関数
         const edgeDetector = Fn(([uv, pixelSize]) => {
                 // Sobelフィルタのカーネル値
@@ -109,7 +106,6 @@ const fragment = () => {
                 })
                 return sqrt(gradientX.mul(gradientX).add(gradientY.mul(gradientY)))
         })
-        
         const pixelSize = vec2(1).div(iResolution)
         // エッジ検出を適用
         const edgeStrength = edgeDetector(uv, pixelSize)
@@ -376,88 +372,6 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-## パフォーマンス最適化
-
-### テクスチャ圧縮
-
-```javascript
-// 複数のテクスチャ品質を用意
-const loadOptimizedTexture = (name, basePath) => {
-        // デバイスの性能に応じて画質を選択
-        const isHighEnd = navigator.hardwareConcurrency > 4
-        const quality = isHighEnd ? 'high' : 'medium'
-
-        gl.texture(name, `${basePath}_${quality}.jpg`)
-}
-
-loadOptimizedTexture('mainTexture', './images/background')
-```
-
-### ミップマップの活用
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        // 距離に応じたLOD
-        const distance = length(position.xy)
-        const lod = distance.mul(3)
-        // ミップマップレベルを指定してサンプリング
-        const textureColor = texture(iTexture, uv, lod)
-        return textureColor
-}`}
-/>
-
-## 実践課題
-
-### 課題 1: フォトフィルタ
-
-Instagram 風のフィルタ効果を複数作成してください。
-
-### 課題 2: テクスチャアニメーション
-
-複数のテクスチャを使って、映画のクレジットロール風のアニメーションを作成してください。
-
-### 課題 3: インタラクティブ画像処理
-
-マウスの位置に応じて画像フィルタの強度が変化するエフェクトを作成してください。
-
-## よくある問題と解決策
-
-### 画像が表示されない
-
-```javascript
-// 画像の読み込み完了を待つ
-gl.texture('mainTexture', './images/sample.jpg')
-        .then(() => {
-                console.log('テクスチャの読み込み完了')
-        })
-        .catch((error) => {
-                console.error('テクスチャの読み込み失敗:', error)
-        })
-```
-
-### UV 座標が期待通りでない
-
-```javascript
-// UV座標のデバッグ表示
-const debugUV = () => {
-        // UV座標を色で表示
-        return vec4(uv.x, uv.y, 0, 1)
-}
-```
-
-### テクスチャがぼやける
-
-```javascript
-// テクスチャフィルタリングの設定
-gl.texture('mainTexture', './images/sample.jpg', {
-        minFilter: 'nearest', // ピクセルアート用
-        magFilter: 'nearest',
-})
-```
 
 ## 次のステップ
 

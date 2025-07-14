@@ -259,9 +259,9 @@ const fragment = () => {
         const scale = 10
         const cellPos = floor(uv.mul(scale))
         // Pseudo-random function
-        const random = (st) => {
+        const random = Fn(([st]) => {
                 return fract(sin(dot(st, vec2(12.9898, 78.233))).mul(43758.5453123))
-        }
+        })
         // Random color per cell
         const color = vec3(
                 random(cellPos),
@@ -272,24 +272,38 @@ const fragment = () => {
 }`}
 />
 
-## Common Issues
+### Fractal Noise
 
-### Aspect Ratio Correction
+Create complex organic patterns by layering simple noise:
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        // Without correction, circles become ellipses
-        const wrongCircle = step(length(uv.sub(0.5)), 0.5)
-        // With aspect ratio correction
-        const aspect = iResolution.x.div(iResolution.y)
-        const correctedPos = vec2(uv.x.sub(0.5).mul(aspect), uv.y.sub(0.5))
-        const correctCircle = step(length(correctedPos), 0.5)
-        // Show both: left side wrong, right side correct
-        const showCorrect = step(0.5, uv.x)
-        const circle = mix(wrongCircle, correctCircle, showCorrect)
-        return vec4(vec3(circle), 1)
+        const random = Fn(([st]) => fract(sin(dot(st, vec2(12.9898, 78.233))).mul(43758.5453)))
+        const noise = Fn(([st]) => {
+                const i = floor(st).toVar()
+                const f = fract(st).toVar()
+                const u = f.mul(f).mul(f.sub(2).negate()).toVar()
+                return mix(
+                        mix(random(i), random(i.add(vec2(1, 0))), u.x),
+                        mix(random(i.add(vec2(0, 1))), random(i.add(vec2(1, 1))), u.x),
+                        u.y
+                )
+        })
+        const fbm = Fn(([st]) => {
+                const amp = float(0.5).toVar()
+                const value = float(0).toVar()
+                const freq = st.toVar()
+                Loop(int(4), () => {
+                        value.assign(value.add(noise(freq).mul(amp)))
+                        freq.assign(freq.mul(2))
+                        amp.assign(amp.mul(0.5))
+                })
+                return value
+        })
+        const color = vec3(fbm(uv.mul(8)))
+        return vec4(color, 1)
 }`}
 />
 

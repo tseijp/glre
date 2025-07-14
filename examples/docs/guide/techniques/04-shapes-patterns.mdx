@@ -8,7 +8,7 @@ Learn to create various geometric shapes and complex patterns.
 
 ### Circle
 
-The most fundamental shape - a perfect circle:
+The most fundamental shape ????:
 
 <FragmentEditor
         isFun
@@ -16,45 +16,52 @@ The most fundamental shape - a perfect circle:
 const fragment = () => {
         // Distance from center
         const distance = length(uv.sub(0.5))
-        // Simple circle with hard edge
-        const circle = step(distance, 0.5)
+        // Hard edge circle (aliased)
+        const circle = step(distance, 0.3)
         return vec4(vec3(circle), 1)
 }`}
 />
 
-### Smooth Circle
+### Anti-aliased Circle
 
-Create circles with soft, anti-aliased edges:
+Using fwidth() for automatic edge smoothing:
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
+        // Distance from center
         const distance = length(uv.sub(0.5))
-        // Smooth circle using smoothstep
-        const circle = smoothstep(0.5, 0.48, distance)
-        // Add gradient effect
-        const gradient = oneMinus(distance.mul(2))
-        const finalColor = circle.mul(gradient)
-        const color = vec3(finalColor, finalColor.mul(0.8), finalColor.mul(1.2))
-        return vec4(color, 1)
+        // Anti-aliasing using screen-space derivatives
+        const edge = fwidth(distance)
+        const circle = smoothstep(edge.add(0.3), edge.sub(0.3).negate(), distance)
+        return vec4(vec3(circle), 1)
 }`}
 />
 
-### Ellipse
+### MSAA Circle
 
-Stretch circles into ellipses:
+Using multi-sampling for superior edge quality:
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        // Different scaling for X and Y
-        const aspectRatio = normalize(iResolution)
-        const scaledPos = uv.sub(0.5).div(aspectRatio)
-        const distance = length(scaledPos)
-        const ellipse = smoothstep(0.5, 0.48, distance)
-        return vec4(vec3(ellipse), 1)
+        const msaa = Fn(([AA]) => {
+                const pos = uv.sub(0.5)
+                const ret = float(0).toVar()
+                Loop(int(AA), ({ i: m }) => {
+                        Loop(int(AA), ({ i: n }) => {
+                                const offset = vec2(float(m), float(n))
+                                const diff = offset.div(AA).sub(0.5).div(AA)
+                                const distance = length(pos.add(diff))
+                                const circle = step(distance, 0.3)
+                                ret.assign(ret.add(circle))
+                        })
+                })
+                return ret.div(AA.mul(AA))
+        })
+        return vec4(vec3(msaa(4)), 1)
 }`}
 />
 
@@ -80,7 +87,7 @@ const fragment = () => {
 }`}
 />
 
-### Regular Polygon Generator
+### Regular Polygon
 
 Create any regular polygon:
 
@@ -89,6 +96,8 @@ Create any regular polygon:
         code={`
 const fragment = () => {
         // Function to create polygon
+        const pos = uv.sub(0.5)
+        const gap = 0.25
         const polygon = (pos, sides, size) => {
                 const angle = atan2(pos.y, pos.x)
                 const radius = length(pos)
@@ -98,11 +107,10 @@ const fragment = () => {
                 return step(radius.mul(r), size)
         }
         // Create different polygons with consistent visual size
-        const triangle = polygon(uv.sub(0.5).add(vec2(-0.3, 0.3)), 3, 0.1)
-        const square = polygon(uv.sub(0.5).add(vec2(0.3, 0.3)), 4, 0.15)
-        const hexagon = polygon(uv.sub(0.5).add(vec2(-0.3, -0.3)), 6, 0.15)
-        const octagon = polygon(uv.sub(0.5).add(vec2(0.3, -0.3)), 8, 0.15)
-        const shapes = triangle.add(square).add(hexagon).add(octagon)
+        const shapes = polygon(pos.add(vec2(-gap, gap)), 3, 0.1)
+                .add(polygon(pos.add(vec2(gap, gap)), 4, 0.15))
+                .add(polygon(pos.add(vec2(-gap, -gap)), 6, 0.15))
+                .add(polygon(pos.add(vec2(gap, -gap)), 8, 0.15))
         return vec4(vec3(shapes), 1)
 }`}
 />
@@ -115,31 +123,23 @@ const fragment = () => {
 const fragment = () => {
         // Pentagram (5-pointed star) using distance field
         const pos = uv.sub(0.5)
+        const v1 = constant(vec2(0.809016994, -0.587785252))
+        const v2 = constant(vec2(v1.x.negate(), v1.y))
+        const v3 = constant(vec2(0.309016994, -0.951056516))
         // SDF Pentagram function by Inigo Quilez
         const sdPentagram = Fn(([p, r]) => {
-                const k1x = float(0.809016994) // cos(π/5) = ¼(√5+1)
-                const k2x = float(0.309016994) // sin(π/10) = ¼(√5-1)
-                const k1y = float(0.587785252) // sin(π/5) = ¼√(10-2√5)
-                const k2y = float(0.951056516) // cos(π/10) = ¼√(10+2√5)
-                const k1z = float(0.726542528) // tan(π/5) = √(5-2√5)
-                const v1 = vec2(k1x, k1y.negate())
-                const v2 = vec2(k1x.negate(), k1y.negate())
-                const v3 = vec2(k2x, k2y.negate())
                 let px = abs(p.x)
                 let py = p.y
-                // Apply transformations
-                const dot1 = max(px.mul(v1.x).add(py.mul(v1.y)), 0)
-                px = px.sub(dot1.mul(v1.x).mul(2))
-                py = py.sub(dot1.mul(v1.y).mul(2))
-                const dot2 = max(px.mul(v2.x).add(py.mul(v2.y)), 0)
-                px = px.sub(dot2.mul(v2.x).mul(2))
-                py = py.sub(dot2.mul(v2.y).mul(2))
+                let d = max(dot(vec2(px, py), v1), 0)
+                px = px.sub(d.mul(v1.x).mul(2))
+                py = py.sub(d.mul(v1.y).mul(2))
+                d = max(dot(vec2(px, py), v2), 0)
+                px = px.sub(d.mul(v2.x).mul(2))
+                py = py.sub(d.mul(v2.y).mul(2))
                 px = abs(px)
                 py = py.sub(r)
-                const clampVal = clamp(px.mul(v3.x).add(py.mul(v3.y)), 0, k1z.mul(r))
-                const finalX = px.sub(v3.x.mul(clampVal))
-                const finalY = py.sub(v3.y.mul(clampVal))
-                return length(vec2(finalX, finalY))
+                const c = clamp(dot(vec2(px, py), v3), 0, float(0.726542528))
+                return length(vec2(px, py).sub(v3.mul(c)))
         })
         // Create star
         const starDist = sdPentagram(pos, float(0.2))
@@ -174,15 +174,16 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Sine wave
-        const sineWave = sin(uv.sub(0.5).x.mul(4)).mul(0.3)
-        const sineDistance = abs(uv.sub(0.5).y.sub(sineWave))
+        const pos = uv.sub(0.5).mul(2)
+        const sineWave = sin(pos.x.mul(4)).mul(0.3)
+        const sineDistance = abs(pos.y.sub(sineWave))
         const sineLine = smoothstep(0.05, 0, sineDistance)
         // Parabola
-        const parabola = uv.sub(0.5).x.mul(uv.sub(0.5).x).mul(2)
-        const parabolaDistance = abs(uv.sub(0.5).y.sub(parabola))
+        const parabola = pos.x.mul(pos.x).mul(2)
+        const parabolaDistance = abs(pos.y.sub(parabola))
         const parabolaLine = smoothstep(0.05, 0, parabolaDistance)
         // Circle outline
-        const circleDistance = abs(length(uv.sub(0.5)).sub(0.5))
+        const circleDistance = abs(length(pos).sub(0.5))
         const circleLine = smoothstep(0.05, 0, circleDistance)
         const curves = max(sineLine, max(parabolaLine, circleLine))
         return vec4(vec3(curves), 1)
@@ -241,8 +242,9 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Polar coordinates
-        let radius = length(uv.sub(0.5))
-        let angle = atan2(uv.sub(0.5).y, uv.sub(0.5).x)
+        const pos = uv.sub(0.5)
+        let radius = length(pos)
+        let angle = atan2(pos.y, pos.x)
         // Create symmetry
         const segments = 8
         angle = angle.div(float(6)).mul(segments)
@@ -294,25 +296,29 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const st = uv.mul(float(5))
-        const i = floor(st)
-        const j = fract(st)
+        const row = floor(st)
+        const col = fract(st)
         const random2 = Fn(([p]) => {
                 return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))).mul(43758.5453))
         })
-        let minDist = float(1)
-        let closestPoint = vec2(0)
-        const check = (x, y) => {
-                const offset = vec2(float(x), float(y))
-                const point = random2(i.add(offset))
-                const dist = length(offset.add(point).sub(j))
-                const closer = step(dist, minDist)
-                minDist = mix(minDist, dist, closer)
-                closestPoint = mix(closestPoint, point, closer)
-        }
-        for (let y = -1; y <= 1; y++)
-                for (let x = -1; x <= 1; x++)
-                        check(x, y)
-        return vec4(vec3(closestPoint, 0.8), 1)
+        const voronoiPattern = Fn(([gridRow, gridCol]) => {
+                const minDist = float(1).toVar('minDist')
+                const closestPoint = vec2(0).toVar('closestPoint')
+                Loop(int(9), ({ i }) => {
+                        const idx = i.toFloat()
+                        const x = floor(mod(idx, float(3))).sub(1)
+                        const y = floor(idx.div(float(3))).sub(1)
+                        const offset = vec2(x, y)
+                        const point = random2(gridRow.add(offset))
+                        const dist = length(offset.add(point).sub(gridCol))
+                        const closer = step(dist, minDist)
+                        minDist.assign(mix(minDist, dist, closer))
+                        closestPoint.assign(mix(closestPoint, point, closer))
+                })
+                return closestPoint
+        })
+        const result = voronoiPattern(row, col)
+        return vec4(vec3(result, 0.8), 1)
 }`}
 />
 
@@ -338,33 +344,36 @@ const fragment = () => {
 
 ## Dynamic Patterns
 
-### Rotating Shapes
+### Game of Life
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        const centeredUV = uv.sub(0.5)
-        // Rotation matrix using iTime
-        const angle = iTime.mul(0.5)
-        const cosA = cos(angle)
-        const sinA = sin(angle)
-        const rotatedPos = vec2(
-                centeredUV.x.mul(cosA).sub(centeredUV.y.mul(sinA)),
-                centeredUV.x.mul(sinA).add(centeredUV.y.mul(cosA))
-        )
-        // Triangle using polygon generator
-        const polygon = (pos, sides, size) => {
-                const angle = atan2(pos.y, pos.x)
-                const radius = length(pos)
-                const pi2 = float(6.28318)
-                const a = angle.add(float(3.14159)).div(pi2).mul(sides)
-                const r = cos(floor(a).sub(a).add(float(0.5)).mul(pi2).div(sides))
-                return step(radius.mul(r), size)
-        }
-        const triangle = polygon(rotatedPos, float(3), float(0.08))
-        const color = vec3(triangle, triangle.mul(0.7), triangle.mul(1.3))
-        return vec4(color, 1)
+        const hash = Fn(([coord]) => fract(sin(dot(coord, vec2(127.1, 311.7))).mul(43758.5453)))
+        const automata = Fn(([coord, time]) => {
+                let neighbors = float(0).toVar('neighbors')
+                Loop(int(9), ({ i }) => {
+                        const idx = i.toFloat()
+                        const x = floor(mod(idx, float(3)))
+                        const y = floor(idx.div(float(3)))
+                        const offset = vec2(x, y)
+                        If(length(offset).greaterThan(0.1), () => {
+                                const cell = step(0.5, hash(coord.add(offset)))
+                                neighbors.assign(neighbors.add(cell))
+                        })
+                })
+                const alive = step(0.5, hash(coord.add(time)))
+                const birth = step(2.5, neighbors).mul(step(neighbors, 3.5)).mul(oneMinus(alive))
+                const survival = step(1.5, neighbors).mul(step(neighbors, 3.5)).mul(alive)
+                return max(birth, survival)
+        })
+        const p = uv.mul(64)
+        const local = fract(p)
+        const t = floor(iTime)
+        const life = automata(floor(p), t)
+        const color = length(local.sub(0.5))
+        return vec4(vec3(color.mul(life)), 1)
 }`}
 />
 

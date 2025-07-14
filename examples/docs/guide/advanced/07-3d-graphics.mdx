@@ -543,42 +543,6 @@ class FlyCamera {
 }
 ```
 
-## Practical Exercises
-
-### Exercise 1: 3D Scene
-
-Create a 3D scene with multiple objects positioned in space.
-
-### Exercise 2: Interactive Lighting
-
-Create a lighting system where light sources can be moved with mouse interaction.
-
-### Exercise 3: 3D Particles
-
-Create a particle system operating in three-dimensional space.
-
-## Common Issues and Solutions
-
-### Z-Fighting
-
-```javascript
-// Improve depth buffer precision
-const gl = createGL({
-        depthBuffer: true,
-        depthTest: true,
-        near: 0.1, // Increase near
-        far: 100, // Decrease far
-})
-```
-
-### Normal Calculation
-
-```javascript
-// Correct normal transformation
-const normalMatrix = transpose(inverse(modelMatrix))
-const worldNormal = normalize(normalMatrix.mul(normal))
-```
-
 ## What You've Learned
 
 - ✅ Three-dimensional coordinate systems and projection

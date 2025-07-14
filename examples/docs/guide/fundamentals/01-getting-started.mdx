@@ -39,9 +39,14 @@ You can create beautiful visual effects with just programming knowledge - no nee
         <body>
                 <canvas id="canvas"></canvas>
                 <script type="module">
-                        import { createGL } from 'https://unpkg.com/glre'
+                        import { createGL, uv } from 'https://unpkg.com/glre'
+
+                        const fragment = () => {
+                                return uv.xyxy
+                        }
 
                         const gl = createGL({
+                                fs: fragment()
                                 el: document.getElementById('canvas'),
                         })
                 </script>
@@ -229,32 +234,6 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-## Common Issues and Solutions
-
-### Q: I get an error when running the code
-
-A: Check the browser developer tools (F12) and look at the console for error messages.
-
-### Q: No colors are displayed
-
-A: Check these:
-
-- Is the 4th value (alpha) in `vec4` set to 0? It should be 1.
-- Are color values between 0 and 1?
-- Did you include a `return` statement?
-
-### Q: How do I specify screen size?
-
-A: Configure it in `createGL`:
-
-```javascript
-const gl = createGL({
-        width: 800,
-        height: 600,
-        fragment: myShader,
-})
-```
 
 ## What You've Learned
 

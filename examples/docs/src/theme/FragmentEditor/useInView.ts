@@ -3,30 +3,21 @@ import { useEffect, useRef, useState } from 'react'
 interface UseInViewOptions {
         threshold?: number
         rootMargin?: string
-        triggerOnce?: boolean
 }
 
 export const useInView = (options: UseInViewOptions = {}) => {
+        const { threshold = 0.1, rootMargin = '50px 0px' } = options
         const [isInView, setIsInView] = useState(false)
-        const [hasBeenInView, setHasBeenInView] = useState(false)
         const ref = useRef<HTMLDivElement>(null)
-
-        const { threshold = 0.1, rootMargin = '50px 0px', triggerOnce = false } = options
 
         useEffect(() => {
                 const element = ref.current
-                if (!element || typeof IntersectionObserver === 'undefined') {
-                        return
-                }
+                if (!element || typeof IntersectionObserver === 'undefined') return
 
                 const observer = new IntersectionObserver(
                         ([entry]) => {
                                 const inView = entry.isIntersecting
                                 setIsInView(inView)
-                                
-                                if (inView && !hasBeenInView) {
-                                        setHasBeenInView(true)
-                                }
                         },
                         { threshold, rootMargin }
                 )
@@ -36,11 +27,7 @@ export const useInView = (options: UseInViewOptions = {}) => {
                 return () => {
                         observer.unobserve(element)
                 }
-        }, [threshold, rootMargin, hasBeenInView])
+        }, [threshold, rootMargin])
 
-        return {
-                ref,
-                isInView: triggerOnce ? hasBeenInView : isInView,
-                hasBeenInView
-        }
+        return [ref, isInView] as const
 }
