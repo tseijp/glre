@@ -158,20 +158,20 @@ Vectors are groups of numbers that work together:
 
 ```javascript
 // 2D vector (like a point on a map)
-const point2D = vec2(0.5, 0.3)
-const x_component = point2D.x
-const y_component = point2D.y
+const uv = vec2(0.5, 0.3)
+const x = uv.x
+const y = uv.y
 
 // 3D vector (like RGB color)
-const point3D = vec3(1, 0.5, 0.2)
-const red = point3D.x // or point3D.r
-const green = point3D.y // or point3D.g
-const blue = point3D.z // or point3D.b
+const rgb = vec3(1, 0.5, 0.2)
+const red = rgb.x // or rgb.r
+const green = rgb.y // or rgb.g
+const blue = rgb.z // or rgb.b
 
 // 4D vector (RGBA color)
-const color = vec4(0.8, 0.2, 0.6, 1)
-const rgb = color.xyz // First 3 components
-const alpha = color.w // Transparency
+const rgba = vec4(0.8, 0.2, 0.6, 1)
+const color = rgba.xyz // First 3 components
+const alpha = rgba.w // Transparency
 ```
 
 ## Understanding Math Functions

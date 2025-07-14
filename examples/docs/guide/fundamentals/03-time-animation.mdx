@@ -147,12 +147,9 @@ Mathematical curves that create beautiful patterns:
         isFun
         code={`
 const fragment = () => {
-        // Lissajous curve parameters
-        const a = 0.5 // X frequency
-        const b = 2 // Y frequency
-        // Calculate curve position
-        const x = sin(iTime.mul(a).add(iTime))
-        const y = sin(iTime.mul(b))
+        // Lissajous curve (3/2 ratio)
+        const x = sin(iTime.mul(2).add(iTime))
+        const y = sin(iTime.mul(3))
         const curvePos = vec2(x, y).div(2)
         // Distance from curve
         const distance = length(uv.sub(0.5).sub(curvePos))

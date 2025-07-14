@@ -17,22 +17,28 @@ RGB (Red, Green, Blue) is like mixing colored lights, while HSV (Hue, Saturation
         isFun
         code={`
 const fragment = () => {
+        // HSV to RGB conversion function
+        const rgb2hsv = Fn(([h, s, v]) => {
+                const c = v.mul(s)
+                const x = c.mul(oneMinus(abs(mod(h.mul(6), 2).sub(1))))
+                const m = v.sub(c)
+                const i = floor(h.mul(6))
+                
+                If(i.equal(0), () => vec3(c, x, 0).add(m))
+                .ElseIf(i.equal(1), () => vec3(x, c, 0).add(m))
+                .ElseIf(i.equal(2), () => vec3(0, c, x).add(m))
+                .ElseIf(i.equal(3), () => vec3(0, x, c).add(m))
+                .ElseIf(i.equal(4), () => vec3(x, 0, c).add(m))
+                .Else(() => vec3(c, 0, x).add(m))
+        })
+        
         // HSV-style color creation
         const h = uv.x // Hue from position
         const s = uv.y // Saturation
         const v = float(1) // Value / brightness
-        // Convert HSV to RGB (simplified)
-        const c = v.mul(s)
-        const x = c.mul(oneMinus(abs(mod(h.mul(6), 2).sub(1))))
-        const m = v.sub(c)
-        const h6 = h.mul(6)
-        let rgb = vec3(0)
-        rgb = mix(rgb, vec3(c, x, 0).add(m), step(h6, 1).mul(step(0, h6)))
-        rgb = mix(rgb, vec3(x, c, 0).add(m), step(h6, 2).mul(step(1, h6)))
-        rgb = mix(rgb, vec3(0, c, x).add(m), step(h6, 3).mul(step(2, h6)))
-        rgb = mix(rgb, vec3(0, x, c).add(m), step(h6, 4).mul(step(3, h6)))
-        rgb = mix(rgb, vec3(x, 0, c).add(m), step(h6, 5).mul(step(4, h6)))
-        rgb = mix(rgb, vec3(c, 0, x).add(m), step(h6, 6).mul(step(5, h6)))
+        
+        // Convert HSV to RGB using the function
+        const rgb = rgb2hsv(h, s, v)
         return vec4(rgb, 1)
 }`}
 />

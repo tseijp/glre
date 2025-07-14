@@ -98,31 +98,45 @@ const gl = createGL({
                 const uv = pos.xy.mul(0.5).add(0.5)
                 const resolution = uniform('iResolution')
 
-                // ピクセルサイズ
-                const pixelSize = vec2(1.0).div(resolution)
-
-                let blurColor = vec4(0.0)
-                const blurRadius = 5.0
-                const samples = 9.0
-
-                // 3x3のサンプリング
-                Loop(3, ({ i }) => {
-                        Loop(3, ({ j }) => {
-                                const offset = vec2(
-                                        (float(i) - 1.0) * pixelSize.x * blurRadius,
-                                        (float(j) - 1.0) * pixelSize.y * blurRadius
-                                )
-
+                // 設定可能なサンプリングサイズを持つ改良されたぼかしフィルタ
+                const blurFilter = Fn(([uv, blurRadius, size]) => {
+                        let blurColor = vec4(0.0).toVar()
+                        let totalWeight = float(0.0).toVar()
+                        const pixelSize = vec2(1.0).div(resolution)
+                        const halfSize = size.div(float(2))
+                        const totalSamples = int(size.mul(size))
+                        
+                        // サイズパラメータに基づく動的サンプリング
+                        Loop(totalSamples, ({ i }) => {
+                                const x = mod(float(i), size).sub(halfSize)
+                                const y = floor(float(i).div(size)).sub(halfSize)
+                                
+                                // 中心からの距離によるウェイト計算
+                                const dist = length(vec2(x, y))
+                                const weight = exp(dist.mul(dist).mul(float(-0.5)))
+                                
+                                // サンプリングオフセット
+                                const offset = vec2(x, y).mul(pixelSize).mul(blurRadius)
                                 const sampleUV = uv.add(offset)
-                                const sampleColor = texture(uniform('mainTexture'), sampleUV)
-
-                                blurColor.assign(blurColor.add(sampleColor))
+                                
+                                // UV座標をクランプしてアーティファクトを防ぐ
+                                const clampedUV = clamp(sampleUV, vec2(0), vec2(1))
+                                const sampleColor = texture(uniform('mainTexture'), clampedUV)
+                                
+                                blurColor.assign(blurColor.add(sampleColor.mul(weight)))
+                                totalWeight.assign(totalWeight.add(weight))
                         })
+                        
+                        // 総ウェイトで正規化
+                        return blurColor.div(totalWeight)
                 })
 
-                // 平均を取る
-                blurColor.assign(blurColor.div(samples))
-
+                // 設定可能なパラメータ
+                const blurRadius = float(2.0)
+                const kernelSize = float(5)
+                
+                // ぼかしフィルタを適用
+                const blurColor = blurFilter(uv, blurRadius, kernelSize)
                 return blurColor
         },
 })

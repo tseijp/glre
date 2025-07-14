@@ -82,8 +82,9 @@ export const If = (x: NodeProxy, fun: () => void) => {
 
 export const Loop = (x: NodeProxy, fun: (params: { i: Int }) => void) => {
         const y = node('scope')
-        scoped(y, () => fun({ i: node<'int'>('variable', { id: 'i', inferFrom: [conversion('int', 0)] }) }))
-        const ret = node('loop', null, x, y)
+        const id = getId()
+        scoped(y, () => fun({ i: node<'int'>('variable', { id, inferFrom: [conversion('int', 0)] }) }))
+        const ret = node('loop', { id }, x, y)
         addToScope(ret)
         return ret
 }

@@ -24,7 +24,7 @@ const fragment = () => {
 
 ### Anti-aliased Circle
 
-Using fwidth() for automatic edge smoothing:
+Using `fwidth()` for automatic edge smoothing:
 
 <FragmentEditor
         isFun
@@ -53,7 +53,7 @@ const fragment = () => {
                 Loop(int(AA), ({ i: m }) => {
                         Loop(int(AA), ({ i: n }) => {
                                 const offset = vec2(float(m), float(n))
-                                const diff = offset.div(AA).sub(0.5).div(AA)
+                                const diff = offset.div(AA).sub(0.5).div(iResolution)
                                 const distance = length(pos.add(diff))
                                 const circle = step(distance, 0.3)
                                 ret.assign(ret.add(circle))
@@ -82,7 +82,7 @@ const fragment = () => {
                 const r = cos(floor(a).sub(a).add(float(0.5)).mul(pi2).div(sides))
                 return step(radius.mul(r), size)
         }
-        const triangle = polygon(uv.sub(0.5), float(3), float(0.08))
+        const triangle = polygon(uv.sub(0.5), 3, 0.2)
         return vec4(vec3(triangle), 1)
 }`}
 />
@@ -157,13 +157,12 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Horizontal line
-        const horizontalLine = smoothstep(0.02, 0, abs(uv.y))
+        let c = smoothstep(0.02, 0, abs(uv.y))
         // Vertical line
-        const verticalLine = smoothstep(0.02, 0, abs(uv.x))
+        c = c.add(smoothstep(0.02, 0, abs(uv.x)))
         // Diagonal line
-        const diagonalLine = smoothstep(0.02, 0, abs(uv.y.sub(uv.x)))
-        const lines = max(horizontalLine, max(verticalLine, diagonalLine))
-        return vec4(vec3(lines), 1)
+        c = c.add(smoothstep(0.02, 0, abs(uv.y.sub(uv.x))))
+        return vec4(vec3(c), 1)
 }`}
 />
 
@@ -187,80 +186,6 @@ const fragment = () => {
         const circleLine = smoothstep(0.05, 0, circleDistance)
         const curves = max(sineLine, max(parabolaLine, circleLine))
         return vec4(vec3(curves), 1)
-}`}
-/>
-
-## Pattern Generation
-
-### Grid Pattern
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        // Grid size and line width
-        const gridSize = 8
-        const lineWidth = 0.1
-        // Grid coordinates
-        const gridPos = fract(uv.mul(gridSize))
-        // Grid lines
-        const lines = smoothstep(0, lineWidth, min(gridPos.x, gridPos.y))
-        const grid = oneMinus(lines)
-        return vec4(vec3(grid), 1)
-}`}
-/>
-
-### Hexagonal Grid
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        // Hexagon distance function
-        const hexagon = (p) => {
-                let pos = abs(p)
-                pos = pos.sub(vec2(0.866, 0.5).mul(max(0, pos.x.sub(pos.y.mul(0.577)))))
-                pos = pos.sub(vec2(0.866, 0.5).mul(max(0, dot(pos, vec2(0.866, 0.5)))))
-                pos = pos.sub(vec2(clamp(pos.x, -0.866, 0.866), 1).mul(step(0, pos.y.sub(1))))
-                return length(pos).mul(sign(pos.y))
-        }
-        // Hexagonal grid
-        const scale = 3
-        const scaledPos = uv.mul(scale)
-        // Hexagon distance
-        const hexDist = hexagon(scaledPos)
-        // Create hexagonal pattern
-        const pattern = smoothstep(0, 0.1, abs(hexDist).sub(0.5))
-        return vec4(vec3(pattern), 1)
-}`}
-/>
-
-### Kaleidoscope Pattern
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        // Polar coordinates
-        const pos = uv.sub(0.5)
-        let radius = length(pos)
-        let angle = atan2(pos.y, pos.x)
-        // Create symmetry
-        const segments = 8
-        angle = angle.div(float(6)).mul(segments)
-        angle = abs(fract(angle).sub(0.5)).mul(2)
-        angle = angle.mul(float(6)).div(segments)
-        // Convert back to cartesian
-        const x = cos(angle).mul(radius)
-        const y = sin(angle).mul(radius)
-        const symmetricPos = vec2(x, y)
-        // Create pattern in symmetric space
-        const pattern1 = sin(symmetricPos.x.mul(10))
-        const pattern2 = sin(symmetricPos.y.mul(15))
-        const combined = pattern1.mul(pattern2)
-        // Color based on angle and radius
-        const color = vec3(combined, combined.mul(0.8), combined.mul(1.2))
-        return vec4(color, 1)
 }`}
 />
 
@@ -319,26 +244,6 @@ const fragment = () => {
         })
         const result = voronoiPattern(row, col)
         return vec4(vec3(result, 0.8), 1)
-}`}
-/>
-
-### Moire Pattern
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        // Two different frequency stripes
-        const freq1 = 20
-        const freq2 = 21
-        const stripe1 = sin(uv.x.mul(freq1))
-        const stripe2 = sin(uv.x.mul(freq2).add(uv.y.mul(0.5)))
-        // Interference pattern
-        const interference = stripe1.mul(stripe2)
-        const pattern = interference
-        // Color the pattern
-        const color = vec3(pattern, pattern.mul(0.8), pattern.mul(1.2))
-        return vec4(color, 1)
 }`}
 />
 
