@@ -73,7 +73,7 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-        // Triangle using polygon generator (smaller size)
+        // Triangle using polygon generator (keep original function)
         const polygon = (pos, sides, size) => {
                 const angle = atan2(pos.y, pos.x)
                 const radius = length(pos)
@@ -178,7 +178,7 @@ const fragment = () => {
         const sineDistance = abs(pos.y.sub(sineWave))
         const sineLine = smoothstep(0.05, 0, sineDistance)
         // Parabola
-        const parabola = pos.x.mul(pos.x).mul(2)
+        const parabola = pow(pos.x, 3)
         const parabolaDistance = abs(pos.y.sub(parabola))
         const parabolaLine = smoothstep(0.05, 0, parabolaDistance)
         // Circle outline
@@ -197,20 +197,25 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-        let color = vec3(0)
-        // Multiple scales of the same pattern
-        for (let i = 0; i < 5; i++) {
-                const scale = pow(2, float(i))
-                const scaledPos = uv.mul(scale)
-                // Circle pattern at each scale
-                const dist = length(fract(scaledPos).sub(0.5))
-                const circle = smoothstep(0.3, 0.2, dist)
-                // Add to final color with decreasing weight
-                const weight = oneMinus(float(i).div(5))
-                color = color.add(vec3(circle).mul(weight))
-        }
-        color = color.div(5) // Normalize
-        return vec4(color, 1)
+        // Create fractal pattern using Loop with configurable iterations
+        const generateFractal = Fn(([uv, iterations]) => {
+                let color = vec3(0).toVar()
+                // Multiple scales of the same pattern
+                Loop(int(iterations), ({ i }) => {
+                        const layerIndex = float(i)
+                        const scale = pow(2, layerIndex)
+                        const scaledPos = uv.mul(scale)
+                        // Circle pattern at each scale
+                        const dist = length(fract(scaledPos).sub(0.5))
+                        const circle = smoothstep(0.3, 0.2, dist)
+                        // Add to final color with decreasing weight
+                        const weight = oneMinus(layerIndex.div(float(iterations)))
+                        color.assign(color.add(vec3(circle).mul(weight)))
+                })
+                return color.div(float(iterations)) // Normalize
+        })
+        const fractalColor = generateFractal(uv, 8)
+        return vec4(fractalColor, 1)
 }`}
 />
 
@@ -233,10 +238,10 @@ const fragment = () => {
                         const idx = i.toFloat()
                         const x = floor(mod(idx, float(3))).sub(1)
                         const y = floor(idx.div(float(3))).sub(1)
-                        const offset = vec2(x, y)
-                        const point = random2(gridRow.add(offset))
-                        const dist = length(offset.add(point).sub(gridCol))
-                        const closer = step(dist, minDist)
+                        const offset = vec2(x, y).toVar()
+                        const point = random2(gridRow.add(offset)).toVar()
+                        const dist = length(offset.add(point).sub(gridCol)).toVar()
+                        const closer = step(dist, minDist).toVar()
                         minDist.assign(mix(minDist, dist, closer))
                         closestPoint.assign(mix(closestPoint, point, closer))
                 })
@@ -259,10 +264,10 @@ const fragment = () => {
         const automata = Fn(([coord, time]) => {
                 let neighbors = float(0).toVar('neighbors')
                 Loop(int(9), ({ i }) => {
-                        const idx = i.toFloat()
+                        const idx = float(i)
                         const x = floor(mod(idx, float(3)))
                         const y = floor(idx.div(float(3)))
-                        const offset = vec2(x, y)
+                        const offset = vec2(x, y).toVar()
                         If(length(offset).greaterThan(0.1), () => {
                                 const cell = step(0.5, hash(coord.add(offset)))
                                 neighbors.assign(neighbors.add(cell))
@@ -277,7 +282,7 @@ const fragment = () => {
         const local = fract(p)
         const t = floor(iTime)
         const life = automata(floor(p), t)
-        const color = length(local.sub(0.5))
+        const color = length(local)
         return vec4(vec3(color.mul(life)), 1)
 }`}
 />

@@ -39,7 +39,7 @@ function Canvas() {
         const hoverState = useHover((state) => {
                 if (state.isHovering) {
                         const [width, height] = gl.size
-                        const value = state.value || [0, 0]
+                        const value = state.value ? state.value : [0, 0]
                         const normalizedMouse = [
                                 (value[0] / width) * 2 - 1,
                                 -(value[1] / height) * 2 - 1

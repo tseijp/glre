@@ -6,43 +6,6 @@ Learn detailed color manipulation and coordinate transformations.
 
 ## Understanding Color Systems
 
-### RGB vs HSV
-
-RGB (Red, Green, Blue) is like mixing colored lights, while HSV (Hue, Saturation, Value) is more intuitive for artists.
-
-**RGB**: Mix red, green, and blue light
-**HSV**: Pick a color (hue), make it vibrant (saturation), make it bright (value)
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        // HSV to RGB conversion function
-        const rgb2hsv = Fn(([h, s, v]) => {
-                const c = v.mul(s)
-                const x = c.mul(oneMinus(abs(mod(h.mul(6), 2).sub(1))))
-                const m = v.sub(c)
-                const i = floor(h.mul(6))
-                
-                If(i.equal(0), () => vec3(c, x, 0).add(m))
-                .ElseIf(i.equal(1), () => vec3(x, c, 0).add(m))
-                .ElseIf(i.equal(2), () => vec3(0, c, x).add(m))
-                .ElseIf(i.equal(3), () => vec3(0, x, c).add(m))
-                .ElseIf(i.equal(4), () => vec3(x, 0, c).add(m))
-                .Else(() => vec3(c, 0, x).add(m))
-        })
-        
-        // HSV-style color creation
-        const h = uv.x // Hue from position
-        const s = uv.y // Saturation
-        const v = float(1) // Value / brightness
-        
-        // Convert HSV to RGB using the function
-        const rgb = rgb2hsv(h, s, v)
-        return vec4(rgb, 1)
-}`}
-/>
-
 ### Color Blending
 
 Mix two colors together smoothly:
@@ -67,6 +30,76 @@ const fragment = () => {
 - When `mixRatio` = 0: returns `color1`
 - When `mixRatio` = 1: returns `color2`
 - When `mixRatio` = 0.5: returns halfway between both colors
+
+### RGB vs HSV
+
+RGB (Red, Green, Blue) is like mixing colored lights, while HSV (Hue, Saturation, Value) is more intuitive for artists.
+
+**RGB**: Mix red, green, and blue light
+**HSV**: Pick a color (hue), make it vibrant (saturation), make it bright (value)
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // HSV to RGB conversion function
+        const rgb2hsv = Fn(([h, s, v]) => {
+                const c = v.mul(s)
+                const x = c.mul(mod(h.mul(6), 2).sub(1).abs().oneMinus())
+                const m = v.sub(c)
+                const i = floor(h.mul(6))
+                If(i.equal(0), () => vec3(c, x, 0).add(m))
+                .ElseIf(i.equal(1), () => vec3(x, c, 0).add(m))
+                .ElseIf(i.equal(2), () => vec3(0, c, x).add(m))
+                .ElseIf(i.equal(3), () => vec3(0, x, c).add(m))
+                .ElseIf(i.equal(4), () => vec3(x, 0, c).add(m))
+                .Else(() => vec3(c, 0, x).add(m))
+        })
+        // HSV-style color creation
+        const h = uv.x // Hue from position
+        const s = sin(iTime).abs() // Saturation
+        const v = uv.y // Value / brightness
+        // Convert HSV to RGB using the function
+        const rgb = rgb2hsv(h, s, v)
+        return vec4(rgb, 1)
+}`}
+/>
+
+### RGB vs XYZ
+
+The CIE color space represents colors as chromaticity coordinates, independent of brightness. It's visualized as the famous "horseshoe" chromaticity diagram.
+
+**How it works**:
+
+- x, y coordinates represent color hue and saturation
+- Pure colors form the curved boundary (spectral locus)
+- Mixed colors appear inside the horseshoe shape
+- White point is at the center
+
+<FragmentEditor
+        isFun
+        code={`
+const XYZtoRGB = constant(mat3(
+        3.2406, -1.5372, -0.4986,
+        -0.9689, 1.8758, 0.0415,
+        0.0557, -0.2040, 1.0570
+))
+const fragment = () => {
+        // CIE xy chromaticity coordinates from UV
+        const x = uv.x
+        const y = uv.y
+        const z = float(1).sub(x).sub(y)
+        // Convert xy to XYZ (assuming Y = 1 for full brightness)
+        const Y = sin(iTime).abs()
+        const X = x.mul(Y).div(y)
+        const Z = z.mul(Y).div(y)
+        // XYZ to RGB conversion matrix (sRGB)
+        // Convert XYZ to RGB
+        const rgb = XYZtoRGB.mul(vec3(X, Y, Z))
+        // Clamp to valid range and check if within gamut
+        return vec4(rgb, 1)
+}`}
+/>
 
 ## Coordinate Transformations
 
@@ -243,7 +276,7 @@ const fragment = () => {
         // Sawtooth wave: ramp up, then jump down
         const sawtooth = fract(uv.x.mul(4))
         // Square wave: switches between high and low
-        const square = step(0.5, fract(uv.x.mul(4)))
+        const square = step(0.5, uv.x.mul(4).fract())
         // Choose wave based on Y position
         const waveSelect = uv.y
         const wave1 = mix(sine, sawtooth, step(1 / 3, waveSelect))
@@ -265,8 +298,8 @@ const fragment = () => {
         const scale = 10
         const cellPos = floor(uv.mul(scale))
         // Pseudo-random function
-        const random = Fn(([st]) => {
-                return fract(sin(dot(st, vec2(12.9898, 78.233))).mul(43758.5453123))
+        const random = Fn(([xy]) => {
+                return fract(sin(dot(xy, vec2(12.9898, 78.233))).mul(43758.5453123))
         })
         // Random color per cell
         const color = vec3(
@@ -286,10 +319,12 @@ Create complex organic patterns by layering simple noise:
         isFun
         code={`
 const fragment = () => {
-        const random = Fn(([st]) => fract(sin(dot(st, vec2(12.9898, 78.233))).mul(43758.5453)))
-        const noise = Fn(([st]) => {
-                const i = floor(st).toVar()
-                const f = fract(st).toVar()
+        const random = Fn(([xy]) => {
+                return fract(sin(dot(xy, vec2(12.9898, 78.233))).mul(43758.5453))
+        })
+        const noise = Fn(([xy]) => {
+                const i = floor(xy).toVar()
+                const f = fract(xy).toVar()
                 const u = f.mul(f).mul(f.sub(2).negate()).toVar()
                 return mix(
                         mix(random(i), random(i.add(vec2(1, 0))), u.x),
@@ -297,16 +332,11 @@ const fragment = () => {
                         u.y
                 )
         })
-        const fbm = Fn(([st]) => {
-                const amp = float(0.5).toVar()
-                const value = float(0).toVar()
-                const freq = st.toVar()
-                Loop(int(4), () => {
-                        value.assign(value.add(noise(freq).mul(amp)))
-                        freq.assign(freq.mul(2))
-                        amp.assign(amp.mul(0.5))
-                })
-                return value
+        const fbm = Fn(([xy]) => {
+                return noise(xy).mul(0.5)
+                .add(noise(xy.mul(2)).mul(0.25))
+                .add(noise(xy.mul(4)).mul(0.125))
+                .add(noise(xy.mul(8)).mul(0.0625))
         })
         const color = vec3(fbm(uv.mul(8)))
         return vec4(color, 1)

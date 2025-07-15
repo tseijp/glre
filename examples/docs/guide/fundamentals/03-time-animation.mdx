@@ -61,13 +61,14 @@ const fragment = () => {
         const cosA = cos(angle)
         const sinA = sin(angle)
         const rotatedPos = vec2(
+                // X = x * cos(A) - y * sin(A)
+                // Y = x * sin(A) + y * cos(A)
                 uv.x.mul(cosA).sub(uv.y.mul(sinA)),
                 uv.x.mul(sinA).add(uv.y.mul(cosA))
         )
         // Create stripes on rotated coordinates
         const stripe = sin(rotatedPos.x.mul(10))
-        const color = vec3(stripe, stripe.mul(0.7), stripe.mul(0.9))
-        return vec4(color, 1)
+        return vec4(vec3(stripe), 1)
 }`}
 />
 
@@ -148,8 +149,8 @@ Mathematical curves that create beautiful patterns:
         code={`
 const fragment = () => {
         // Lissajous curve (3/2 ratio)
-        const x = sin(iTime.mul(2).add(iTime))
-        const y = sin(iTime.mul(3))
+        const x = sin(iTime.mul(3).add(iTime))
+        const y = sin(iTime.mul(2))
         const curvePos = vec2(x, y).div(2)
         // Distance from curve
         const distance = length(uv.sub(0.5).sub(curvePos))

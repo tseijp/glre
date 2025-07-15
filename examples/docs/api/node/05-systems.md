@@ -1,4 +1,4 @@
-# Type System and Conversions
+# Type Systems and Conversions
 
 Complete reference for GLRE's type system and automatic conversions.
 

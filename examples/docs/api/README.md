@@ -22,27 +22,27 @@ JavaScript/TypeScript Code
 
 ### Core Components
 
-| Component                             | Purpose               | Key Features                                    |
-| ------------------------------------- | --------------------- | ----------------------------------------------- |
-| **[Core Engine](core/engine.md)**          | GPU abstraction layer | WebGL2/WebGPU support, automatic initialization |
-| **[Event System](core/events.md)**         | Reactive programming  | Mount/cleanup, mouse/keyboard, animation loops  |
-| **[Configuration](core/config.md)** | Engine settings       | Platform detection, quality settings            |
+| Component                              | Purpose               | Key Features                                    |
+| -------------------------------------- | --------------------- | ----------------------------------------------- |
+| **[Core Engine](core/01-engine.md)**   | GPU abstraction layer | WebGL2/WebGPU support, automatic initialization |
+| **[Event System](core/02-events.md)**  | Reactive programming  | Mount/cleanup, mouse/keyboard, animation loops  |
+| **[Configuration](core/03-config.md)** | Engine settings       | Platform detection, quality settings            |
 
 ### Node System
 
-| Component                              | Purpose                     | Key Features                      |
-| -------------------------------------- | --------------------------- | --------------------------------- |
-| **[TSL Overview](node/abstract.md)**        | TypeScript Shading Language | React-like syntax, type inference |
-| **[Type System](node/types.md)**            | Shader types in TypeScript  | Automatic conversion, swizzling   |
-| **[Function Reference](node/functions.md)** | Complete function library   | 150+ mathematical functions       |
+| Component                                      | Purpose                     | Key Features                      |
+| ---------------------------------------------- | --------------------------- | --------------------------------- |
+| **[TSL Overview](node/04-overview.md)**        | TypeScript Shading Language | React-like syntax, type inference |
+| **[Type Systems](node/05-systems.md)**         | Shader types in TypeScript  | Automatic conversion, swizzling   |
+| **[Function Reference](node/06-functions.md)** | Complete function library   | 150+ mathematical functions       |
 
 ### Reference
 
-| Component                                  | Purpose          | Key Features                          |
-| ------------------------------------------ | ---------------- | ------------------------------------- |
-| **[Implementation Patterns](ref/implementation-patterns.md)** | Code patterns    | Best practices, common solutions      |
-| **[Advanced Techniques](ref/advanced-techniques.md)**   | Complex features | Multi-pass rendering, compute shaders |
-| **[Troubleshooting](ref/troubleshooting-guide.md)**  | Problem solving  | Error handling, debugging             |
+| Component                                               | Purpose          | Key Features                          |
+| ------------------------------------------------------- | ---------------- | ------------------------------------- |
+| **[Implementation Patterns](ref/07-implementation.md)** | Code patterns    | Best practices, common solutions      |
+| **[Advanced Techniques](ref/08-techniques.md)**         | Complex features | Multi-pass rendering, compute shaders |
+| **[Troubleshooting](ref/09-troubleshoot.md)**           | Problem solving  | Error handling, debugging             |
 
 ## Quick Start
 
