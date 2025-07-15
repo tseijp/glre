@@ -15,9 +15,9 @@ In GLRE, you can easily access time to create animations:
         code={`
 const fragment = () => {
         // Change color over time
-        const red = sin(iTime)
-        const green = sin(iTime.add(2))
-        const blue = sin(iTime.add(4))
+        const red = iTime.sin()
+        const green = iTime.add(2).sin()
+        const blue = iTime.add(4).sin()
         return vec4(red, green, blue, 1)
 }`}
 />
@@ -31,16 +31,19 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Pattern A: Oscillation - smoothly goes up and down
-        const oscillation = sin(iTime.mul(2))
+        const oscillation = iTime.mul(2).sin()
         // Pattern B: Linear progression - steadily increases
-        const linear = fract(iTime.mul(0.5))
+        const linear = iTime.mul(0.5).fract()
         // Pattern C: Pulse - sharp peaks
-        const pulse = smoothstep(0.7, 1, sin(iTime.mul(3)))
+        const pulseInput = iTime.mul(3).sin()
+        const pulse = smoothstep(0.7, 1, pulseInput)
         // Mix patterns based on position
         const t = uv.x
-        let pattern = mix(oscillation, linear, smoothstep(0, 0.5, t))
-        pattern = mix(pattern, pulse, smoothstep(0.5, 1, t))
-        const color = vec3(pattern, pattern.mul(0.8), pattern.mul(1.2))
+        const mixRatio1 = smoothstep(0, 0.5, t)
+        let pattern = mix(oscillation, linear, mixRatio1)
+        const mixRatio2 = smoothstep(0.5, 1, t)
+        pattern = mix(pattern, pulse, mixRatio2)
+        const color = vec3(1, 0.8, 1.2).mul(pattern)
         return vec4(color, 1)
 }`}
 />
@@ -58,16 +61,12 @@ const fragment = () => {
         // Rotation angle
         const angle = iTime.mul(1)
         // Apply rotation to coordinates
-        const cosA = cos(angle)
-        const sinA = sin(angle)
-        const rotatedPos = vec2(
-                // X = x * cos(A) - y * sin(A)
-                // Y = x * sin(A) + y * cos(A)
-                uv.x.mul(cosA).sub(uv.y.mul(sinA)),
-                uv.x.mul(sinA).add(uv.y.mul(cosA))
-        )
+        const cosA = angle.cos()
+        const sinA = angle.sin()
+        const rotateMat = mat2(cosA, sinA, sinA.negate(), cosA)
+        const rotatePos = rotateMat.mul(uv)
         // Create stripes on rotated coordinates
-        const stripe = sin(rotatedPos.x.mul(10))
+        const stripe = rotatePos.x.mul(10).sin()
         return vec4(vec3(stripe), 1)
 }`}
 />
@@ -81,14 +80,14 @@ Make things grow and shrink:
         code={`
 const fragment = () => {
         // Pulsing effect
-        const pulse = sin(iTime.mul(3))
+        const pulse = iTime.mul(3).sin()
         // Scale coordinates
         const scaledPos = uv.sub(0.5).div(pulse)
         // Distance from center
-        const distance = length(scaledPos)
+        const distance = scaledPos.length()
         // Circle that pulses
         const circle = smoothstep(0.5, 0.45, distance)
-        const color = vec3(circle, circle.mul(0.8), circle.mul(1.2))
+        const color = vec3(1, 0.8, 1.2).mul(circle)
         return vec4(color, 1)
 }`}
 />
@@ -102,13 +101,15 @@ Create ripples spreading outward:
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = length(uv.sub(0.5))
+        const distance = uv.sub(0.5).length()
         // Wave that travels outward
-        const wave = sin(distance.mul(20).sub(iTime.mul(8)))
+        const timeOffset = iTime.mul(8)
+        const waveInput = distance.mul(20).sub(timeOffset)
+        const wave = waveInput.sin()
         // Fade effect with distance
-        const attenuation = oneMinus(distance)
+        const attenuation = distance.oneMinus()
         const finalWave = wave.mul(attenuation)
-        const color = vec3(finalWave, finalWave.mul(0.6), finalWave.mul(1.4))
+        const color = vec3(1, 0.6, 1.4).mul(finalWave)
         return vec4(color, 1)
 }`}
 />
@@ -126,16 +127,20 @@ Combine different rhythms for complex patterns:
         code={`
 const fragment = () => {
         // Different wave frequencies
-        const wave1 = sin(iTime.mul(1)) // Slow
-        const wave2 = sin(iTime.mul(1.6)) // Golden ratio frequency
-        const wave3 = sin(iTime.mul(0.7)) // Another harmonic
+        const wave1 = iTime.mul(1).sin() // Slow
+        const wave2 = iTime.mul(1.6).sin() // Golden ratio frequency
+        const wave3 = iTime.mul(0.7).sin() // Another harmonic
         // Combine waves
-        const composite = wave1.add(wave2.mul(0.5)).add(wave3.mul(0.25))
+        const wave2Scaled = wave2.mul(0.5)
+        const wave3Scaled = wave3.mul(0.25)
+        const composite = wave1.add(wave2Scaled).add(wave3Scaled)
         const normalized = composite.div(1.75)
         // Apply to pattern
-        const modulation = sin(uv.x.mul(5)).mul(sin(uv.y.mul(5)))
+        const modulationX = uv.x.mul(5).sin()
+        const modulationY = uv.y.mul(5).sin()
+        const modulation = modulationX.mul(modulationY)
         const final = normalized.mul(modulation)
-        const color = vec3(final, final.mul(0.8), final.mul(1.2))
+        const color = vec3(1, 0.8, 1.2).mul(final)
         return vec4(color, 1)
 }`}
 />
@@ -149,18 +154,21 @@ Mathematical curves that create beautiful patterns:
         code={`
 const fragment = () => {
         // Lissajous curve (3/2 ratio)
-        const x = sin(iTime.mul(3).add(iTime))
-        const y = sin(iTime.mul(2))
+        const x = iTime.mul(3).add(iTime).sin()
+        const y = iTime.mul(2).sin()
         const curvePos = vec2(x, y).div(2)
         // Distance from curve
-        const distance = length(uv.sub(0.5).sub(curvePos))
+        const distance = uv.sub(0.5).sub(curvePos).length()
         // Draw the curve
         const curve = smoothstep(0.1, 0.05, distance)
         // Add trail effect
-        const history = sin(distance.mul(30).sub(iTime.mul(5)))
+        const timeOffset = iTime.mul(5)
+        const historyInput = distance.mul(30).sub(timeOffset)
+        const history = historyInput.sin()
         const historyMask = smoothstep(0.8, 0.2, distance)
-        const final = max(curve, history.mul(historyMask).mul(0.3))
-        const color = vec3(final, final.mul(0.7), final.mul(1.3))
+        const historyEffect = history.mul(historyMask).mul(0.3)
+        const final = max(curve, historyEffect)
+        const color = vec3(1, 0.7, 1.3).mul(final)
         return vec4(color, 1)
 }`}
 />
@@ -176,20 +184,29 @@ Instead of linear changes, use easing for more natural motion:
         code={`
 const fragment = () => {
         // Time cycles between 0 and 1
-        const t = fract(iTime.mul(0.5))
+        const t = iTime.mul(0.5).fract()
         // Different easing functions
-        const easeInOut = t.mul(t).mul(3).sub(t.mul(t).mul(2))
+        const tSquared = t.mul(t)
+        const easeComponent1 = tSquared.mul(3)
+        const easeComponent2 = tSquared.mul(2)
+        const easeInOut = easeComponent1.sub(easeComponent2)
         const easeInQuart = t.mul(t).mul(t).mul(t)
         // Elastic easing approximation
-        const elastic = sin(t.mul(6.28318).mul(3)).mul(pow(2, negate(t.mul(8))))
+        const elasticInput = t.mul(6.28318).mul(3).sin()
+        const decayExponent = t.mul(8).negate()
+        const elasticDecay = pow(2, decayExponent)
+        const elastic = elasticInput.mul(elasticDecay)
         // Choose easing based on Y position
         const y = uv.y
-        let ease = mix(t, easeInOut, step(0.33, y))
-        ease = mix(ease, easeInQuart, step(0.66, y))
+        const easeStep1 = step(0.33, y)
+        let ease = mix(t, easeInOut, easeStep1)
+        const easeStep2 = step(0.66, y)
+        ease = mix(ease, easeInQuart, easeStep2)
         // Apply easing to position
-        const animatedPos = uv.x.add(ease.sub(0.5).mul(2))
-        const pattern = sin(animatedPos.mul(8))
-        const color = vec3(pattern, pattern.mul(0.8), pattern.mul(1.2))
+        const easeOffset = ease.sub(0.5).mul(2)
+        const animatedPos = uv.x.add(easeOffset)
+        const pattern = animatedPos.mul(8).sin()
+        const color = vec3(1, 0.8, 1.2).mul(pattern)
         return vec4(color, 1)
 }`}
 />
@@ -205,14 +222,21 @@ Combine time with mouse position:
         code={`
 const fragment = () => {
         // Distance from mouse (simulated at center for demo)
-        const distance = length(uv.sub(iMouse.div(2)))
+        const mouseCenter = iMouse.div(2)
+        const distance = uv.sub(mouseCenter).length()
         // Time-based ripples from mouse position
-        const ripple = sin(distance.mul(15).sub(iTime.mul(10)))
+        const rippleTime = iTime.mul(10)
+        const rippleInput = distance.mul(15).sub(rippleTime)
+        const ripple = rippleInput.sin()
         const rippleMask = smoothstep(0.8, 0, distance)
         // Background pattern
-        const background = sin(uv.x.mul(10).add(iTime)).mul(sin(uv.y.mul(10).add(iTime)))
+        const backgroundX = uv.x.mul(10).add(iTime).sin()
+        const backgroundY = uv.y.mul(10).add(iTime).sin()
+        const background = backgroundX.mul(backgroundY)
         // Combine effects
-        const final = background.mul(0.3).add(ripple.mul(rippleMask).mul(0.7))
+        const backgroundEffect = background.mul(0.3)
+        const rippleEffect = ripple.mul(rippleMask).mul(0.7)
+        const final = backgroundEffect.add(rippleEffect)
         const color = vec3(final)
         return vec4(color, 1)
 }`}
@@ -229,27 +253,36 @@ Create a kaleidoscope effect that changes over time:
         code={`
 const fragment = () => {
         // Convert to polar coordinates
-        let radius = length(uv.sub(0.5))
-        let angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+        let radius = uv.sub(0.5).length()
+        const centeredPos = uv.sub(0.5)
+        let angle = atan2(centeredPos.y, centeredPos.x)
         // Kaleidoscope symmetry
         const sections = 6
         angle = angle.div(6).mul(sections)
-        angle = abs(fract(angle).sub(0.5)).mul(2)
+        angle = angle.fract().sub(0.5).abs().mul(2)
         angle = angle.mul(6).div(sections)
         // Time-based rotation
-        angle = angle.add(iTime.mul(0.5))
+        const timeRotation = iTime.mul(0.5)
+        angle = angle.add(timeRotation)
         // Radial waves
-        radius = radius.add(sin(angle.mul(8).add(iTime.mul(2))).mul(0.1))
+        const timeComponent = iTime.mul(2)
+        const radiusWave = angle.mul(8).add(timeComponent).sin()
+        const radiusModulation = radiusWave.mul(0.1)
+        radius = radius.add(radiusModulation)
         // Pattern generation
-        const pattern1 = sin(radius.mul(20).sub(iTime.mul(3)))
-        const pattern2 = sin(angle.mul(12).add(radius.mul(15)))
+        const pattern1Time = iTime.mul(3)
+        const pattern1Input = radius.mul(20).sub(pattern1Time)
+        const pattern1 = pattern1Input.sin()
+        const radiusComponent = radius.mul(15)
+        const pattern2Input = angle.mul(12).add(radiusComponent)
+        const pattern2 = pattern2Input.sin()
         const combined = pattern1.mul(pattern2)
         // Rainbow colors
         const colorPhase = angle.add(iTime)
         const color = vec3(
-                sin(colorPhase),
-                sin(colorPhase.add(29)),
-                sin(colorPhase.add(4.18))
+                colorPhase.sin(),
+                colorPhase.add(29).sin(),
+                colorPhase.add(4.18).sin()
         ).mul(combined)
         return vec4(color, 1)
 }`}
@@ -265,21 +298,46 @@ Create organic-looking blobs that move and merge:
         isFun
         code={`
 const fragment = () => {
-        // Multiple moving points
-        const point1 = vec2(sin(iTime.mul(0.8)).mul(0.3), cos(iTime.mul(0.6)).mul(0.4))
-        const point2 = vec2(sin(iTime.mul(1.2)).mul(0.4), cos(iTime.mul(0.9)).mul(0.3))
-        const point3 = vec2(sin(iTime.mul(0.5)).mul(0.2), cos(iTime.mul(1.1)).mul(0.5))
-        // Calculate distance fields
+        // Multiple moving points using matrix operations
+        const timeMatrix = constant(mat3(
+                0.8, 0, 0,
+                0, 1.2, 0,
+                0, 0, 0.5
+        ))
+        const timeMatrixY = constant(mat3(
+                0.6, 0, 0,
+                0, 0.9, 0,
+                0, 0, 1.1
+        ))
+        const amplitudeMatrix = constant(mat3(
+                0.3, 0, 0,
+                0, 0.4, 0,
+                0, 0, 0.2
+        ))
+        const amplitudeMatrixY = constant(mat3(
+                0.4, 0, 0,
+                0, 0.3, 0,
+                0, 0, 0.5
+        ))
+        const timeVector = vec3(iTime)
+        const sinValues = timeMatrix.mul(timeVector).sin()
+        const cosValues = timeMatrixY.mul(timeVector).cos()
+        const pointsX = amplitudeMatrix.mul(sinValues)
+        const pointsY = amplitudeMatrixY.mul(cosValues)
+        // Calculate distance fields using vectorized operations
         const pos = uv.sub(0.5).mul(2)
-        const dist1 = length(pos.sub(point1))
-        const dist2 = length(pos.sub(point2))
-        const dist3 = length(pos.sub(point3))
-        // Metaball formula
-        const field = oneMinus(dist1).add(oneMinus(dist2)).add(oneMinus(dist3))
-        const threshold = float(0.8)
-        const metaball = smoothstep(threshold.sub(0.1), threshold.add(0.1), field)
+        const distances = vec3(
+                pos.sub(vec2(pointsX.x, pointsY.x)).length(),
+                pos.sub(vec2(pointsX.y, pointsY.y)).length(),
+                pos.sub(vec2(pointsX.z, pointsY.z)).length()
+        )
+        // Metaball formula - vectorized field calculation
+        const fields = distances.oneMinus()
+        const field = fields.x.add(fields.y).add(fields.z)
+        const metaball = smoothstep(0.8 - 0.1, 0.8 + 0.1, field)
         // Color based on field strength
-        const color = vec3(field.mul(0.5), metaball, field.mul(metaball))
+        const colorFactors = vec3(0.5, 1, metaball)
+        const color = vec3(field, metaball, field).mul(colorFactors)
         return vec4(color, 1)
 }`}
 />
@@ -293,25 +351,27 @@ Create an infinite zooming effect:
         code={`
 const fragment = () => {
         // Zoom factor that increases over time
-        const zoom = pow(10, sin(iTime))
+        const zoomExponent = iTime.sin()
+        const zoom = pow(10, zoomExponent)
         // Apply zoom to coordinates
         let pos = uv.sub(0.5).mul(zoom)
         // Keep pattern within bounds using modulo
-        pos = fract(pos).sub(0.5)
+        pos = pos.fract().sub(0.5)
         // Create fractal-like pattern
         let pattern = float(0)
         for (let i = 0; i < 3; i += 1) {
                 const scale = pow(2, i)
-                const layer = sin(pos.x.mul(scale).mul(8)).mul(sin(pos.y.mul(scale).mul(8)))
-                pattern = pattern.add(layer.div(scale))
+                const layerPattern = pos.mul(scale).mul(8).sin()
+                const layer = layerPattern.x.mul(layerPattern.y)
+                const layerContribution = layer.div(scale)
+                pattern = pattern.add(layerContribution)
         }
-        pattern = pattern
         // Color with time-based hue shift
         const hue = iTime.mul(0.1)
         const color = vec3(
-                sin(hue),
-                sin(hue.add(29)),
-                sin(hue.add(4.18))
+                hue.sin(),
+                hue.add(29).sin(),
+                hue.add(4.18).sin()
         ).mul(pattern)
         return vec4(color, 1)
 }`}
@@ -328,4 +388,4 @@ const fragment = () => {
 
 ## Next Steps
 
-Now that you can create dynamic visuals, learn about [Shapes and Patterns](../techniques/04-shapes-patterns.md) to draw specific forms and complex designs.
+Now that you can create dynamic visuals, learn about [Shapes and Patterns](../techniques/04-shapes-patterns.mdx) to draw specific forms and complex designs.

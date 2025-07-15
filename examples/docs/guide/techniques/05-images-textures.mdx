@@ -53,16 +53,17 @@ const fragment = () => {
         const blurFilter = Fn(([uv, blurRadius, size]) => {
                 let blurColor = vec4(0).toVar()
                 let totalWeight = float(0).toVar()
-                const pixelSize = vec2(float(1)).div(iResolution)
-                const halfSize = size.div(float(2)).toVar()
-                const totalSamples = int(size.mul(size))
+                const pixelSize = vec2(1).div(iResolution)
+                const halfSize = size.div(2).toVar()
+                const totalSamples = size.mul(size)
                 // Dynamic sampling based on size parameter
-                Loop(totalSamples, ({ i }) => {
+                Loop(int(totalSamples), ({ i }) => {
                         const x = mod(float(i), size).sub(halfSize)
-                        const y = floor(float(i).div(size)).sub(halfSize)
+                        const y = float(i).div(size).floor().sub(halfSize)
                         // Calculate distance from center for weight
-                        const dist = length(vec2(x, y))
-                        const weight = exp(dist.mul(dist).mul(float(-0.5)))
+                        const dist = vec2(x, y).length()
+                        const distSquared = dist.mul(dist)
+                        const weight = distSquared.mul(-0.5).exp()
                         // Sample offset
                         const offset = vec2(x, y).mul(pixelSize).mul(blurRadius)
                         const sampleUV = uv.add(offset)
@@ -70,7 +71,8 @@ const fragment = () => {
                         const clampedUV = clamp(sampleUV, vec2(0), vec2(1))
                         const sampleColor = texture(iTexture, clampedUV)
                         blurColor.assign(blurColor.add(sampleColor.mul(weight)))
-                        totalWeight.assign(totalWeight.add(weight))
+                        const newWeight = totalWeight.add(weight)
+                        totalWeight.assign(newWeight)
                 })
                 // Normalize by total weight
                 return blurColor.div(totalWeight)
@@ -89,7 +91,10 @@ const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const step = vec2(1).div(iResolution)
         // Sample 3x3 neighborhood as vectors
-        const s = (x, y) => texture(iTexture, uv.add(vec2(x, y).mul(step))).r
+        const s = (x, y) => {
+                const offset = vec2(x, y).mul(step)
+                return texture(iTexture, uv.add(offset)).r
+        }
         const row1 = vec3(s(-1, -1), s(0, -1), s(1, -1))
         const row2 = vec3(s(-1, 0),  s(0, 0),  s(1, 0))
         const row3 = vec3(s(-1, 1),  s(0, 1),  s(1, 1))
@@ -102,9 +107,15 @@ const fragment = () => {
         const ky2 = vec3(0, 0, 0)
         const ky3 = vec3(1, 2, 1)
         // Matrix convolution using dot products
-        const gx = dot(row1, kx1).add(dot(row2, kx2)).add(dot(row3, kx3))
-        const gy = dot(row1, ky1).add(dot(row2, ky2)).add(dot(row3, ky3))
-        const edge = length(vec2(gx, gy))
+        const gx1 = row1.dot(kx1)
+        const gx2 = row2.dot(kx2)
+        const gx3 = row3.dot(kx3)
+        const gx = gx1.add(gx2).add(gx3)
+        const gy1 = row1.dot(ky1)
+        const gy2 = row2.dot(ky2)
+        const gy3 = row3.dot(ky3)
+        const gy = gy1.add(gy2).add(gy3)
+        const edge = vec2(gx, gy).length()
         return vec4(vec3(edge), 1)
 }`}
 />
@@ -117,20 +128,14 @@ const fragment = () => {
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const originalColor = texture(iTexture, uv)
-        // Sepia tone conversion matrix
-        const sepiaR = originalColor.r
-                .mul(float(0.393))
-                .add(originalColor.g.mul(float(0.769)))
-                .add(originalColor.b.mul(float(0.189)))
-        const sepiaG = originalColor.r
-                .mul(float(0.349))
-                .add(originalColor.g.mul(float(0.686)))
-                .add(originalColor.b.mul(float(0.168)))
-        const sepiaB = originalColor.r
-                .mul(float(0.272))
-                .add(originalColor.g.mul(float(0.534)))
-                .add(originalColor.b.mul(float(0.131)))
-        return vec4(sepiaR, sepiaG, sepiaB, originalColor.a)
+        // Sepia tone conversion matrix (column-major order)
+        const sepiaMatrix = mat3(
+                0.393, 0.349, 0.272,  // R coefficients
+                0.769, 0.686, 0.534,  // G coefficients  
+                0.189, 0.168, 0.131   // B coefficients
+        )
+        const sepiaColor = sepiaMatrix.mul(originalColor.rgb)
+        return vec4(sepiaColor, originalColor.a)
 }`}
 />
 
@@ -143,9 +148,8 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        // Scale coordinates and repeat
-        const scale = float(3)
-        const repeatedUV = fract(uv.mul(scale))
+        // Scale and repeat
+        const repeatedUV = uv.mul(3).fract()
         return texture(iTexture, repeatedUV)
 }`}
 />
@@ -158,17 +162,15 @@ const fragment = () => {
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Center coordinates (-0.5 to 0.5)
-        const centeredUV = uv.sub(vec2(0.5))
+        const centeredUV = uv.sub(0.5)
         // Rotation
-        const angle = iTime.mul(float(0.5))
-        const cosA = cos(angle)
-        const sinA = sin(angle)
-        const rotatedUV = vec2(
-                centeredUV.x.mul(cosA).sub(centeredUV.y.mul(sinA)),
-                centeredUV.x.mul(sinA).add(centeredUV.y.mul(cosA))
-        ).add(0.5)
+        const angle = iTime.mul(0.5)
+        const cosA = angle.cos()
+        const sinA = angle.sin()
+        const rotateMat = mat2(cosA, sinA, sinA.negate(), cosA)
+        const rotatePos = rotateMat.mul(centeredUV).add(0.5)
         // Wrap out-of-bounds to repeat
-        const wrappedUV = fract(rotatedUV)
+        const wrappedUV = rotatePos.fract()
         return texture(iTexture, wrappedUV)
 }`}
 />
@@ -181,15 +183,17 @@ const fragment = () => {
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Center UV coordinates around (0,0)
-        const centeredUV = uv.sub(vec2(0.5)).mul(2.0)
-        const radius = length(centeredUV)
+        const centeredUV = uv.sub(0.5).mul(2.0)
+        const radius = centeredUV.length()
         // Fisheye distortion - barrel distortion effect
-        const strength = float(0.5) // Reduced distortion strength
-        const distortedRadius = radius.mul(oneMinus(strength.mul(radius.mul(radius))))
+        const distortedRadius = radius.pow(2).mul(0.5).oneMinus().mul(radius)
         // Calculate new UV coordinates
-        const newUV = centeredUV.mul(distortedRadius.div(radius)).div(2.0).add(0.5)
+        const distortionFactor = distortedRadius.div(radius)
+        const newUV = centeredUV.mul(distortionFactor).div(2.0).add(0.5)
         // Sample texture with clamped coordinates to avoid black edges
-        const clampedUV = clamp(newUV, vec2(0.0), vec2(1.0))
+        const bounds = vec2(0.0)
+        const upperBounds = vec2(1.0)
+        const clampedUV = clamp(newUV, bounds, upperBounds)
         return texture(iTexture, clampedUV)
 }`}
 />
@@ -204,10 +208,10 @@ const fragment = () => {
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Scroll speed
-        const scrollSpeed = vec2(float(0.1), float(0.05))
+        const scrollSpeed = vec2(0.1, 0.05)
         // Time-based offset
         const offset = iTime.mul(scrollSpeed)
-        return texture(iTexture, fract(uv.add(offset)))
+        return texture(iTexture, uv.add(offset).fract())
 }`}
 />
 
@@ -220,10 +224,13 @@ const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Create wave distortion as vec2
         const wavy = Fn(([amplitude, frequency, speed]) => {
-                return sin(uv.yx.mul(frequency).add(iTime.mul(speed))).mul(amplitude)
+                const timeOffset = iTime.mul(speed)
+                const wavePhase = uv.yx.mul(frequency).add(timeOffset)
+                return wavePhase.sin().mul(amplitude)
         })
         // Apply wave distortion to UV coordinates
-        const wavyUV = uv.add(wavy(0.1, 16, 4))
+        const waveDistortion = wavy(0.1, 16, 4)
+        const wavyUV = uv.add(waveDistortion)
         return texture(iTexture, wavyUV)
 }`}
 />
@@ -243,17 +250,19 @@ const fragment = () => {
                         const layerIndex = float(i)
                         // Calculate layer properties based on index
                         const speedBase = layerIndex.mul(0.08).add(0.05)
-                        const speed = vec2(speedBase, speedBase.mul(0.6))
+                        const speedY = speedBase.mul(0.6)
+                        const speed = vec2(speedBase, speedY)
                         const scale = layerIndex.mul(1.5).add(1.5)
                         // Calculate layer offset and UV
                         const offset = iTime.mul(speed)
-                        const layerUV = fract(uv.mul(scale).add(offset))
+                        const layerUV = uv.mul(scale).add(offset).fract()
                         // Sample texture for this layer
                         const layerColor = texture(iTexture, layerUV)
                         // Calculate alpha based on layer depth
-                        const alpha = float(0.3).add(layerIndex.mul(0.1))
+                        const alpha = layerIndex.mul(0.1).add(0.3)
                         // Accumulate layers
-                        finalColor.assign(finalColor.add(layerColor.mul(alpha)))
+                        const layerContribution = layerColor.mul(alpha)
+                        finalColor.assign(finalColor.add(layerContribution))
                 })
                 return finalColor
         })
@@ -273,9 +282,13 @@ Combine procedural patterns with texture sampling for complex effects:
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Procedural checker mask
-        const checker = mod(floor(uv.x.mul(8)).add(floor(uv.y.mul(8))), 2.0)
+        const gridX = uv.x.mul(8).floor()
+        const gridY = uv.y.mul(8).floor()
+        const checker = mod(gridX.add(gridY), 2.0)
         // Simple procedural overlay
-        const noise = sin(uv.x.mul(20)).mul(sin(uv.y.mul(20))).mul(0.5).add(0.5)
+        const noiseX = uv.x.mul(20).sin()
+        const noiseY = uv.y.mul(20).sin()
+        const noise = noiseX.mul(noiseY).mul(0.5).add(0.5)
         const overlayColor = vec4(noise.mul(0.8).add(0.2), noise.mul(0.6).add(0.4), noise, 1.0)
         // Blend with texture
         const baseColor = texture(iTexture, uv)
@@ -293,13 +306,16 @@ Use texture data to control procedural pattern parameters:
 const fragment = () => {
         const sourceTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Sample texture for generative parameters
-        const texData = texture(sourceTexture, uv.mul(0.2))
-        const flow = texData.r.mul(iTime.mul(0.2))
+        const smallUV = uv.mul(0.2)
+        const texData = texture(sourceTexture, smallUV)
+        const timeScale = iTime.mul(0.2)
+        const flow = texData.r.mul(timeScale)
         const freq = texData.g.mul(15.0).add(5.0)
         // Create generative pattern driven by texture
-        const pattern = sin(uv.x.mul(freq).add(flow))
-                .mul(cos(uv.y.mul(freq).add(flow)))
-                .add(sin(length(uv.sub(0.5)).mul(10.0).sub(iTime)))
+        const patternX = uv.x.mul(freq).add(flow).sin()
+        const patternY = uv.y.mul(freq).add(flow).cos()
+        const radialPattern = uv.sub(0.5).length().mul(10.0).sub(iTime).sin()
+        const pattern = patternX.mul(patternY).add(radialPattern)
         // Blend original texture with subtle pattern overlay
         const originalColor = texture(sourceTexture, uv)
         const patternOverlay = pattern.mul(0.3).add(0.7)
@@ -319,40 +335,38 @@ const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         // Generate procedural noise for animation data
         const noise = Fn(([uv]) => {
-                const n1 = sin(uv.x.mul(10)).mul(sin(uv.y.mul(10)))
-                const n2 = sin(uv.x.mul(20).add(uv.y.mul(15))).mul(0.5)
+                const n1X = uv.x.mul(10).sin()
+                const n1Y = uv.y.mul(10).sin()
+                const n1 = n1X.mul(n1Y)
+                const n2X = uv.y.mul(15)
+                const n2Y = uv.x.mul(20).add(n2X)
+                const n2 = n2Y.sin().mul(0.5)
                 return n1.add(n2).mul(0.5).add(0.5)
         })
         // Sample texture to get base noise value
         const baseColor = texture(iTexture, uv)
         const textureNoise = baseColor.r.add(baseColor.g).add(baseColor.b).div(3.0)
         // Combine texture-based and procedural noise
-        const proceduralNoise = noise(uv.mul(0.5))
+        const smallerUV = uv.mul(0.5)
+        const proceduralNoise = noise(smallerUV)
         const combinedNoise = mix(textureNoise, proceduralNoise, 0.5)
         // Use combined noise to modulate time-based animation
         const animSpeed = combinedNoise.mul(2.0).add(0.5)
-        const animOffset = sin(iTime.mul(animSpeed)).mul(0.08)
+        const animOffset = iTime.mul(animSpeed).sin().mul(0.08)
         // Create texture-driven distortion
-        const distortedUV = uv.add(vec2(
-                animOffset.mul(cos(combinedNoise.mul(6.28))),
-                animOffset.mul(sin(combinedNoise.mul(6.28)))
-        ))
+        const cosPhase = combinedNoise.mul(6.28).cos()
+        const sinPhase = combinedNoise.mul(6.28).sin()
+        const offsetX = animOffset.mul(cosPhase)
+        const offsetY = animOffset.mul(sinPhase)
+        const distortedUV = uv.add(vec2(offsetX, offsetY))
         // Sample texture with distorted coordinates
-        const finalColor = texture(iTexture, distortedUV)
-        // Apply color modulation based on texture data
-        const colorShift = combinedNoise.mul(0.2)
-        return vec4(
-                finalColor.r.add(colorShift),
-                finalColor.g.mul(oneMinus(colorShift.mul(0.5))),
-                finalColor.b.sub(colorShift.mul(0.3)),
-                finalColor.a
-        )
+        return texture(iTexture, distortedUV)
 }`}
 />
 
 ## Next Steps
 
-Once you've mastered image and texture manipulation, next learn about [Interactive Effects](06-interactive-effects.md) to create effects that respond to user interactions.
+Once you've mastered image and texture manipulation, next learn about [Interactive Effects](06-interactive-effects.mdx) to create effects that respond to user interactions.
 
 What you learned in this tutorial:
 

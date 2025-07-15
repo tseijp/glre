@@ -138,9 +138,9 @@ gl('loop', () => {
 
 ## Next Steps
 
-- Explore [Core Engine](core/engine.md) for initialization
-- Learn [Node System](node/abstract.md) for shader authoring
-- Reference [Functions](node/functions.md) for available operations
-- Check [Implementation Patterns](ref/implementation-patterns.md) for best practices
+- Explore [Core Engine](core/01-engine.md) for initialization
+- Learn [Node System](node/04-overview.md) for shader authoring
+- Reference [Functions](node/06-functions.md) for available operations
+- Check [Implementation Patterns](ref/07-implementation.md) for best practices
 
 GLRE provides a complete toolkit for GPU programming in TypeScript, making complex graphics accessible through familiar syntax.

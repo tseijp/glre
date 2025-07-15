@@ -15,7 +15,7 @@ The most fundamental shape ????:
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = length(uv.sub(0.5))
+        const distance = uv.sub(0.5).length()
         // Hard edge circle (aliased)
         const circle = step(distance, 0.3)
         return vec4(vec3(circle), 1)
@@ -31,7 +31,7 @@ Using `fwidth()` for automatic edge smoothing:
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = length(uv.sub(0.5))
+        const distance = uv.sub(0.5).length()
         // Anti-aliasing using screen-space derivatives
         const edge = fwidth(distance)
         const circle = smoothstep(edge.add(0.3), edge.sub(0.3).negate(), distance)
@@ -52,16 +52,19 @@ const fragment = () => {
                 const ret = float(0).toVar()
                 Loop(int(AA), ({ i: m }) => {
                         Loop(int(AA), ({ i: n }) => {
-                                const offset = vec2(float(m), float(n))
+                                const offset = vec2(m, n)
                                 const diff = offset.div(AA).sub(0.5).div(iResolution)
-                                const distance = length(pos.add(diff))
+                                const distance = pos.add(diff).length()
                                 const circle = step(distance, 0.3)
-                                ret.assign(ret.add(circle))
+                                const newRet = ret.add(circle)
+                                ret.assign(newRet)
                         })
                 })
-                return ret.div(AA.mul(AA))
+                const divisor = AA.mul(AA)
+                return ret.div(divisor)
         })
-        return vec4(vec3(msaa(4)), 1)
+        const msaaResult = msaa(4)
+        return vec4(vec3(msaaResult), 1)
 }`}
 />
 
@@ -76,10 +79,10 @@ const fragment = () => {
         // Triangle using polygon generator (keep original function)
         const polygon = (pos, sides, size) => {
                 const angle = atan2(pos.y, pos.x)
-                const radius = length(pos)
-                const pi2 = float(6.28318)
-                const a = angle.add(float(3.14159)).div(pi2).mul(sides)
-                const r = cos(floor(a).sub(a).add(float(0.5)).mul(pi2).div(sides))
+                const radius = pos.length()
+                const pi2 = 6.28318
+                const a = angle.div(pi2).mul(sides)
+                const r = a.floor().sub(a).add(0.5).mul(pi2).div(sides).cos()
                 return step(radius.mul(r), size)
         }
         const triangle = polygon(uv.sub(0.5), 3, 0.2)
@@ -100,17 +103,21 @@ const fragment = () => {
         const gap = 0.25
         const polygon = (pos, sides, size) => {
                 const angle = atan2(pos.y, pos.x)
-                const radius = length(pos)
-                const pi2 = float(6.28318)
-                const a = angle.add(float(3.14159)).div(pi2).mul(sides)
-                const r = cos(floor(a).sub(a).add(float(0.5)).mul(pi2).div(sides))
+                const radius = pos.length()
+                const pi2 = 6.28318
+                const a = angle.div(pi2).mul(sides)
+                const r = a.floor().sub(a).add(0.5).mul(pi2).div(sides).cos()
                 return step(radius.mul(r), size)
         }
         // Create different polygons with consistent visual size
-        const shapes = polygon(pos.add(vec2(-gap, gap)), 3, 0.1)
-                .add(polygon(pos.add(vec2(gap, gap)), 4, 0.15))
-                .add(polygon(pos.add(vec2(-gap, -gap)), 6, 0.15))
-                .add(polygon(pos.add(vec2(gap, -gap)), 8, 0.15))
+        const pos1 = vec2(-gap, gap).add(pos)
+        const pos2 = vec2(gap, gap).add(pos)
+        const pos3 = vec2(-gap, -gap).add(pos)
+        const pos4 = vec2(gap, -gap).add(pos)
+        const shapes = polygon(pos1, 3, 0.1)
+                  .add(polygon(pos2, 4, 0.15))
+                  .add(polygon(pos3, 6, 0.15))
+                  .add(polygon(pos4, 8, 0.15))
         return vec4(vec3(shapes), 1)
 }`}
 />
@@ -123,26 +130,27 @@ const fragment = () => {
 const fragment = () => {
         // Pentagram (5-pointed star) using distance field
         const pos = uv.sub(0.5)
-        const v1 = constant(vec2(0.809016994, -0.587785252))
-        const v2 = constant(vec2(v1.x.negate(), v1.y))
-        const v3 = constant(vec2(0.309016994, -0.951056516))
-        // SDF Pentagram function by Inigo Quilez
-        const sdPentagram = Fn(([p, r]) => {
-                let px = abs(p.x)
-                let py = p.y
-                let d = max(dot(vec2(px, py), v1), 0)
-                px = px.sub(d.mul(v1.x).mul(2))
-                py = py.sub(d.mul(v1.y).mul(2))
-                d = max(dot(vec2(px, py), v2), 0)
-                px = px.sub(d.mul(v2.x).mul(2))
-                py = py.sub(d.mul(v2.y).mul(2))
-                px = abs(px)
-                py = py.sub(r)
-                const c = clamp(dot(vec2(px, py), v3), 0, float(0.726542528))
-                return length(vec2(px, py).sub(v3.mul(c)))
+        const edge1 = constant(vec2(0.809016994, -0.587785252))
+        const edge2 = constant(vec2(edge1.x.negate(), edge1.y))
+        const edge3 = constant(vec2(0.309016994, -0.951056516))
+        const sdPentagram = Fn(([p, radius]) => {
+                let point = vec2(p.x.abs(), p.y)
+                // First edge reflection
+                const distance1 = max(point.dot(edge1), 0)
+                const offset1 = edge1.mul(distance1).mul(2)
+                point = point.sub(offset1)
+                // Second edge reflection
+                const distance2 = max(point.dot(edge2), 0)
+                const offset2 = edge2.mul(distance2).mul(2)
+                point = point.sub(offset2)
+                // Final adjustments
+                point = vec2(point.x.abs(), point.y.sub(radius))
+                const clampValue = clamp(point.dot(edge3), 0, 0.726542528)
+                const finalOffset = edge3.mul(clampValue)
+                return point.sub(finalOffset).length()
         })
         // Create star
-        const starDist = sdPentagram(pos, float(0.2))
+        const starDist = sdPentagram(pos, 0.2)
         const starShape = smoothstep(0.02, 0, starDist)
         return vec4(vec3(starShape), 1)
 }`}
@@ -157,11 +165,14 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Horizontal line
-        let c = smoothstep(0.02, 0, abs(uv.y))
+        const absY = uv.y.abs()
+        let c = smoothstep(0.02, 0, absY)
         // Vertical line
-        c = c.add(smoothstep(0.02, 0, abs(uv.x)))
+        const absX = uv.x.abs()
+        c = c.add(smoothstep(0.02, 0, absX))
         // Diagonal line
-        c = c.add(smoothstep(0.02, 0, abs(uv.y.sub(uv.x))))
+        const diagDiff = uv.y.sub(uv.x).abs()
+        c = c.add(smoothstep(0.02, 0, diagDiff))
         return vec4(vec3(c), 1)
 }`}
 />
@@ -174,17 +185,18 @@ const fragment = () => {
 const fragment = () => {
         // Sine wave
         const pos = uv.sub(0.5).mul(2)
-        const sineWave = sin(pos.x.mul(4)).mul(0.3)
-        const sineDistance = abs(pos.y.sub(sineWave))
+        const sineWave = pos.x.mul(4).sin().mul(0.3)
+        const sineDistance = pos.y.sub(sineWave).abs()
         const sineLine = smoothstep(0.05, 0, sineDistance)
         // Parabola
         const parabola = pow(pos.x, 3)
-        const parabolaDistance = abs(pos.y.sub(parabola))
+        const parabolaDistance = pos.y.sub(parabola).abs()
         const parabolaLine = smoothstep(0.05, 0, parabolaDistance)
         // Circle outline
-        const circleDistance = abs(length(pos).sub(0.5))
+        const circleDistance = pos.length().sub(0.5).abs()
         const circleLine = smoothstep(0.05, 0, circleDistance)
-        const curves = max(sineLine, max(parabolaLine, circleLine))
+        const maxParabolaCircle = max(parabolaLine, circleLine)
+        const curves = max(sineLine, maxParabolaCircle)
         return vec4(vec3(curves), 1)
 }`}
 />
@@ -206,13 +218,16 @@ const fragment = () => {
                         const scale = pow(2, layerIndex)
                         const scaledPos = uv.mul(scale)
                         // Circle pattern at each scale
-                        const dist = length(fract(scaledPos).sub(0.5))
+                        const dist = scaledPos.fract().sub(0.5).length()
                         const circle = smoothstep(0.3, 0.2, dist)
                         // Add to final color with decreasing weight
-                        const weight = oneMinus(layerIndex.div(float(iterations)))
-                        color.assign(color.add(vec3(circle).mul(weight)))
+                        const layerRatio = layerIndex.div(float(iterations))
+                        const weight = layerRatio.oneMinus()
+                        const circleVec = vec3(circle).mul(weight)
+                        color.assign(color.add(circleVec))
                 })
-                return color.div(float(iterations)) // Normalize
+                const iterationsFloat = float(iterations)
+                return color.div(iterationsFloat) // Normalize
         })
         const fractalColor = generateFractal(uv, 8)
         return vec4(fractalColor, 1)
@@ -225,25 +240,30 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-        const st = uv.mul(float(5))
-        const row = floor(st)
-        const col = fract(st)
+        const st = uv.mul(5)
+        const row = st.floor()
+        const col = st.fract()
         const random2 = Fn(([p]) => {
-                return fract(sin(vec2(dot(p, vec2(127.1, 311.7)), dot(p, vec2(269.5, 183.3)))).mul(43758.5453))
+                const dot1 = vec2(127.1, 311.7).dot(p)
+                const dot2 = vec2(269.5, 183.3).dot(p)
+                return vec2(dot1, dot2).sin().mul(43758.5453).fract()
         })
         const voronoiPattern = Fn(([gridRow, gridCol]) => {
                 const minDist = float(1).toVar('minDist')
                 const closestPoint = vec2(0).toVar('closestPoint')
                 Loop(int(9), ({ i }) => {
                         const idx = i.toFloat()
-                        const x = floor(mod(idx, float(3))).sub(1)
-                        const y = floor(idx.div(float(3))).sub(1)
+                        const x = mod(idx, 3).floor().sub(1)
+                        const y = idx.div(3).floor().sub(1)
                         const offset = vec2(x, y).toVar()
-                        const point = random2(gridRow.add(offset)).toVar()
-                        const dist = length(offset.add(point).sub(gridCol)).toVar()
+                        const gridPoint = gridRow.add(offset)
+        const point = random2(gridPoint).toVar()
+                        const dist = offset.add(point).sub(gridCol).length().toVar()
                         const closer = step(dist, minDist).toVar()
-                        minDist.assign(mix(minDist, dist, closer))
-                        closestPoint.assign(mix(closestPoint, point, closer))
+                        const newMinDist = mix(minDist, dist, closer)
+        minDist.assign(newMinDist)
+                        const newClosestPoint = mix(closestPoint, point, closer)
+        closestPoint.assign(newClosestPoint)
                 })
                 return closestPoint
         })
@@ -260,30 +280,39 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-        const hash = Fn(([coord]) => fract(sin(dot(coord, vec2(127.1, 311.7))).mul(43758.5453)))
+        const hash = Fn(([coord]) => {
+                const dotResult = vec2(127.1, 311.7).dot(coord)
+                return dotResult.sin().mul(43758.5453).fract()
+        })
         const automata = Fn(([coord, time]) => {
                 let neighbors = float(0).toVar('neighbors')
                 Loop(int(9), ({ i }) => {
                         const idx = float(i)
-                        const x = floor(mod(idx, float(3)))
-                        const y = floor(idx.div(float(3)))
+                        const x = mod(idx, 3).floor()
+                        const y = idx.div(3).floor()
                         const offset = vec2(x, y).toVar()
-                        If(length(offset).greaterThan(0.1), () => {
-                                const cell = step(0.5, hash(coord.add(offset)))
-                                neighbors.assign(neighbors.add(cell))
+                        If(offset.length().greaterThan(0.1), () => {
+                                const coordOffset = coord.add(offset)
+                                const cell = step(0.5, hash(coordOffset))
+                                const newNeighbors = neighbors.add(cell)
+                                neighbors.assign(newNeighbors)
                         })
                 })
-                const alive = step(0.5, hash(coord.add(time)))
-                const birth = step(2.5, neighbors).mul(step(neighbors, 3.5)).mul(oneMinus(alive))
-                const survival = step(1.5, neighbors).mul(step(neighbors, 3.5)).mul(alive)
+                const coordTime = coord.add(time)
+                const alive = step(0.5, hash(coordTime))
+                const birthRange = step(2.5, neighbors).mul(step(neighbors, 3.5))
+                const birth = alive.oneMinus().mul(birthRange)
+                const survivalRange = step(1.5, neighbors).mul(step(neighbors, 3.5))
+                const survival = survivalRange.mul(alive)
                 return max(birth, survival)
         })
         const p = uv.mul(64)
-        const local = fract(p)
-        const t = floor(iTime)
-        const life = automata(floor(p), t)
-        const color = length(local)
-        return vec4(vec3(color.mul(life)), 1)
+        const local = p.fract()
+        const t = iTime.floor()
+        const life = automata(p.floor(), t)
+        const color = local.length()
+        const lifeColor = color.mul(life)
+        return vec4(vec3(lifeColor), 1)
 }`}
 />
 
@@ -294,19 +323,24 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Morphing between different patterns
-        const t = sin(iTime)
+        const t = iTime.sin()
         // Pattern A: Circles
-        const circles = sin(length(uv.sub(0.5)).mul(10))
+        const circles = uv.sub(0.5).length().mul(10).sin()
         // Pattern B: Stripes
-        const stripes = sin(uv.x.mul(10))
+        const stripes = uv.x.mul(10).sin()
         // Pattern C: Grid
-        const grid = sin(uv.x.mul(10)).mul(sin(uv.y.mul(10)))
+        const gridX = uv.x.mul(10).sin()
+        const gridY = uv.y.mul(10).sin()
+        const grid = gridX.mul(gridY)
         // Morph between patterns
-        let pattern = mix(circles, stripes, smoothstep(0, 0.33, t))
-        pattern = mix(pattern, grid, smoothstep(0.33, 0.66, t))
-        pattern = mix(pattern, circles, smoothstep(0.66, 1, t))
+        const mixRatio1 = smoothstep(0, 0.33, t)
+        let pattern = mix(circles, stripes, mixRatio1)
+        const mixRatio2 = smoothstep(0.33, 0.66, t)
+        pattern = mix(pattern, grid, mixRatio2)
+        const mixRatio3 = smoothstep(0.66, 1, t)
+        pattern = mix(pattern, circles, mixRatio3)
         pattern = pattern
-        const color = vec3(pattern, pattern.mul(0.8), pattern.mul(1.2))
+        const color = vec3(1, 0.8, 1.2).mul(pattern)
         return vec4(color, 1)
 }`}
 />
@@ -321,4 +355,4 @@ const fragment = () => {
 
 ## Next Steps
 
-Now that you can create shapes and patterns, learn about [Images and Textures](05-images-textures.md) to work with external images and create complex surface effects.
+Now that you can create shapes and patterns, learn about [Images and Textures](05-images-textures.mdx) to work with external images and create complex surface effects.

@@ -147,7 +147,7 @@ const fragment = () => {
         const x = uv.x // Horizontal position
         const y = uv.y // Vertical position
         // Distance from left bottom
-        const distance = length(vec2(x, y))
+        const distance = vec2(x, y).length()
         return vec4(vec3(distance), 1)
 }`}
 />
@@ -188,7 +188,7 @@ const sum = a.add(b) // 2 + 3 = 5
 const doubled = a.mul(2) // 2 * 2 = 4
 
 // Sine wave (creates smooth up-and-down motion)
-const wave = sin(a) // Creates values between -1 and 1
+const wave = a.sin() // Creates values between -1 and 1
 ```
 
 ### What is Sine?
@@ -213,9 +213,9 @@ const fragment = () => {
         // Use X coordinate (already 0-1 range)
         const x = uv.x
         // Create rainbow colors using sine waves
-        const r = sin(x.mul(6))
-        const g = sin(x.mul(6).add(2))
-        const b = sin(x.mul(6).add(4))
+        const r = x.mul(6).sin()
+        const g = x.mul(6).add(2).sin()
+        const b = x.mul(6).add(4).sin()
         return vec4(r, g, b, 1)
 }`}
 />
@@ -227,10 +227,10 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = length(uv.sub(0.5))
+        const distance = uv.sub(0.5).length()
         // Change color based on distance
         const intensity = distance
-        const color = vec3(intensity, intensity.mul(0.5), intensity.mul(0.2))
+        const color = vec3(1, 0.5, 0.2).mul(intensity)
         return vec4(color, 1)
 }`}
 />
@@ -245,6 +245,6 @@ const fragment = () => {
 
 ## Next Steps
 
-Now that you can display basic colors, move on to [Colors and Coordinates](02-colors-coordinates.md) to learn more detailed color control and coordinate manipulation.
+Now that you can display basic colors, move on to [Colors and Coordinates](02-colors-coordinates.mdx) to learn more detailed color control and coordinate manipulation.
 
 You're ready to start creating beautiful visuals with code!
