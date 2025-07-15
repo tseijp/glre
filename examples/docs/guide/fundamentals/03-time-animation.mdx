@@ -147,35 +147,42 @@ const fragment = () => {
 
 ### Lissajous Curves
 
-Mathematical curves that create beautiful patterns:
+Mathematical curves that create beautiful patterns using loop-based sampling:
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        // Lissajous curve (3/2 ratio)
-        const x = iTime.mul(3).add(iTime).sin()
-        const y = iTime.mul(2).sin()
-        const curvePos = vec2(x, y).div(2)
-        // Distance from curve
-        const distance = uv.sub(0.5).sub(curvePos).length()
-        // Draw the curve
-        const curve = smoothstep(0.1, 0.05, distance)
-        // Add trail effect
-        const timeOffset = iTime.mul(5)
-        const historyInput = distance.mul(30).sub(timeOffset)
-        const history = historyInput.sin()
-        const historyMask = smoothstep(0.8, 0.2, distance)
-        const historyEffect = history.mul(historyMask).mul(0.3)
-        const final = max(curve, historyEffect)
-        const color = vec3(1, 0.7, 1.3).mul(final)
-        return vec4(color, 1)
+        const lissajous = Fn(([grid, xy]) => {
+                const ret = vec3(0).toVar()
+                Loop(int(32), ({ i }) => {
+                        const t = float(i)
+                        const pos = iTime.add(t).mul(grid).mul(7).sin()
+                        const distance = xy.sub(pos).length()
+                        const line = smoothstep(0.1, 0.09, distance)
+                        ret.assign(ret.add(line))
+                })
+                return ret
+        })
+        const generateGrid = Fn(([sample]) => {
+                const ret = vec3(0).toVar()
+                Loop(int(sample), ({ i }) => {
+                        Loop(int(sample), ({ i: j }) => {
+                                const grid = vec2(i, j).add(1)
+                                const center = grid.sub(sample.div(2).add(0.5)).mul(2)
+                                const pos = uv.sub(0.5).mul(sample).mul(2).sub(center)
+                                const pattern = lissajous(grid, pos)
+                                const color = vec3(grid.div(sample), 0.5).mul(pattern)
+                                ret.assign(ret.add(color))
+                        })
+                })
+                return ret
+        })
+        return vec4(generateGrid(5), 1)
 }`}
 />
 
-## Easing Functions
-
-### Smooth Transitions
+### Easing Functions
 
 Instead of linear changes, use easing for more natural motion:
 
@@ -211,37 +218,6 @@ const fragment = () => {
 }`}
 />
 
-## Interactive Animations
-
-### Mouse-Controlled Effects
-
-Combine time with mouse position:
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        // Distance from mouse (simulated at center for demo)
-        const mouseCenter = iMouse.div(2)
-        const distance = uv.sub(mouseCenter).length()
-        // Time-based ripples from mouse position
-        const rippleTime = iTime.mul(10)
-        const rippleInput = distance.mul(15).sub(rippleTime)
-        const ripple = rippleInput.sin()
-        const rippleMask = smoothstep(0.8, 0, distance)
-        // Background pattern
-        const backgroundX = uv.x.mul(10).add(iTime).sin()
-        const backgroundY = uv.y.mul(10).add(iTime).sin()
-        const background = backgroundX.mul(backgroundY)
-        // Combine effects
-        const backgroundEffect = background.mul(0.3)
-        const rippleEffect = ripple.mul(rippleMask).mul(0.7)
-        const final = backgroundEffect.add(rippleEffect)
-        const color = vec3(final)
-        return vec4(color, 1)
-}`}
-/>
-
 ## Time-Based Effects
 
 ### Kaleidoscope
@@ -253,42 +229,37 @@ Create a kaleidoscope effect that changes over time:
         code={`
 const fragment = () => {
         // Convert to polar coordinates
-        let radius = uv.sub(0.5).length()
-        const centeredPos = uv.sub(0.5)
-        let angle = atan2(centeredPos.y, centeredPos.x)
+        const center = uv.sub(0.5)
+        let r = center.length()
+        let a = atan2(center.y, center.x)
         // Kaleidoscope symmetry
-        const sections = 6
-        angle = angle.div(6).mul(sections)
-        angle = angle.fract().sub(0.5).abs().mul(2)
-        angle = angle.mul(6).div(sections)
+        const segments = 6
+        a = a.div(6).mul(segments)
+        a = a.fract().sub(0.5).abs().mul(2)
+        a = a.mul(6).div(segments)
         // Time-based rotation
-        const timeRotation = iTime.mul(0.5)
-        angle = angle.add(timeRotation)
+        const rotation = iTime.mul(0.5)
+        a = a.add(rotation)
         // Radial waves
-        const timeComponent = iTime.mul(2)
-        const radiusWave = angle.mul(8).add(timeComponent).sin()
-        const radiusModulation = radiusWave.mul(0.1)
-        radius = radius.add(radiusModulation)
+        const timeWave = iTime.mul(2)
+        const wave = a.mul(8).add(timeWave).sin()
+        const waveEffect = wave.mul(0.1)
+        r = r.add(waveEffect)
         // Pattern generation
-        const pattern1Time = iTime.mul(3)
-        const pattern1Input = radius.mul(20).sub(pattern1Time)
-        const pattern1 = pattern1Input.sin()
-        const radiusComponent = radius.mul(15)
-        const pattern2Input = angle.mul(12).add(radiusComponent)
-        const pattern2 = pattern2Input.sin()
-        const combined = pattern1.mul(pattern2)
+        const rippleTime = iTime.mul(3)
+        const ripples = r.mul(20).sub(rippleTime).sin()
+        const spiralRadius = r.mul(15)
+        const spiral = a.mul(12).add(spiralRadius).sin()
+        const pattern = ripples.mul(spiral)
         // Rainbow colors
-        const colorPhase = angle.add(iTime)
-        const color = vec3(
-                colorPhase.sin(),
-                colorPhase.add(29).sin(),
-                colorPhase.add(4.18).sin()
-        ).mul(combined)
+        const hue = a.add(iTime)
+        const red = hue.sin()
+        const green = hue.add(29).sin()
+        const blue = hue.add(4.18).sin()
+        const color = vec3(red, green, blue).mul(pattern)
         return vec4(color, 1)
 }`}
 />
-
-## Advanced Techniques
 
 ### Metaballs Animation
 
@@ -327,9 +298,9 @@ const fragment = () => {
         // Calculate distance fields using vectorized operations
         const pos = uv.sub(0.5).mul(2)
         const distances = vec3(
-                pos.sub(vec2(pointsX.x, pointsY.x)).length(),
-                pos.sub(vec2(pointsX.y, pointsY.y)).length(),
-                pos.sub(vec2(pointsX.z, pointsY.z)).length()
+                vec2(pointsX.x, pointsY.x).sub(pos).length(),
+                vec2(pointsX.y, pointsY.y).sub(pos).length(),
+                vec2(pointsX.z, pointsY.z).sub(pos).length()
         )
         // Metaball formula - vectorized field calculation
         const fields = distances.oneMinus()
@@ -357,15 +328,21 @@ const fragment = () => {
         let pos = uv.sub(0.5).mul(zoom)
         // Keep pattern within bounds using modulo
         pos = pos.fract().sub(0.5)
-        // Create fractal-like pattern
-        let pattern = float(0)
-        for (let i = 0; i < 3; i += 1) {
-                const scale = pow(2, i)
-                const layerPattern = pos.mul(scale).mul(8).sin()
-                const layer = layerPattern.x.mul(layerPattern.y)
-                const layerContribution = layer.div(scale)
-                pattern = pattern.add(layerContribution)
-        }
+        
+        // Create fractal-like pattern using Loop
+        const generatePattern = Fn(([position]) => {
+                const result = float(0).toVar()
+                Loop(int(3), ({ i }) => {
+                        const scale = pow(2, i.toFloat())
+                        const layerPattern = position.mul(scale).mul(8).sin()
+                        const layer = layerPattern.x.mul(layerPattern.y)
+                        const layerContribution = layer.div(scale)
+                        result.assign(result.add(layerContribution))
+                })
+                return result
+        })
+        
+        const pattern = generatePattern(pos)
         // Color with time-based hue shift
         const hue = iTime.mul(0.1)
         const color = vec3(
@@ -383,7 +360,6 @@ const fragment = () => {
 - ✅ Rotation, scaling, and wave animations
 - ✅ Complex pattern combinations
 - ✅ Easing functions for smooth motion
-- ✅ Interactive time-based effects
 - ✅ Animation control systems
 
 ## Next Steps

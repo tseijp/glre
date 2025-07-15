@@ -167,32 +167,28 @@ const fragment = () => {
 const fragment = () => {
         // Divide screen into grid cells
         const scale = 8
-        const gridPos = uv.mul(scale)
-        // Get cell indices
-        const cellX = gridPos.x.floor()
-        const cellY = gridPos.y.floor()
+        // Get cell indices as vec2
+        const cell = uv.mul(scale).floor()
         // Checkerboard pattern
-        const checker = mod(cellX.add(cellY), 2)
+        const checker = mod(cell.x.add(cell.y), 2)
         // Alternate between white and black
         const color = vec3(checker)
         return vec4(color, 1)
 }`}
 />
 
-### Stripe Patterns
+### Polka Dot Patterns
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        // Vertical stripes
-        const frequency = 100
-        const stripe = uv.x.mul(frequency).sin()
-        // Diagonal stripes
-        const diagonal = uv.x.add(uv.y).mul(frequency).sin()
-        // Combine patterns
-        const pattern = mix(stripe, diagonal, 0.5)
-        const color = vec3(1, 0.8, 0.6).mul(pattern)
+        // Create repeating pattern and circular dots
+        const scale = 10
+        const repeated = mod(uv.mul(scale), 1).sub(0.5)
+        const dot = step(repeated.length(), 0.3)
+        // Create colored dots
+        const color = vec3(0.4, 0.8, 1).mul(dot)
         return vec4(color, 1)
 }`}
 />
@@ -204,16 +200,19 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = uv.sub(0.5).length()
+        const center = uv.sub(0.5)
+        const distance = center.length()
         // Concentric circles
-        const rings = distance.mul(30).sin()
+        const ringFreq = 30
+        const rings = distance.mul(ringFreq).sin()
         // Smooth ring edges
         const ringWidth = 0.1
         const smoothRings = smoothstep(0, ringWidth, rings)
         // Combine with gradient
         const gradient = distance.oneMinus()
         const pattern = smoothRings.mul(gradient)
-        const color = vec3(1, 0.8, 1.2).mul(pattern)
+        const baseColor = vec3(1, 0.8, 1.2)
+        const color = baseColor.mul(pattern)
         return vec4(color, 1)
 }`}
 />

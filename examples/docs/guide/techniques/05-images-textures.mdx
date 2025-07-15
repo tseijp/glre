@@ -190,11 +190,8 @@ const fragment = () => {
         // Calculate new UV coordinates
         const distortionFactor = distortedRadius.div(radius)
         const newUV = centeredUV.mul(distortionFactor).div(2.0).add(0.5)
-        // Sample texture with clamped coordinates to avoid black edges
-        const bounds = vec2(0.0)
-        const upperBounds = vec2(1.0)
-        const clampedUV = clamp(newUV, bounds, upperBounds)
-        return texture(iTexture, clampedUV)
+        // Sample texture
+        return texture(iTexture, newUV)
 }`}
 />
 
@@ -281,15 +278,14 @@ Combine procedural patterns with texture sampling for complex effects:
         code={`
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        // Procedural checker mask
-        const gridX = uv.x.mul(8).floor()
-        const gridY = uv.y.mul(8).floor()
-        const checker = mod(gridX.add(gridY), 2.0)
-        // Simple procedural overlay
-        const noiseX = uv.x.mul(20).sin()
-        const noiseY = uv.y.mul(20).sin()
-        const noise = noiseX.mul(noiseY).mul(0.5).add(0.5)
-        const overlayColor = vec4(noise.mul(0.8).add(0.2), noise.mul(0.6).add(0.4), noise, 1.0)
+        // Procedural checker mask using vec
+        const grid = uv.mul(8).floor()
+        const checker = mod(grid.x.add(grid.y), 2.0)
+        // Simple procedural overlay using vec
+        const noiseUV = uv.mul(20).sin()
+        const noise = noiseUV.x.mul(noiseUV.y).mul(0.5).add(0.5)
+        const overlayRGB = vec3(noise).mul(vec3(0.8, 0.6, 1.0)).add(vec3(0.2, 0.4, 0.0))
+        const overlayColor = vec4(overlayRGB, 1.0)
         // Blend with texture
         const baseColor = texture(iTexture, uv)
         return mix(baseColor, overlayColor, checker)
