@@ -4,24 +4,29 @@ import { is } from './utils/helpers'
 import { createAttrib, createIbo, createProgram, createTexture, createVbo, getStride } from './utils/program'
 import type { GL, WebGLState } from './types'
 
-export const webgl = async (gl: Partial<GL>) => {
+export const webgl = async (gl: GL) => {
         const c = gl.el!.getContext('webgl2')!
         const config = { isWebGL: true, gl }
         const fs = fragment(gl.fs, config)
         const vs = vertex(gl.vs, config)
-        const pg = createProgram(c, vs, fs, () => void (gl.isLoop = false))!
+        const pg = createProgram(c, vs, fs, gl.error)!
         c.useProgram(pg)
 
-        let _activeUnit = 0
+        let activeUnit = 0
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
         const attribs = cached((key) => c.getAttribLocation(pg, key))
-        const units = cached(() => _activeUnit++)
+        const units = cached(() => activeUnit++)
 
-        const clean = () => c.deleteProgram(pg)
+        const clean = () => {
+                c.deleteProgram(pg)
+                c.getExtension('WEBGL_lose_context')?.loseContext()
+                gl.el.width = 1
+                gl.el.height = 1
+        }
 
         const render = () => {
                 c.clear(c.COLOR_BUFFER_BIT)
-                c.viewport(0, 0, ...gl.size!)
+                c.viewport(0, 0, ...gl.size)
                 c.drawArrays(c.TRIANGLES, 0, 3)
         }
 
@@ -29,7 +34,7 @@ export const webgl = async (gl: Partial<GL>) => {
                 const loc = attribs(key, true)
                 const vbo = createVbo(c, value)
                 const ibo = createIbo(c, iboValue)
-                const str = getStride(gl.count!, value, iboValue)
+                const str = getStride(gl.count, value, iboValue)
                 createAttrib(c, str, loc, vbo, ibo)
         }
 
@@ -43,14 +48,18 @@ export const webgl = async (gl: Partial<GL>) => {
         }
 
         const _texture = (key: string, src: string) => {
+                gl.loading++
                 const image = new Image()
                 Object.assign(image, { src, crossOrigin: 'anonymous' })
                 image.decode().then(() => {
                         const loc = uniforms(key)
                         const unit = units(key)
                         createTexture(c, image, loc, unit)
+                        gl.loading--
                 })
         }
 
-        return { render, clean, _attribute, _uniform, _texture, webgl: { context: c, program: pg } as WebGLState }
+        const webgl: WebGLState = { context: c, program: pg }
+
+        return { webgl, render, clean, _attribute, _uniform, _texture }
 }

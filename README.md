@@ -114,15 +114,13 @@ npm install glre
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, vec4, fract, position, iResolution } from 'glre/react'
-const frag = vec4(fract(position.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = useGL({ frag })
+import { useGL, vec4, uv } from 'glre/react'
+const Canvas = () => {
+        const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
 }
 
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(<Canvas />)
 ```
 
 <details>
@@ -135,15 +133,13 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 ```ts
 import { GLView } from 'expo-gl'
 import { registerRootComponent } from 'expo'
-import { useGL, vec4, fract, position, iResolution } from 'glre/native'
-const frag = vec4(fract(position.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = useGL({ frag })
+import { useGL, vec4, uv } from 'glre/native'
+const Canvas = () => {
+        const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
 }
 
-registerRootComponent(App)
+registerRootComponent(Canvas)
 ```
 
 </details>
@@ -156,15 +152,13 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 
 ```ts
 import { render } from 'solid-js/web'
-import { onGL, vec4, fract, position, iResolution } from 'glre/solid'
-const frag = c4(fract(position.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = onGL({ frag })
+import { onGL, vec4, uv } from 'glre/solid'
+const Canvas = () => {
+        const gl = onGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
 }
 
-render(() => <App />, document.getElementById('root'))
+render(() => <Canvas />, document.getElementById('root'))
 ```
 
 </details>
@@ -176,16 +170,11 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 </summary>
 
 ```html
+<canvas id="canvas"></canvas>
 <script type="module">
-        import createGL from 'https://esm.sh/glre'
-        import { vec4, fract, position, iResolution } from 'https://esm.sh/glre'
-        const frag = vec4(fract(position.xy.div(iResolution)), 0, 1)
-        function App() {
-                const el = document.createElement('canvas')
-                createGL({ el, frag }).mount()
-                document.body.append(el)
-        }
-        document.addEventListener('DOMContentLoaded', App)
+        import { createGL, vec4, uv } from 'https://esm.sh/glre'
+        const el = document.getElementById('canvas')
+        createGL({ el, fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
 

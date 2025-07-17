@@ -7,22 +7,39 @@ import PlaygroundPreview from '@theme/Playground/Preview' // @ts-ignore
 import PlaygroundEditor from '@theme/Playground/Editor'
 import { useInView } from './useInView'
 
-const createCanvasTemplate = (fragmentExpression: string, functionDefinition?: string) => `
+const createCanvasTemplate = (isLoop: boolean, fragmentExpression: string, functionDefinition?: string) => {
+        if (!isLoop)
+                if (
+                        functionDefinition.includes('iTime') ||
+                        functionDefinition.includes('iMouse') ||
+                        functionDefinition.includes('texture') // @TODO FIX: stop rendering if no loop and using texture for webgpu
+                )
+                        isLoop = true
+        return `
 function Canvas() {
         ${functionDefinition || ''}
+        const [, set] = useState()
         const gl = useGL({
                 width: 256,
                 height: 256,
-                frag: ${fragmentExpression}
+                isLoop: ${isLoop},
+                isWebGL: true,
+                frag: ${fragmentExpression},
+                error(error = "") {
+                        set(() => {
+                                throw new Error(error)
+                        })
+                }
         })
         return <canvas ref={gl.ref} />
 }`
+}
 
-const transformCode = (isFun: boolean, code: string) => {
+const transformCode = (isFun: boolean, isLoop: boolean, code: string) => {
         code = code.trim()
         let ret: string
-        if (isFun) ret = createCanvasTemplate('fragment()', code)
-        else ret = createCanvasTemplate(code)
+        if (isFun) ret = createCanvasTemplate(isLoop, 'fragment()', code)
+        else ret = createCanvasTemplate(isLoop, code)
         ret = ret.trim()
         return ret
 }
@@ -30,11 +47,13 @@ const transformCode = (isFun: boolean, code: string) => {
 interface Props {
         code?: string
         isFun?: boolean
+        isLoop?: boolean
 }
 
 export const FragmentEditor = ({
         code = 'vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)',
         isFun = false,
+        isLoop = false,
         ...props
 }: Props) => {
         code = code.trim()
@@ -46,7 +65,7 @@ export const FragmentEditor = ({
                         <PlaygroundContainer>
                                 <PlaygroundProvider
                                         code={code}
-                                        transformCode={transformCode.bind(null, isFun)}
+                                        transformCode={transformCode.bind(null, isFun, isLoop)}
                                         scope={ReactLiveScope}
                                         {...props}
                                 >

@@ -1,27 +1,26 @@
-const createShader = (c: WebGLRenderingContext, source: string, type: number) => {
+const createShader = (c: WebGLRenderingContext, source: string, type: number, onError = console.warn) => {
         const shader = c.createShader(type)
-        if (!shader) throw new Error('Failed to create shader')
+        if (!shader) return onError('Failed to create shader')
         c.shaderSource(shader, source.trim())
         c.compileShader(shader)
         if (c.getShaderParameter(shader, c.COMPILE_STATUS)) return shader
         const error = c.getShaderInfoLog(shader)
         c.deleteShader(shader)
-        console.warn(`Could not compile shader: ${error}`)
+        onError(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vert: string, frag: string, onError = () => {}) => {
+export const createProgram = (c: WebGLRenderingContext, vert: string, frag: string, onError = console.warn) => {
         const pg = c.createProgram()
-        const fs = createShader(c, frag, c.FRAGMENT_SHADER)
-        const vs = createShader(c, vert, c.VERTEX_SHADER)
-        if (!fs || !vs) return onError()
-        c.attachShader(pg, vs)
-        c.attachShader(pg, fs)
+        const fs = createShader(c, frag, c.FRAGMENT_SHADER, onError)
+        const vs = createShader(c, vert, c.VERTEX_SHADER, onError)
+        if (!fs || !vs) return
+        c.attachShader(pg, vs!)
+        c.attachShader(pg, fs!)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
-        onError()
-        console.warn(`Could not link program: ${error}`)
+        onError(`Could not link program: ${error}`)
 }
 
 export const createVbo = (c: WebGLRenderingContext, data: number[]) => {

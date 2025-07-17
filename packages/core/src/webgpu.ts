@@ -15,14 +15,14 @@ import {
 import type { GL, WebGPUState } from './types'
 import { fragment, vertex } from './node'
 
-export const webgpu = async (gl: Partial<GL>) => {
+export const webgpu = async (gl: GL) => {
         const context = gl.el!.getContext('webgpu') as GPUCanvasContext
         const { device, format } = await createDevice(context)
+        device.onuncapturederror = (e) => gl.error(e.error.message)
         const bindings = createBindings()
         let frag: string
         let vert: string
         let flush = (_pass: GPURenderPassEncoder) => {}
-        let imageLoading = 0
         let needsUpdate = true
         let depthTexture: GPUTexture
 
@@ -42,7 +42,7 @@ export const webgpu = async (gl: Partial<GL>) => {
 
         const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
-                const stride = value.length / gl.count!
+                const stride = value.length / gl.count
                 const { location } = bindings.attrib()
                 const { array, buffer } = createAttribBuffer(device, value)
                 return { array, buffer, location, stride }
@@ -60,7 +60,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                         vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                        pass.draw(gl.count!, 1, 0, 0)
+                        pass.draw(gl.count, 1, 0, 0)
                         pass.end()
                 }
         }
@@ -71,7 +71,7 @@ export const webgpu = async (gl: Partial<GL>) => {
                         frag = fragment(gl.fs, config)
                         vert = vertex(gl.vs, config)
                 }
-                if (imageLoading) return // MEMO: loading after build node
+                if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
@@ -86,7 +86,11 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const clean = () => {
+                device.destroy()
                 depthTexture?.destroy()
+                for (const { texture } of textures.map.values()) texture.destroy()
+                for (const { buffer } of uniforms.map.values()) buffer.destroy()
+                for (const { buffer } of attribs.map.values()) buffer.destroy()
         }
 
         const _attribute = (key = '', value: number[]) => {
@@ -103,13 +107,13 @@ export const webgpu = async (gl: Partial<GL>) => {
         }
 
         const _texture = (key: string, src: string) => {
-                imageLoading++
+                gl.loading++
                 const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
                 source.decode().then(() => {
                         const { width, height } = source
                         const { texture } = textures(key, width, height)
                         device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
-                        imageLoading--
+                        gl.loading--
                 })
         }
 

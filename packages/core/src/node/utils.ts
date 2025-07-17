@@ -46,7 +46,7 @@ export const hex2rgb = (hex: number) => {
 
 let count = 0
 
-export const getId = () => `i${count++}`
+export const getId = () => `x${count++}`
 
 export const formatConversions = <T extends Constants>(x: X<T>, c?: NodeContext) => {
         if (!is.str(x)) return ''
@@ -79,7 +79,7 @@ export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isT
 }
 
 export const safeEventCall = <T extends Constants>(x: X<T>, fun: (value: unknown) => void) => {
-        if (!x) return
+        if (is.und(x)) return
         if (!isNodeProxy(x)) return fun(x) // for uniform(1)
         if (x.type !== 'conversion') return
         const value = x.props.children?.slice(1).filter(Boolean)

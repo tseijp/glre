@@ -59,20 +59,22 @@ export type GL = EventState<{
          */
         isNative: boolean
         isWebGL: boolean
+        isError: boolean
         isLoop: boolean
         isGL: true
-        width: number
-        height: number
+        width?: number
+        height?: number
         size: [number, number]
         mouse: [number, number]
         count: number
+        loading: number
         el: HTMLCanvasElement
-        vs: string | Vec4
-        fs: string | Vec4
-        vert: string | Vec4
-        frag: string | Vec4
-        vertex: string | Vec4
-        fragment: string | Vec4
+        vs?: string | Vec4
+        fs?: string | Vec4
+        vert?: string | Vec4
+        frag?: string | Vec4
+        vertex?: string | Vec4
+        fragment?: string | Vec4
 
         /**
          * core state
@@ -86,13 +88,13 @@ export type GL = EventState<{
          * events
          */
         ref?: any
-        init(): void
-        loop(): void
         mount(): void
         clean(): void
+        error(e?: string): void
         render(): void
         resize(e?: Event): void
         mousemove(e: Event): void
+        loop(): void
 
         /**
          * setter

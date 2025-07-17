@@ -114,15 +114,13 @@ npm install glre
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, vec4, fract, position, iResolution } from 'glre/react'
-const frag = vec4(fract(position.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = useGL({ frag })
+import { useGL, vec4, uv } from 'glre/react'
+const Canvas = () => {
+        const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
 }
 
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(<Canvas />)
 ```
 
 <details>
@@ -135,15 +133,13 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 ```ts
 import { GLView } from 'expo-gl'
 import { registerRootComponent } from 'expo'
-import { useGL, vec4, fract, position, iResolution } from 'glre/native'
-const frag = vec4(fract(position.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = useGL({ frag })
+import { useGL, vec4, uv } from 'glre/native'
+const Canvas = () => {
+        const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
 }
 
-registerRootComponent(App)
+registerRootComponent(Canvas)
 ```
 
 </details>
@@ -156,15 +152,13 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 
 ```ts
 import { render } from 'solid-js/web'
-import { onGL, vec4, fract, position, iResolution } from 'glre/solid'
-const frag = c4(fract(position.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = onGL({ frag })
+import { onGL, vec4, uv } from 'glre/solid'
+const Canvas = () => {
+        const gl = onGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
 }
 
-render(() => <App />, document.getElementById('root'))
+render(() => <Canvas />, document.getElementById('root'))
 ```
 
 </details>
@@ -176,16 +170,11 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 </summary>
 
 ```html
+<canvas id="canvas"></canvas>
 <script type="module">
-        import createGL from 'https://esm.sh/glre'
-        import { vec4, fract, position, iResolution } from 'https://esm.sh/glre'
-        const frag = vec4(fract(position.xy.div(iResolution)), 0, 1)
-        function App() {
-                const el = document.createElement('canvas')
-                createGL({ el, frag }).mount()
-                document.body.append(el)
-        }
-        document.addEventListener('DOMContentLoaded', App)
+        import { createGL, vec4, uv } from 'https://esm.sh/glre'
+        const el = document.getElementById('canvas')
+        createGL({ el, fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
 
@@ -195,113 +184,122 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 
 ## Node System
 
-glre now features a powerful node-based shader system inspired by Three.js Shading Language (TSL). This system allows you to write shaders using TypeScript-like syntax and automatically handles the conversion to both WebGL2 and WebGPU shaders.
-
-The node system provides a declarative approach to shader creation, making your code more readable, maintainable, and portable across different rendering backends.
-
-### Node Types and Functions
-
-The node system provides various types and functions that mirror GLSL functionality:
+glre's node system reconstructs shader authoring through TypeScript syntax,
+dissolving the boundary between CPU logic and GPU computation.
+Rather than traditional string-based shader composition,
+this system materializes shaders as abstract syntax trees,
+enabling unprecedented code mobility across WebGL2 and WebGPU architectures.
 
 ```ts
-// Basic types
-import { float, int, vec2, vec3, vec4, mat3, mat4 } from 'glre'
-
-// Built-in variables
-import { position, position, iResolution, iTime } from 'glre'
-
-// Math functions
-import { sin, cos, abs, pow, mix, clamp, normalize } from 'glre'
-
-// Texture functions
-import { texture, textureCube, sampler2D } from 'glre'
+// Shader logic materializes through method chaining
+const fragment = vec4(fract(position.xy.div(iResolution)), 0, 1)
+        .mul(uniform(brightness))
+        .mix(texture(backgroundMap, uv()), blend)
 ```
 
-### Creating Custom Functions
+The system operates through proxy objects that capture mathematical operations
+as node graphs, later transpiled to target shader languages.
+This deconstructed approach eliminates the traditional separation
+between shader compilation and runtime execution.
 
-You can define reusable shader functions using the `Fn` constructor:
+### Type System Deconstruction
+
+Traditional shader types dissolve into factory functions that generate node proxies:
 
 ```ts
-import { Fn, vec3, sin, cos, float } from 'glre'
+// Types emerge from function calls rather than declarations
+const position = vec3(x, y, z) // Becomes position node
+const transform = mat4().mul(modelView) // Matrix composition
+const sampled = texture(map, uv()) // Sampling operation
+```
 
-// Define a function that creates a rotation matrix
-const rotateY = Fn(([angle = float(0)]) => {
-        const s = sin(angle)
-        const c = cos(angle)
-        return mat3(c, 0, s, 0, 1, 0, -s, 0, c)
+Each operation generates immutable node structures,
+building computation graphs that exist independently of their eventual compilation target.
+
+### Function Composition Reimagined
+
+The `Fn` constructor dissolves function boundaries, creating reusable computation patterns:
+
+```ts
+// Functions exist as first-class node compositions
+const noise = Fn(([coord]) => {
+        return sin(coord.x.mul(12.9898))
+                .add(sin(coord.y.mul(78.233)))
+                .mul(43758.5453)
+                .fract()
 })
 
-// Use the function in your shader
-const rotatedPosition = rotateY(iTime).mul(position)
+// Composition becomes transparent
+const surface = noise(position.xz.mul(scale)).mix(noise(position.xz.mul(scale.mul(2))), 0.5)
 ```
 
-### Conditional Logic
+### Control Flow Dissolution
 
-The node system supports conditional operations:
+Traditional control structures become node compositions, eliminating imperative sequence:
 
 ```ts
-import { If, vec4, lessThan } from 'glre'
-
-// Create a conditional color output
-const color = vec4(1, 0, 0, 1).toVar()
-
-If(position.y.lessThan(0.5), () => {
-        color.assign(vec4(0, 1, 0, 1))
+// Conditional logic as expression trees
+If(height.greaterThan(waterLevel), () => {
+        return grassTexture.sample(worldUV)
+}).Else(() => {
+        return waterTexture.sample(worldUV.add(wave))
 })
 
-// Use the color in your shader
-const fragment = color
+// Loops decompose into iteration patterns
+Loop(samples, ({ i }) => {
+        accumulator.assign(accumulator.add(sample(position.add(offsets.element(i)))))
+})
 ```
 
-### Uniforms
+### Reactive Uniform Architecture
 
-The node system provides a powerful way to define and manage uniform values in your shaders:
+Uniforms transcend static parameter passing, becoming reactive data channels:
 
 ```ts
-import { createRoot } from 'react-dom/client'
-import { useGL } from 'glre/react'
-import { uniform, vec3, vec4 } from 'glre'
+const time = uniform(0) // Creates reactive binding
+const amplitude = uniform(1) // Automatic GPU synchronization
 
-const uRand = uniform(1.0)
+// Values flow reactively without explicit updates
+const wave = sin(time.mul(frequency)).mul(amplitude)
 
-// Create a simple pulsing color shader
-const App = () => {
-        const gl = useGL({
-                fragment: vec4(vec3(uRand), 1.0),
-                loop() {
-                        pulse.set(0.5 + 0.5 * Math.random())
-                },
-        })
-        return <canvas ref={gl.ref} />
-}
-
-createRoot(document.getElementById('root')).render(<App />)
+// Runtime updates propagate automatically
+time.value = performance.now() / 1000
 ```
 
-### Attributes
+### Attribute Data Streams
 
-Attributes allow you to define per-vertex data for your shaders:
+Vertex attributes dissolve into data stream abstractions:
 
 ```ts
-import { createRoot } from 'react-dom/client'
-import { useGL } from 'glre/react'
-import { attribute, vec3, vec4 } from 'glre'
+// Attributes become typed data channels
+const positions = attribute(vertexData) // Raw data binding
+const normals = attribute(normalData) // Parallel stream
+const uvs = attribute(textureCoords) // Coordinate mapping
 
-// Define vertex positions
-const positions = attribute(-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0)
-
-// Create a shader that uses attributes
-const App = () => {
-        const gl = useGL({ vertex: positions })
-        return <canvas ref={gl.ref} />
-}
-
-createRoot(document.getElementById('root')).render(<App />)
+// Streams compose transparently
+const worldPosition = positions.transform(modelMatrix)
+const viewNormal = normals.transform(normalMatrix)
 ```
 
-### WebGL2 and WebGPU Support
+### Cross-Platform Transparency
 
-The node system is designed to work with both WebGL2 and WebGPU, providing a seamless transition path as browsers adopt the new standard. Your shader code written with the node system will automatically compile to the appropriate shading language (GLSL ES 3.0 for WebGL2, WGSL for WebGPU) based on the available renderer.
+The system dissolves platform-specific shader languages into unified abstractions.
+WebGL2 GLSL and WebGPU WGSL become implementation details, hidden beneath consistent node operations.
+
+```ts
+// Same code generates different targets
+const shader = {
+        vertex: worldPosition.transform(projectionMatrix),
+        fragment: lighting(worldNormal, worldPosition),
+}
+
+// Backend selection becomes transparent
+// WebGL2: Generates GLSL ES 3.0
+// WebGPU: Generates WGSL
+```
+
+This architectural dissolution enables shader code to exist as pure mathematical relationships,
+freed from the constraints of traditional GPU programming models.
 
 ## PRs
 

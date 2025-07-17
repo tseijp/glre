@@ -44,20 +44,23 @@ RGB (Red, Green, Blue) is like mixing colored lights, while HSV (Hue, Saturation
 const fragment = () => {
         // HSV to RGB conversion function
         const rgb2hsv = Fn(([h, s, v]) => {
-                const c = v.mul(s)
+                const c = v.mul(s).toVar()
                 const x = mod(h.mul(6), 2).sub(1).abs().oneMinus().mul(c)
-                const m = v.sub(c)
                 const i = h.mul(6).floor()
-                If(i.equal(0), () => vec3(c, x, 0).add(m))
-                .ElseIf(i.equal(1), () => vec3(x, c, 0).add(m))
-                .ElseIf(i.equal(2), () => vec3(0, c, x).add(m))
-                .ElseIf(i.equal(3), () => vec3(0, x, c).add(m))
-                .ElseIf(i.equal(4), () => vec3(x, 0, c).add(m))
-                .Else(() => vec3(c, 0, x).add(m))
+                const ret = Fn(([c, x, i]) => {
+                        If(i.equal(0), () => vec3(c, x, 0))
+                        .ElseIf(i.equal(1), () => vec3(x, c, 0))
+                        .ElseIf(i.equal(2), () => vec3(0, c, x))
+                        .ElseIf(i.equal(3), () => vec3(0, x, c))
+                        .ElseIf(i.equal(4), () => vec3(x, 0, c))
+                        .Else(() => vec3(c, 0, x))
+                })
+                const m = v.sub(c)
+                return ret(c, x, i).add(m)
         })
         // HSV-style color creation
         const h = uv.x // Hue from position
-        const s = iTime.sin().abs() // Saturation
+        const s = 0.75 // Saturation
         const v = uv.y // Value / brightness
         // Convert HSV to RGB using the function
         const rgb = rgb2hsv(h, s, v)
@@ -90,13 +93,13 @@ const fragment = () => {
         const y = uv.y
         const z = x.add(y).oneMinus()
         // Convert xy to XYZ (assuming Y = 1 for full brightness)
-        const Y = iTime.sin().abs()
+        const Y = 1
         const X = x.mul(Y).div(y)
         const Z = z.mul(Y).div(y)
         // XYZ to RGB conversion matrix (sRGB)
         // Convert XYZ to RGB
-        const xyzVector = vec3(X, Y, Z)
-        const rgb = XYZtoRGB.mul(xyzVector)
+        const XYZ = vec3(X, Y, Z)
+        const rgb = XYZtoRGB.mul(XYZ)
         // Clamp to valid range and check if within gamut
         return vec4(rgb, 1)
 }`}
@@ -114,15 +117,12 @@ Think of coordinates like a piece of paper you can move, resize, and turn:
 const fragment = () => {
         // Move coordinates (translation)
         const offset = vec2(0.3, -0.2)
-        const movedPos = uv.add(offset)
-        // Scale coordinates (make bigger/smaller)
         const scale = 2
-        const scaledPos = movedPos.mul(scale)
         // Rotate coordinates using rotation matrix
         const cosA = cos(0.5)
         const sinA = sin(0.5)
         const rotateMat = mat2(cosA, sinA, sinA.negate(), cosA)
-        const rotatePos = rotateMat.mul(scaledPos)
+        const rotatePos = rotateMat.mul(uv).add(offset).mul(scale)
         // Use transformed coordinates for color
         const color = vec3(rotatePos, 0.5)
         return vec4(color, 1)
@@ -138,20 +138,17 @@ Sometimes it's easier to think in circles rather than squares:
         code={`
 const fragment = () => {
         // Convert to polar coordinates (radius and angle)
-        const centeredPos = uv.sub(0.5)
-        const angle = atan2(centeredPos.y, centeredPos.x) // Angle around center
-        // Use angle for hue (color wheel effect)
-        const hue = angle.div(6).add(0.5) // Convert -π→π to 0→1
+        const center = uv.sub(0.5)
+        const angle = atan2(center.y, center.x) // Angle around center
+        const radius = center.length() // Distance from center
         // Use radius for brightness
-        const radius = uv.sub(0.5).length() // Distance from center
         const brightness = radius.oneMinus()
-        // Create color wheel
         const color = vec3(
-                hue.mul(6).sin(),
-                hue.mul(6).add(2).cos(),
-                hue.mul(6).add(4).sin()
-        ).mul(brightness)
-        return vec4(color, 1)
+                angle.sin(),
+                angle.add(2).cos(),
+                angle.add(4).sin()
+        )
+        return vec4(color.mul(brightness), 1)
 }`}
 />
 
@@ -185,8 +182,7 @@ const fragment = () => {
 const fragment = () => {
         // Create repeating pattern and circular dots
         const scale = 10
-        const repeated = mod(uv.mul(scale), 1).sub(0.5)
-        const dot = step(repeated.length(), 0.3)
+        const dot = step(uv.mul(scale).fract().sub(0.5).length(), 0.3)
         // Create colored dots
         const color = vec3(0.4, 0.8, 1).mul(dot)
         return vec4(color, 1)
@@ -211,8 +207,7 @@ const fragment = () => {
         // Combine with gradient
         const gradient = distance.oneMinus()
         const pattern = smoothRings.mul(gradient)
-        const baseColor = vec3(1, 0.8, 1.2)
-        const color = baseColor.mul(pattern)
+        const color = vec3(1, 0.8, 1.2).mul(pattern)
         return vec4(color, 1)
 }`}
 />
@@ -230,7 +225,8 @@ const fragment = () => {
         // Base color
         const baseColor = vec3(0.8, 0.9, 1)
         // Vignette based on distance from center
-        const distance = uv.sub(0.5).length()
+        const center = uv.sub(0.5)
+        const distance = center.length()
         const vignette = smoothstep(0.8, 0.2, distance)
         const finalColor = baseColor.mul(vignette)
         return vec4(finalColor, 1)
@@ -337,9 +333,9 @@ const fragment = () => {
         })
         const fbm = Fn(([xy]) => {
                 return noise(xy).mul(0.5)
-                .add(noise(xy.mul(2)).mul(0.25))
-                .add(noise(xy.mul(4)).mul(0.125))
-                .add(noise(xy.mul(8)).mul(0.0625))
+                        .add(noise(xy.mul(2)).mul(0.25))
+                        .add(noise(xy.mul(4)).mul(0.125))
+                        .add(noise(xy.mul(8)).mul(0.0625))
         })
         const fbmInput = uv.mul(8)
         const color = fbm(fbmInput)

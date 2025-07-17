@@ -31,27 +31,21 @@ You can create beautiful visual effects with just programming knowledge - no nee
 ### Minimal Setup
 
 ```html
-<!DOCTYPE html>
-<html>
-        <head>
-                <title>My First GLRE Project</title>
-        </head>
-        <body>
-                <canvas id="canvas"></canvas>
-                <script type="module">
-                        import { createGL, uv } from 'https://unpkg.com/glre'
+<canvas id="canvas"></canvas>
+<script type="module">
+        import { createGL, vec4 } from 'https://esm.sh/glre'
 
-                        const fragment = () => {
-                                return uv.xyxy
-                        }
+        const fragment = () => {
+                return vec4(0.2, 0.4, 0.8, 1)
+        }
 
-                        const gl = createGL({
-                                fs: fragment()
-                                el: document.getElementById('canvas'),
-                        })
-                </script>
-        </body>
-</html>
+        const gl = createGL({
+                fs: fragment(),
+                el: document.getElementById('canvas'),
+        })
+
+        gl.mount()
+</script>
 ```
 
 ## Your First Visual
@@ -227,7 +221,8 @@ const fragment = () => {
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = uv.sub(0.5).length()
+        const center = uv.sub(0.5)
+        const distance = center.length()
         // Change color based on distance
         const intensity = distance
         const color = vec3(1, 0.5, 0.2).mul(intensity)

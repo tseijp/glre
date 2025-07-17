@@ -12,13 +12,14 @@ In GLRE, you can easily access time to create animations:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Change color over time
-        const red = iTime.sin()
-        const green = iTime.add(2).sin()
-        const blue = iTime.add(4).sin()
-        return vec4(red, green, blue, 1)
+        const r = iTime.sin()
+        const g = iTime.add(2).sin()
+        const b = iTime.add(4).sin()
+        return vec4(r, g, b, 1)
 }`}
 />
 
@@ -28,6 +29,7 @@ const fragment = () => {
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Pattern A: Oscillation - smoothly goes up and down
@@ -56,6 +58,7 @@ Spin things around in circles:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Rotation angle
@@ -77,12 +80,14 @@ Make things grow and shrink:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Pulsing effect
         const pulse = iTime.mul(3).sin()
         // Scale coordinates
-        const scaledPos = uv.sub(0.5).div(pulse)
+        const center = uv.sub(0.5)
+        const scaledPos = center.div(pulse)
         // Distance from center
         const distance = scaledPos.length()
         // Circle that pulses
@@ -98,10 +103,12 @@ Create ripples spreading outward:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Distance from center
-        const distance = uv.sub(0.5).length()
+        const center = uv.sub(0.5)
+        const distance = center.length()
         // Wave that travels outward
         const timeOffset = iTime.mul(8)
         const waveInput = distance.mul(20).sub(timeOffset)
@@ -124,21 +131,18 @@ Combine different rhythms for complex patterns:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Different wave frequencies
-        const wave1 = iTime.mul(1).sin() // Slow
-        const wave2 = iTime.mul(1.6).sin() // Golden ratio frequency
-        const wave3 = iTime.mul(0.7).sin() // Another harmonic
-        // Combine waves
-        const wave2Scaled = wave2.mul(0.5)
-        const wave3Scaled = wave3.mul(0.25)
-        const composite = wave1.add(wave2Scaled).add(wave3Scaled)
+        const frequencies = vec3(1, 1.6, 0.7) // Slow, golden ratio, harmonic
+        const waves = vec3(iTime).mul(frequencies).sin()
+        const scales = vec3(1, 0.5, 0.25)
+        const composite = vec3(1).dot(waves)
         const normalized = composite.div(1.75)
         // Apply to pattern
-        const modulationX = uv.x.mul(5).sin()
-        const modulationY = uv.y.mul(5).sin()
-        const modulation = modulationX.mul(modulationY)
+        const modulationPattern = uv.mul(10).sin()
+        const modulation = modulationPattern.x.mul(modulationPattern.y)
         const final = normalized.mul(modulation)
         const color = vec3(1, 0.8, 1.2).mul(final)
         return vec4(color, 1)
@@ -151,34 +155,34 @@ Mathematical curves that create beautiful patterns using loop-based sampling:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         const lissajous = Fn(([grid, xy]) => {
-                const ret = vec3(0).toVar()
+                const ret = float(0).toVar()
                 Loop(int(32), ({ i }) => {
-                        const t = float(i)
-                        const pos = iTime.add(t).mul(grid).mul(7).sin()
+                        const pos = float(i).add(iTime).mul(grid).sin()
                         const distance = xy.sub(pos).length()
                         const line = smoothstep(0.1, 0.09, distance)
                         ret.assign(ret.add(line))
                 })
                 return ret
         })
-        const generateGrid = Fn(([sample]) => {
-                const ret = vec3(0).toVar()
-                Loop(int(sample), ({ i }) => {
-                        Loop(int(sample), ({ i: j }) => {
-                                const grid = vec2(i, j).add(1)
-                                const center = grid.sub(sample.div(2).add(0.5)).mul(2)
-                                const pos = uv.sub(0.5).mul(sample).mul(2).sub(center)
+        const generateGrid = Fn(([uv, N]) => {
+                const ret = vec2(0).toVar()
+                Loop(int(N), ({ i }) => {
+                        Loop(int(N), ({ i: j }) => {
+                                const grid = vec2(float(i), float(j)).add(1).toVar()
+                                const center = N.div(2).add(0.5).sub(grid).mul(2)
+                                const pos = uv.sub(0.5).mul(N).mul(2).sub(center)
                                 const pattern = lissajous(grid, pos)
-                                const color = vec3(grid.div(sample), 0.5).mul(pattern)
+                                const color = grid.mul(pattern)
                                 ret.assign(ret.add(color))
                         })
                 })
-                return ret
+                return ret.div(N)
         })
-        return vec4(generateGrid(5), 1)
+        return vec4(generateGrid(uv, 4), 0.5, 1)
 }`}
 />
 
@@ -188,16 +192,14 @@ Instead of linear changes, use easing for more natural motion:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Time cycles between 0 and 1
         const t = iTime.mul(0.5).fract()
         // Different easing functions
-        const tSquared = t.mul(t)
-        const easeComponent1 = tSquared.mul(3)
-        const easeComponent2 = tSquared.mul(2)
-        const easeInOut = easeComponent1.sub(easeComponent2)
-        const easeInQuart = t.mul(t).mul(t).mul(t)
+        const tSquared = t.pow(2)
+        const easeInQuart = t.pow(4)
         // Elastic easing approximation
         const elasticInput = t.mul(6.28318).mul(3).sin()
         const decayExponent = t.mul(8).negate()
@@ -205,14 +207,13 @@ const fragment = () => {
         const elastic = elasticInput.mul(elasticDecay)
         // Choose easing based on Y position
         const y = uv.y
-        const easeStep1 = step(0.33, y)
-        let ease = mix(t, easeInOut, easeStep1)
-        const easeStep2 = step(0.66, y)
-        ease = mix(ease, easeInQuart, easeStep2)
+        const easeSteps = step(vec2(0.33, 0.66), vec2(y))
+        let ease = mix(t, tSquared, easeSteps.x)
+        ease = mix(ease, easeInQuart, easeSteps.y)
         // Apply easing to position
-        const easeOffset = ease.sub(0.5).mul(2)
-        const animatedPos = uv.x.add(easeOffset)
-        const pattern = animatedPos.mul(8).sin()
+        const offset = ease.sub(0.5).mul(2)
+        const pos = uv.x.add(offset)
+        const pattern = pos.mul(8).sin()
         const color = vec3(1, 0.8, 1.2).mul(pattern)
         return vec4(color, 1)
 }`}
@@ -226,6 +227,7 @@ Create a kaleidoscope effect that changes over time:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Convert to polar coordinates
@@ -253,10 +255,7 @@ const fragment = () => {
         const pattern = ripples.mul(spiral)
         // Rainbow colors
         const hue = a.add(iTime)
-        const red = hue.sin()
-        const green = hue.add(29).sin()
-        const blue = hue.add(4.18).sin()
-        const color = vec3(red, green, blue).mul(pattern)
+        const color = vec3(0, 29, 4.18).add(hue).sin().mul(pattern)
         return vec4(color, 1)
 }`}
 />
@@ -267,41 +266,46 @@ Create organic-looking blobs that move and merge:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
+        // Calculate distance fields using vectorized operations
+        const calculateDistances = Fn(([uv, pointsX, pointsY]) => {
+                const center = uv.sub(0.5).mul(2)
+                const point1 = vec2(pointsX.x, pointsY.x)
+                const point2 = vec2(pointsX.y, pointsY.y)
+                const point3 = vec2(pointsX.z, pointsY.z)
+                return vec3(
+                        point1.sub(center).length(),
+                        point2.sub(center).length(),
+                        point3.sub(center).length()
+                )
+        })
         // Multiple moving points using matrix operations
-        const timeMatrix = constant(mat3(
+        const AX = constant(mat3(
                 0.8, 0, 0,
                 0, 1.2, 0,
                 0, 0, 0.5
         ))
-        const timeMatrixY = constant(mat3(
+        const AY = constant(mat3(
                 0.6, 0, 0,
                 0, 0.9, 0,
                 0, 0, 1.1
         ))
-        const amplitudeMatrix = constant(mat3(
+        const BX = constant(mat3(
                 0.3, 0, 0,
                 0, 0.4, 0,
                 0, 0, 0.2
         ))
-        const amplitudeMatrixY = constant(mat3(
+        const BY = constant(mat3(
                 0.4, 0, 0,
                 0, 0.3, 0,
                 0, 0, 0.5
         ))
         const timeVector = vec3(iTime)
-        const sinValues = timeMatrix.mul(timeVector).sin()
-        const cosValues = timeMatrixY.mul(timeVector).cos()
-        const pointsX = amplitudeMatrix.mul(sinValues)
-        const pointsY = amplitudeMatrixY.mul(cosValues)
-        // Calculate distance fields using vectorized operations
-        const pos = uv.sub(0.5).mul(2)
-        const distances = vec3(
-                vec2(pointsX.x, pointsY.x).sub(pos).length(),
-                vec2(pointsX.y, pointsY.y).sub(pos).length(),
-                vec2(pointsX.z, pointsY.z).sub(pos).length()
-        )
+        const pointsX = AX.mul(timeVector).sin().mul(BX)
+        const pointsY = AY.mul(timeVector).cos().mul(BY)
+        const distances = calculateDistances(uv, pointsX, pointsY)
         // Metaball formula - vectorized field calculation
         const fields = distances.oneMinus()
         const field = fields.x.add(fields.y).add(fields.z)
@@ -319,16 +323,16 @@ Create an infinite zooming effect:
 
 <FragmentEditor
         isFun
+        isLoop
         code={`
 const fragment = () => {
         // Zoom factor that increases over time
         const zoomExponent = iTime.sin()
         const zoom = pow(10, zoomExponent)
         // Apply zoom to coordinates
-        let pos = uv.sub(0.5).mul(zoom)
+        let center = uv.sub(0.5).mul(zoom)
         // Keep pattern within bounds using modulo
-        pos = pos.fract().sub(0.5)
-        
+        center = center.fract().sub(0.5)
         // Create fractal-like pattern using Loop
         const generatePattern = Fn(([position]) => {
                 const result = float(0).toVar()
@@ -341,15 +345,10 @@ const fragment = () => {
                 })
                 return result
         })
-        
-        const pattern = generatePattern(pos)
+        const pattern = generatePattern(center)
         // Color with time-based hue shift
         const hue = iTime.mul(0.1)
-        const color = vec3(
-                hue.sin(),
-                hue.add(29).sin(),
-                hue.add(4.18).sin()
-        ).mul(pattern)
+        const color = vec3(0, 29, 4.18).add(hue).sin().mul(pattern)
         return vec4(color, 1)
 }`}
 />

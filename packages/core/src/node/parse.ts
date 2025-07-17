@@ -58,37 +58,6 @@ export const parseDeclare = (c: NodeContext, x: X, y: X) => {
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
-export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Constants) => {
-        const { id, children = [], layout } = props
-        const [x, ...args] = children
-        const argParams: [name: string, type: string][] = []
-        const params: string[] = []
-        if (layout?.inputs)
-                for (const input of layout.inputs) {
-                        argParams.push([input.name, input.type])
-                }
-        else
-                for (let i = 0; i < args.length; i++) {
-                        argParams.push([`p${i}`, infer(args[i], c)])
-                }
-        const ret = []
-        if (c?.isWebGL) {
-                for (const [paramId, type] of argParams) {
-                        addDependency(c, id!, type)
-                        params.push(`${type} ${paramId}`)
-                }
-                addDependency(c, id!, returnType)
-                ret.push(`${returnType} ${id}(${params}) {`)
-        } else {
-                for (const [paramId, type] of argParams) params.push(`${paramId}: ${formatConversions(type, c)}`)
-                ret.push(`fn ${id}(${params}) -> ${formatConversions(returnType, c)} {`)
-        }
-        const scopeCode = code(x, c)
-        if (scopeCode) ret.push(scopeCode)
-        ret.push('}')
-        return ret.join('\n')
-}
-
 export const parseStructHead = (c: NodeContext, id: string, fields: Record<string, NodeProxy> = {}) => {
         const lines: string[] = []
         for (const key in fields) {
@@ -121,6 +90,40 @@ export const parseStruct = (
                         return `var ${instanceId}: ${id} = ${id}(${parseArray(ordered, c)});`
                 } else return `var ${instanceId}: ${id};`
         }
+}
+
+/**
+ * define
+ */
+export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Constants) => {
+        const { id, children = [], layout } = props
+        const [x, ...args] = children
+        const argParams: [name: string, type: string][] = []
+        const params: string[] = []
+        if (layout?.inputs)
+                for (const input of layout.inputs) {
+                        argParams.push([input.name, input.type])
+                }
+        else
+                for (let i = 0; i < args.length; i++) {
+                        argParams.push([`p${i}`, infer(args[i], c)])
+                }
+        const ret = []
+        if (c?.isWebGL) {
+                for (const [paramId, type] of argParams) {
+                        addDependency(c, id!, type)
+                        params.push(`${type} ${paramId}`)
+                }
+                addDependency(c, id!, returnType)
+                ret.push(`${returnType} ${id}(${params}) {`)
+        } else {
+                for (const [paramId, type] of argParams) params.push(`${paramId}: ${formatConversions(type, c)}`)
+                ret.push(`fn ${id}(${params}) -> ${formatConversions(returnType, c)} {`)
+        }
+        const scopeCode = code(x, c)
+        if (scopeCode) ret.push(scopeCode)
+        ret.push('}')
+        return ret.join('\n')
 }
 
 /**

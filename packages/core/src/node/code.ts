@@ -52,6 +52,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 if (x === 'negate') return `(-${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
+                if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
         /**

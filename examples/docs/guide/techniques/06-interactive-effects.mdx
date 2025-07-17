@@ -12,125 +12,34 @@ Create visual expressions that respond to mouse and keyboard interactions.
 
 ```jsx live
 function Canvas() {
-        // Distance from mouse position
-        const mousePos = iMouse.add(0.5)
-        const distance = uv.sub(mousePos).length()
-        // Click state
-        const clicking = uniform(0, 'isClicking')
-        // Color based on distance (enhanced when clicking)
-        const clickingFactor = clicking.add(1)
-        const intensity = distance.oneMinus().mul(clickingFactor)
-        const color = vec3(1, 0.8, 1.2).mul(intensity)
-
-        const gl = useGL({
-                width: 512,
-                height: 512,
-                frag: vec4(color, 1)
-        })
-
-        // Use rege's useDrag (click detection)
-        const dragState = useDrag((state) => {
-                if (state.isDragStart) {
-                        gl.uniform('isClicking', 1)
-                } else if (state.isDragEnd) {
-                        gl.uniform('isClicking', 0)
-                }
-        })
-
-        // Use rege's useHover (mouse position tracking)
-        const hoverState = useHover((state) => {
-                if (state.isHovering) {
-                        const [width, height] = gl.size
-                        const value = state.value ? state.value : [0, 0]
-                        const normalizedMouse = [
-                                (value[0] / width) * 2 - 1,
-                                -(value[1] / height) * 2 - 1
-                        ]
-                        gl.uniform('iMouse', normalizedMouse)
-                }
-        })
-
-        return <canvas ref={(el) => {
-                gl.ref(el)
-                dragState.ref(el)
-                hoverState.ref(el)
-        }} />
-```
-
-</TabItem>
-<TabItem value="keyboard" label="Keyboard Operations">
-
-```jsx live
-function Canvas() {
-        const colorMode = uniform(vec3(0), 'colorMode')
-        const frequency = uniform(5, 'frequency')
-
-        // Color changes based on key input
-        const baseColor = vec3(0.3, 0.3, 0.5)
-        const redBoost = step(0.5, colorMode.x) // 'R' key
-        const greenBoost = step(0.5, colorMode.y) // 'G' key
-        const blueBoost = step(0.5, colorMode.z) // 'B' key
-
-        const color = vec3(
-                const redComponent = baseColor.r.add(redBoost.mul(0.7))
-                redComponent,
-                const greenComponent = baseColor.g.add(greenBoost.mul(0.7))
-                greenComponent,
-                const blueComponent = baseColor.b.add(blueBoost.mul(0.7))
-                blueComponent
-        )
-
-        // Pattern drawing (frequency adjustment with arrow keys)
-        const patternX = position.x.mul(frequency).sin()
-        const patternY = position.y.mul(frequency).sin()
-        const pattern = patternX.mul(patternY)
-        const patternOffset = pattern.add(0.5)
-        const finalColor = color.mul(patternOffset)
-
-        const gl = useGL({
-                width: 512,
-                height: 512,
-                frag: vec4(finalColor, 1),
-        })
-
-        // Use rege's useKey
-        let pressedKeys = new Set()
-        let currentFreq = 5
-
-        const updateUniforms = () => {
-                const colorMode = [
-                        pressedKeys.has('KeyR') ? 1 : 0,
-                        pressedKeys.has('KeyG') ? 1 : 0,
-                        pressedKeys.has('KeyB') ? 1 : 0,
-                ]
-                gl.uniform('colorMode', colorMode)
-                gl.uniform('frequency', currentFreq)
+        const iMovement = uniform([0, 0]) // movement delta in px
+        const fragment = () => {
+                // Rounded rectangle SDF
+                const sdf = Fn(([xy]) => {
+                        let ret = vec2(0).max(xy).length()
+                        ret = max(xy.x, xy.y).min(0).add(ret).sub(0.025)
+                        return smoothstep(0.002, 0, ret)
+                })
+                // Convert movement
+                let xy = iMovement.div(1024).add(0.5)
+                xy = uv.sub(xy).mul(2).abs().sub(0.25)
+                const color = vec3(0.9, 0.4, 0.6).mul(sdf(xy))
+                return vec4(color, 1)
         }
-
-        const keyState = useKey((state) => {
-                if (state.event && state.event.type === 'keydown') {
-                        pressedKeys.add(state.code)
-
-                        // Frequency adjustment with arrow keys
-                        if (state.code === 'ArrowUp') {
-                                currentFreq = Math.min(currentFreq + 1, 20)
-                        }
-                        if (state.code === 'ArrowDown') {
-                                currentFreq = Math.max(currentFreq - 1, 1)
-                        }
-
-                        updateUniforms()
-                }
+        // Use rege's useHover
+        const ge = useHover(() => {
+                const { event, movement } = ge
+                event.preventDefault()
+                iMovement.value = [movement[0], -movement[1]]
         })
-
-        return (
-                <canvas
-                        ref={(el) => {
-                                gl.ref(el)
-                                keyState.ref(el)
-                        }}
-                />
-        )
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                frag: fragment(),
+                mount: () => ge.ref(gl.el),
+        })
+        return <canvas ref={gl.ref} />
 }
 ```
 
@@ -139,62 +48,70 @@ function Canvas() {
 
 ```jsx live
 function Canvas() {
-        const dragVector = uniform(vec2(0), 'dragVector')
-        const isDragging = uniform(0, 'isDragging')
-
-        // Distortion by drag vector
-        const distortion = dragVector.mul(0.8)
-        const distortedPos = position.xy.add(distortion)
-
-        // Pattern with distorted coordinates
-        const pattern1 = distortedPos.x.mul(8).sin()
-        const pattern2 = distortedPos.y.mul(8).sin()
-        const finalPattern = pattern1.mul(pattern2)
-
-        // Change color based on drag strength and state
-        const dragStrength = dragVector.length()
-        const dragEffect = isDragging.mul(0.5).add(1)
-        const color = vec3(
-                finalPattern.add(0.5).mul(dragEffect),
-                const pattern1 = finalPattern.add(0.5).mul(dragStrength.oneMinus()).mul(dragEffect)
-                pattern1,
-                const pattern2 = finalPattern.add(0.5).oneMinus().mul(dragStrength.add(0.3)).mul(dragEffect)
-                pattern2
-        )
-
+        const iMovement = uniform([0, 0]) // movement delta in px
+        const fragment = () => {
+                // Rounded rectangle SDF
+                const sdf = Fn(([xy]) => {
+                        let ret = vec2(0).max(xy).length()
+                        ret = max(xy.x, xy.y).min(0).add(ret).sub(0.025)
+                        return smoothstep(0.002, 0, ret)
+                })
+                // Convert movement
+                let xy = iMovement.div(256).add(0.5)
+                xy = uv.sub(xy).mul(2).abs().sub(0.25)
+                const color = vec3(0.9, 0.4, 0.6).mul(sdf(xy))
+                return vec4(color, 1)
+        }
+        // Use rege's useD
+        const ge = useDrag(() => {
+                const { event, isDragging, movement } = ge
+                event.preventDefault()
+                iMovement.value = [movement[0], -movement[1]]
+        })
         const gl = useGL({
-                width: 512,
-                height: 512,
-                frag: vec4(color, 1),
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                frag: fragment(),
+                mount: () => ge.ref(gl.el),
         })
+        return <canvas ref={gl.ref} />
+}
+```
 
-        // Use rege's useDrag (mouse + touch auto-support)
-        const dragState = useDrag((state) => {
-                if (state.isDragStart) {
-                        gl.uniform('isDragging', 1)
-                } else if (state.isDragging) {
-                        // state.movement is cumulative movement
-                        const [width, height] = gl.size
-                        const movement = state.movement || [0, 0]
-                        const normalizedMovement = [
-                                (movement[0] / width) * 4, // Sensitivity adjustment
-                                -(movement[1] / height) * 4,
-                        ]
-                        gl.uniform('dragVector', normalizedMovement)
-                } else if (state.isDragEnd) {
-                        gl.uniform('isDragging', 0)
-                        gl.uniform('dragVector', [0, 0])
-                }
+</TabItem>
+<TabItem value="pinch" label="Pinch Operations">
+
+```jsx live
+function Canvas() {
+        const iMovement = uniform([0, 0]) // movement delta in px
+        const fragment = () => {
+                // Rounded rectangle SDF
+                const sdf = Fn(([xy]) => {
+                        let ret = vec2(0).max(xy).length()
+                        ret = max(xy.x, xy.y).min(0).add(ret).sub(0.025)
+                        return smoothstep(0.002, 0, ret)
+                })
+                // Convert movement
+                let xy = iMovement.div(256).add(0.5)
+                xy = uv.sub(0.5).mul(xy).mul(4).abs().sub(0.25)
+                const color = vec3(0.9, 0.4, 0.6).mul(sdf(xy))
+                return vec4(color, 1)
+        }
+        // Use rege's usePinch
+        const ge = usePinch(() => {
+                const { event, isPinching, movement } = ge
+                event.preventDefault()
+                iMovement.value = [-movement[0], movement[1]]
         })
-
-        return (
-                <canvas
-                        ref={(el) => {
-                                gl.ref(el)
-                                dragState.ref(el)
-                        }}
-                />
-        )
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                frag: fragment(),
+                mount: () => ge.ref(gl.el),
+        })
+        return <canvas ref={gl.ref} />
 }
 ```
 
@@ -216,9 +133,8 @@ function Canvas() {
         const scaledPos = position.xy.sub(pinchCenter).mul(pinchScale).add(pinchCenter)
 
         // Pattern drawing
-        const patternX = scaledPos.x.mul(8).sin()
-        const patternY = scaledPos.y.mul(8).sin()
-        const pattern = patternX.mul(patternY)
+        const patterns = scaledPos.mul(8).sin()
+        const pattern = patterns.x.mul(patterns.y)
 
         // Color change when pinch is active
         const activeEffect = isActive.mul(0.5).add(1)
@@ -229,8 +145,8 @@ function Canvas() {
         )
 
         const gl = useGL({
-                width: 512,
-                height: 512,
+                width: 256,
+                height: 256,
                 frag: vec4(color, 1),
         })
 
@@ -246,7 +162,7 @@ function Canvas() {
                         // state.scale is 2-element array [scaleX, scaleY]
                         const scale = state.scale || [1, 1]
                         const scaleValue = Math.min(scale[0], scale[1])
-                        const minScale = Math.min(3.0, scaleValue)
+                        const minScale = Math.min(3, scaleValue)
                         const clampedScale = Math.max(0.5, minScale)
                         gl.uniform('pinchScale', clampedScale)
 
@@ -292,17 +208,16 @@ function Canvas() {
         const rotatePos = rotateMat.mul(position.xy)
 
         // Combination of gravity and pattern
-        const patternX = rotatePos.x.mul(8).sin()
-        const patternY = rotatePos.y.mul(8).sin()
-        const pattern = patternX.mul(patternY)
+        const patterns = rotatePos.mul(8).sin()
+        const pattern = patterns.x.mul(patterns.y)
         const colorR = gravityEffect.add(0.5).mul(pattern.add(0.5))
         const colorG = gravityEffect.abs().mul(pattern.add(0.5))
         const colorB = gravityEffect.oneMinus().add(0.5).mul(pattern.add(0.5))
         const color = vec3(colorR, colorG, colorB)
 
         const gl = useGL({
-                width: 512,
-                height: 512,
+                width: 256,
+                height: 256,
                 frag: vec4(color, 1),
         })
 
@@ -353,11 +268,10 @@ function Canvas() {
 
         // Dynamic pattern
         const time = iTime
-        const waveX = position.x.mul(5).add(time).sin()
         const timeOffset = time.mul(0.7)
-        const waveYPhase = position.y.mul(5).add(timeOffset)
-        const waveY = waveYPhase.sin()
-        const wave = waveX.mul(waveY)
+        const wavePhase = vec2(position.x.mul(5).add(time), position.y.mul(5).add(timeOffset))
+        const waves = wavePhase.sin()
+        const wave = waves.x.mul(waves.y)
         const pulseEffect = time.mul(2).sin().mul(0.5).add(0.5)
 
         // Enhancement by hover state
@@ -373,8 +287,8 @@ function Canvas() {
         const finalColor = baseColor.add(waveColor).add(mouseColor)
 
         const gl = useGL({
-                width: 512,
-                height: 512,
+                width: 256,
+                height: 256,
                 frag: vec4(finalColor, 1),
         })
 
