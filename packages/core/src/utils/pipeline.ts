@@ -1,4 +1,4 @@
-import type { AttribData, TextureData, UniformData } from '../types'
+import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 /**
  * initialize
@@ -15,6 +15,7 @@ export const createDevice = async (c: GPUCanvasContext) => {
 export const createBindings = () => {
         let uniform = 0
         let texture = 0
+        let storage = 0
         let attrib = 0
         return {
                 uniform: () => {
@@ -28,6 +29,13 @@ export const createBindings = () => {
                         const group = baseGroup + Math.floor(texture / 6)
                         const binding = (texture % 6) * 2
                         texture++
+                        return { group, binding }
+                },
+                storage: () => {
+                        const baseGroup = Math.floor(uniform / 12) + Math.floor(texture / 6) + 2
+                        const group = baseGroup + Math.floor(storage / 12)
+                        const binding = storage % 12
+                        storage++
                         return { group, binding }
                 },
                 attrib: () => {
@@ -70,7 +78,8 @@ export const createVertexBuffers = (attribs: Iterable<AttribData>) => {
 export const createBindGroup = (
         device: GPUDevice,
         uniforms: Iterable<UniformData>,
-        textures: Iterable<TextureData>
+        textures: Iterable<TextureData>,
+        storages: Iterable<StorageData> = []
 ) => {
         const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
         const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
@@ -81,7 +90,10 @@ export const createBindGroup = (
                 bindings.push(binding)
         }
         for (const { binding, buffer, group: i } of uniforms) {
-                add(i, { binding, visibility: 3, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+                add(i, { binding, visibility: 7, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+        }
+        for (const { binding, buffer, group: i } of storages) {
+                add(i, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
         }
         for (const { binding: b, group: i, sampler, view } of textures) {
                 add(i, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
@@ -120,6 +132,16 @@ export const createPipeline = (
                         depthCompare: 'less',
                         format: 'depth24plus',
                 },
+        })
+}
+
+export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
+        return device.createComputePipeline({
+                compute: {
+                        module: device.createShaderModule({ label: 'compute', code: cs }),
+                        entryPoint: 'main',
+                },
+                layout: device.createPipelineLayout({ bindGroupLayouts }),
         })
 }
 

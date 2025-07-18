@@ -36,6 +36,13 @@ export interface AttribData {
         stride: number
 }
 
+export interface StorageData {
+        array: Float32Array
+        buffer: GPUBuffer
+        binding: number
+        group: number
+}
+
 export interface WebGLState {
         context: WebGLRenderingContext
         program: WebGLProgram
@@ -46,12 +53,15 @@ export interface WebGPUState {
         uniforms: Nested<UniformData>
         textures: Nested<TextureData>
         attribs: Nested<AttribData>
+        storages: Nested<StorageData>
 }
 
 export type Uniform = number | number[]
 export type Attribute = number[]
+export type Storage = number[] | Float32Array
 export type Attributes = Record<string, Attribute>
 export type Uniforms = Record<string, Uniform>
+export type Storages = Record<string, Storage>
 
 export type GL = EventState<{
         /**
@@ -71,8 +81,10 @@ export type GL = EventState<{
         el: HTMLCanvasElement
         vs?: string | Vec4
         fs?: string | Vec4
+        cs?: string | Vec4
         vert?: string | Vec4
         frag?: string | Vec4
+        compute?: string | Vec4
         vertex?: string | Vec4
         fragment?: string | Vec4
 
@@ -109,4 +121,7 @@ export type GL = EventState<{
         _attribute?(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(target: { [key: string]: Attribute }): GL
+        _storage?(key: string, value: Storage): GL
+        storage(key: string, value: Storage): GL
+        storage(target: { [key: string]: Storage }): GL
 }>

@@ -38,11 +38,11 @@ JavaScript/TypeScript Code
 
 ### Reference
 
-| Component                                               | Purpose          | Key Features                          |
-| ------------------------------------------------------- | ---------------- | ------------------------------------- |
-| **[Implementation Patterns](ref/07-implementation.md)** | Code patterns    | Best practices, common solutions      |
-| **[Advanced Techniques](ref/08-techniques.md)**         | Complex features | Multi-pass rendering, compute shaders |
-| **[Troubleshooting](ref/09-troubleshoot.md)**           | Problem solving  | Error handling, debugging             |
+| Component                        | Purpose          | Key Features                          |
+| -------------------------------- | ---------------- | ------------------------------------- |
+| **[Implementation Patterns](#)** | Code patterns    | Best practices, common solutions      |
+| **[Advanced Techniques](#)**     | Complex features | Multi-pass rendering, compute shaders |
+| **[Troubleshooting](#)**         | Problem solving  | Error handling, debugging             |
 
 ## Quick Start
 
@@ -141,6 +141,5 @@ gl('loop', () => {
 - Explore [Core Engine](core/01-engine.md) for initialization
 - Learn [Node System](node/04-overview.md) for shader authoring
 - Reference [Functions](node/06-functions.md) for available operations
-- Check [Implementation Patterns](ref/07-implementation.md) for best practices
 
 GLRE provides a complete toolkit for GPU programming in TypeScript, making complex graphics accessible through familiar syntax.

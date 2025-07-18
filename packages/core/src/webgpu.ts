@@ -4,6 +4,7 @@ import {
         createAttribBuffer,
         createBindings,
         createBindGroup,
+        createComputePipeline,
         createDepthTexture,
         createDescriptor,
         createDevice,
@@ -22,7 +23,9 @@ export const webgpu = async (gl: GL) => {
         const bindings = createBindings()
         let frag: string
         let vert: string
+        let comp: string
         let flush = (_pass: GPURenderPassEncoder) => {}
+        let computeFlush = (_pass: GPUComputePassEncoder) => {}
         let needsUpdate = true
         let depthTexture: GPUTexture
 
@@ -48,12 +51,24 @@ export const webgpu = async (gl: GL) => {
                 return { array, buffer, location, stride }
         })
 
+        const storages = cached((_key, value: number[] | Float32Array) => {
+                needsUpdate = true
+                const array = value instanceof Float32Array ? value : new Float32Array(value)
+                const buffer = device.createBuffer({
+                        size: array.byteLength,
+                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
+                })
+                const { binding, group } = bindings.storage()
+                return { array, buffer, binding, group }
+        })
+
         const update = () => {
                 const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map.values())
                 const { bindGroups, bindGroupLayouts } = createBindGroup(
                         device,
                         uniforms.map.values(),
-                        textures.map.values()
+                        textures.map.values(),
+                        storages.map.values()
                 )
                 const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vert, frag)
                 flush = (pass) => {
@@ -63,6 +78,19 @@ export const webgpu = async (gl: GL) => {
                         pass.draw(gl.count, 1, 0, 0)
                         pass.end()
                 }
+                if (comp) {
+                        const computePipeline = createComputePipeline(device, bindGroupLayouts, comp)
+                        computeFlush = (pass) => {
+                                pass.setPipeline(computePipeline)
+                                bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
+                                let maxElements = 1
+                                for (const { array } of storages.map.values())
+                                        maxElements = Math.max(maxElements, array.length)
+                                const workgroupCount = Math.ceil(maxElements / 64)
+                                pass.dispatchWorkgroups(workgroupCount)
+                                pass.end()
+                        }
+                }
         }
 
         const render = () => {
@@ -71,10 +99,21 @@ export const webgpu = async (gl: GL) => {
                         frag = fragment(gl.fs, config)
                         vert = vertex(gl.vs, config)
                 }
+                if (!comp && (gl.cs || gl.compute)) {
+                        const computeShader = gl.cs || gl.compute
+                        if (typeof computeShader === 'string') {
+                                comp = computeShader
+                        } else {
+                                comp = `@compute @workgroup_size(64) fn main() { /* node system compute */ }`
+                        }
+                }
                 if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
+                if (comp) {
+                        computeFlush(encoder.beginComputePass())
+                }
                 flush(encoder.beginRenderPass(createDescriptor(context, depthTexture)))
                 device.queue.submit([encoder.finish()])
         }
@@ -91,6 +130,7 @@ export const webgpu = async (gl: GL) => {
                 for (const { texture } of textures.map.values()) texture.destroy()
                 for (const { buffer } of uniforms.map.values()) buffer.destroy()
                 for (const { buffer } of attribs.map.values()) buffer.destroy()
+                for (const { buffer } of storages.map.values()) buffer.destroy()
         }
 
         const _attribute = (key = '', value: number[]) => {
@@ -119,13 +159,20 @@ export const webgpu = async (gl: GL) => {
 
         resize()
 
+        const _storage = (key: string, value: number[] | Float32Array) => {
+                const array = value instanceof Float32Array ? value : new Float32Array(value)
+                const { buffer } = storages(key, array)
+                device.queue.writeBuffer(buffer, 0, array as unknown as ArrayBuffer)
+        }
+
         return {
-                webgpu: { device, uniforms, textures, attribs } as WebGPUState,
+                webgpu: { device, uniforms, textures, attribs, storages } as WebGPUState,
                 render,
                 resize,
                 clean,
                 _attribute,
                 _uniform,
                 _texture,
+                _storage,
         }
 }
