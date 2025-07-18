@@ -42,3 +42,7 @@ export const sig = (value = 0, digit = -2) => {
         value /= digit
         return value
 }
+
+export const isFloat32 = (value: unknown): value is Float32Array & { buffer: ArrayBuffer } => {
+        return value instanceof Float32Array
+}

@@ -1,7 +1,7 @@
 import { nested as cached } from 'reev'
 import { is } from './utils/helpers'
 import {
-        createAttribBuffer,
+        createArrayBuffer,
         createBindings,
         createBindGroup,
         createComputePipeline,
@@ -10,16 +10,14 @@ import {
         createDevice,
         createPipeline,
         createTextureSampler,
-        createUniformBuffer,
         createVertexBuffers,
 } from './utils/pipeline'
 import type { GL, WebGPUState } from './types'
-import { fragment, vertex } from './node'
+import { compute, fragment, vertex } from './node'
 
 export const webgpu = async (gl: GL) => {
         const context = gl.el!.getContext('webgpu') as GPUCanvasContext
-        const { device, format } = await createDevice(context)
-        device.onuncapturederror = (e) => gl.error(e.error.message)
+        const { device, format } = await createDevice(context, gl.error)
         const bindings = createBindings()
         let frag: string
         let vert: string
@@ -29,38 +27,64 @@ export const webgpu = async (gl: GL) => {
         let needsUpdate = true
         let depthTexture: GPUTexture
 
-        const uniforms = cached((_key, value: number[]) => {
-                needsUpdate = true
-                const { array, buffer } = createUniformBuffer(device, value)
-                const { binding, group } = bindings.uniform()
-                return { binding, group, array, buffer }
-        })
-
-        const textures = cached((_key, width = 0, height = 0) => {
-                needsUpdate = true
-                const { texture, sampler } = createTextureSampler(device, width, height)
-                const { binding, group } = bindings.texture()
-                return { binding, group, texture, sampler, view: texture.createView() }
-        })
-
         const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
                 const stride = value.length / gl.count
                 const { location } = bindings.attrib()
-                const { array, buffer } = createAttribBuffer(device, value)
+                const { array, buffer } = createArrayBuffer(device, value, 'attrib')
                 return { array, buffer, location, stride }
         })
 
         const storages = cached((_key, value: number[] | Float32Array) => {
                 needsUpdate = true
-                const array = value instanceof Float32Array ? value : new Float32Array(value)
-                const buffer = device.createBuffer({
-                        size: array.byteLength,
-                        usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST,
-                })
+                const { array, buffer } = createArrayBuffer(device, value, 'storage')
                 const { binding, group } = bindings.storage()
                 return { array, buffer, binding, group }
         })
+
+        const uniforms = cached((_key, value: number[]) => {
+                needsUpdate = true
+                const { binding, group } = bindings.uniform()
+                const { array, buffer } = createArrayBuffer(device, value, 'uniform')
+                return { array, buffer, binding, group }
+        })
+
+        const textures = cached((_key, width = 0, height = 0) => {
+                needsUpdate = true
+                const { binding, group } = bindings.texture()
+                const { texture, sampler } = createTextureSampler(device, width, height)
+                return { texture, sampler, binding, group, view: texture.createView() }
+        })
+
+        const _attribute = (key = '', value: number[]) => {
+                const { array, buffer } = attribs(key, value)
+                array.set(value)
+                device.queue.writeBuffer(buffer, 0, array)
+        }
+
+        const _storage = (key: string, value: number[] | Float32Array) => {
+                const array = value instanceof Float32Array ? value : new Float32Array(value)
+                const { buffer } = storages(key, array)
+                device.queue.writeBuffer(buffer, 0, array as unknown as ArrayBuffer)
+        }
+
+        const _uniform = (key: string, value: number | number[]) => {
+                if (is.num(value)) value = [value]
+                const { array, buffer } = uniforms(key, value)
+                array.set(value)
+                device.queue.writeBuffer(buffer, 0, array)
+        }
+
+        const _texture = (key: string, src: string) => {
+                gl.loading++
+                const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
+                source.decode().then(() => {
+                        const { width, height } = source
+                        const { texture } = textures(key, width, height)
+                        device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
+                        gl.loading--
+                })
+        }
 
         const update = () => {
                 const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs.map.values())
@@ -96,24 +120,15 @@ export const webgpu = async (gl: GL) => {
         const render = () => {
                 if (!frag || !vert) {
                         const config = { isWebGL: false, gl }
-                        frag = fragment(gl.fs, config)
                         vert = vertex(gl.vs, config)
-                }
-                if (!comp && (gl.cs || gl.compute)) {
-                        const computeShader = gl.cs || gl.compute
-                        if (typeof computeShader === 'string') {
-                                comp = computeShader
-                        } else {
-                                comp = `@compute @workgroup_size(64) fn main() { /* node system compute */ }`
-                        }
+                        comp = compute(gl.cs, config)
+                        frag = fragment(gl.fs, config)
                 }
                 if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
-                if (comp) {
-                        computeFlush(encoder.beginComputePass())
-                }
+                if (comp) computeFlush(encoder.beginComputePass())
                 flush(encoder.beginRenderPass(createDescriptor(context, depthTexture)))
                 device.queue.submit([encoder.finish()])
         }
@@ -133,37 +148,7 @@ export const webgpu = async (gl: GL) => {
                 for (const { buffer } of storages.map.values()) buffer.destroy()
         }
 
-        const _attribute = (key = '', value: number[]) => {
-                const { array, buffer } = attribs(key, value)
-                array.set(value)
-                device.queue.writeBuffer(buffer, 0, array)
-        }
-
-        const _uniform = (key: string, value: number | number[]) => {
-                if (is.num(value)) value = [value]
-                const { array, buffer } = uniforms(key, value)
-                array.set(value)
-                device.queue.writeBuffer(buffer, 0, array)
-        }
-
-        const _texture = (key: string, src: string) => {
-                gl.loading++
-                const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
-                source.decode().then(() => {
-                        const { width, height } = source
-                        const { texture } = textures(key, width, height)
-                        device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
-                        gl.loading--
-                })
-        }
-
         resize()
-
-        const _storage = (key: string, value: number[] | Float32Array) => {
-                const array = value instanceof Float32Array ? value : new Float32Array(value)
-                const { buffer } = storages(key, array)
-                device.queue.writeBuffer(buffer, 0, array as unknown as ArrayBuffer)
-        }
 
         return {
                 webgpu: { device, uniforms, textures, attribs, storages } as WebGPUState,

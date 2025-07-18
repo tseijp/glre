@@ -1,13 +1,15 @@
+import { isFloat32 } from './helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 /**
  * initialize
  */
-export const createDevice = async (c: GPUCanvasContext) => {
+export const createDevice = async (c: GPUCanvasContext, log = console.log) => {
         const gpu = navigator.gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
         const device = await adapter!.requestDevice()
+        device.onuncapturederror = (e) => log(e.error.message)
         c.configure({ device, format, alphaMode: 'opaque' })
         return { device, format }
 }
@@ -148,16 +150,21 @@ export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBi
 /**
  * buffers
  */
-export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const size = Math.ceil(array.byteLength / 256) * 256
-        const buffer = device.createBuffer({ size, usage: 72 }) // 72 is GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        return { array, buffer }
+const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
+        if (type === 'uniform') return 72 // GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        if (type === 'attrib') return 40 // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        return 140 // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
 }
 
-export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 is GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+export const createArrayBuffer = (
+        device: GPUDevice,
+        value: number[] | Float32Array,
+        type: 'uniform' | 'storage' | 'attrib'
+) => {
+        const array = isFloat32(value) ? value : new Float32Array(value)
+        const usage = bufferUsage(type)
+        const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength
+        const buffer = device.createBuffer({ size, usage })
         return { array, buffer }
 }
 

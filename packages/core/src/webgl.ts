@@ -1,7 +1,15 @@
 import { nested as cached } from 'reev'
 import { fragment, vertex } from './node'
 import { is } from './utils/helpers'
-import { createAttrib, createIbo, createProgram, createTexture, createVbo, getStride } from './utils/program'
+import {
+        createAttrib,
+        createIbo,
+        createProgram,
+        createStorage,
+        createTexture,
+        createVbo,
+        getStride,
+} from './utils/program'
 import type { GL, WebGLState } from './types'
 
 export const webgl = async (gl: GL) => {
@@ -16,28 +24,11 @@ export const webgl = async (gl: GL) => {
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
         const attribs = cached((key) => c.getAttribLocation(pg, key))
         const units = cached(() => activeUnit++)
-        const storages = cached((key) => ({
+        const storages = cached(() => ({
                 texture: c.createTexture(),
                 framebuffer: c.createFramebuffer(),
                 unit: activeUnit++,
         }))
-
-        const clean = () => {
-                c.deleteProgram(pg)
-                c.getExtension('WEBGL_lose_context')?.loseContext()
-                gl.el.width = 1
-                gl.el.height = 1
-        }
-
-        const render = () => {
-                c.clear(c.COLOR_BUFFER_BIT)
-                c.viewport(0, 0, ...gl.size)
-                if (gl.count === 3) {
-                        c.drawArrays(c.TRIANGLES, 0, 3)
-                } else {
-                        c.drawArrays(c.TRIANGLES, 0, 6)
-                }
-        }
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
                 if (gl.count === 3 && value.length === 0) {
@@ -72,23 +63,24 @@ export const webgl = async (gl: GL) => {
         }
 
         const _storage = (key: string, value: number[] | Float32Array) => {
-                const array = value instanceof Float32Array ? value : new Float32Array(value)
                 const { texture, unit } = storages(key)
-                const size = Math.ceil(Math.sqrt(array.length))
-                const data = new Float32Array(size * size * 4)
-                for (let i = 0; i < array.length; i++) {
-                        data[i * 4] = array[i]
-                }
-                c.activeTexture(c.TEXTURE0 + unit)
-                c.bindTexture(c.TEXTURE_2D, texture)
-                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, data)
-                c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
-                c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
-                c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
-                c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
-                const loc = uniforms(key)
-                if (loc !== null) {
-                        c.uniform1i(loc, unit)
+                createStorage(c, value, unit, uniforms(key), texture)
+        }
+
+        const clean = () => {
+                c.deleteProgram(pg)
+                c.getExtension('WEBGL_lose_context')?.loseContext()
+                gl.el.width = 1
+                gl.el.height = 1
+        }
+
+        const render = () => {
+                c.clear(c.COLOR_BUFFER_BIT)
+                c.viewport(0, 0, ...gl.size)
+                if (gl.count === 3) {
+                        c.drawArrays(c.TRIANGLES, 0, 3)
+                } else {
+                        c.drawArrays(c.TRIANGLES, 0, 6)
                 }
         }
 

@@ -1,107 +1,31 @@
+import { hex2rgb } from './utils'
+import { builtin as b, conversion as c, function_ as f, uniform as u } from './node'
 import { is } from '../utils/helpers'
-import { code } from './code'
-import { builtin, conversion as c, function_ as f, uniform as u } from './node'
-import { hex2rgb, sortHeadersByDependencies } from './utils'
-import type { Constants as C, NodeContext, X, Vec2, Float, NodeProxy } from './types'
-export * from './code'
+import type { Constants as C, X, Vec2, Float, NodeProxy } from './types'
+export * from './core'
 export * from './node'
 export * from './scope'
 export * from './types'
-export * from './utils'
-
-const GLSL_FRAGMENT_HEAD = `
-#version 300 es
-precision mediump float;
-out vec4 fragColor;
-`.trim()
-
-const generateHead = (x: X, c: NodeContext) => {
-        const body = code(x, c)
-        let head = ''
-        if (c.isWebGL && c.code?.dependencies) {
-                const sorted = sortHeadersByDependencies(c.code.headers, c.code.dependencies)
-                head = sorted.map(([, value]) => value).join('\n')
-        } else head = Array.from(c.code?.headers?.values() || []).join('\n')
-        return [head, body]
-}
-
-const generateStruct = (id: string, map: Map<string, string>) => {
-        return `struct ${id} {\n  ${Array.from(map.values()).join(',\n  ')}\n}`
-}
-
-export const vertex = (x: X, c: NodeContext) => {
-        if (is.str(x)) return x.trim()
-        c.code?.headers?.clear()
-        c.isFrag = false // for varying inputs or outputs
-        const [head, body] = generateHead(x, c)
-        const ret = []
-        if (c.isWebGL) {
-                ret.push('#version 300 es')
-                for (const code of c.code?.vertInputs?.values() || []) ret.push(`in ${code}`)
-                for (const code of c.code?.vertOutputs?.values() || []) ret.push(`out ${code}`)
-                ret.push(head)
-                ret.push('void main() {')
-                ret.push(`  gl_Position = ${body};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) ret.push(`  ${id} = ${code};`)
-        } else {
-                if (c.code?.vertInputs?.size) ret.push(generateStruct('In', c.code.vertInputs))
-                if (c.code?.vertOutputs?.size) ret.push(generateStruct('Out', c.code.vertOutputs))
-                ret.push(head)
-                ret.push('@vertex')
-                ret.push(`fn main(${c.code?.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
-                ret.push('  var out: Out;')
-                ret.push(`  out.position = ${body};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) ret.push(`  out.${id} = ${code};`)
-                ret.push('  return out;')
-        }
-        ret.push('}')
-        const main = ret.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
-        return main
-}
-
-export const fragment = (x: X, c: NodeContext) => {
-        if (is.str(x)) return x.trim()
-        c.code?.headers?.clear()
-        c.isFrag = true // for varying inputs or outputs
-        const [head, body] = generateHead(x, c)
-        const ret = []
-        if (c.isWebGL) {
-                ret.push(GLSL_FRAGMENT_HEAD)
-                for (const code of c.code?.fragInputs?.values() || []) ret.push(`in ${code}`)
-                ret.push(head)
-                ret.push(`void main() {\n  fragColor = ${body};`)
-        } else {
-                if (c.code?.fragInputs?.size) ret.push(generateStruct('Out', c.code.fragInputs))
-                ret.push(head)
-                ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
-                ret.push(`  return ${body};`)
-        }
-        ret.push('}')
-        const main = ret.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
-        return main
-}
 
 // Builtin Variables
-export const position = builtin<'vec4'>('position')
-export const vertexIndex = builtin<'uint'>('vertex_index')
-export const instanceIndex = builtin<'uint'>('instance_index')
-export const frontFacing = builtin<'bool'>('front_facing')
-export const fragDepth = builtin<'float'>('frag_depth')
-export const sampleIndex = builtin<'uint'>('sample_index')
-export const sampleMask = builtin<'uint'>('sample_mask')
-export const pointCoord = builtin<'vec2'>('point_coord')
+export const position = b<'vec4'>('position')
+export const vertexIndex = b<'uint'>('vertex_index')
+export const instanceIndex = b<'uint'>('instance_index')
+export const frontFacing = b<'bool'>('front_facing')
+export const fragDepth = b<'float'>('frag_depth')
+export const sampleIndex = b<'uint'>('sample_index')
+export const sampleMask = b<'uint'>('sample_mask')
+export const pointCoord = b<'vec2'>('point_coord')
 
 // TSL Compatible Builtin Variables
-export const positionLocal = builtin<'vec3'>('position')
-export const positionWorld = builtin<'vec3'>('positionWorld')
-export const positionView = builtin<'vec3'>('positionView')
-export const normalLocal = builtin<'vec3'>('normalLocal')
-export const normalWorld = builtin<'vec3'>('normalWorld')
-export const normalView = builtin<'vec3'>('normalView')
-export const screenCoordinate = builtin<'vec2'>('screenCoordinate')
-export const screenUV = builtin<'vec2'>('screenUV')
+export const positionLocal = b<'vec3'>('position')
+export const positionWorld = b<'vec3'>('positionWorld')
+export const positionView = b<'vec3'>('positionView')
+export const normalLocal = b<'vec3'>('normalLocal')
+export const normalWorld = b<'vec3'>('normalWorld')
+export const normalView = b<'vec3'>('normalView')
+export const screenCoordinate = b<'vec2'>('screenCoordinate')
+export const screenUV = b<'vec2'>('screenUV')
 
 // Type constructors with proper type inference
 export const float = (x?: X) => c('float', x)

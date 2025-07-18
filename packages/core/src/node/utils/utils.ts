@@ -1,4 +1,3 @@
-import { is } from '../utils/helpers'
 import {
         CONSTANTS,
         CONVERSIONS,
@@ -8,7 +7,8 @@ import {
         TYPE_MAPPING,
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
-import type { Constants, Conversions, Functions, NodeContext, NodeProxy, Operators, Swizzles, X } from './types'
+import { is } from '../../utils/helpers'
+import type { Constants, Conversions, Functions, NodeContext, NodeProxy, Operators, Swizzles, X } from '../types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -48,7 +48,11 @@ let count = 0
 
 export const getId = () => `x${count++}`
 
-export const formatConversions = <T extends Constants>(x: X<T>, c?: NodeContext) => {
+export const getBluiltin = (id: string) => {
+        return WGSL_TO_GLSL_BUILTIN[id as keyof typeof WGSL_TO_GLSL_BUILTIN]
+}
+
+export const getConversions = <T extends Constants>(x: X<T>, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING] || x // for struct type
@@ -58,11 +62,7 @@ export const getOperator = (op: X<string>) => {
         return OPERATORS[op as keyof typeof OPERATORS] || op
 }
 
-export const getBluiltin = (id: string) => {
-        return WGSL_TO_GLSL_BUILTIN[id as keyof typeof WGSL_TO_GLSL_BUILTIN]
-}
-
-export const conversionToConstant = (conversionKey: string): Constants => {
+export const getConstant = (conversionKey: string): Constants => {
         const index = CONVERSIONS.indexOf(conversionKey as Conversions)
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
@@ -108,22 +108,4 @@ export const initNodeContext = (c: NodeContext) => {
 export const addDependency = (c: NodeContext, id = '', type: string) => {
         if (!c.code?.dependencies?.has(id)) c.code!.dependencies.set(id, new Set())
         if (!isConstants(type)) c.code!.dependencies.get(id)!.add(type)
-}
-
-export const sortHeadersByDependencies = (headers: Map<string, string>, dependencies: Map<string, Set<string>>) => {
-        const sorted: [string, string][] = []
-        const visited = new Set<string>()
-        const visiting = new Set<string>()
-        const visit = (id: string) => {
-                if (visiting.has(id)) return
-                if (visited.has(id)) return
-                visiting.add(id)
-                const deps = dependencies.get(id) || new Set()
-                for (const dep of deps) if (headers.has(dep)) visit(dep)
-                visiting.delete(id)
-                visited.add(id)
-                if (headers.has(id)) sorted.push([id, headers.get(id)!])
-        }
-        for (const [id] of headers) visit(id)
-        return sorted
 }

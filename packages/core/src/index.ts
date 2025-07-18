@@ -8,9 +8,6 @@ import type { GL } from './types'
 import { float, fract, int, iResolution, position, vec4, vertexIndex } from './node'
 export * from './node'
 export * from './types'
-export * from './utils/helpers'
-export * from './utils/pipeline'
-export * from './utils/program'
 export * from './webgl'
 export * from './webgpu'
 
@@ -76,6 +73,7 @@ export const createGL = (props?: Partial<GL>) => {
         gl('mount', async () => {
                 gl.vs = gl.vs || gl.vert || gl.vertex || defaultVertex()
                 gl.fs = gl.fs || gl.frag || gl.fragment || defaultFragment()
+                gl.cs = gl.cs || gl.comp || gl.compute
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
                         gl((await webgl(gl)) as GL)

@@ -1,4 +1,3 @@
-import { is } from '../utils/helpers'
 import { infer } from './infer'
 import {
         parseArray,
@@ -14,8 +13,11 @@ import {
         parseVaryingHead,
         parseUniformHead,
 } from './parse'
-import { getBluiltin, getOperator, formatConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
-import type { Constants, NodeContext, X } from './types'
+import { getBluiltin, getOperator, getConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
+import { is } from '../../utils/helpers'
+import type { Constants, NodeContext, X } from '../types'
+
+export * from './utils'
 
 export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
@@ -43,7 +45,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 return c.isWebGL
                         ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
                         : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
-        if (type === 'conversion') return `${formatConversions(x, c)}(${parseArray(children.slice(1), c)})`
+        if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
@@ -90,7 +92,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(id)
                 if (id === 'position') return 'out.position'
-                const field = `@builtin(${id}) ${id}: ${formatConversions(infer(target, c), c)}`
+                const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.isFrag) {
                         c.code?.fragInputs.set(id, field)
                 } else c.code?.vertInputs.set(id, field)

@@ -1,13 +1,9 @@
-import { GL } from '../types'
-
-import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './const'
+import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './utils/const'
+import type { GL } from '../types'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
-
 export type Conversions = (typeof CONVERSIONS)[number]
-
 export type Functions = (typeof FUNCTIONS)[number]
-
 export type Operators = (typeof OPERATOR_KEYS)[number]
 
 export interface FnLayout {
@@ -55,7 +51,6 @@ export interface NodeProps<T extends Record<string, NodeProxy> = {}> {
         children?: any[]
         inferFrom?: any[]
         layout?: FnLayout
-        parent?: NodeProxy
         // for struct
         fields?: T
         initialValues?: T

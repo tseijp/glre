@@ -1,4 +1,4 @@
-import { is } from '../utils/helpers'
+import { isConstants, isNodeProxy, isSwizzle } from './utils'
 import {
         BUILTIN_TYPES,
         COMPARISON_OPERATORS,
@@ -6,8 +6,8 @@ import {
         FUNCTION_RETURN_TYPES,
         LOGICAL_OPERATORS,
 } from './const'
-import { isConstants, isNodeProxy, isSwizzle } from './utils'
-import type { Constants as C, NodeContext, NodeProxy, X } from './types'
+import { is } from '../../utils/helpers'
+import type { Constants as C, NodeContext, NodeProxy, X } from '../types'
 
 const inferBuiltin = <T extends C>(id: string | undefined) => {
         return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES] as T

@@ -1,8 +1,8 @@
-import { is } from '../utils/helpers'
-import { code } from './code'
+import { code } from '.'
 import { infer } from './infer'
-import { formatConversions, addDependency } from './utils'
-import type { Constants, NodeContext, NodeProps, NodeProxy, X } from './types'
+import { getConversions, addDependency } from './utils'
+import { is } from '../../utils/helpers'
+import type { Constants, NodeContext, NodeProps, NodeProxy, X } from '../types'
 
 export const parseArray = (children: X[], c: NodeContext) => {
         return children
@@ -54,7 +54,7 @@ export const parseDeclare = (c: NodeContext, x: X, y: X) => {
         const type = infer(x, c)
         const varName = (y as any)?.props?.id
         if (c.isWebGL) return `${type} ${varName} = ${code(x, c)};`
-        const wgslType = formatConversions(type)
+        const wgslType = getConversions(type)
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
@@ -64,7 +64,7 @@ export const parseStructHead = (c: NodeContext, id: string, fields: Record<strin
                 const fieldType = fields[key]
                 const type = infer(fieldType, c)
                 if (c.isWebGL) addDependency(c, id, type)
-                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${formatConversions(type, c)},`)
+                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${getConversions(type, c)},`)
         }
         const ret = lines.join('\n  ')
         return `struct ${id} {\n  ${ret}\n};`
@@ -117,8 +117,8 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                 addDependency(c, id!, returnType)
                 ret.push(`${returnType} ${id}(${params}) {`)
         } else {
-                for (const [paramId, type] of argParams) params.push(`${paramId}: ${formatConversions(type, c)}`)
-                ret.push(`fn ${id}(${params}) -> ${formatConversions(returnType, c)} {`)
+                for (const [paramId, type] of argParams) params.push(`${paramId}: ${getConversions(type, c)}`)
+                ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
         }
         const scopeCode = code(x, c)
         if (scopeCode) ret.push(scopeCode)
@@ -132,7 +132,7 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
 export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
         return c.isWebGL
                 ? `${type} ${id};`
-                : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${formatConversions(type, c)}`
+                : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
 }
 
 export const parseUniformHead = (c: NodeContext, id: string, type: Constants) => {
@@ -149,17 +149,17 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
                 )
         }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.uniforms.map.get(id) || {}
-        const wgslType = formatConversions(type, c)
+        const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
 
 export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
         if (c.isWebGL) return `${type} ${id};`
         const { location = 0 } = c.gl?.webgpu?.attribs.map.get(id) || {}
-        const wgslType = formatConversions(type, c)
+        const wgslType = getConversions(type, c)
         return `@location(${location}) ${id}: ${wgslType}`
 }
 
 export const parseConstantHead = (c: NodeContext, id: string, type: Constants, value: string) => {
-        return c.isWebGL ? `const ${type} ${id} = ${value};` : `const ${id}: ${formatConversions(type, c)} = ${value};`
+        return c.isWebGL ? `const ${type} ${id} = ${value};` : `const ${id}: ${getConversions(type, c)} = ${value};`
 }
