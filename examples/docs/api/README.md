@@ -4,7 +4,7 @@ Complete technical reference for the GLRE Reactive GPU Engine.
 
 ## Overview
 
-GLRE (GPU Reactive Engine) is a TypeScript library that bridges CPU-side JavaScript with GPU-side shader programming.
+GLRE is a TypeScript library that bridges CPU-side JavaScript with GPU-side shader programming.
 It provides automatic configuration for data transmission between CPU and GPU, supporting both WebGL2 and WebGPU platforms.
 
 ## Architecture

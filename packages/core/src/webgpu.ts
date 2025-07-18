@@ -58,21 +58,18 @@ export const webgpu = async (gl: GL) => {
 
         const _attribute = (key = '', value: number[]) => {
                 const { array, buffer } = attribs(key, value)
-                array.set(value)
-                device.queue.writeBuffer(buffer, 0, array)
+                device.queue.writeBuffer(buffer, 0, array as any)
         }
 
         const _storage = (key: string, value: number[] | Float32Array) => {
-                const array = value instanceof Float32Array ? value : new Float32Array(value)
-                const { buffer } = storages(key, array)
-                device.queue.writeBuffer(buffer, 0, array as unknown as ArrayBuffer)
+                const { array, buffer } = storages(key, value)
+                device.queue.writeBuffer(buffer, 0, array as any)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
                 const { array, buffer } = uniforms(key, value)
-                array.set(value)
-                device.queue.writeBuffer(buffer, 0, array)
+                device.queue.writeBuffer(buffer, 0, array as any)
         }
 
         const _texture = (key: string, src: string) => {
@@ -120,9 +117,9 @@ export const webgpu = async (gl: GL) => {
         const render = () => {
                 if (!frag || !vert) {
                         const config = { isWebGL: false, gl }
-                        vert = vertex(gl.vs, config)
+                        frag = fragment(gl.fs, config) // needs to be before vertex
                         comp = compute(gl.cs, config)
-                        frag = fragment(gl.fs, config)
+                        vert = vertex(gl.vs, config)
                 }
                 if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()

@@ -156,15 +156,19 @@ function Canvas() {
                 height: 256,
                 isWebGL: false,
                 vertex: `
+                struct In {
+                        @location(0) a_position: vec2f,
+                        @location(1) a_color: vec4f,
+                }
                 struct Out {
                         @builtin(position) position: vec4f,
                         @location(0) v_color: vec4f,
                 }
                 @vertex
-                fn main(@location(0) a_position: vec2f, @location(1) a_color: vec4f) -> Out {
+                fn main(in: In) -> Out {
                         var out: Out;
-                        out.position = vec4f(a_position, 0.0, 1.0);
-                        out.v_color = a_color;
+                        out.position = vec4f(in.a_position, 0.0, 1.0);
+                        out.v_color = in.a_color;
                         return out;
                 }
                 `,

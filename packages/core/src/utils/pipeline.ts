@@ -158,10 +158,10 @@ const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
 
 export const createArrayBuffer = (
         device: GPUDevice,
-        value: number[] | Float32Array,
+        array: number[] | Float32Array,
         type: 'uniform' | 'storage' | 'attrib'
 ) => {
-        const array = isFloat32(value) ? value : new Float32Array(value)
+        if (!isFloat32(array)) array = new Float32Array(array)
         const usage = bufferUsage(type)
         const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength
         const buffer = device.createBuffer({ size, usage })

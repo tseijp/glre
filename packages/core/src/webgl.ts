@@ -31,9 +31,6 @@ export const webgl = async (gl: GL) => {
         }))
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
-                if (gl.count === 3 && value.length === 0) {
-                        return
-                }
                 const loc = attribs(key, true)
                 const vbo = createVbo(c, value)
                 const ibo = createIbo(c, iboValue)
