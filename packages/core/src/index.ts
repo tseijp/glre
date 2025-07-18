@@ -8,9 +8,6 @@ import type { GL } from './types'
 import { float, fract, int, iResolution, position, vec4, vertexIndex } from './node'
 export * from './node'
 export * from './types'
-export * from './utils/helpers'
-export * from './utils/pipeline'
-export * from './utils/program'
 export * from './webgl'
 export * from './webgpu'
 
@@ -45,9 +42,10 @@ const defaultVertex = () =>
         )
 
 export const createGL = (props?: Partial<GL>) => {
-        const gl = event<Partial<GL>>({
+        const gl = event({
                 isNative: false,
                 isWebGL: true,
+                isError: false,
                 isLoop: true,
                 isGL: true,
                 size: [0, 0],
@@ -55,27 +53,37 @@ export const createGL = (props?: Partial<GL>) => {
                 count: 6,
                 webgl: {},
                 webgpu: {},
+                loading: 0,
+                error() {
+                        gl.isError = true
+                        gl.isLoop = false
+                        gl.clean()
+                },
         }) as EventState<GL>
 
         gl.queue = createQueue()
         gl.frame = createFrame()
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
-        gl.uniform = durable((k, v, i) => gl.queue(() => gl._uniform?.(k, v, i)), gl)
+        gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
+        gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {
                 gl.vs = gl.vs || gl.vert || gl.vertex || defaultVertex()
                 gl.fs = gl.fs || gl.frag || gl.fragment || defaultFragment()
+                gl.cs = gl.cs || gl.comp || gl.compute
                 if (!isWebGPUSupported()) gl.isWebGL = true
                 if (gl.isWebGL) {
                         gl((await webgl(gl)) as GL)
                 } else gl((await webgpu(gl)) as GL)
+                if (gl.isError) return // stop if error
                 gl.resize()
                 gl.frame(() => {
                         gl.loop()
                         gl.queue.flush()
+                        if (gl.loading) return true // wait for textures @TODO FIX
                         gl.render()
                         return gl.isLoop
                 })
@@ -86,7 +94,6 @@ export const createGL = (props?: Partial<GL>) => {
 
         gl('clean', () => {
                 gl.frame.stop()
-                gl.frame.clean(gl.render)
                 if (gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
                 gl.el.removeEventListener('mousemove', gl.mousemove)

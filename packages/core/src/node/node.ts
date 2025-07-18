@@ -1,7 +1,6 @@
-import { is } from '../utils/helpers'
-import { code } from './code'
+import { code, getConstant, isConversion, isFunction, isOperator, getId } from './utils'
 import { assign, toVar } from './scope'
-import { conversionToConstant, isConversion, isFunction, isOperator, getId } from './utils'
+import { is } from '../utils/helpers'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, X, Constants as C } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
@@ -23,7 +22,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
                 if (key === 'listeners') return listeners
                 if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
                 if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
-                if (isConversion(key)) return () => conversion(conversionToConstant(key), x)
+                if (isConversion(key)) return () => conversion(getConstant(key), x)
                 if (is.str(key)) return member(key, x) // for struct and swizzling
         }
         const set = (_: unknown, key: string, y: X) => {

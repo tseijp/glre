@@ -1,5 +1,5 @@
-import { conversion, node } from './node'
 import { getId } from './utils'
+import { conversion, node } from './node'
 import type { FnLayout, NodeProps, NodeProxy, X, Constants, Int } from './types'
 
 let scope: NodeProxy | null = null
@@ -46,17 +46,11 @@ export const struct = <T extends Record<string, NodeProxy>>(fields: T, id = getI
 
 const scoped = (x: NodeProxy, fun: () => NodeProxy | void, y = define) => {
         // cache to revert
-        const _scope = scope
-        const _define = define
-        // update
-        scope = x
-        define = y
-        if (_scope) x.props.parent = _scope
+        const [_scope, _define] = [scope, define]
+        ;[scope, define] = [x, y]
         const z = fun()
         if (z) Return(z)
-        // revert
-        scope = _scope
-        define = _define
+        ;[scope, define] = [_scope, _define]
 }
 
 export const If = (x: NodeProxy, fun: () => void) => {
@@ -82,8 +76,9 @@ export const If = (x: NodeProxy, fun: () => void) => {
 
 export const Loop = (x: NodeProxy, fun: (params: { i: Int }) => void) => {
         const y = node('scope')
-        scoped(y, () => fun({ i: node<'int'>('variable', { id: 'i', inferFrom: [conversion('int', 0)] }) }))
-        const ret = node('loop', null, x, y)
+        const id = getId()
+        scoped(y, () => fun({ i: node<'int'>('variable', { id, inferFrom: [conversion('int', 0)] }) }))
+        const ret = node('loop', { id }, x, y)
         addToScope(ret)
         return ret
 }

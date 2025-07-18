@@ -1,0 +1,245 @@
+# Getting Started
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+Welcome to visual programming with GLRE!
+
+## What is GLRE?
+
+GLRE is a TypeScript library for creating real-time graphics.
+You can create beautiful visual effects with just programming knowledge - no need to learn complex technical concepts.
+
+### Traditional Method vs GLRE
+
+| Traditional Method            | GLRE                                 |
+| ----------------------------- | ------------------------------------ |
+| Learn complex technical terms | Write in TypeScript only             |
+| Platform-specific setup       | Automatically optimized for browsers |
+| Manual resource management    | Automatic memory management          |
+| Confusing error messages      | Clear error messages                 |
+
+### What You Can Create
+
+- 🎨 **Real-time Animation**: Smooth motion and changes
+- 🖼️ **Image Processing**: Photo and illustration filters
+- 🌟 **Special Effects**: Particles and lighting
+- 🎮 **Interactions**: Response to mouse and keyboard
+- 📱 **Responsive**: Works on PC and mobile
+
+## Environment Setup
+
+### Minimal Setup
+
+```html
+<canvas id="canvas"></canvas>
+<script type="module">
+        import { createGL, vec4 } from 'https://esm.sh/glre'
+
+        const fragment = () => {
+                return vec4(0.2, 0.4, 0.8, 1)
+        }
+
+        const gl = createGL({
+                fs: fragment(),
+                el: document.getElementById('canvas'),
+        })
+
+        gl.mount()
+</script>
+```
+
+## Your First Visual
+
+### Solid Color Screen
+
+Let's start by filling the entire screen with your favorite color.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        return vec4(0.2, 0.4, 0.8, 1)
+}`}
+/>
+
+### Understanding Colors
+
+Colors are specified using four numbers (RGBA):
+
+| Component     | Meaning        | Range | Example              |
+| ------------- | -------------- | ----- | -------------------- |
+| **R (Red)**   | How much red   | 0 - 1 | 1 = bright red       |
+| **G (Green)** | How much green | 0 - 1 | 1 = bright green     |
+| **B (Blue)**  | How much blue  | 0 - 1 | 1 = bright blue      |
+| **A (Alpha)** | Transparency   | 0 - 1 | 1 = completely solid |
+
+Think of it like mixing paint:
+
+- `vec4(1, 0, 0, 1)` = pure red paint
+- `vec4(0, 1, 0, 1)` = pure green paint
+- `vec4(1, 1, 0, 1)` = red + green = yellow
+- `vec4(0.5, 0.5, 0.5, 1)` = gray (equal amounts of all colors)
+
+```javascript
+// Various color examples
+const colors = {
+        red: vec4(1, 0, 0, 1), // Red
+        green: vec4(0, 1, 0, 1), // Green
+        blue: vec4(0, 0, 1, 1), // Blue
+        white: vec4(1, 1, 1, 1), // White
+        black: vec4(0, 0, 0, 1), // Black
+        purple: vec4(0.5, 0, 0.5, 1), // Purple
+}
+```
+
+### Creating Gradients
+
+Let's make colors change across the screen based on position.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+                // Use X coordinate to change color
+                const x = uv.x
+                return vec4(x, 0.4, 0.8, 1)
+}`}
+/>
+
+In this example:
+
+- `uv.x` gets the horizontal position on screen (0-1 range)
+- Left edge is 0, right edge is 1
+- The color changes smoothly from left to right
+
+## Understanding Coordinates
+
+### Screen Coordinate System
+
+GLRE uses this coordinate system:
+
+```
+     (0, 1) -------- (1, 1)
+        |              |
+        |    Screen    |
+        |              |
+     (0, 0) -------- (1, 0)
+```
+
+Think of it like a map:
+
+- Left edge is 0, right edge is 1
+- Bottom edge is 0, top edge is 1
+
+### Using Position
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Get coordinate components
+        const x = uv.x // Horizontal position
+        const y = uv.y // Vertical position
+        // Distance from left bottom
+        const distance = vec2(x, y).length()
+        return vec4(vec3(distance), 1)
+}`}
+/>
+
+### Working with Vectors
+
+Vectors are groups of numbers that work together:
+
+```javascript
+// 2D vector (like a point on a map)
+const uv = vec2(0.5, 0.3)
+const x = uv.x
+const y = uv.y
+
+// 3D vector (like RGB color)
+const rgb = vec3(1, 0.5, 0.2)
+const red = rgb.x // or rgb.r
+const green = rgb.y // or rgb.g
+const blue = rgb.z // or rgb.b
+
+// 4D vector (RGBA color)
+const rgba = vec4(0.8, 0.2, 0.6, 1)
+const color = rgba.xyz // First 3 components
+const alpha = rgba.w // Transparency
+```
+
+## Understanding Math Functions
+
+### Basic Math Operations
+
+```javascript
+// Addition
+const a = float(2)
+const b = float(3)
+const sum = a.add(b) // 2 + 3 = 5
+
+// Multiplication
+const doubled = a.mul(2) // 2 * 2 = 4
+
+// Sine wave (creates smooth up-and-down motion)
+const wave = a.sin() // Creates values between -1 and 1
+```
+
+### What is Sine?
+
+Sine (`sin`) creates smooth wave patterns. Imagine drawing a wave:
+
+- At 0, sine = 0 (middle)
+- At π/2, sine = 1 (top)
+- At π, sine = 0 (middle again)
+- At 3π/2, sine = -1 (bottom)
+
+This creates smooth, repeating motion perfect for animation.
+
+## Practical Examples
+
+### Rainbow Gradient
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Use X coordinate (already 0-1 range)
+        const x = uv.x
+        // Create rainbow colors using sine waves
+        const r = x.mul(6).sin()
+        const g = x.mul(6).add(2).sin()
+        const b = x.mul(6).add(4).sin()
+        return vec4(r, g, b, 1)
+}`}
+/>
+
+### Radial Gradient
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Distance from center
+        const center = uv.sub(0.5)
+        const distance = center.length()
+        // Change color based on distance
+        const intensity = distance
+        const color = vec3(1, 0.5, 0.2).mul(intensity)
+        return vec4(color, 1)
+}`}
+/>
+
+## What You've Learned
+
+- ✅ GLRE basics and setup
+- ✅ Color specification with RGBA
+- ✅ Understanding coordinate system
+- ✅ Creating gradients
+- ✅ Basic math operations
+
+## Next Steps
+
+Now that you can display basic colors, move on to [Colors and Coordinates](02-colors-coordinates.mdx) to learn more detailed color control and coordinate manipulation.
+
+You're ready to start creating beautiful visuals with code!

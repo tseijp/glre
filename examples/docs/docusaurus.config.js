@@ -1,5 +1,4 @@
-// const lightCodeTheme = require('prism-react-renderer/themes/github');
-// const darkCodeTheme = require('prism-react-renderer/themes/dracula');
+const { themes } = require('prism-react-renderer')
 
 const config = {
         title: 'glre',
@@ -137,10 +136,10 @@ const config = {
                         ],
                         copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
                 },
-                // prism: {
-                //         theme: lightCodeTheme,
-                //         darkTheme: darkCodeTheme,
-                // },
+                prism: {
+                        theme: themes.vsLight,
+                        darkTheme: themes.vsDark,
+                },
                 // https://docusaurus.io/docs/api/themes/@docusaurus/theme-live-codeblock
                 themeConfig: {
                         liveCodeBlock: {

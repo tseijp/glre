@@ -1,4 +1,3 @@
-import { is } from '../utils/helpers'
 import { infer } from './infer'
 import {
         parseArray,
@@ -14,8 +13,11 @@ import {
         parseVaryingHead,
         parseUniformHead,
 } from './parse'
-import { getBluiltin, getOperator, formatConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
-import type { Constants, NodeContext, X } from './types'
+import { getBluiltin, getOperator, getConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
+import { is } from '../../utils/helpers'
+import type { Constants, NodeContext, X } from '../types'
+
+export * from './utils'
 
 export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
@@ -32,7 +34,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return ''
         const { type, props } = target
-        const { id = '', children = [], fields, initialValues } = props
+        const { id = 'i', children = [], fields, initialValues } = props
         const [x, y, z, w] = children
         /**
          * variables
@@ -43,14 +45,16 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 return c.isWebGL
                         ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
                         : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
-        if (type === 'conversion') return `${formatConversions(x, c)}(${parseArray(children.slice(1), c)})`
+        if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
         if (type === 'function') {
-                if (x === 'negate') return `(-${parseArray(children.slice(1), c)})`
+                if (x === 'negate') return `(-${code(y, c)})`
+                if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
+                if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
         /**
@@ -61,8 +65,8 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'loop')
                 return c.isWebGL
-                        ? `for (int i = 0; i < ${code(x, c)}; i += 1) {\n${code(y, c)}\n}`
-                        : `for (var i: i32 = 0; i < ${code(x, c)}; i++) {\n${code(y, c)}\n}`
+                        ? `for (int ${id} = 0; ${id} < ${code(x, c)}; ${id} += 1) {\n${code(y, c)}\n}`
+                        : `for (var ${id}: i32 = 0; ${id} < ${code(x, c)}; ${id}++) {\n${code(y, c)}\n}`
         if (type === 'if') return parseIf(c, x, y, children)
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
@@ -88,7 +92,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(id)
                 if (id === 'position') return 'out.position'
-                const field = `@builtin(${id}) ${id}: ${formatConversions(infer(target, c), c)}`
+                const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.isFrag) {
                         c.code?.fragInputs.set(id, field)
                 } else c.code?.vertInputs.set(id, field)

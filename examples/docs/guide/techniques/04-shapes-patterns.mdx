@@ -1,0 +1,365 @@
+# Shapes and Patterns
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+Learn to create various geometric shapes and complex patterns.
+
+## Basic Shapes
+
+### Circle
+
+The most fundamental shape ????:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Distance from center
+        const center = uv.sub(0.5)
+        const distance = center.length()
+        // Hard edge circle (aliased)
+        const circle = step(distance, 0.3)
+        return vec4(vec3(circle), 1)
+}`}
+/>
+
+### Anti-aliased Circle
+
+Using `fwidth()` for automatic edge smoothing:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Distance from center
+        const center = uv.sub(0.5)
+        const radius = float(0.3)
+        const distance = center.length()
+        // Anti-aliasing using screen-space derivatives
+        const edge = fwidth(distance)
+        const circle = smoothstep(radius, radius.sub(edge), distance)
+        return vec4(vec3(circle), 1)
+}`}
+/>
+
+### MSAA Circle
+
+Using multi-sampling for superior edge quality:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const msaa = Fn(([uv, AA]) => {
+                const center = uv.sub(0.5)
+                const ret = float(0).toVar()
+                Loop(int(AA), ({ i: m }) => {
+                        Loop(int(AA), ({ i: n }) => {
+                                const offset = vec2(float(m), float(n))
+                                const diff = offset.div(AA).sub(0.5).div(iResolution)
+                                const distance = center.add(diff).length()
+                                const circle = step(distance, 0.3)
+                                const value = ret.add(circle)
+                                ret.assign(value)
+                        })
+                })
+                const divisor = AA.mul(AA)
+                return ret.div(divisor)
+        })
+        return vec4(vec3(msaa(uv, 4)), 1)
+}`}
+/>
+
+## Polygons
+
+### Triangle
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Triangle using polygon generator (keep original function)
+        const polygon = Fn(([xy, sides, size]) => {
+                const angle = atan2(xy.y, xy.x)
+                const radius = xy.length()
+                const pi2 = 6.28318
+                const a = angle.div(pi2).mul(sides)
+                const r = a.floor().sub(a).add(0.5).mul(pi2).div(sides).cos()
+                const distance = radius.mul(r)
+                // AA
+                const edge = fwidth(distance)
+                return smoothstep(size, size.sub(edge), distance)
+        })
+        const center = uv.sub(0.5)
+        const triangle = polygon(center, 3, 0.2)
+        return vec4(vec3(triangle), 1)
+}`}
+/>
+
+### Regular Polygon
+
+Create any regular polygon:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Function to create polygon
+        const center = uv.sub(0.5)
+        const gap = 0.25
+        const polygon = Fn(([xy, sides, size]) => {
+                const angle = atan2(xy.y, xy.x)
+                const radius = xy.length()
+                const pi2 = 6.28318
+                const a = angle.div(pi2).mul(sides)
+                const r = a.floor().sub(a).add(0.5).mul(pi2).div(sides).cos()
+                const distance = radius.mul(r)
+                // AA
+                const edge = fwidth(distance)
+                return smoothstep(size, size.sub(edge), distance)
+        })
+        // Create different polygons with consistent visual size
+        const shapes = polygon(vec2(-gap,  gap).add(center), 3, 0.1)
+                .add(  polygon(vec2( gap,  gap).add(center), 4, 0.14)  )
+                .add(  polygon(vec2(-gap, -gap).add(center), 6, 0.15)  )
+                .add(  polygon(vec2( gap, -gap).add(center), 8, 0.16)  )
+        return vec4(vec3(shapes), 1)
+}`}
+/>
+
+### Star Shape
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Pentagram (5-pointed star) using distance field
+        const center = uv.sub(0.5)
+        const edge1 = constant(vec2(0.809016994, -0.587785252))
+        const edge2 = constant(vec2(edge1.x.negate(), edge1.y))
+        const edge3 = constant(vec2(0.309016994, -0.951056516))
+        const sdPentagram = Fn(([p, radius]) => {
+                let point = vec2(p.x.abs(), p.y)
+                // First edge reflection
+                const distance1 = max(point.dot(edge1), 0)
+                const offset1 = edge1.mul(distance1).mul(2)
+                point = point.sub(offset1)
+                // Second edge reflection
+                const distance2 = max(point.dot(edge2), 0)
+                const offset2 = edge2.mul(distance2).mul(2)
+                point = point.sub(offset2)
+                // Final adjustments
+                point = vec2(point.x.abs(), point.y.sub(radius))
+                const clampValue = clamp(point.dot(edge3), 0, 0.726542528)
+                const finalOffset = edge3.mul(clampValue)
+                return point.sub(finalOffset).length()
+        })
+        // Create star
+        const starDist = sdPentagram(center, 0.2)
+        const starShape = smoothstep(0.02, 0, starDist)
+        return vec4(vec3(starShape), 1)
+}`}
+/>
+
+## Lines and Curves
+
+### Straight Lines
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Horizontal line
+        const absY = uv.y.abs()
+        let c = smoothstep(0.02, 0, absY)
+        // Vertical line
+        const absX = uv.x.abs()
+        c = c.add(smoothstep(0.02, 0, absX))
+        // Diagonal line
+        const diagDiff = uv.y.sub(uv.x).abs()
+        c = c.add(smoothstep(0.02, 0, diagDiff))
+        return vec4(vec3(c), 1)
+}`}
+/>
+
+### Curves
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Sine wave
+        const center = uv.sub(0.5).mul(2)
+        const sineWave = center.x.mul(4).sin().mul(0.3)
+        const sineDistance = center.y.sub(sineWave).abs()
+        const sineLine = smoothstep(0.05, 0, sineDistance)
+        // Parabola
+        const parabola = pow(center.x, 3)
+        const parabolaDistance = center.y.sub(parabola).abs()
+        const parabolaLine = smoothstep(0.05, 0, parabolaDistance)
+        // Circle outline
+        const circleDistance = center.length().sub(0.5).abs()
+        const circleLine = smoothstep(0.05, 0, circleDistance)
+        const maxParabolaCircle = max(parabolaLine, circleLine)
+        const curves = max(sineLine, maxParabolaCircle)
+        return vec4(vec3(curves), 1)
+}`}
+/>
+
+## Complex Patterns
+
+### Fractal-like Pattern
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Create fractal pattern using Loop with configurable iterations
+        const generateFractal = Fn(([uv, N]) => {
+                const ret = vec3(0).toVar()
+                // Multiple scales of the same pattern
+                Loop(int(N), ({ i }) => {
+                        const layerIndex = float(i)
+                        const scale = pow(2, layerIndex)
+                        const scaledPos = uv.mul(scale)
+                        // Circle pattern at each scale
+                        const dist = scaledPos.fract().sub(0.5).length()
+                        const circle = smoothstep(0.3, 0.2, dist)
+                        // Add to final color with decreasing weight
+                        const layerRatio = layerIndex.div(float(N))
+                        const weight = layerRatio.oneMinus()
+                        const circleVec = vec3(circle).mul(weight)
+                        ret.assign(ret.add(circleVec))
+                })
+                const divisor = float(N)
+                return ret.div(divisor) // Normalize
+        })
+        const fractalColor = generateFractal(uv, 8)
+        return vec4(fractalColor, 1)
+}`}
+/>
+
+### Voronoi Pattern
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const st = uv.mul(5)
+        const row = st.floor()
+        const col = st.fract()
+        const random2 = Fn(([p]) => {
+                const dot1 = vec2(127.1, 311.7).dot(p)
+                const dot2 = vec2(269.5, 183.3).dot(p)
+                return vec2(dot1, dot2).sin().mul(43758.5453).fract()
+        })
+        const voronoi = Fn(([gridRow, gridCol]) => {
+                const minDist = float(1).toVar('minDist')
+                const closestPoint = vec2(0).toVar('closestPoint')
+                Loop(int(9), ({ i }) => {
+                        const idx = i.toFloat()
+                        const x = mod(idx, 3).floor().sub(1)
+                        const y = idx.div(3).floor().sub(1)
+                        const offset = vec2(x, y).toVar()
+                        const gridPoint = gridRow.add(offset)
+                        const point = random2(gridPoint).toVar()
+                        const dist = offset.add(point).sub(gridCol).length().toVar()
+                        const closer = step(dist, minDist).toVar()
+                        const newMinDist = mix(minDist, dist, closer)
+                        minDist.assign(newMinDist)
+                        const newClosestPoint = mix(closestPoint, point, closer)
+                        closestPoint.assign(newClosestPoint)
+                })
+                return closestPoint
+        })
+        const result = voronoi(row, col)
+        return vec4(vec3(result, 0.8), 1)
+}`}
+/>
+
+## Dynamic Patterns
+
+### Game of Life
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const hash = Fn(([coord]) => {
+                const dotResult = vec2(127.1, 311.7).dot(coord)
+                return dotResult.sin().mul(43758.5453).fract()
+        })
+        const automata = Fn(([coord, time]) => {
+                let neighbors = float(0).toVar('neighbors')
+                Loop(int(9), ({ i }) => {
+                        const idx = float(i)
+                        const x = mod(idx, 3).floor()
+                        const y = idx.div(3).floor()
+                        const offset = vec2(x, y).toVar()
+                        If(offset.length().greaterThan(0.1), () => {
+                                const coordOffset = coord.add(offset)
+                                const cell = step(0.5, hash(coordOffset))
+                                const newNeighbors = neighbors.add(cell)
+                                neighbors.assign(newNeighbors)
+                        })
+                })
+                const coordTime = coord.add(time)
+                const alive = step(0.5, hash(coordTime))
+                const birthRange = step(2.5, neighbors).mul(step(neighbors, 3.5))
+                const birth = alive.oneMinus().mul(birthRange)
+                const survivalRange = step(1.5, neighbors).mul(step(neighbors, 3.5))
+                const survival = survivalRange.mul(alive)
+                return max(birth, survival)
+        })
+        const p = uv.mul(64)
+        const local = p.fract()
+        const t = iTime.floor()
+        const life = automata(p.floor(), t)
+        const color = local.length()
+        const lifeColor = color.mul(life)
+        return vec4(vec3(lifeColor), 1)
+}`}
+/>
+
+### Morphing Patterns
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        // Morphing between different patterns
+        const t = iTime.sin()
+        // Pattern A: Circles
+        const center = uv.sub(0.5)
+        const circles = center.length().mul(10).sin()
+        // Pattern B: Stripes
+        const stripes = uv.x.mul(10).sin()
+        // Pattern C: Grid
+        const gridPattern = uv.mul(10).sin()
+        const grid = gridPattern.x.mul(gridPattern.y)
+        // Morph between patterns
+        const mixRatio1 = smoothstep(0, 0.33, t)
+        let pattern = mix(circles, stripes, mixRatio1)
+        const mixRatio2 = smoothstep(0.33, 0.66, t)
+        pattern = mix(pattern, grid, mixRatio2)
+        const mixRatio3 = smoothstep(0.66, 1, t)
+        pattern = mix(pattern, circles, mixRatio3)
+        pattern = pattern
+        const color = vec3(1, 0.8, 1.2).mul(pattern)
+        return vec4(color, 1)
+}`}
+/>
+
+## What You've Learned
+
+- ✅ Basic geometric shapes (circles, polygons, stars)
+- ✅ Line and curve drawing techniques
+- ✅ Grid and tiling patterns
+- ✅ Complex pattern generation (fractals, voronoi, moire)
+- ✅ Dynamic and animated patterns
+
+## Next Steps
+
+Now that you can create shapes and patterns, learn about [Images and Textures](05-images-textures.mdx) to work with external images and create complex surface effects.

@@ -1,0 +1,538 @@
+# 図形とパターン
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+
+基本図形から複雑なパターンまで、様々な形状を描画する技法を学びましょう。
+
+## 基本図形の描画
+
+### 円の描画
+
+最も基本的な図形である円から始めましょう。
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 中心からの距離を計算
+                const distance = length(pos.xy)
+
+                // 半径0.5の円
+                const circle = step(distance, 0.5)
+
+                return vec4(vec3(circle), 1.0)
+        },
+})
+```
+
+### 滑らかな円
+
+エッジを滑らかにして、より美しい円を描きます。
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                const distance = length(pos.xy)
+
+                // smoothstepで滑らかなエッジ
+                const circle = smoothstep(0.5, 0.48, distance)
+
+                // グラデーション効果
+                const gradient = oneMinus(distance.mul(2.0))
+                const finalColor = circle.mul(gradient)
+
+                const color = vec3(finalColor, finalColor.mul(0.8), finalColor.mul(1.2))
+                return vec4(color, 1.0)
+        },
+})
+```
+
+### 楕円の描画
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // X方向とY方向で異なるスケール
+                const aspectRatio = vec2(2.0, 1.0)
+                const scaledPos = pos.xy.div(aspectRatio)
+
+                const distance = length(scaledPos)
+                const ellipse = smoothstep(0.5, 0.48, distance)
+
+                return vec4(vec3(ellipse), 1.0)
+        },
+})
+```
+
+## 多角形の描画
+
+### 三角形
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 極座標に変換
+                const angle = atan2(pos.y, pos.x)
+                const radius = length(pos.xy)
+
+                // 3角形の角度計算
+                const sides = 3.0
+                const a = angle.add(3.14159).div(6.28318).mul(sides)
+                const r = cos(floor(a).sub(a).add(0.5).mul(6.28318).div(sides))
+
+                // 三角形の判定
+                const triangle = step(radius.mul(r), 0.5)
+
+                return vec4(vec3(triangle), 1.0)
+        },
+})
+```
+
+### 正多角形ジェネレーター
+
+任意の角数の正多角形を描画する関数です。
+
+```javascript
+const polygon = (pos, sides, size) => {
+        const angle = atan2(pos.y, pos.x)
+        const radius = length(pos.xy)
+
+        const a = angle.add(3.14159).div(6.28318).mul(sides)
+        const r = cos(floor(a).sub(a).add(0.5).mul(6.28318).div(sides))
+
+        return step(radius.mul(r), size)
+}
+
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 異なる多角形を組み合わせ
+                const triangle = polygon(pos.xy, 3.0, 0.3)
+                const square = polygon(pos.xy.add(vec2(0.7, 0)), 4.0, 0.2)
+                const hexagon = polygon(pos.xy.add(vec2(-0.7, 0)), 6.0, 0.2)
+                const octagon = polygon(pos.xy.add(vec2(0, -0.7)), 8.0, 0.2)
+
+                const shapes = triangle.add(square).add(hexagon).add(octagon)
+
+                return vec4(vec3(shapes), 1.0)
+        },
+})
+```
+
+### 星型
+
+```javascript
+const star = (pos, outerRadius, innerRadius, points) => {
+        const angle = atan2(pos.y, pos.x)
+        const radius = length(pos.xy)
+
+        // 角度を正規化
+        const normalizedAngle = angle.add(3.14159).div(6.28318)
+        const sectionAngle = normalizedAngle.mul(points).mul(2.0)
+
+        // 外側と内側の半径を交互に使用
+        const isOuter = mod(floor(sectionAngle), 2.0)
+        const targetRadius = mix(innerRadius, outerRadius, isOuter)
+
+        // 各セクション内での補間
+        const sectionProgress = fract(sectionAngle)
+        const interpolatedRadius = mix(
+                targetRadius,
+                mix(outerRadius, innerRadius, isOuter),
+                abs(sectionProgress.mul(2.0).sub(1.0))
+        )
+
+        return step(radius, interpolatedRadius)
+}
+
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                const starShape = star(pos.xy, 0.5, 0.25, 5.0)
+
+                return vec4(vec3(starShape), 1.0)
+        },
+})
+```
+
+## 線の描画
+
+### 直線
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 水平線
+                const horizontalLine = smoothstep(0.02, 0.0, abs(pos.y))
+
+                // 垂直線
+                const verticalLine = smoothstep(0.02, 0.0, abs(pos.x))
+
+                // 対角線
+                const diagonalLine = smoothstep(0.02, 0.0, abs(pos.y.sub(pos.x)))
+
+                const lines = max(horizontalLine, max(verticalLine, diagonalLine))
+
+                return vec4(vec3(lines), 1.0)
+        },
+})
+```
+
+### 曲線
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 正弦波
+                const sineWave = sin(pos.x.mul(4.0)).mul(0.3)
+                const sineDistance = abs(pos.y.sub(sineWave))
+                const sineLine = smoothstep(0.05, 0.0, sineDistance)
+
+                // 放物線
+                const parabola = pos.x.mul(pos.x).mul(2.0)
+                const parabolaDistance = abs(pos.y.sub(parabola))
+                const parabolaLine = smoothstep(0.05, 0.0, parabolaDistance)
+
+                // 円弧
+                const circleY = sqrt(max(0.0, 0.25 - pos.x.mul(pos.x)))
+                const circleDistance = abs(pos.y.sub(circleY))
+                const circleLine = smoothstep(0.05, 0.0, circleDistance)
+
+                const curves = max(sineLine, max(parabolaLine, circleLine))
+
+                return vec4(vec3(curves), 1.0)
+        },
+})
+```
+
+## 繰り返しパターン
+
+### グリッドパターン
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // グリッドのサイズ
+                const gridSize = 8.0
+                const lineWidth = 0.1
+
+                // 格子座標
+                const gridPos = fract(pos.xy.mul(gridSize))
+
+                // 格子線
+                const linesX = smoothstep(0.0, lineWidth, gridPos.x).mul(
+                        smoothstep(lineWidth, 0.0, gridPos.x.sub(1.0).add(lineWidth))
+                )
+                const linesY = smoothstep(0.0, lineWidth, gridPos.y).mul(
+                        smoothstep(lineWidth, 0.0, gridPos.y.sub(1.0).add(lineWidth))
+                )
+
+                const grid = max(linesX, linesY)
+
+                return vec4(vec3(grid), 1.0)
+        },
+})
+```
+
+### ハニカム（六角形）パターン
+
+```javascript
+const hexagon = (pos) => {
+        pos = abs(pos)
+        const c = dot(pos, vec2(0.866, 0.5))
+        pos = pos.sub(vec2(0.866, 0.5).mul(max(0.0, c.sub(pos.x))))
+        pos = pos.sub(vec2(0.866, 0.5).mul(max(0.0, dot(pos, vec2(0.866, 0.5)))))
+        pos = pos.sub(vec2(clamp(pos.x, -0.866, 0.866), 1.0).mul(step(0.0, pos.y.sub(1.0))))
+        return length(pos).mul(sign(pos.y))
+}
+
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // ハニカムグリッド
+                const scale = 3.0
+                const scaledPos = pos.xy.mul(scale)
+
+                // 六角形の距離
+                const hexDist = hexagon(scaledPos)
+
+                // パターンの作成
+                const pattern = sin(hexDist.mul(8.0)).mul(0.5).add(0.5)
+                const mask = smoothstep(0.0, 0.1, abs(hexDist.sub(0.5)))
+
+                const finalPattern = pattern.mul(mask)
+
+                return vec4(vec3(finalPattern), 1.0)
+        },
+})
+```
+
+### 万華鏡パターン
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 極座標
+                let radius = length(pos.xy)
+                let angle = atan2(pos.y, pos.x)
+
+                // 対称性の作成
+                const segments = 8.0
+                angle = angle.div(6.28318).mul(segments)
+                angle = abs(fract(angle).sub(0.5)).mul(2.0)
+                angle = angle.mul(6.28318).div(segments)
+
+                // パターンの生成
+                const pattern1 = sin(radius.mul(12.0))
+                const pattern2 = sin(angle.mul(6.0))
+                const pattern3 = sin(radius.mul(8.0).add(angle.mul(4.0)))
+
+                const combined = pattern1.mul(pattern2).add(pattern3).div(3.0)
+                const final = combined.mul(0.5).add(0.5)
+
+                // カラフルな色付け
+                const color = vec3(
+                        sin(final.mul(6.28)).mul(0.5).add(0.5),
+                        sin(final.mul(6.28).add(2.09)).mul(0.5).add(0.5),
+                        sin(final.mul(6.28).add(4.18)).mul(0.5).add(0.5)
+                )
+
+                return vec4(color, 1.0)
+        },
+})
+```
+
+## 複雑なパターン
+
+### フラクタル風パターン
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+                let color = vec3(0.0)
+
+                // 複数のスケールでパターンを重ね合わせ
+                Loop(5, ({ i }) => {
+                        const scale = pow(2.0, float(i))
+                        const scaledPos = pos.xy.mul(scale)
+
+                        // 各スケールでの円パターン
+                        const cellPos = fract(scaledPos).sub(0.5)
+                        const distance = length(cellPos)
+                        const circle = smoothstep(0.3, 0.2, distance)
+
+                        // スケールに応じた重み
+                        const weight = oneMinus(float(i).div(5.0))
+                        color.assign(color.add(vec3(circle).mul(weight)))
+                })
+
+                return vec4(color, 1.0)
+        },
+})
+```
+
+### ボロノイ図
+
+```javascript
+// 疑似ランダム関数
+const random2 = (st) => {
+        const x = sin(dot(st, vec2(12.9898, 78.233))).mul(43758.5453123)
+        const y = sin(dot(st, vec2(93.9898, 67.345))).mul(23421.6312313)
+        return vec2(fract(x), fract(y))
+}
+
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                const scale = 5.0
+                const scaledPos = pos.xy.mul(scale)
+                const cellIndex = floor(scaledPos)
+                const cellPos = fract(scaledPos)
+
+                let minDistance = 1.0
+                let closestPoint = vec2(0.0)
+
+                // 周囲9セルをチェック
+                Loop(3, ({ i }) => {
+                        Loop(3, ({ j }) => {
+                                const neighbor = vec2(float(i).sub(1.0), float(j).sub(1.0))
+                                const pointPos = random2(cellIndex.add(neighbor))
+                                const distance = length(cellPos.sub(neighbor).sub(pointPos))
+
+                                If(distance.lessThan(minDistance), () => {
+                                        minDistance.assign(distance)
+                                        closestPoint.assign(pointPos)
+                                })
+                        })
+                })
+
+                // 距離ベースの色付け
+                const color = vec3(minDistance)
+
+                // セルの境界を強調
+                const edge = smoothstep(0.0, 0.1, minDistance)
+                const finalColor = color.mul(edge)
+
+                return vec4(finalColor, 1.0)
+        },
+})
+```
+
+### モアレパターン
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const pos = builtin('position')
+
+                // 2つの異なる周波数のストライプ
+                const freq1 = 20.0
+                const freq2 = 21.0
+
+                const stripe1 = sin(pos.x.mul(freq1))
+                const stripe2 = sin(pos.x.mul(freq2).add(pos.y.mul(0.5)))
+
+                // ストライプの干渉
+                const interference = stripe1.mul(stripe2)
+
+                // モアレ効果の強調
+                const moire = sin(interference.mul(8.0)).mul(0.5).add(0.5)
+
+                // カラーマッピング
+                const color = vec3(moire, moire.mul(0.8), moire.mul(1.2))
+
+                return vec4(color, 1.0)
+        },
+})
+```
+
+## 動的パターン
+
+### 回転する図形
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const time = uniform('iTime')
+                const pos = builtin('position')
+
+                // 回転行列
+                const angle = time.mul(0.5)
+                const cosA = cos(angle)
+                const sinA = sin(angle)
+                const rotatedPos = vec2(pos.x.mul(cosA).sub(pos.y.mul(sinA)), pos.x.mul(sinA).add(pos.y.mul(cosA)))
+
+                // 回転する四角形
+                const square = step(abs(rotatedPos.x), 0.3).mul(step(abs(rotatedPos.y), 0.3))
+
+                return vec4(vec3(square), 1.0)
+        },
+})
+```
+
+### 波打つパターン
+
+```javascript
+const gl = createGL({
+        fragment: () => {
+                const time = uniform('iTime')
+                const pos = builtin('position')
+
+                // 波による歪み
+                const waveX = sin(pos.y.mul(8.0).add(time.mul(2.0))).mul(0.2)
+                const waveY = sin(pos.x.mul(6.0).add(time.mul(1.5))).mul(0.15)
+
+                const distortedPos = pos.xy.add(vec2(waveX, waveY))
+
+                // 歪んだ座標でのストライプ
+                const stripe = sin(distortedPos.x.mul(12.0)).mul(0.5).add(0.5)
+
+                // 色の変化
+                const colorShift = time.mul(0.3)
+                const color = vec3(
+                        sin(stripe.mul(6.28).add(colorShift)).mul(0.5).add(0.5),
+                        sin(stripe.mul(6.28).add(colorShift).add(2.09)).mul(0.5).add(0.5),
+                        sin(stripe.mul(6.28).add(colorShift).add(4.18)).mul(0.5).add(0.5)
+                )
+
+                return vec4(color, 1.0)
+        },
+})
+```
+
+## 実践課題
+
+### 課題 1: オリジナル図形
+
+正多角形ジェネレーターを改造して、オリジナルの図形を作成してください。
+
+### 課題 2: 複合パターン
+
+複数のパターンを組み合わせて、新しい視覚効果を作成してください。
+
+### 課題 3: インタラクティブパターン
+
+マウスの位置に応じてパターンが変化するエフェクトを作成してください。
+
+## よくある問題と解決策
+
+### 図形のエッジがギザギザになる
+
+```javascript
+// 問題: step関数によるハードエッジ
+const circle = step(distance, 0.5)
+
+// 解決: smoothstepによる滑らかなエッジ
+const circle = smoothstep(0.51, 0.49, distance)
+```
+
+### パターンの繰り返しで境界が見える
+
+```javascript
+// 連続性を保つためのfract使用
+const pattern = sin(fract(pos.x.mul(frequency)).mul(6.28))
+```
+
+### 複雑な図形の計算が重い
+
+```javascript
+// LOD（Level of Detail）の実装
+const complexity = length(pos.xy) < 0.5 ? 10.0 : 5.0
+const pattern = complexPattern(pos, complexity)
+```
+
+## 次のステップ
+
+図形とパターンの描画をマスターしたら、次は[画像とテクスチャ](05-images-textures.mdx)で、外部画像を使った表現を学びましょう。
+
+このチュートリアルで学んだこと：
+
+- ✅ 基本図形（円、楕円、多角形）の描画
+- ✅ 線と曲線の描画
+- ✅ 繰り返しパターンの作成
+- ✅ 複雑なパターン（フラクタル、ボロノイ図）
+- ✅ 動的パターンの実装
+- ✅ 図形の組み合わせと変形
+
+次の章では、外部画像を読み込んで加工する方法や、テクスチャを使った表現技法を学習します。

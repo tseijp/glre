@@ -35,15 +35,13 @@ import TabItem from '@theme/TabItem'
 
 ```jsx
 import { createRoot } from 'react-dom/client'
-import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/react'
-const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = useGL({ frag })
+import { useGL, vec4, uv } from 'glre/react'
+const Canvas = () => {
+        const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
 }
 
-createRoot(document.getElementById('root')).render(<App />)
+createRoot(document.getElementById('root')).render(<Canvas />)
 ```
 
 </TabItem>
@@ -52,15 +50,13 @@ createRoot(document.getElementById('root')).render(<App />)
 ```jsx
 import { GLView } from 'expo-gl'
 import { registerRootComponent } from 'expo'
-import { useGL, vec4, fract, fragCoord, iResolution } from 'glre/native'
-const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = useGL({ frag })
+import { useGL, vec4, uv } from 'glre/native'
+const Canvas = () => {
+        const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
 }
 
-registerRootComponent(App)
+registerRootComponent(Canvas)
 ```
 
 </TabItem>
@@ -68,31 +64,24 @@ registerRootComponent(App)
 
 ```jsx
 import { render } from 'solid-js/web'
-import { onGL, vec4, fract, fragCoord, iResolution } from 'glre/solid'
-const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
-
-const App = () => {
-        const gl = onGL({ frag })
+import { onGL, vec4, uv } from 'glre/solid'
+const Canvas = () => {
+        const gl = onGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
 }
 
-render(() => <App />, document.getElementById('root'))
+render(() => <Canvas />, document.getElementById('root'))
 ```
 
 </TabItem>
 <TabItem value="esm" label="ESM">
 
 ```html
+<canvas id="canvas"></canvas>
 <script type="module">
-        import createGL from 'https://esm.sh/glre'
-        import { vec4, fract, fragCoord, iResolution } from 'https://esm.sh/glre'
-        const frag = vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)
-        function App() {
-                const el = document.createElement('canvas')
-                createGL({ el, frag }).mount()
-                document.body.append(el)
-        }
-        document.addEventListener('DOMContentLoaded', App)
+        import { createGL, vec4, uv } from 'https://esm.sh/glre'
+        const el = document.getElementById('canvas')
+        createGL({ el, fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
 
@@ -102,6 +91,25 @@ render(() => <App />, document.getElementById('root'))
 ## Varying
 
 <Tabs>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const a_position = attribute([0, 0.73, -1, -1, 1, -1])
+        const a_color = attribute([1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                vert: vec4(a_position, 0.0, 1.0),
+                frag: vertexStage(a_color),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 <TabItem value="webgl" label="WebGL">
 
 ```jsx live
@@ -110,6 +118,7 @@ function Canvas() {
                 count: 3,
                 width: 256,
                 height: 256,
+                isWebGL: true,
                 vertex: `
                 #version 300 es
                 in vec4 a_position;
@@ -145,16 +154,21 @@ function Canvas() {
                 count: 3,
                 width: 256,
                 height: 256,
+                isWebGL: false,
                 vertex: `
+                struct In {
+                        @location(0) a_position: vec2f,
+                        @location(1) a_color: vec4f,
+                }
                 struct Out {
                         @builtin(position) position: vec4f,
                         @location(0) v_color: vec4f,
                 }
                 @vertex
-                fn main(@location(0) a_position: vec2f, @location(1) a_color: vec4f) -> Out {
+                fn main(in: In) -> Out {
                         var out: Out;
-                        out.position = vec4f(a_position, 0.0, 1.0);
-                        out.v_color = a_color;
+                        out.position = vec4f(in.a_position, 0.0, 1.0);
+                        out.v_color = in.a_color;
                         return out;
                 }
                 `,
@@ -168,29 +182,9 @@ function Canvas() {
                         return out.v_color;
                 }
                 `,
-                isWebGL: false,
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
-        return <canvas ref={gl.ref} />
-}
-```
-
-</TabItem>
-<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
-
-```jsx live
-function Canvas() {
-        const a_position = attribute([0, 0.73, -1, -1, 1, -1])
-        const a_color = attribute([1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
-        const gl = useGL({
-                count: 3,
-                width: 256,
-                height: 256,
-                isWebGL: true,
-                vert: vec4(a_position, 0.0, 1.0),
-                frag: vertexStage(a_color),
-        })
         return <canvas ref={gl.ref} />
 }
 ```
@@ -201,6 +195,21 @@ function Canvas() {
 ## Uniforms
 
 <Tabs>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                frag: vec4(uv.sub(iMouse).fract(), 0, 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 <TabItem value="webgl" label="WebGL">
 
 ```jsx live
@@ -208,6 +217,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
+                isWebGL: true,
                 fragment: `
                 #version 300 es
                 precision mediump float;
@@ -233,6 +243,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
+                isWebGL: false,
                 fragment: `
                 @group(0) @binding(0) var<uniform> iResolution: vec2f;
                 @group(0) @binding(1) var<uniform> iMouse: vec2f;
@@ -243,22 +254,6 @@ function Canvas() {
                         return vec4f(uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
                 `,
-                isWebGL: false,
-        })
-        return <canvas ref={gl.ref} />
-}
-```
-
-</TabItem>
-<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
-
-```jsx live
-function Canvas() {
-        const gl = useGL({
-                width: 256,
-                height: 256,
-                isWebGL: true,
-                frag: vec4(fract(position.xy.div(iResolution).sub(iMouse)), 0, 1),
         })
         return <canvas ref={gl.ref} />
 }
@@ -270,6 +265,23 @@ function Canvas() {
 ## Attributes
 
 <Tabs>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const a_position = attribute([0, 0.73, -1, -1, 1, -1])
+        const gl = useGL({
+                count: 3,
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                vert: vec4(a_position, 0, 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 <TabItem value="webgl" label="WebGL">
 
 ```jsx live
@@ -278,6 +290,7 @@ function Canvas() {
                 count: 3,
                 width: 256,
                 height: 256,
+                isWebGL: true,
                 vertex: `
                 #version 300 es
                 in vec4 a_position;
@@ -300,32 +313,15 @@ function Canvas() {
                 count: 3,
                 width: 256,
                 height: 256,
+                isWebGL: false,
                 vertex: `
                 @vertex
                 fn main(@location(0) position: vec2f) -> @builtin(position) vec4f {
                         return vec4f(position, 0.0, 1.0);
                 }
                 `,
-                isWebGL: false,
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
-        return <canvas ref={gl.ref} />
-}
-```
-
-</TabItem>
-<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
-
-```jsx live
-function Canvas() {
-        const a_position = attribute([0, 0.73, -1, -1, 1, -1])
-        const gl = useGL({
-                count: 3,
-                width: 256,
-                height: 256,
-                isWebGL: true,
-                vert: vec4(a_position, 0, 1),
-        })
         return <canvas ref={gl.ref} />
 }
 ```
@@ -336,6 +332,22 @@ function Canvas() {
 ## Textures
 
 <Tabs>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const gl = useGL({
+                width: 256,
+                height: 256,
+                isWebGL: true,
+                frag: texture(iTexture, uv),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 <TabItem value="webgl" label="WebGL">
 
 ```jsx live
@@ -343,6 +355,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
+                isWebGL: true,
                 fragment: `
                 #version 300 es
                 precision mediump float;
@@ -368,6 +381,7 @@ function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
+                isWebGL: false,
                 fragment: `
                 @group(0) @binding(0) var<uniform> iResolution: vec2f;
                 @group(1) @binding(0) var iSampler: sampler;
@@ -378,25 +392,8 @@ function Canvas() {
                         return textureSample(iTexture, iSampler, uv);
                 }
                 `,
-                isWebGL: false,
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
-        return <canvas ref={gl.ref} />
-}
-```
-
-</TabItem>
-<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
-
-```jsx live
-function Canvas() {
-        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        const gl = useGL({
-                width: 256,
-                height: 256,
-                isWebGL: true,
-                frag: texture(iTexture, position.xy.div(iResolution)),
-        })
         return <canvas ref={gl.ref} />
 }
 ```

@@ -1,0 +1,357 @@
+# Colors and Coordinates
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+Learn detailed color manipulation and coordinate transformations.
+
+## Understanding Color Systems
+
+### Color Blending
+
+Mix two colors together smoothly:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Two colors to blend
+        const color1 = vec3(1, 0.2, 0.3) // Reddish
+        const color2 = vec3(0.2, 0.6, 1) // Bluish
+        // X coordinate determines blend ratio
+        const mixRatio = uv.x
+        // Blend the colors
+        const blendedColor = mix(color1, color2, mixRatio)
+        return vec4(blendedColor, 1)
+}`}
+/>
+
+**What `mix()` does**:
+
+- When `mixRatio` = 0: returns `color1`
+- When `mixRatio` = 1: returns `color2`
+- When `mixRatio` = 0.5: returns halfway between both colors
+
+### RGB vs HSV
+
+RGB (Red, Green, Blue) is like mixing colored lights, while HSV (Hue, Saturation, Value) is more intuitive for artists.
+
+**RGB**: Mix red, green, and blue light
+**HSV**: Pick a color (hue), make it vibrant (saturation), make it bright (value)
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // HSV to RGB conversion function
+        const rgb2hsv = Fn(([h, s, v]) => {
+                const c = v.mul(s).toVar()
+                const x = mod(h.mul(6), 2).sub(1).abs().oneMinus().mul(c)
+                const i = h.mul(6).floor()
+                const ret = Fn(([c, x, i]) => {
+                        If(i.equal(0), () => vec3(c, x, 0))
+                        .ElseIf(i.equal(1), () => vec3(x, c, 0))
+                        .ElseIf(i.equal(2), () => vec3(0, c, x))
+                        .ElseIf(i.equal(3), () => vec3(0, x, c))
+                        .ElseIf(i.equal(4), () => vec3(x, 0, c))
+                        .Else(() => vec3(c, 0, x))
+                })
+                const m = v.sub(c)
+                return ret(c, x, i).add(m)
+        })
+        // HSV-style color creation
+        const h = uv.x // Hue from position
+        const s = 0.75 // Saturation
+        const v = uv.y // Value / brightness
+        // Convert HSV to RGB using the function
+        const rgb = rgb2hsv(h, s, v)
+        return vec4(rgb, 1)
+}`}
+/>
+
+### RGB vs XYZ
+
+The CIE color space represents colors as chromaticity coordinates, independent of brightness. It's visualized as the famous "horseshoe" chromaticity diagram.
+
+**How it works**:
+
+- x, y coordinates represent color hue and saturation
+- Pure colors form the curved boundary (spectral locus)
+- Mixed colors appear inside the horseshoe shape
+- White point is at the center
+
+<FragmentEditor
+        isFun
+        code={`
+const XYZtoRGB = constant(mat3(
+        3.2406, -1.5372, -0.4986,
+        -0.9689, 1.8758, 0.0415,
+        0.0557, -0.2040, 1.0570
+))
+const fragment = () => {
+        // CIE xy chromaticity coordinates from UV
+        const x = uv.x
+        const y = uv.y
+        const z = x.add(y).oneMinus()
+        // Convert xy to XYZ (assuming Y = 1 for full brightness)
+        const Y = 1
+        const X = x.mul(Y).div(y)
+        const Z = z.mul(Y).div(y)
+        // XYZ to RGB conversion matrix (sRGB)
+        // Convert XYZ to RGB
+        const XYZ = vec3(X, Y, Z)
+        const rgb = XYZtoRGB.mul(XYZ)
+        // Clamp to valid range and check if within gamut
+        return vec4(rgb, 1)
+}`}
+/>
+
+## Coordinate Transformations
+
+### Moving, Scaling, and Rotating
+
+Think of coordinates like a piece of paper you can move, resize, and turn:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Move coordinates (translation)
+        const offset = vec2(0.3, -0.2)
+        const scale = 2
+        // Rotate coordinates using rotation matrix
+        const cosA = cos(0.5)
+        const sinA = sin(0.5)
+        const rotateMat = mat2(cosA, sinA, sinA.negate(), cosA)
+        const rotatePos = rotateMat.mul(uv).add(offset).mul(scale)
+        // Use transformed coordinates for color
+        const color = vec3(rotatePos, 0.5)
+        return vec4(color, 1)
+}`}
+/>
+
+### Polar Coordinates
+
+Sometimes it's easier to think in circles rather than squares:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Convert to polar coordinates (radius and angle)
+        const center = uv.sub(0.5)
+        const angle = atan2(center.y, center.x) // Angle around center
+        const radius = center.length() // Distance from center
+        // Use radius for brightness
+        const brightness = radius.oneMinus()
+        const color = vec3(
+                angle.sin(),
+                angle.add(2).cos(),
+                angle.add(4).sin()
+        )
+        return vec4(color.mul(brightness), 1)
+}`}
+/>
+
+**What this creates**: A circular rainbow that fades to black at the edges.
+
+## Creating Patterns
+
+### Checkerboard Pattern
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Divide screen into grid cells
+        const scale = 8
+        // Get cell indices as vec2
+        const cell = uv.mul(scale).floor()
+        // Checkerboard pattern
+        const checker = mod(cell.x.add(cell.y), 2)
+        // Alternate between white and black
+        const color = vec3(checker)
+        return vec4(color, 1)
+}`}
+/>
+
+### Polka Dot Patterns
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Create repeating pattern and circular dots
+        const scale = 10
+        const dot = step(uv.mul(scale).fract().sub(0.5).length(), 0.3)
+        // Create colored dots
+        const color = vec3(0.4, 0.8, 1).mul(dot)
+        return vec4(color, 1)
+}`}
+/>
+
+### Circular Patterns
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Distance from center
+        const center = uv.sub(0.5)
+        const distance = center.length()
+        // Concentric circles
+        const ringFreq = 30
+        const rings = distance.mul(ringFreq).sin()
+        // Smooth ring edges
+        const ringWidth = 0.1
+        const smoothRings = smoothstep(0, ringWidth, rings)
+        // Combine with gradient
+        const gradient = distance.oneMinus()
+        const pattern = smoothRings.mul(gradient)
+        const color = vec3(1, 0.8, 1.2).mul(pattern)
+        return vec4(color, 1)
+}`}
+/>
+
+## Useful Effects
+
+### Vignette Effect
+
+Darken the edges of the screen:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Base color
+        const baseColor = vec3(0.8, 0.9, 1)
+        // Vignette based on distance from center
+        const center = uv.sub(0.5)
+        const distance = center.length()
+        const vignette = smoothstep(0.8, 0.2, distance)
+        const finalColor = baseColor.mul(vignette)
+        return vec4(finalColor, 1)
+}`}
+/>
+
+### Grid Lines
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Grid settings
+        const gridSize = 0.1
+        const lineWidth = 0.05
+        // Calculate grid lines
+        const grid = uv.div(gridSize).fract().sub(0.5).abs()
+        const minGrid = min(grid.x, grid.y)
+        const gridLines = smoothstep(0, lineWidth, minGrid)
+        // Background color
+        const backgroundColor = vec3(0.1, 0.1, 0.2)
+        // Grid color
+        const gridColor = vec3(0.3, 0.3, 0.5)
+        // Blend background and grid
+        const finalColor = mix(gridColor, backgroundColor, gridLines)
+        return vec4(finalColor, 1)
+}`}
+/>
+
+## Math Functions
+
+### Wave Functions
+
+These create repeating patterns:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Sine wave: smooth up and down motion
+        const sine = uv.x.mul(8).sin()
+        // Sawtooth wave: ramp up, then jump down
+        const sawtooth = uv.x.mul(4).fract()
+        // Square wave: switches between high and low
+        const squareInput = uv.x.mul(4).fract()
+        const square = step(0.5, squareInput)
+        // Choose wave based on Y position
+        const waveSelect = uv.y
+        const selectThreshold1 = step(1 / 3, waveSelect)
+        const wave1 = mix(sine, sawtooth, selectThreshold1)
+        const selectThreshold2 = step(2 / 3, waveSelect)
+        const wave2 = mix(wave1, square, selectThreshold2)
+        const color = vec3(1, 0.8, 1.2).mul(wave2)
+        return vec4(color, 1)
+}`}
+/>
+
+### Random Patterns
+
+Create seemingly random variations:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        // Grid cells
+        const scale = 10
+        const cellPos = uv.mul(scale).floor()
+        // Pseudo-random function
+        const random = Fn(([xy]) => {
+                return vec2(12.9898, 78.233).dot(xy).sin().mul(43758.5453123).fract()
+        })
+        // Random color per cell
+        const color = vec3(
+                random(cellPos),
+                random(vec2(1, 0).add(cellPos)),
+                random(vec2(0, 1).add(cellPos))
+        )
+        return vec4(color, 1)
+}`}
+/>
+
+### Fractal Noise
+
+Create complex organic patterns by layering simple noise:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const random = Fn(([xy]) => {
+                return vec2(12.9898, 78.233).dot(xy).sin().mul(43758.5453).fract()
+        })
+        const noise = Fn(([xy]) => {
+                const i = xy.floor().toVar()
+                const j = xy.fract().toVar()
+                const k = j.sub(2).negate()
+                const u = j.mul(j).mul(k).toVar()
+                return mix(
+                        mix(random(i), random(vec2(1, 0).add(i)), u.x),
+                        mix(random(vec2(0, 1).add(i)), random(vec2(1, 1).add(i)), u.x),
+                        u.y
+                )
+        })
+        const fbm = Fn(([xy]) => {
+                return noise(xy).mul(0.5)
+                        .add(noise(xy.mul(2)).mul(0.25))
+                        .add(noise(xy.mul(4)).mul(0.125))
+                        .add(noise(xy.mul(8)).mul(0.0625))
+        })
+        const fbmInput = uv.mul(8)
+        const color = fbm(fbmInput)
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+## What You've Learned
+
+- ✅ RGB and HSV color systems
+- ✅ Color blending and adjustments
+- ✅ Coordinate transformations (move, scale, rotate)
+- ✅ Polar coordinate system
+- ✅ Pattern generation
+- ✅ Mathematical function applications
+
+## Next Steps
+
+Now that you understand colors and coordinates, learn about [Time and Animation](03-time-animation.mdx) to make your visuals move and change dynamically.

@@ -1,278 +1,141 @@
----
-title: 'Creating a scene'
-description: 'A comprehensive guide to creating 3D scenes with glre'
-hide_table_of_contents: true
-image: https://github.com/tseijp.png
-keywords: [glsl, webgl, webgpu, hooks, react, reactjs, reactive, solid, solidjs, typescript, guide, tutorial]
-date: 2025-01-01
----
+# Learning Guide
 
-import Tabs from '@theme/Tabs'
-import TabItem from '@theme/TabItem'
+Complete guide for creating visual effects with TypeScript.
 
-# Creating a scene
+## Introduction
 
-Building 3D worlds with shaders.
+GLRE enables you to create real-time graphics using JavaScript and TypeScript.
+No complex technical knowledge required - just programming skills to create stunning visual effects.
 
-In this chapter, we'll create a rotating cube using ray marching with glre.
-You'll learn shader programming fundamentals from basic concepts to implementation, step by step.
+## Learning Path
 
-## Prerequisites
+### 🌱 Fundamentals
 
-### Environment Setup
+Learn the basics of visual programming with TypeScript
 
-Before using glre, you need a canvas to display your graphics.
+| Step  | Topic                                                           | What You'll Learn                          |
+| ----- | --------------------------------------------------------------- | ------------------------------------------ |
+| **1** | [Getting Started](fundamentals/01-getting-started.mdx)           | Environment setup and first steps          |
+| **2** | [Colors and Coordinates](fundamentals/02-colors-coordinates.mdx) | Color specification and screen coordinates |
+| **3** | [Time and Animation](fundamentals/03-time-animation.mdx)         | Creating dynamic visual expressions        |
 
-<Tabs>
-<TabItem value="html" label="HTML/Vanilla JS">
+### 🎨 Techniques
 
-```html
-<!DOCTYPE html>
-<html>
-        <head>
-                <title>glre Tutorial</title>
-        </head>
-        <body>
-                <canvas id="myCanvas"></canvas>
-                <script type="module">
-                        import createGL from 'https://esm.sh/glre'
+Master practical drawing techniques
 
-                        // Shader and JavaScript code goes here
-                        const fragmentShader = `
-            // GLSL code will be written here
-        `
+| Step  | Topic                                                       | What You'll Learn                   |
+| ----- | ----------------------------------------------------------- | ----------------------------------- |
+| **4** | [Shapes and Patterns](techniques/04-shapes-patterns.mdx)     | Basic shapes and repeating patterns |
+| **5** | [Images and Textures](techniques/05-images-textures.mdx)     | Loading and processing images       |
+| **6** | [Interactive Effects](techniques/06-interactive-effects.mdx) | Responding to mouse and keyboard    |
 
-                        function App() {
-                                // Application logic will be written here
-                        }
+### 🚀 Advanced
 
-                        document.addEventListener('DOMContentLoaded', App)
-                </script>
-        </body>
-</html>
+Learn sophisticated visual techniques
+
+| Step  | Topic            | What You'll Learn                  |
+| ----- | ---------------- | ---------------------------------- |
+| **7** | [3D Graphics](#) | Creating three-dimensional visuals |
+| **8** | [Physics](#)     | Dynamic systems and simulations    |
+
+## Learning Flow
+
+### Recommended Order
+
+```
+Getting Started
+      ↓
+Colors and Coordinates
+      ↓
+Time and Animation
+      ↓
+Shapes and Patterns
+      ↓
+Images and Textures
+      ↓
+Interactive Effects
+      ↓
+3D Graphics
 ```
 
-</TabItem>
-<TabItem value="react" label="React">
+### Chapter Structure
 
-```jsx
-import { useGL } from 'glre/react'
+| Section                  | Content                           |
+| ------------------------ | --------------------------------- |
+| **Overview**             | What you'll learn in this chapter |
+| **Basic Examples**       | Simple code examples and results  |
+| **Detailed Explanation** | In-depth concepts and techniques  |
+| **Application Examples** | More complex real-world examples  |
 
-const TutorialComponent = () => {
-        const gl = useGL({
-                frag: fragmentShader,
-                // Configuration goes here
-        })
+## Learning Prerequisites
 
-        return <canvas ref={gl.ref} />
-}
-```
+### Required Knowledge
 
-</TabItem>
-</Tabs>
+| Technology     | Level | Description                                      |
+| -------------- | ----- | ------------------------------------------------ |
+| **JavaScript** | ★★★☆☆ | Basic variables and functions                    |
+| **Math**       | ★☆☆☆☆ | Elementary arithmetic (addition, multiplication) |
+| **HTML/CSS**   | ☆☆☆☆☆ | Basic web page structure                         |
 
-## Understanding Ray Marching
+### Browser Requirements
 
-### What is Ray Marching?
+| Browser     | Minimum Version | Recommended |
+| ----------- | --------------- | ----------- |
+| **Chrome**  | 80+             | Latest      |
+| **Firefox** | 75+             | Latest      |
+| **Safari**  | 14+             | Latest      |
+| **Edge**    | 80+             | Latest      |
 
-Ray marching is a technique for rendering
-3D objects using mathematical distance functions.
-Unlike traditional polygon-based rendering,
-it casts rays from each pixel to find intersections with objects.
+## Tutorial Features
 
-### Distance Functions (SDF)
+### Progressive Learning
 
-A Signed Distance Function (SDF) returns the shortest distance
-from any point in space to an object's surface.
+Each chapter builds on previous knowledge, allowing you to learn techniques step by step.
 
-```glsl
-// Box distance function
-float boxSDF(vec3 p, float side) {
-    vec3 d = abs(p) - side;
-    return min(max(d.x, max(d.y, d.z)), 0.0) + length(max(d, 0.0));
-}
-```
+### Hands-On Approach
 
-**How this function works:**
+Not just theory - write actual code and see immediate results on screen.
 
-- `abs(p) - side`: Distance from cube boundary on each axis
-- Returns negative values inside, positive values outside
-- `length(max(d, 0.0))`: Outside distance calculation
-- `min(max(d.x, max(d.y, d.z)), 0.0)`: Inside distance calculation
+### Visual Understanding
 
-## Building the Fragment Shader
+Code results are instantly visible, making concepts intuitive to grasp.
 
-### Defining Uniform Variables
+## Community and Support
 
-Define parameters to pass to the shader.
+### Learning Resources
 
-```glsl
-#version 300 es
-precision highp float;
+- 📚 **Official Documentation**: Technical reference
+- 🎨 **Sample Gallery**: Various visual examples
+- 💬 **Community Forum**: Q&A exchange
 
-// Canvas information
-uniform vec2 iResolution;  // Canvas size
+### Learning Tips
 
-// Camera parameters
-uniform vec3 up;           // Camera up direction
-uniform vec3 eye;          // Camera position
-uniform vec3 focus;        // Camera focal point
-uniform float focal;       // Focal length
+1. **Take small steps**: Don't try to learn everything at once
+2. **Actually write code**: Don't just copy-paste, write it yourself
+3. **Enjoy trial and error**: Mistakes and unexpected results are part of learning
+4. **Create projects**: Combine learned techniques to build original works
 
-// Object parameters
-uniform float size;        // Cube size
+## Math Concepts Made Simple
 
-out vec4 fragColor;
-```
+### Understanding Numbers in Graphics
 
-**Role of each parameter:**
+In visual programming, we work with different types of numbers:
 
-- `iResolution`: Screen resolution for UV coordinate normalization
-- `eye`, `focus`, `up`: Used to build camera matrix
-- `focal`: Controls field of view
-- `size`: Cube dimensions
+- **Coordinates**: Numbers that tell us where something is on screen
+- **Colors**: Numbers that represent how bright red, green, and blue should be
+- **Time**: Numbers that change continuously to create animation
+- **Angles**: Numbers that control rotation (like the hands of a clock)
 
-### Implementing Camera System
+### No Advanced Math Required
 
-```glsl
-void main() {
-    // Ray marching camera setup
-    vec3 look = normalize(focus - eye);    // View direction
-    vec3 right = normalize(cross(look, up)); // Right direction
+You don't need to understand complex mathematics. GLRE handles the difficult parts automatically. You just need to understand:
 
-    // Convert screen coordinates to center origin
-    vec2 scr = gl_FragCoord.xy - iResolution * 0.5;
+- Adding and subtracting numbers
+- Multiplying numbers (making things bigger/smaller)
+- What coordinates mean (like finding a location on a map)
 
-    // Calculate ray direction
-    vec3 dir = normalize(focal * look + scr.x * right + scr.y * up);
-}
-```
+## Next Steps
 
-**Calculation details:**
+When you're ready, start with [Getting Started](fundamentals/01-getting-started.mdx) to begin your journey.
 
-1. `look`: Direction vector from camera to focal point
-2. `right`: Right direction calculated from cross product of `look` and `up`
-3. `scr`: Convert pixel coordinates to screen-centered coordinate system
-4. `dir`: Calculate actual ray direction from focal length and screen coordinates
-
-### Ray Marching Algorithm
-
-```glsl
-void main() {
-    // ... Camera setup ...
-
-    // Ray marching initialization
-    vec3 p = eye;                    // Current position
-    vec3 epsilon = vec3(0.0005, 0.0, 0.0); // Precision control
-
-    // Ray marching loop
-    for (int i = 0; i < 50; i++) {
-        float d = boxSDF(p, size);   // Distance from current position to cube
-
-        if (d <= epsilon.x) {
-            // Normal calculation when surface is reached
-            float dx = boxSDF(p + epsilon.xyy, size) - d;
-            float dy = boxSDF(p + epsilon.yxy, size) - d;
-            float dz = boxSDF(p + epsilon.yyx, size) - d;
-
-            vec3 normal = normalize(vec3(dx, dy, dz));
-
-            // Output normal as color
-            fragColor = vec4(normal * 0.5 + 0.5, 1.0);
-            return;
-        }
-
-        // Advance ray by distance
-        p = p + d * dir;
-    }
-
-    // Nothing hit - return background
-    fragColor = vec4(0.0, 0.0, 0.0, 1.0);
-}
-```
-
-**Algorithm mechanics:**
-
-1. Start ray from camera position
-2. Evaluate distance function at each step
-3. If distance is small enough, surface is reached
-4. Otherwise, advance ray by that distance
-5. Return background color if maximum steps reached
-
-## JavaScript Implementation
-
-### Initializing glre
-
-<Tabs>
-<TabItem value="vanilla" label="Vanilla JS">
-
-```js
-function App() {
-        const gl = createGL({
-                el: document.getElementById('myCanvas'),
-                frag: fragmentShader,
-                isWebGL: true, // Force WebGL (omit if WebGPU available)
-
-                // Animation loop
-                render() {
-                        const time = performance.now() / 1000
-                        const radius = 200
-
-                        // Rotate camera in circular orbit
-                        const x = radius * Math.cos(time)
-                        const z = radius * Math.sin(time)
-
-                        gl.uniform({ eye: [x, 0, z] })
-                },
-        })
-
-        // Set initial uniform values
-        gl.uniform({
-                up: [0, 1, 0], // Y-axis is up
-                focus: [0, 0, 0], // Look at origin
-                focal: 500, // Focal length
-                size: 50, // Cube size
-        })
-
-        gl.mount()
-}
-```
-
-</TabItem>
-<TabItem value="react" label="React">
-
-```jsx
-import { useGL } from 'glre/react'
-import { useEffect } from 'react'
-
-const RotatingCube = () => {
-        const gl = useGL({
-                frag: fragmentShader,
-
-                init() {
-                        // Initial setup
-                        this.uniform({
-                                up: [0, 1, 0],
-                                focus: [0, 0, 0],
-                                focal: 500,
-                                size: 50,
-                        })
-                },
-
-                loop() {
-                        // Animation loop
-                        const time = performance.now() / 1000
-                        const radius = 200
-                        const x = radius * Math.cos(time)
-                        const z = radius * Math.sin(time)
-
-                        this.uniform({ eye: [x, 0, z] })
-                },
-        })
-
-        return <canvas ref={gl.ref} />
-}
-```
-
-</TabItem>
-</Tabs>
+Enjoy exploring the world of visual programming with TypeScript!

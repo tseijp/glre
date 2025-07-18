@@ -1,0 +1,362 @@
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Images and Textures
+
+Learn how to load and process external images, and techniques for texture-based expressions.
+
+## Loading Images
+
+### Basic Image Loading
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const uv = position.xy.div(iResolution) // Calculate correct UV coordinates
+        // Get pixel color from texture
+        const textureColor = iTexture.texture(uv)
+        return textureColor
+}`}
+/>
+
+### Understanding UV Coordinates
+
+UV coordinates are a coordinate system that represents positions on an image:
+
+```
+(0,1) -------- (1,1)
+  |              |
+  |     Image    |
+  |              |
+(0,0) -------- (1,0)
+```
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const uvColor = vec4(uv.x, uv.y, 0, 1)
+        return uvColor
+}`}
+/>
+
+## Image Filters
+
+### Blur Effect
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Box blur using 3x3 convolution
+        const step = vec2(1).div(iResolution)
+        const s = Fn(([uv, x, y]) => {
+                return iTexture.texture(vec2(x, y).mul(step).add(uv))
+        })
+        // Sample 3x3 neighborhood as vectors
+        const row1 = s(uv, -1, -1).add(s(uv, 0, -1)).add(s(uv, 1, -1))
+        const row2 = s(uv, -1,  0).add(s(uv, 0,  0)).add(s(uv, 1,  0))
+        const row3 = s(uv, -1,  1).add(s(uv, 0,  1)).add(s(uv, 1,  1))
+        // Box blur: average all 9 samples
+        return row1.add(row2).add(row3).div(9)
+}`}
+/>
+
+### Edge Detection
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const step = vec2(1).div(iResolution)
+        const s = Fn(([uv, x, y]) => {
+                const offset = vec2(x, y).mul(step)
+                return iTexture.texture(uv.add(offset)).rgb.length()
+        })
+        // Sample 3x3 neighborhood as vectors
+        const row1 = vec3(s(uv, -1, -1), s(uv, 0, -1), s(uv, 1, -1))
+        const row2 = vec3(s(uv, -1,  0), s(uv, 0,  0), s(uv, 1,  0))
+        const row3 = vec3(s(uv, -1,  1), s(uv, 0,  1), s(uv, 1,  1))
+        // Sobel X kernel
+        const kx1 = vec3(-1, 0, 1)
+        const kx2 = vec3(-2, 0, 2)
+        const kx3 = vec3(-1, 0, 1)
+        // Sobel Y kernel
+        const ky1 = vec3(-1, -2, -1)
+        const ky2 = vec3( 0,  0,  0)
+        const ky3 = vec3( 1,  2,  1)
+        // Matrix convolution using dot products
+        const gx1 = row1.dot(kx1)
+        const gx2 = row2.dot(kx2)
+        const gx3 = row3.dot(kx3)
+        const gx = gx1.add(gx2).add(gx3)
+        const gy1 = row1.dot(ky1)
+        const gy2 = row2.dot(ky2)
+        const gy3 = row3.dot(ky3)
+        const gy = gy1.add(gy2).add(gy3)
+        const edge = vec2(gx, gy).length()
+        return vec4(vec3(edge), 1)
+}`}
+/>
+
+### Sepia Tone
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const originalColor = iTexture.texture(uv)
+        // Sepia tone conversion matrix
+        const sepiaMatrix = mat3(
+                0.4, 0.3, 0.3,  // for R
+                0.8, 0.7, 0.5,  // for G
+                0.2, 0.2, 0.1   // for B
+        )
+        const sepiaColor = sepiaMatrix.mul(originalColor.rgb)
+        return vec4(sepiaColor, 1)
+}`}
+/>
+
+## Texture Coordinate
+
+### Texture Tiling
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Scale and repeat
+        const repeatedUV = uv.mul(3).fract()
+        return iTexture.texture(repeatedUV)
+}`}
+/>
+
+### Texture Rotation
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Center coordinates (-0.5 to 0.5)
+        const center = uv.sub(0.5)
+        // Rotation
+        const cosA = iTime.cos()
+        const sinA = iTime.sin()
+        const rotateMat = mat2(cosA, sinA, sinA.negate(), cosA)
+        const rotatePos = rotateMat.mul(center).add(0.5)
+        // Wrap out-of-bounds to repeat
+        const wrappedUV = rotatePos.fract()
+        return iTexture.texture(wrappedUV)
+}`}
+/>
+
+### Fisheye Lens
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Center UV coordinates around (0, 0)
+        const center = uv.sub(0.5).mul(2)
+        const radius = center.length()
+        // Fisheye distortion - barrel distortion effect
+        const distorte = radius.pow(2).mul(0.5).oneMinus().mul(radius)
+        // Calculate new UV coordinates
+        const factor = distorte.div(radius)
+        const newUV = center.mul(factor).div(2).add(0.5)
+        // Sample texture
+        return iTexture.texture(newUV)
+}`}
+/>
+
+## Dynamic Texture
+
+### Texture Scrolling
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Scroll speed
+        const scrollSpeed = vec2(0.1, 0.05)
+        // Time-based offset
+        const offset = iTime.mul(scrollSpeed)
+        return iTexture.texture(uv.add(offset).fract())
+}`}
+/>
+
+### Wavy Texture
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Create wave distortion as vec2
+        const wavy = Fn(([uv, amplitude, frequency, speed]) => {
+                const timeOffset = iTime.mul(speed)
+                const wavePhase = uv.yx.mul(frequency).add(timeOffset)
+                return wavePhase.sin().mul(amplitude)
+        })
+        // Apply wave distortion to UV coordinates
+        const waveDistortion = wavy(uv, 0.1, 16, 4)
+        const wavyUV = uv.add(waveDistortion)
+        return iTexture.texture(wavyUV)
+}`}
+/>
+
+### Particle Texture
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Particle texture effect using Loop for efficient layering
+        const generateParticleLayers = Fn(([uv]) => {
+                const finalColor = vec4(0, 0, 0, 0).toVar()
+                // Generate multiple particle layers using Loop
+                Loop(int(4), ({ i }) => {
+                        const idx = float(i)
+                        // Calculate layer properties based on index
+                        const speedBase = idx.mul(0.08).add(0.05)
+                        const speed = vec2(speedBase, speedBase.mul(0.6))
+                        const scale = idx.mul(1.5).add(1.5)
+                        // Calculate layer offset and UV
+                        const offset = iTime.mul(speed)
+                        const layerUV = uv.mul(scale).add(offset).fract()
+                        // Sample texture for this layer
+                        const layerColor = iTexture.texture(layerUV)
+                        // Calculate alpha based on layer depth
+                        const alpha = idx.mul(0.1).add(0.3)
+                        // Accumulate layers
+                        const layerContribution = layerColor.mul(alpha)
+                        finalColor.assign(finalColor.add(layerContribution))
+                })
+                return finalColor
+        })
+        return generateParticleLayers(uv, iTime)
+}`}
+/>
+
+## Advanced Texture
+
+### Pattern Blending
+
+Combine procedural patterns with texture sampling for complex effects:
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Procedural checker mask using vec
+        const grid = uv.mul(8).floor()
+        const checker = mod(grid.x.add(grid.y), 2)
+        // Simple procedural overlay using vec
+        const noiseUV = uv.mul(20).sin()
+        const noise = noiseUV.x.mul(noiseUV.y).mul(0.5).add(0.5)
+        const overlayRGB = vec3(noise).mul(vec3(0.8, 0.6, 1)).add(vec3(0.2, 0.4, 0))
+        const overlayColor = vec4(overlayRGB, 1)
+        // Blend with texture
+        return iTexture.texture(uv).mix(overlayColor, checker)
+}`}
+/>
+
+### Pattern Control
+
+Use texture data to control procedural pattern parameters:
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Sample texture for generative parameters
+        const smallUV = uv.mul(0.2)
+        const texData = texture(iTexture, smallUV)
+        const timeScale = iTime.mul(0.2)
+        const flow = texData.r.mul(timeScale)
+        const freq = texData.g.mul(15).add(5)
+        // Create generative pattern driven by texture
+        const patternPhase = uv.mul(freq).add(flow)
+        const patterns = vec2(patternPhase.x.sin(), patternPhase.y.cos())
+        const center = uv.sub(0.5)
+        const radialPattern = center.length().mul(10).sub(iTime).sin()
+        const pattern = patterns.x.mul(patterns.y).add(radialPattern)
+        // Blend original texture with subtle pattern overlay
+        const originalColor = texture(iTexture, uv)
+        const patternOverlay = pattern.mul(0.3).add(0.7)
+        const color = originalColor.rgb.mul(patternOverlay)
+        return vec4(color, 1)
+}`}
+/>
+
+### Dynamic Distortion
+
+Use texture data to drive animation parameters and create dynamic effects:
+
+<FragmentEditor
+        isFun
+        isLoop
+        code={`
+const fragment = () => {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Generate procedural noise for animation data
+        const noise = Fn(([uv]) => {
+                const n1Pattern = uv.mul(10).sin()
+                const n1 = n1Pattern.x.mul(n1Pattern.y)
+                const n2 = uv.x.mul(20).add(uv.y.mul(15)).sin().mul(0.5)
+                return n1.add(n2).mul(0.5).add(0.5)
+        })
+        // Sample texture to get base noise value
+        const baseColor = iTexture.texture(uv)
+        const textureNoise = vec3(1).dot(baseColor.rgb)
+        // Combine texture-based and procedural noise
+        const smallerUV = uv.mul(0.5)
+        const proceduralNoise = noise(smallerUV)
+        const combinedNoise = mix(textureNoise, proceduralNoise, 0.5)
+        // Use combined noise to modulate time-based animation
+        const animOffset = iTime.mul(combinedNoise).sin().mul(0.08)
+        // Create texture-driven distortion
+        const phase = combinedNoise.mul(6.28)
+        const distortedUV = vec2(phase.cos(), phase.sin()).mul(animOffset).add(uv)
+        // Sample texture with distorted coordinates
+        return iTexture.texture(distortedUV)
+}`}
+/>
+
+## Next Steps
+
+Once you've mastered image and texture manipulation, next learn about [Interactive Effects](06-interactive-effects.mdx) to create effects that respond to user interactions.
+
+What you learned in this tutorial:
+
+- ✅ Image loading and UV coordinates
+- ✅ Image filters (blur, edge detection, sepia)
+- ✅ Texture coordinate manipulation
+- ✅ Dynamic texture effects
+- ✅ Procedural texture creation
+
+In the next chapter, you'll learn about interactive visual expressions that respond to mouse and keyboard operations.

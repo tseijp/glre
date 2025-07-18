@@ -1,13 +1,15 @@
-import type { AttribData, TextureData, UniformData } from '../types'
+import { isFloat32 } from './helpers'
+import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 /**
  * initialize
  */
-export const createDevice = async (c: GPUCanvasContext) => {
+export const createDevice = async (c: GPUCanvasContext, log = console.log) => {
         const gpu = navigator.gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
         const device = await adapter!.requestDevice()
+        device.onuncapturederror = (e) => log(e.error.message)
         c.configure({ device, format, alphaMode: 'opaque' })
         return { device, format }
 }
@@ -15,6 +17,7 @@ export const createDevice = async (c: GPUCanvasContext) => {
 export const createBindings = () => {
         let uniform = 0
         let texture = 0
+        let storage = 0
         let attrib = 0
         return {
                 uniform: () => {
@@ -28,6 +31,13 @@ export const createBindings = () => {
                         const group = baseGroup + Math.floor(texture / 6)
                         const binding = (texture % 6) * 2
                         texture++
+                        return { group, binding }
+                },
+                storage: () => {
+                        const baseGroup = Math.floor(uniform / 12) + Math.floor(texture / 6) + 2
+                        const group = baseGroup + Math.floor(storage / 12)
+                        const binding = storage % 12
+                        storage++
                         return { group, binding }
                 },
                 attrib: () => {
@@ -70,7 +80,8 @@ export const createVertexBuffers = (attribs: Iterable<AttribData>) => {
 export const createBindGroup = (
         device: GPUDevice,
         uniforms: Iterable<UniformData>,
-        textures: Iterable<TextureData>
+        textures: Iterable<TextureData>,
+        storages: Iterable<StorageData> = []
 ) => {
         const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
         const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
@@ -81,7 +92,10 @@ export const createBindGroup = (
                 bindings.push(binding)
         }
         for (const { binding, buffer, group: i } of uniforms) {
-                add(i, { binding, visibility: 3, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+                add(i, { binding, visibility: 7, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+        }
+        for (const { binding, buffer, group: i } of storages) {
+                add(i, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
         }
         for (const { binding: b, group: i, sampler, view } of textures) {
                 add(i, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
@@ -123,19 +137,34 @@ export const createPipeline = (
         })
 }
 
+export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
+        return device.createComputePipeline({
+                compute: {
+                        module: device.createShaderModule({ label: 'compute', code: cs }),
+                        entryPoint: 'main',
+                },
+                layout: device.createPipelineLayout({ bindGroupLayouts }),
+        })
+}
+
 /**
  * buffers
  */
-export const createUniformBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const size = Math.ceil(array.byteLength / 256) * 256
-        const buffer = device.createBuffer({ size, usage: 72 }) // 72 is GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
-        return { array, buffer }
+const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
+        if (type === 'uniform') return 72 // GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        if (type === 'attrib') return 40 // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        return 140 // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
 }
 
-export const createAttribBuffer = (device: GPUDevice, value: number[]) => {
-        const array = new Float32Array(value)
-        const buffer = device.createBuffer({ size: array.byteLength, usage: 40 }) // 40 is GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+export const createArrayBuffer = (
+        device: GPUDevice,
+        array: number[] | Float32Array,
+        type: 'uniform' | 'storage' | 'attrib'
+) => {
+        if (!isFloat32(array)) array = new Float32Array(array)
+        const usage = bufferUsage(type)
+        const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength
+        const buffer = device.createBuffer({ size, usage })
         return { array, buffer }
 }
 
