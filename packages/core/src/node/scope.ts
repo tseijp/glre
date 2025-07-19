@@ -45,7 +45,6 @@ export const struct = <T extends Record<string, NodeProxy>>(fields: T, id = getI
 }
 
 const scoped = (x: NodeProxy, fun: () => NodeProxy | void, y = define) => {
-        // cache to revert
         const [_scope, _define] = [scope, define]
         ;[scope, define] = [x, y]
         const z = fun()

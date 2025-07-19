@@ -1,7 +1,7 @@
-[basic](basic)
+[basic](/gpgpu/basic)
 
-[flocking](flocking)
+[flocking](/gpgpu/flocking)
 
-[particles](particles)
+[particles](/gpgpu/particles)
 
-[sound](sound)
+[sound](/gpgpu/sound)
