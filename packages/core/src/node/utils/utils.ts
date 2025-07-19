@@ -103,6 +103,10 @@ export const initNodeContext = (c: NodeContext) => {
         return c
 }
 
+export const isArrayAccess = (key: unknown): boolean => {
+        return is.num(key) || (is.str(key) && /^\d+$/.test(key))
+}
+
 export const addDependency = (c: NodeContext, id = '', type: string) => {
         if (!c.code?.dependencies?.has(id)) c.code!.dependencies.set(id, new Set())
         if (!isConstants(type)) c.code!.dependencies.get(id)!.add(type)

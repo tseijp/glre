@@ -34,6 +34,7 @@ export type NodeTypes =
         // struct
         | 'struct'
         | 'member'
+        | 'element'
         // scopes
         | 'scope'
         | 'assign'
@@ -76,6 +77,20 @@ export interface NodeContext {
 /**
  * infer
  */
+type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
+        ? Rest extends ''
+                ? 1
+                : Rest extends `${infer _}${infer Rest2}`
+                ? Rest2 extends ''
+                        ? 2
+                        : Rest2 extends `${infer _}${infer Rest3}`
+                        ? Rest3 extends ''
+                                ? 3
+                                : 4
+                        : never
+                : never
+        : 0
+
 // Unified logic with infer.ts inferOperator function
 // prettier-ignore
 type InferOperator<L extends Constants, R extends Constants> =
@@ -92,19 +107,13 @@ type InferOperator<L extends Constants, R extends Constants> =
         L extends 'vec3' ? R extends 'mat3' ? L /* default */ : L :
         L extends 'vec2' ? R extends 'mat2' ? L /* default */ : L : L
 
-type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
-        ? Rest extends ''
-                ? 1
-                : Rest extends `${infer _}${infer Rest2}`
-                ? Rest2 extends ''
-                        ? 2
-                        : Rest2 extends `${infer _}${infer Rest3}`
-                        ? Rest3 extends ''
-                                ? 3
-                                : 4
-                        : never
-                : never
-        : 0
+// Unified logic with infer.ts inferArrayElement function
+// prettier-ignore
+type InferArrayElement<T extends Constants> =
+        T extends 'mat4' ? 'vec4' :
+        T extends 'mat3' ? 'vec3' :
+        T extends 'mat2' ? 'vec2' :
+        'float'
 
 type InferSwizzleType<S extends string> = _StringLength<S> extends 4
         ? 'vec4'
@@ -137,6 +146,7 @@ type NodeProxyMethods =
         | 'assign'
         | 'toVar'
         | 'toString'
+        | 'element'
 
 export interface BaseNodeProxy<T extends Constants> {
         // System properties
@@ -256,6 +266,9 @@ export interface BaseNodeProxy<T extends Constants> {
         pow2(): NodeProxy<T>
         pow3(): NodeProxy<T>
         pow4(): NodeProxy<T>
+
+        // Element access for array/matrix types
+        element<Index extends X>(index: Index): NodeProxy<InferArrayElement<T>>
 }
 
 type ReadNodeProxy = {

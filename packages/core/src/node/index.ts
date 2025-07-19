@@ -128,7 +128,7 @@ export const step = <T extends C>(edge: X, x: X<T>) => f<T>('step', edge, x)
 export const smoothstep = <T extends C>(e0: X, e1: X, x: X<T>) => f<T>('smoothstep', e0, e1, x)
 
 // Two-argument functions with highest priority type
-export const atan2 = <T extends C>(y: X<T>, x: X) => f<T>('atan2', y, x)
+export const atan2 = <T extends C>(x: X<T>, y: X) => f<T>('atan2', x, y)
 export const pow = <T extends C>(x: X<T>, y: X) => f<T>('pow', x, y)
 
 // Component-wise power functions

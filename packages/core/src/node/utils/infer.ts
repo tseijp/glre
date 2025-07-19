@@ -31,6 +31,14 @@ const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
         return L
 }
 
+// Unified logic with infer.ts InferArrayElement type
+const inferArrayElement = <T extends C>(arrayType: T): T => {
+        if (arrayType === 'mat4') return 'vec4' as T
+        if (arrayType === 'mat3') return 'vec3' as T
+        if (arrayType === 'mat2') return 'vec2' as T
+        return 'float' as T
+}
+
 export const inferPrimitiveType = <T extends C>(x: X) => {
         if (is.bol(x)) return 'bool' as T
         if (is.str(x)) return 'texture' as T
@@ -68,10 +76,11 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         if (type === 'function') return inferFunction(x) || infer(y, c)
         if (type === 'define' && isConstants(layout?.type)) return layout?.type as T
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
+        if (type === 'element') return inferArrayElement(infer(x, c) as T)
         if (type === 'member') {
-                if (isSwizzle(x)) return inferFromCount(x.length)
-                if (isNodeProxy(y) && is.str(x)) {
-                        const field = (y as any).props.fields[x] // for variable node of struct member
+                if (isSwizzle(y)) return inferFromCount(y.length)
+                if (isNodeProxy(x)) {
+                        const field = (x as any).props.fields[y] // for variable node of struct member
                         if (field) return infer(field, c)
                 }
                 return 'float' as T // fallback @TODO FIX
