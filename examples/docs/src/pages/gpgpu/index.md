@@ -1,7 +1,19 @@
-[basic](basic)
+webgpu
 
-[flocking](flocking)
+[basic](/gpgpu/basic)
 
-[particles](particles)
+[flocking](/gpgpu/flocking)
 
-[sound](sound)
+[particles](/gpgpu/particles)
+
+[sound](/gpgpu/sound)
+
+webgl
+
+[basic](/gpgpu/webgl/basic)
+
+[flocking](/gpgpu/webgl/flocking)
+
+[particles](/gpgpu/webgl/particles)
+
+[sound](/gpgpu/webgl/sound)

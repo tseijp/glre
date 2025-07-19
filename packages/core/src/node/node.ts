@@ -1,4 +1,4 @@
-import { code, getConstant, isConversion, isFunction, isOperator, getId } from './utils'
+import { code, getConstant, isConversion, isFunction, isOperator, getId, isArrayAccess } from './utils'
 import { assign, toVar } from './scope'
 import { is } from '../utils/helpers'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, X, Constants as C } from './types'
@@ -11,23 +11,24 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
         if (!props) props = {}
         if (args.length) props.children = args
         const listeners = new Set<(value: any) => void>()
-        const get = (_: unknown, key: string | Symbol) => {
-                if (key === 'type') return type
-                if (key === 'props') return props
-                if (key === 'toVar') return toVar.bind(null, x)
-                if (key === 'assign') return assign.bind(null, x)
-                if (key === 'isProxy') return true
-                if (key === 'toString') return code.bind(null, x)
-                if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
-                if (key === 'listeners') return listeners
-                if (isOperator(key)) return (...y: X[]) => operator(key, x, ...y)
-                if (isFunction(key)) return (...y: X[]) => function_(key, x, ...y)
-                if (isConversion(key)) return () => conversion(getConstant(key), x)
-                if (is.str(key)) return member(key, x) // for struct and swizzling
+        const get = (_: unknown, y: string | Symbol) => {
+                if (y === 'type') return type
+                if (y === 'props') return props
+                if (y === 'toVar') return toVar.bind(null, x)
+                if (y === 'assign') return assign.bind(null, x)
+                if (y === 'isProxy') return true
+                if (y === 'toString') return code.bind(null, x)
+                if (y === Symbol.toPrimitive) return toPrimitive.bind(null, x)
+                if (y === 'listeners') return listeners
+                if (y === 'element') return (z: X) => element(x, z)
+                if (isOperator(y)) return (...z: X[]) => operator(y, x, ...z)
+                if (isFunction(y)) return (...z: X[]) => function_(y, x, ...z)
+                if (isConversion(y)) return () => conversion(getConstant(y), x)
+                if (is.str(y)) return isArrayAccess(y) ? element(x, y) : member(x, y)
         }
-        const set = (_: unknown, key: string, y: X) => {
-                if (key === 'value') listeners.forEach((fun) => fun(y))
-                if (is.str(key)) member(key, x).assign(y)
+        const set = (_: unknown, y: string, z: X) => {
+                if (y === 'value') listeners.forEach((fun) => fun(z))
+                if (is.str(y)) member(x, y).assign(z)
                 return true
         }
         const x = new Proxy({}, { get, set }) as unknown as NodeProxy<T>
@@ -45,7 +46,8 @@ export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
 }
 
 // Node shorthands with proper typing
-export const member = <T extends C>(key: string, x: X) => node<T>('member', null, key, x)
+export const member = <T extends C>(x: X, key: string) => node<T>('member', null, x, key)
+export const element = <T extends C>(x: X, index: X) => node<T>('element', null, x, index)
 export const select = <T extends C>(x: X<T>, y: X<T>, z: X) => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
 export const operator = <T extends C>(key: Operators, ...x: X[]) => node<T>('operator', null, key, ...x)
 export const function_ = <T extends C>(key: Functions, ...x: X[]) => node<T>('function', null, key, ...x)

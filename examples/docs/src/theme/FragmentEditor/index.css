@@ -1,0 +1,5 @@
+/* Override react-live Editor pre element to prevent line wrapping */
+.prism-code {
+        white-space: pre !important;
+        overflow-x: auto !important;
+}

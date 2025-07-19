@@ -6,6 +6,7 @@ import PlaygroundContainer from '@theme/Playground/Container' // @ts-ignore
 import PlaygroundPreview from '@theme/Playground/Preview' // @ts-ignore
 import PlaygroundEditor from '@theme/Playground/Editor'
 import { useInView } from './useInView'
+import './index.css'
 
 const createCanvasTemplate = (isLoop: boolean, fragmentExpression: string, functionDefinition?: string) => {
         if (!isLoop)

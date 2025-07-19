@@ -88,21 +88,23 @@ export const safeEventCall = <T extends Constants>(x: X<T>, fun: (value: unknown
 }
 
 export const initNodeContext = (c: NodeContext) => {
-        if (!c.code) {
-                c.code = {
-                        headers: new Map(),
-                        fragInputs: new Map(),
-                        vertInputs: new Map(),
-                        vertOutputs: new Map(),
-                        vertVaryings: new Map(),
-                        dependencies: new Map(),
-                }
-                if (!c.isWebGL) {
-                        c.code.fragInputs.set('position', '@builtin(position) position: vec4f')
-                        c.code.vertOutputs.set('position', '@builtin(position) position: vec4f')
-                }
+        if (c.code) return c
+        c.code = {
+                headers: new Map(),
+                fragInputs: new Map(),
+                vertInputs: new Map(),
+                vertOutputs: new Map(),
+                vertVaryings: new Map(),
+                dependencies: new Map(),
         }
+        if (c.isWebGL) return c
+        c.code.fragInputs.set('position', '@builtin(position) position: vec4f')
+        c.code.vertOutputs.set('position', '@builtin(position) position: vec4f')
         return c
+}
+
+export const isArrayAccess = (key: unknown): boolean => {
+        return is.num(key) || (is.str(key) && /^\d+$/.test(key))
 }
 
 export const addDependency = (c: NodeContext, id = '', type: string) => {

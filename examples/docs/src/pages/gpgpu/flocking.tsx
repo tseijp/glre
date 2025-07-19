@@ -1,4 +1,5 @@
 import { useGL } from 'glre/src/react'
+import { useEffect } from 'react'
 
 const flockingCompute = `
 @group(0) @binding(0) var<uniform> iTime: f32;
@@ -69,7 +70,7 @@ fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
         var boidPos = positions[i];
         var vel = velocities[i];
         var dist = distance(uv, boidPos);
-        var intensity = 1.0 / (1.0 + dist * 200.0);
+        var intensity = 1.0 / (1.0 + dist * 2000.0);
         var speed = length(vel);
         color += vec3f(intensity, intensity * speed * 5.0, intensity * 0.5);
     }
@@ -85,19 +86,21 @@ export default function () {
                 fs: flockingFragment,
         })
 
-        const boidCount = 128
-        const positions = new Float32Array(boidCount * 2)
-        const velocities = new Float32Array(boidCount * 2)
+        useEffect(() => {
+                const boidCount = 256
+                const positions = new Float32Array(boidCount * 2)
+                const velocities = new Float32Array(boidCount * 2)
 
-        for (let i = 0; i < boidCount; i++) {
-                positions[i * 2] = Math.random() * 0.8 + 0.1
-                positions[i * 2 + 1] = Math.random() * 0.8 + 0.1
-                velocities[i * 2] = (Math.random() - 0.5) * 0.1
-                velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.1
-        }
+                for (let i = 0; i < boidCount; i++) {
+                        positions[i * 2] = Math.random() * 0.8 + 0.1
+                        positions[i * 2 + 1] = Math.random() * 0.8 + 0.1
+                        velocities[i * 2] = (Math.random() - 0.5) * 0.1
+                        velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.1
+                }
 
-        gl.storage('positions', positions)
-        gl.storage('velocities', velocities)
+                gl.storage('positions', positions)
+                gl.storage('velocities', velocities)
+        }, [])
 
         return <canvas ref={gl.ref} />
 }

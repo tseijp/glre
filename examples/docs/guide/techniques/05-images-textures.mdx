@@ -53,17 +53,21 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        // Vector average function
+        const average = Fn((args) => {
+                return args.reduce((sum, v) => sum.add(v)).div(9)
+        })
         // Box blur using 3x3 convolution
         const step = vec2(1).div(iResolution)
         const s = Fn(([uv, x, y]) => {
                 return iTexture.texture(vec2(x, y).mul(step).add(uv))
         })
-        // Sample 3x3 neighborhood as vectors
-        const row1 = s(uv, -1, -1).add(s(uv, 0, -1)).add(s(uv, 1, -1))
-        const row2 = s(uv, -1,  0).add(s(uv, 0,  0)).add(s(uv, 1,  0))
-        const row3 = s(uv, -1,  1).add(s(uv, 0,  1)).add(s(uv, 1,  1))
         // Box blur: average all 9 samples
-        return row1.add(row2).add(row3).div(9)
+        return average(
+                s(uv, -1, -1), s(uv, 0, -1), s(uv, 1, -1),
+                s(uv, -1,  0), s(uv, 0,  0), s(uv, 1,  0),
+                s(uv, -1,  1), s(uv, 0,  1), s(uv, 1,  1)
+        )
 }`}
 />
 
@@ -77,30 +81,34 @@ const fragment = () => {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const step = vec2(1).div(iResolution)
         const s = Fn(([uv, x, y]) => {
-                const offset = vec2(x, y).mul(step)
-                return iTexture.texture(uv.add(offset)).rgb.length()
+                const offset = vec2(x, y).mul(step).add(uv)
+                return iTexture.texture(offset).r
         })
-        // Sample 3x3 neighborhood as vectors
-        const row1 = vec3(s(uv, -1, -1), s(uv, 0, -1), s(uv, 1, -1))
-        const row2 = vec3(s(uv, -1,  0), s(uv, 0,  0), s(uv, 1,  0))
-        const row3 = vec3(s(uv, -1,  1), s(uv, 0,  1), s(uv, 1,  1))
-        // Sobel X kernel
-        const kx1 = vec3(-1, 0, 1)
-        const kx2 = vec3(-2, 0, 2)
-        const kx3 = vec3(-1, 0, 1)
-        // Sobel Y kernel
-        const ky1 = vec3(-1, -2, -1)
-        const ky2 = vec3( 0,  0,  0)
-        const ky3 = vec3( 1,  2,  1)
-        // Matrix convolution using dot products
-        const gx1 = row1.dot(kx1)
-        const gx2 = row2.dot(kx2)
-        const gx3 = row3.dot(kx3)
-        const gx = gx1.add(gx2).add(gx3)
-        const gy1 = row1.dot(ky1)
-        const gy2 = row2.dot(ky2)
-        const gy3 = row3.dot(ky3)
-        const gy = gy1.add(gy2).add(gy3)
+        // Matrix Frobenius dot product function
+        const matDot = Fn(([a, b]) => {
+                return a[0].dot(b[0]).add(a[1].dot(b[1])).add(a[2].dot(b[2]))
+        })
+        // Sample 3x3 sample as matrix
+        const sample = mat3(
+                s(uv, -1, -1), s(uv, 0, -1), s(uv, 1, -1),
+                s(uv, -1,  0), s(uv, 0,  0), s(uv, 1,  0),
+                s(uv, -1,  1), s(uv, 0,  1), s(uv, 1,  1)
+        )
+        // Sobel X kernel as matrix
+        const sobelX = constant(mat3(
+                -1, 0, 1,
+                -2, 0, 2,
+                -1, 0, 1
+        ))
+        // Sobel Y kernel as matrix
+        const sobelY = constant(mat3(
+                -1, -2, -1,
+                 0,  0,  0,
+                 1,  2,  1
+        ))
+        // Matrix convolution using Frobenius inner product
+        const gx = matDot(sample, sobelX)
+        const gy = matDot(sample, sobelY)
         const edge = vec2(gx, gy).length()
         return vec4(vec3(edge), 1)
 }`}
@@ -157,9 +165,7 @@ const fragment = () => {
         const sinA = iTime.sin()
         const rotateMat = mat2(cosA, sinA, sinA.negate(), cosA)
         const rotatePos = rotateMat.mul(center).add(0.5)
-        // Wrap out-of-bounds to repeat
-        const wrappedUV = rotatePos.fract()
-        return iTexture.texture(wrappedUV)
+        return iTexture.texture(rotatePos)
 }`}
 />
 
@@ -197,8 +203,8 @@ const fragment = () => {
         // Scroll speed
         const scrollSpeed = vec2(0.1, 0.05)
         // Time-based offset
-        const offset = iTime.mul(scrollSpeed)
-        return iTexture.texture(uv.add(offset).fract())
+        const offset = iTime.mul(scrollSpeed).add(uv).fract()
+        return iTexture.texture(offset)
 }`}
 />
 
@@ -273,13 +279,7 @@ const fragment = () => {
         // Procedural checker mask using vec
         const grid = uv.mul(8).floor()
         const checker = mod(grid.x.add(grid.y), 2)
-        // Simple procedural overlay using vec
-        const noiseUV = uv.mul(20).sin()
-        const noise = noiseUV.x.mul(noiseUV.y).mul(0.5).add(0.5)
-        const overlayRGB = vec3(noise).mul(vec3(0.8, 0.6, 1)).add(vec3(0.2, 0.4, 0))
-        const overlayColor = vec4(overlayRGB, 1)
-        // Blend with texture
-        return iTexture.texture(uv).mix(overlayColor, checker)
+        return iTexture.texture(uv.tan()).mix(iTexture.texture(uv), checker)
 }`}
 />
 

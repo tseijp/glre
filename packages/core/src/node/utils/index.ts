@@ -33,14 +33,15 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         }
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return ''
-        const { type, props } = target
+        const { type, props = {} } = target
         const { id = 'i', children = [], fields, initialValues } = props
         const [x, y, z, w] = children
         /**
          * variables
          */
         if (type === 'variable') return id
-        if (type === 'member') return `${code(y, c)}.${code(x, c)}`
+        if (type === 'member') return `${code(x, c)}.${code(y, c)}`
+        if (type === 'element') return `${code(x, c)}[${code(y, c)}]`
         if (type === 'ternary')
                 return c.isWebGL
                         ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
