@@ -42,28 +42,18 @@ RGB (Red, Green, Blue) is like mixing colored lights, while HSV (Hue, Saturation
         isFun
         code={`
 const fragment = () => {
-        // HSV to RGB conversion function
-        const rgb2hsv = Fn(([h, s, v]) => {
-                const c = v.mul(s).toVar()
-                const x = mod(h.mul(6), 2).sub(1).abs().oneMinus().mul(c)
-                const i = h.mul(6).floor()
-                const ret = Fn(([c, x, i]) => {
-                        If(i.equal(0), () => vec3(c, x, 0))
-                        .ElseIf(i.equal(1), () => vec3(x, c, 0))
-                        .ElseIf(i.equal(2), () => vec3(0, c, x))
-                        .ElseIf(i.equal(3), () => vec3(0, x, c))
-                        .ElseIf(i.equal(4), () => vec3(x, 0, c))
-                        .Else(() => vec3(c, 0, x))
-                })
-                const m = v.sub(c)
-                return ret(c, x, i).add(m)
+        // Proven HSV to RGB conversion
+        const hsv2rgb = Fn(([h, s, v]) => {
+                const k = vec4(1, 2 / 3, 1 / 3, 3)
+                const p = k.xyz.add(h).fract().mul(6).sub(k.www).abs()
+                return mix(k.xxx, p.sub(k.xxx).clamp(0, 1), s).mul(v)
         })
         // HSV-style color creation
         const h = uv.x // Hue from position
         const s = 0.75 // Saturation
         const v = uv.y // Value / brightness
         // Convert HSV to RGB using the function
-        const rgb = rgb2hsv(h, s, v)
+        const rgb = hsv2rgb(h, s, v)
         return vec4(rgb, 1)
 }`}
 />
@@ -82,25 +72,24 @@ The CIE color space represents colors as chromaticity coordinates, independent o
 <FragmentEditor
         isFun
         code={`
-const XYZtoRGB = constant(mat3(
-        3.2406, -1.5372, -0.4986,
-        -0.9689, 1.8758, 0.0415,
-        0.0557, -0.2040, 1.0570
-))
 const fragment = () => {
+        // XYZ to RGB conversion function
+        const XYZ2RGB = constant(mat3(
+                3.2406, -1.5372, -0.4986,
+                -0.9689, 1.8758, 0.0415,
+                0.0557, -0.2040, 1.0570
+        ))
+        const xyz2rgb = Fn(([x, y, z]) => {
+                return XYZ2RGB.mul(vec3(x, y, z)).clamp(0, 1)
+        })
         // CIE xy chromaticity coordinates from UV
         const x = uv.x
         const y = uv.y
-        const z = x.add(y).oneMinus()
-        // Convert xy to XYZ (assuming Y = 1 for full brightness)
-        const Y = 1
+        const Y = 1 // Full brightness
         const X = x.mul(Y).div(y)
-        const Z = z.mul(Y).div(y)
-        // XYZ to RGB conversion matrix (sRGB)
+        const Z = x.add(y).oneMinus().mul(Y).div(y)
         // Convert XYZ to RGB
-        const XYZ = vec3(X, Y, Z)
-        const rgb = XYZtoRGB.mul(XYZ)
-        // Clamp to valid range and check if within gamut
+        const rgb = xyz2rgb(X, Y, Z)
         return vec4(rgb, 1)
 }`}
 />
