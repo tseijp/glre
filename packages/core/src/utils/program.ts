@@ -72,24 +72,3 @@ export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, l
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, texture)
 }
-
-export const createStorage = (
-        c: WebGL2RenderingContext,
-        value: number[] | Float32Array,
-        unit: number,
-        loc: WebGLUniformLocation | null,
-        texture: WebGLTexture
-) => {
-        const array = value instanceof Float32Array ? value : new Float32Array(value)
-        const size = Math.ceil(Math.sqrt(array.length))
-        const data = new Float32Array(size * size * 4)
-        for (let i = 0; i < array.length; i++) data[i * 4] = array[i]
-        c.activeTexture(c.TEXTURE0 + unit)
-        c.bindTexture(c.TEXTURE_2D, texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, data)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
-        c.uniform1i(loc, unit)
-}
