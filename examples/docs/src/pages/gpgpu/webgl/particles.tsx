@@ -12,16 +12,13 @@ void main() {
         if (coord.x >= int(texSize.x) || coord.y >= int(texSize.y)) {
                 discard;
         }
-        
         int index = coord.y * int(texSize.x) + coord.x;
         int totalParticles = 2048;
         if (index >= totalParticles * 2) {
                 discard;
         }
-        
         bool isVelocity = (index % 2) == 1;
         int particleIndex = index / 2;
-        
         if (isVelocity) {
                 float angle = float(particleIndex) * 0.01 + iTime * 2.0;
                 vec2 vel = vec2(cos(angle), sin(angle)) * 0.2;
@@ -47,18 +44,15 @@ void main() {
         vec2 uv = gl_FragCoord.xy / iResolution;
         int particleCount = 2048;
         vec3 color = vec3(0.0);
-        
         for (int i = 0; i < particleCount; i++) {
                 int y = i / 32;
                 int x = (i - y * 32) * 2;
                 ivec2 posCoord = ivec2(x, y);
-                
                 vec2 pos = texelFetch(positions, posCoord, 0).xy;
                 float dist = distance(uv, pos);
                 float intensity = 1.0 / (1.0 + dist * float(particleCount));
                 color += vec3(intensity, intensity * 0.5, intensity * 0.8) * 0.5;
         }
-        
         fragColor = vec4(color, 1.0);
 }
 `

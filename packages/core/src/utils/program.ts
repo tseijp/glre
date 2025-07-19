@@ -1,3 +1,7 @@
+import { fragment, vertex } from '../node'
+import type { X } from '../node'
+import type { GL } from '../types'
+
 const createShader = (c: WebGLRenderingContext, source: string, type: number, onError = console.warn) => {
         const shader = c.createShader(type)
         if (!shader) return onError('Failed to create shader')
@@ -9,10 +13,14 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number, on
         onError(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vert: string, frag: string, onError = console.warn) => {
+export const createProgram = (c: WebGLRenderingContext, vert: X, frag: X, gl: GL) => {
+        if (!vert || !frag) return null
+        const config = { isWebGL: true, gl }
+        vert = vertex(vert, config)
+        frag = fragment(frag, config)
         const pg = c.createProgram()
-        const fs = createShader(c, frag, c.FRAGMENT_SHADER, onError)
-        const vs = createShader(c, vert, c.VERTEX_SHADER, onError)
+        const fs = createShader(c, frag, c.FRAGMENT_SHADER, gl.error)
+        const vs = createShader(c, vert, c.VERTEX_SHADER, gl.error)
         if (!fs || !vs) return
         c.attachShader(pg, vs!)
         c.attachShader(pg, fs!)
@@ -20,7 +28,7 @@ export const createProgram = (c: WebGLRenderingContext, vert: string, frag: stri
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
         c.deleteProgram(pg)
-        onError(`Could not link program: ${error}`)
+        gl.error(`Could not link program: ${error}`)
 }
 
 export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
@@ -71,4 +79,22 @@ export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, l
         c.uniform1i(loc, unit)
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, texture)
+}
+
+export const createStorage = (c: WebGL2RenderingContext, size: number, storage: any, array: any) => {
+        const data = new Float32Array(size * size * 4)
+        for (let i = 0; i < array.length; i++) data[i * 4] = array[i]
+        c.activeTexture(c.TEXTURE0 + storage.unit)
+        c.bindTexture(c.TEXTURE_2D, storage.a.texture)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, data)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
+        c.bindTexture(c.TEXTURE_2D, storage.b.texture)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, null)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
+        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
 }

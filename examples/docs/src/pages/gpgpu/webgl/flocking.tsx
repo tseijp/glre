@@ -13,16 +13,13 @@ void main() {
         if (coord.x >= int(texSize.x) || coord.y >= int(texSize.y)) {
                 discard;
         }
-        
         int index = coord.y * int(texSize.x) + coord.x;
         int totalBoids = 256;
         if (index >= totalBoids * 2) {
                 discard;
         }
-        
         bool isVelocity = (index % 2) == 1;
         int boidIndex = index / 2;
-        
         if (isVelocity) {
                 float angle = float(boidIndex) * 0.1 + iTime * 0.5;
                 vec2 vel = vec2(cos(angle), sin(angle)) * 0.1;
@@ -47,22 +44,18 @@ void main() {
         vec2 uv = gl_FragCoord.xy / iResolution;
         int boidCount = 256;
         vec3 color = vec3(0.02, 0.03, 0.05);
-        
         for (int i = 0; i < boidCount; i++) {
                 int y = i / 32;
                 int x = i - y * 32;
                 ivec2 posCoord = ivec2(x * 2, y);
                 ivec2 velCoord = ivec2(x * 2 + 1, y);
-                
                 vec2 boidPos = texelFetch(positions, posCoord, 0).xy;
                 vec2 vel = texelFetch(velocities, velCoord, 0).xy;
-                
                 float dist = distance(uv, boidPos);
                 float intensity = 1.0 / (1.0 + dist * 2000.0);
                 float speed = length(vel);
                 color += vec3(intensity, intensity * speed * 5.0, intensity * 0.5);
         }
-        
         fragColor = vec4(color, 1.0);
 }
 `

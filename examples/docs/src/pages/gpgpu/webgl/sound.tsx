@@ -13,16 +13,13 @@ void main() {
         if (coord.x >= int(texSize.x) || coord.y >= int(texSize.y)) {
                 discard;
         }
-        
         int index = coord.y * int(texSize.x) + coord.x;
         if (index >= 1024) {
                 discard;
         }
-        
         float t = iTime + float(index) * 0.0001;
         float freq = 3.14159 * 12.0;
         float result = sin(3.14159 * freq * t);
-        
         // Convert from -1,1 range to 0,1 range for storage
         float normalized = (result + 1.0) * 0.5;
         fragColor = vec4(normalized, 0.0, 0.0, 1.0);
@@ -40,18 +37,15 @@ void main() {
         vec2 uv = gl_FragCoord.xy / iResolution;
         vec2 texSize = vec2(textureSize(audioBuffer, 0));
         int bufferSize = int(texSize.x * texSize.y);
-        
         int index = int(uv.x * float(bufferSize)) % bufferSize;
         int y = index / int(texSize.x);
         int x = index - y * int(texSize.x);
         ivec2 coord = ivec2(x, y);
-        
         float normalized = texelFetch(audioBuffer, coord, 0).r;
         float amplitude = (normalized * 2.0) - 1.0; // Convert back to -1,1 range
         float waveY = 0.5 + amplitude * 0.3;
         float distFromWave = abs(uv.y - waveY);
         float isWaveform = step(distFromWave, 0.005);
-        
         vec3 background = vec3(0.1, 0.1, 0.2);
         vec3 waveColor = vec3(1.0, 0.8, 0.0);
         fragColor = vec4(mix(background, waveColor, isWaveform), 1.0);

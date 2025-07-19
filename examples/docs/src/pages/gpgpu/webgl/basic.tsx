@@ -25,15 +25,12 @@ out vec4 fragColor;
 void main() {
         vec2 uv = gl_FragCoord.xy / iResolution;
         vec2 texSize = vec2(textureSize(data, 0));
-        
         float totalElements = texSize.x * texSize.y;
         float indexFloat = uv.x * 1024.0;
         int index = int(mod(indexFloat, 1024.0));
-        
         int y = index / int(texSize.x);
         int x = index - y * int(texSize.x);
         ivec2 coord = ivec2(x, y);
-        
         float value = texelFetch(data, coord, 0).r;
         fragColor = vec4(value, value * 0.5, 1.0 - value, 1.0);
 }
