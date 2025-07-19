@@ -1,15 +1,6 @@
 import { nested as cached } from 'reev'
-import { fragment, vertex, compute } from './node'
-import { is } from './utils/helpers'
-import {
-        createAttrib,
-        createIbo,
-        createProgram,
-        createStorage,
-        createTexture,
-        createVbo,
-        getStride,
-} from './utils/program'
+import { loadingImage } from './utils/helpers'
+import { createAttrib, createProgram, createStorage, createTexture, createUniform } from './utils/program'
 import type { GL, WebGLState } from './types'
 
 const vert = /* cpp */ `
@@ -23,15 +14,17 @@ void main() {
 export const webgl = async (gl: GL) => {
         const c = gl.el!.getContext('webgl2')!
         c.getExtension('EXT_color_buffer_float')
-        const pg = createProgram(c, gl.vs, gl.fs, gl)!
+        const pg1 = createProgram(c, gl.vs, gl.fs, gl)!
         const pg2 = createProgram(c, vert, gl.cs, gl)!
-        c.useProgram(pg)
+        c.useProgram(pg1)
 
         let activeUnit = 0 // for texture units
         let currentNum = 0 // for storage buffers
 
-        const uniforms = cached((key) => c.getUniformLocation(pg, key))
-        const attribs = cached((key) => c.getAttribLocation(pg, key))
+        const attribs = cached((key) => c.getAttribLocation(pg1, key))
+        const uniforms1 = cached((key) => c.getUniformLocation(pg1, key))
+        const uniforms2 = cached((key) => c.getUniformLocation(pg2, key))
+        const textures = cached(() => activeUnit++)
         const storages = cached(() => {
                 const unit = activeUnit++
                 const a = { texture: c.createTexture(), buffer: c.createFramebuffer() }
@@ -41,30 +34,22 @@ export const webgl = async (gl: GL) => {
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
                 const loc = attribs(key, true)
-                const vbo = createVbo(c, value)
-                const ibo = createIbo(c, iboValue)
-                const str = getStride(gl.count, value, iboValue)
-                createAttrib(c, str, loc, vbo, ibo)
+                createAttrib(c, loc, gl.count, value, iboValue)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
-                const loc = uniforms(key)
-                if (is.num(value)) return c.uniform1f(loc, value)
-                let l = value.length
-                if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)
-                l = Math.sqrt(l) << 0
-                c[`uniformMatrix${l as 2}fv`](loc, false, value)
+                createUniform(c, uniforms1(key)!, value)
+                if (!pg2) return
+                c.useProgram(pg2)
+                createUniform(c, uniforms2(key)!, value)
+                c.useProgram(pg1)
         }
 
         const _texture = (key: string, src: string) => {
-                gl.loading++
-                const image = new Image()
-                Object.assign(image, { src, crossOrigin: 'anonymous' })
-                image.decode().then(() => {
-                        const loc = uniforms(key)
-                        const unit = activeUnit++
-                        createTexture(c, image, loc, unit)
-                        gl.loading--
+                loadingImage(gl, src, (source) => {
+                        const loc = uniforms1(key)
+                        const unit = textures(key)
+                        createTexture(c, source, loc, unit)
                 })
         }
 
@@ -75,11 +60,11 @@ export const webgl = async (gl: GL) => {
                 storage.width = size
                 storage.height = size
                 createStorage(c, size, storage, array)
-                c.uniform1i(uniforms(key), storage.unit)
+                c.uniform1i(uniforms1(key), storage.unit)
         }
 
         const clean = () => {
-                c.deleteProgram(pg)
+                c.deleteProgram(pg1)
                 if (pg2) c.deleteProgram(pg2)
                 for (const { a, b } of storages.map.values()) {
                         c.deleteTexture(a.texture)
@@ -88,34 +73,29 @@ export const webgl = async (gl: GL) => {
                         c.deleteFramebuffer(b.buffer)
                 }
                 c.getExtension('WEBGL_lose_context')?.loseContext()
-                gl.el.width = 1
-                gl.el.height = 1
         }
 
         const _compute = () => {
-                if (!pg2) return
                 c.useProgram(pg2)
                 for (const [, storage] of storages.map) {
                         const output = currentNum % 2 ? storage.b : storage.a
                         c.bindFramebuffer(c.FRAMEBUFFER, output.buffer)
                         c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0, c.TEXTURE_2D, output.texture, 0)
-                        const iTimeLoc = c.getUniformLocation(pg2, 'iTime') // @TODO REMOVE
-                        c.uniform1f(iTimeLoc, performance.now() / 1000) // @TODO REMOVE
                         c.viewport(0, 0, storage.width, storage.height)
                         c.drawArrays(c.TRIANGLES, 0, 6)
                         c.bindFramebuffer(c.FRAMEBUFFER, null)
                 }
                 currentNum++
-                c.useProgram(pg)
+                c.useProgram(pg1)
         }
 
         const render = () => {
-                _compute()
+                if (pg2) _compute()
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
                 c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...gl.size)
                 for (const [key, { unit, a, b }] of storages.map) {
-                        const loc = uniforms(key)
+                        const loc = uniforms1(key)
                         const output = currentNum % 2 ? a : b
                         c.activeTexture(c.TEXTURE0 + unit)
                         c.bindTexture(c.TEXTURE_2D, output.texture)
@@ -124,7 +104,7 @@ export const webgl = async (gl: GL) => {
                 c.drawArrays(c.TRIANGLES, 0, gl.count)
         }
 
-        const webgl: WebGLState = { context: c, program: pg }
+        const webgl: WebGLState = { context: c, program: pg1 }
 
         return { webgl, render, clean, _attribute, _uniform, _texture, _storage }
 }

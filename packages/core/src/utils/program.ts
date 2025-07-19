@@ -1,4 +1,5 @@
 import { fragment, vertex } from '../node'
+import { is } from './helpers'
 import type { X } from '../node'
 import type { GL } from '../types'
 
@@ -14,13 +15,13 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number, on
 }
 
 export const createProgram = (c: WebGLRenderingContext, vert: X, frag: X, gl: GL) => {
-        if (!vert || !frag) return null
+        if (!vert || !frag) return
         const config = { isWebGL: true, gl }
+        frag = fragment(frag, config) // needs to be before vertex
         vert = vertex(vert, config)
-        frag = fragment(frag, config)
         const pg = c.createProgram()
-        const fs = createShader(c, frag, c.FRAGMENT_SHADER, gl.error)
         const vs = createShader(c, vert, c.VERTEX_SHADER, gl.error)
+        const fs = createShader(c, frag, c.FRAGMENT_SHADER, gl.error)
         if (!fs || !vs) return
         c.attachShader(pg, vs!)
         c.attachShader(pg, fs!)
@@ -31,7 +32,7 @@ export const createProgram = (c: WebGLRenderingContext, vert: X, frag: X, gl: GL
         gl.error(`Could not link program: ${error}`)
 }
 
-export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
+const createVbo = (c: WebGLRenderingContext, data: number[]) => {
         const buffer = c.createBuffer()
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, new Float32Array(data), c.STATIC_DRAW)
@@ -39,7 +40,7 @@ export const createVbo = (c: WebGLRenderingContext, data: number[]) => {
         return buffer
 }
 
-export const createIbo = (c: WebGLRenderingContext, data: number[]) => {
+const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         const buffer = c.createBuffer()
         c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buffer)
         c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Int16Array(data), c.STATIC_DRAW)
@@ -47,7 +48,7 @@ export const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         return buffer
 }
 
-export const getStride = (count: number, value: number[], iboValue?: number[]) => {
+const getStride = (count: number, value: number[], iboValue?: number[]) => {
         if (iboValue) count = Math.max(...iboValue) + 1
         const stride = value.length / count
         return Math.floor(stride)
@@ -55,15 +56,26 @@ export const getStride = (count: number, value: number[], iboValue?: number[]) =
 
 export const createAttrib = (
         c: WebGLRenderingContext,
-        stride: number,
-        loc: any,
-        vbo: WebGLBuffer,
-        ibo?: WebGLBuffer
+        loc: number,
+        count: number,
+        value: number[],
+        iboValue: number[]
 ) => {
+        const vbo = createVbo(c, value)
+        const ibo = createIbo(c, iboValue)
+        const str = getStride(count, value, iboValue)
         c.bindBuffer(c.ARRAY_BUFFER, vbo)
         c.enableVertexAttribArray(loc)
-        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
+        c.vertexAttribPointer(loc, str, c.FLOAT, false, 0, 0)
         if (ibo) c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, ibo)
+}
+
+export const createUniform = (c: WebGLRenderingContext, loc: WebGLUniformLocation, value: number | number[]) => {
+        if (is.num(value)) return c.uniform1f(loc, value)
+        let l = value.length
+        if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)
+        l = Math.sqrt(l) << 0
+        c[`uniformMatrix${l as 2}fv`](loc, false, value)
 }
 
 export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, loc: any, unit: number) => {

@@ -1,3 +1,5 @@
+import type { GL } from './../types'
+
 export const is = {
         arr: Array.isArray,
         bol: (a: unknown): a is boolean => typeof a === 'boolean',
@@ -45,4 +47,14 @@ export const sig = (value = 0, digit = -2) => {
 
 export const isFloat32 = (value: unknown): value is Float32Array => {
         return value instanceof Float32Array
+}
+
+export const loadingImage = (gl: GL, src: string, fun: (source: HTMLImageElement) => void) => {
+        gl.loading++
+        const source = new Image()
+        Object.assign(source, { src, crossOrigin: 'anonymous' })
+        source.decode().then(() => {
+                fun(source)
+                gl.loading--
+        })
 }

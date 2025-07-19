@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is } from './utils/helpers'
+import { is, loadingImage } from './utils/helpers'
 import {
         createArrayBuffer,
         createBindings,
@@ -73,13 +73,10 @@ export const webgpu = async (gl: GL) => {
         }
 
         const _texture = (key: string, src: string) => {
-                gl.loading++
-                const source = Object.assign(new Image(), { src, crossOrigin: 'anonymous' })
-                source.decode().then(() => {
+                loadingImage(gl, src, (source) => {
                         const { width, height } = source
                         const { texture } = textures(key, width, height)
                         device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
-                        gl.loading--
                 })
         }
 
@@ -125,7 +122,7 @@ export const webgpu = async (gl: GL) => {
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
-                if (comp) computeFlush(encoder.beginComputePass())
+                computeFlush(encoder.beginComputePass())
                 flush(encoder.beginRenderPass(createDescriptor(context, depthTexture)))
                 device.queue.submit([encoder.finish()])
         }
