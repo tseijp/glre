@@ -21,6 +21,7 @@ export interface FnLayout {
 export type NodeTypes =
         // headers
         | 'attribute'
+        | 'storage'
         | 'uniform'
         | 'constant'
         // variables
@@ -148,129 +149,6 @@ type NodeProxyMethods =
         | 'toString'
         | 'element'
 
-export interface BaseNodeProxy<T extends Constants> {
-        // System properties
-        assign(x: any): NodeProxy<T>
-        toVar(name?: string): NodeProxy<T>
-        toString(c?: NodeContext): string
-        type: NodeTypes
-        props: NodeProps
-        isProxy: true
-        listeners: Set<(value: any) => void>
-
-        // Operators methods
-        add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        div<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        equal<U extends Constants>(x: X<U>): Bool
-        notEqual<U extends Constants>(x: X<U>): Bool
-        lessThan<U extends Constants>(x: X<U>): Bool
-        lessThanEqual<U extends Constants>(x: X<U>): Bool
-        greaterThan<U extends Constants>(x: X<U>): Bool
-        greaterThanEqual<U extends Constants>(x: X<U>): Bool
-        and(x: X<'bool'>): Bool
-        or(x: X<'bool'>): Bool
-        not(): Bool
-
-        // Bitwise operators
-        bitAnd(x: X<T>): NodeProxy<T>
-        bitOr(x: X<T>): NodeProxy<T>
-        bitXor(x: X<T>): NodeProxy<T>
-        bitNot(): NodeProxy<T>
-        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-
-        // Conversion methods
-        toBool(): Bool
-        toUint(): UInt
-        toInt(): Int
-        toFloat(): Float
-        toBvec2(): BVec2
-        toIvec2(): IVec2
-        toUvec2(): UVec2
-        toVec2(): Vec2
-        toBvec3(): BVec3
-        toIvec3(): IVec3
-        toUvec3(): UVec3
-        toVec3(): Vec3
-        toBvec4(): BVec4
-        toIvec4(): IVec4
-        toUvec4(): UVec4
-        toVec4(): Vec4
-        toColor(): Color
-        toMat2(): Mat2
-        toMat3(): Mat3
-        toMat4(): Mat4
-
-        // Mathematical function methods (preserve type functions)
-        abs(): NodeProxy<T>
-        sign(): NodeProxy<T>
-        floor(): NodeProxy<T>
-        ceil(): NodeProxy<T>
-        round(): NodeProxy<T>
-        fract(): NodeProxy<T>
-        trunc(): NodeProxy<T>
-        sin(): NodeProxy<T>
-        cos(): NodeProxy<T>
-        tan(): NodeProxy<T>
-        asin(): NodeProxy<T>
-        acos(): NodeProxy<T>
-        atan(): NodeProxy<T>
-        exp(): NodeProxy<T>
-        exp2(): NodeProxy<T>
-        log(): NodeProxy<T>
-        log2(): NodeProxy<T>
-        sqrt(): NodeProxy<T>
-        inverseSqrt(): NodeProxy<T>
-        normalize(): NodeProxy<T>
-        oneMinus(): NodeProxy<T>
-        saturate(): NodeProxy<T>
-        negate(): NodeProxy<T>
-        reciprocal(): NodeProxy<T>
-        dFdx(): NodeProxy<T>
-        dFdy(): NodeProxy<T>
-        fwidth(): NodeProxy<T>
-
-        // Scalar return functions
-        length(): Float
-        lengthSq(): Float
-        determinant(): Float
-        luminance(): Float
-
-        // Bool return functions
-        all(): Bool
-        any(): Bool
-
-        // Specific return type functions
-        cross<U extends Constants>(y: X<U>): Vec3
-
-        // Two argument functions with variable return types
-        atan2<U extends Constants>(x: X<U>): NodeProxy<T>
-        pow<U extends Constants>(y: X<U>): NodeProxy<T>
-        distance<U extends Constants>(y: X<U>): Float
-        dot<U extends Constants>(y: X<U>): Float
-        reflect<U extends Constants>(N: X<U>): NodeProxy<T>
-        refract<U extends Constants>(N: X<U>, eta: any): NodeProxy<T>
-
-        // Multi-argument functions that return highest priority type
-        min<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
-        max<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
-        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperator<T, U>>
-        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperator<T, U>>
-        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperator<T, U>>
-        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperator<T, U>>
-
-        // Power functions
-        pow2(): NodeProxy<T>
-        pow3(): NodeProxy<T>
-        pow4(): NodeProxy<T>
-
-        // Element access for array/matrix types
-        element<Index extends X>(index: Index): NodeProxy<InferArrayElement<T>>
-}
-
 type ReadNodeProxy = {
         [K in string as K extends NodeProxyMethods ? never : K]: any
 } & {
@@ -335,3 +213,146 @@ export type NodeProxy<T extends Constants = string> = T extends keyof ConstantsT
         : NodeProxyImpl<T>
 
 export type X<T extends Constants = string> = number | string | boolean | undefined | NodeProxy<T> | X[]
+
+export interface BaseNodeProxy<T extends Constants> {
+        // System properties
+        assign(x: any): NodeProxy<T>
+        toVar(name?: string): NodeProxy<T>
+        toString(c?: NodeContext): string
+        type: NodeTypes
+        props: NodeProps
+        isProxy: true
+        listeners: Set<(value: any) => void>
+
+        // Element access for array/matrix types
+        element<Index extends X>(index: Index): NodeProxy<InferArrayElement<T>>
+
+        // Operators methods
+        add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        div<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        equal<U extends Constants>(x: X<U>): Bool
+        notEqual<U extends Constants>(x: X<U>): Bool
+        lessThan<U extends Constants>(x: X<U>): Bool
+        lessThanEqual<U extends Constants>(x: X<U>): Bool
+        greaterThan<U extends Constants>(x: X<U>): Bool
+        greaterThanEqual<U extends Constants>(x: X<U>): Bool
+        and(x: X<'bool'>): Bool
+        or(x: X<'bool'>): Bool
+        not(): Bool
+
+        // Bitwise operators
+        bitAnd(x: X<T>): NodeProxy<T>
+        bitOr(x: X<T>): NodeProxy<T>
+        bitXor(x: X<T>): NodeProxy<T>
+        bitNot(): NodeProxy<T>
+        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+
+        // Conversion methods
+        toBool(): Bool
+        toUint(): UInt
+        toInt(): Int
+        toFloat(): Float
+        toBvec2(): BVec2
+        toIvec2(): IVec2
+        toUvec2(): UVec2
+        toVec2(): Vec2
+        toBvec3(): BVec3
+        toIvec3(): IVec3
+        toUvec3(): UVec3
+        toVec3(): Vec3
+        toBvec4(): BVec4
+        toIvec4(): IVec4
+        toUvec4(): UVec4
+        toVec4(): Vec4
+        toColor(): Color
+        toMat2(): Mat2
+        toMat3(): Mat3
+        toMat4(): Mat4
+
+        /**
+         * 3.1. unified logic with:
+         * 1.1. index.ts functions and
+         * 2.1. const.ts FUNCTION_RETURN_TYPES
+         */
+        // 0. Always return bool
+        all(): Bool
+        any(): Bool
+        // 1. Always return int
+        arrayLength(): UInt
+        // 2. Always return float
+        determinant(): Float
+        distance<U extends Constants>(y: X<U>): Float
+        dot<U extends Constants>(y: X<U>): Float
+        length(): Float
+        lengthSq(): Float
+        luminance(): Float
+        // 3. Always return vec3
+        cross<U extends Constants>(y: X<U>): Vec3
+        // 4. Always return vec4
+        cubeTexture(...args: X[]): 'vec4'
+        texture(...args: X[]): 'vec4'
+        texelFetch(...args: X[]): 'vec4'
+        textureLod(...args: X[]): 'vec4'
+        textureSize<U extends Constants>(x: X<U>, y?: X<U>): Vec2
+
+        /**
+         * 3.1. unified with:
+         * 1.1. index.ts functions and
+         * 2.1. const.ts FUNCTIONS
+         */
+        // 0. Component-wise functions
+        abs(): NodeProxy
+        acos(): NodeProxy
+        acosh(): NodeProxy
+        asin(): NodeProxy
+        asinh(): NodeProxy
+        atan(): NodeProxy
+        atanh(): NodeProxy
+        ceil(): NodeProxy
+        cos(): NodeProxy
+        cosh(): NodeProxy
+        degrees(): NodeProxy
+        dFdx(): NodeProxy
+        dFdy(): NodeProxy
+        exp(): NodeProxy
+        exp2(): NodeProxy
+        floor(): NodeProxy
+        fract(): NodeProxy
+        fwidth(): NodeProxy
+        inverseSqrt(): NodeProxy
+        log(): NodeProxy
+        log2(): NodeProxy
+        negate(): NodeProxy
+        normalize(): NodeProxy
+        oneMinus(): NodeProxy
+        radians(): NodeProxy
+        reciprocal(): NodeProxy
+        round(): NodeProxy
+        saturate(): NodeProxy
+        sign(): NodeProxy
+        sin(): NodeProxy
+        sinh(): NodeProxy
+        sqrt(): NodeProxy
+        tan(): NodeProxy
+        tanh(): NodeProxy
+        trunc(): NodeProxy
+
+        // 1. Functions where first argument determines return type
+        atan2<U extends Constants>(x: X<U>): NodeProxy<T>
+        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperator<T, U>>
+        max<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
+        min<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
+        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperator<T, U>>
+        pow<U extends Constants>(y: X<U>): NodeProxy<T>
+        reflect<U extends Constants>(N: X<U>): NodeProxy<T>
+        refract<U extends Constants>(N: X<U>, eta: any): NodeProxy<T>
+
+        // 2. Functions where not first argument determines return type
+        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperator<T, U>>
+        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperator<T, U>>
+        // @NOTE: mod is operator
+}

@@ -135,6 +135,13 @@ export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
                 : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
 }
 
+export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
+        if (c.isWebGL) return `${type} ${id};`
+        const { location = 0 } = c.gl?.webgpu?.attribs.map.get(id) || {}
+        const wgslType = getConversions(type, c)
+        return `@location(${location}) ${id}: `
+}
+
 export const parseUniformHead = (c: NodeContext, id: string, type: Constants) => {
         const isTexture = type === 'sampler2D' || type === 'texture'
         if (c.isWebGL)
@@ -152,12 +159,11 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
         const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
-
-export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
-        if (c.isWebGL) return `${type} ${id};`
-        const { location = 0 } = c.gl?.webgpu?.attribs.map.get(id) || {}
+export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
+        if (c.isWebGL) return `buffer ${id}: ${type};`
+        const { group = 0, binding = 0 } = c.gl?.webgpu?.storages.map.get(id) || {}
         const wgslType = getConversions(type, c)
-        return `@location(${location}) ${id}: ${wgslType}`
+        return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`
 }
 
 export const parseConstantHead = (c: NodeContext, id: string, type: Constants, value: string) => {

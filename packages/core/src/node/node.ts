@@ -39,6 +39,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
 export const attribute = <T extends C>(x: X, id = getId()) => node<T>('attribute', { id }, x)
 export const constant = <T extends C>(x: X<T>, id = getId()) => node<T>('constant', { id }, x)
 export const uniform = <T extends C>(x: X<T>, id = getId()) => node<T>('uniform', { id }, x)
+export const storage = <T extends C>(x: X<T>, id = getId()) => node<T>('storage', { id }, x)
 export const variable = <T extends C>(id = getId()) => node<T>('variable', { id })
 export const builtin = <T extends C>(id = getId()) => node<T>('builtin', { id })
 export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {

@@ -6,12 +6,13 @@ import {
         parseDeclare,
         parseDefine,
         parseIf,
+        parseStorageHead,
         parseStruct,
         parseStructHead,
         parseSwitch,
         parseTexture,
-        parseVaryingHead,
         parseUniformHead,
+        parseVaryingHead,
 } from './parse'
 import { getBluiltin, getOperator, getConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
 import { is } from '../../utils/helpers'
@@ -55,6 +56,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 if (x === 'negate') return `(-${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
+                if (x === 'arrayLength') return c.isWebGL ? `length(${code(y, c)})` : `arrayLength(&${code(y, c)})`
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
@@ -115,6 +117,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 target.listeners.add(fun)
                 head = parseUniformHead(c, id, varType)
         }
+        if (type === 'storage') head = parseStorageHead(c, id, infer(target, c))
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {
                 c.code?.headers.set(id, head)

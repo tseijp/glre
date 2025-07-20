@@ -1,4 +1,4 @@
-webgpu
+tsl
 
 [basic](/gpgpu/basic)
 
@@ -17,3 +17,13 @@ webgl
 [particles](/gpgpu/webgl/particles)
 
 [sound](/gpgpu/webgl/sound)
+
+webgpu
+
+[basic](/gpgpu/webgpu/basic)
+
+[flocking](/gpgpu/webgpu/flocking)
+
+[particles](/gpgpu/webgpu/particles)
+
+[sound](/gpgpu/webgpu/sound)

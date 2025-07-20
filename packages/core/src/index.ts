@@ -58,6 +58,7 @@ export const createGL = (props?: Partial<GL>) => {
                         gl.isError = true
                         gl.isLoop = false
                         gl.clean()
+                        console.warn('GL Error:', ...arguments)
                 },
         }) as EventState<GL>
 
