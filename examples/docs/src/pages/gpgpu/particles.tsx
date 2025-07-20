@@ -56,7 +56,6 @@ const fragment = Fn(([uv]) => {
 
 export default function () {
         const gl = useGL({
-                count: 3,
                 isWebGL: false,
                 cs: compute(globalInvocationId),
                 fs: fragment(uv),
