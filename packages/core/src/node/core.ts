@@ -94,7 +94,18 @@ export const vertex = (x: X, c: NodeContext) => {
         return main
 }
 
-export const compute = (x: X, _c: NodeContext) => {
+export const compute = (x: X, c: NodeContext) => {
         if (is.str(x)) return x.trim()
-        return ''
+        if (c.isWebGL) return '' // ignore WebGL compute shaders
+        c.code?.headers?.clear()
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        ret.push(head)
+        ret.push('@compute @workgroup_size(32)')
+        ret.push(`fn main(@builtin(global_invocation_id) globalInvocationId: vec3u) {`)
+        ret.push(`  ${body}`)
+        ret.push('}')
+        const main = ret.filter(Boolean).join('\n').trim()
+        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
 }

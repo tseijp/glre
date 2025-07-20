@@ -49,10 +49,6 @@ export default function () {
                 isWebGL: false,
                 cs: particleCompute,
                 fs: particleFragment,
-                loop() {
-                        const t = Date.now() / 1000
-                        gl.uniform('iTime', t)
-                },
         })
 
         const particleCount = 1024
