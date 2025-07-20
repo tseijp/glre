@@ -95,17 +95,17 @@ const fragment = () => {
                 s(uv, -1,  1), s(uv, 0,  1), s(uv, 1,  1)
         )
         // Sobel X kernel as matrix
-        const sobelX = constant(mat3(
+        const sobelX = mat3(
                 -1, 0, 1,
                 -2, 0, 2,
                 -1, 0, 1
-        ))
+        ).constant()
         // Sobel Y kernel as matrix
-        const sobelY = constant(mat3(
+        const sobelY = mat3(
                 -1, -2, -1,
                  0,  0,  0,
                  1,  2,  1
-        ))
+        ).constant()
         // Matrix convolution using Frobenius inner product
         const gx = matDot(sample, sobelX)
         const gy = matDot(sample, sobelY)
