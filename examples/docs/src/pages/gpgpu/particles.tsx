@@ -1,18 +1,13 @@
 import {
+        array,
         arrayLength,
         float,
         Fn,
         globalInvocationId,
         If,
         int,
-        iTime,
-        ivec2,
         Loop,
-        mod,
-        position,
-        sampler2D,
         storage,
-        uniform,
         useGL,
         uv,
         vec2,
@@ -20,8 +15,8 @@ import {
         vec4,
 } from 'glre/src/react'
 
-const positions = storage(vec2(), 'positions')
-const velocities = storage(vec2(), 'velocities')
+const positions = storage(array(vec2()), 'positions')
+const velocities = storage(array(vec2()), 'velocities')
 
 const compute = Fn(([globalInvocationId]) => {
         const index = globalInvocationId.x

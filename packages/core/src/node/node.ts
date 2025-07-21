@@ -49,6 +49,7 @@ export const uniform = <T extends C>(x: X<T>, id = getId()) => node<T>('uniform'
 export const storage = <T extends C>(x: X<T>, id = getId()) => node<T>('storage', { id }, x)
 export const variable = <T extends C>(id = getId()) => node<T>('variable', { id })
 export const builtin = <T extends C>(id = getId()) => node<T>('builtin', { id })
+export const array = <T extends C>(x: X<T>, id = getId()) => node<T>('array', { id, inferFrom: [x] }, x)
 export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
         return node<T>('varying', { id, inferFrom: [x] }, x)
 }

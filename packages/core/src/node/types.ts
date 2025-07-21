@@ -34,6 +34,7 @@ export type NodeTypes =
         | 'function'
         // struct
         | 'struct'
+        | 'array'
         | 'member'
         | 'element'
         // scopes
@@ -60,7 +61,7 @@ export interface NodeProps<T extends Record<string, NodeProxy> = {}> {
 
 export interface NodeContext {
         gl?: Partial<GL>
-        isFrag?: boolean
+        label?: 'vert' | 'frag' | 'compute'
         isWebGL?: boolean
         binding?: number
         infers?: WeakMap<NodeProxy, Constants>
@@ -71,6 +72,7 @@ export interface NodeContext {
                 vertInputs: Map<string, string>
                 vertOutputs: Map<string, string>
                 vertVaryings: Map<string, string>
+                computeInputs: Map<string, string>
                 dependencies: Map<string, Set<string>>
         }
 }

@@ -10,6 +10,7 @@ const addToScope = (x: NodeProxy) => {
         if (!scope.props.children) scope.props.children = []
         scope.props.children.push(x)
         if (x.type !== 'return' || !define) return
+        // define nodes
         const { props } = define
         if (!props.inferFrom) props.inferFrom = []
         props.inferFrom.push(x)

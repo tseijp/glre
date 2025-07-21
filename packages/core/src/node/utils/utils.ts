@@ -95,6 +95,7 @@ export const initNodeContext = (c: NodeContext) => {
                 vertInputs: new Map(),
                 vertOutputs: new Map(),
                 vertVaryings: new Map(),
+                computeInputs: new Map(),
                 dependencies: new Map(),
         }
         if (c.isWebGL) return c

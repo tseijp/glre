@@ -96,9 +96,9 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 if (c.isWebGL) return getBluiltin(id)
                 if (id === 'position') return 'out.position'
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
-                if (c.isFrag) {
-                        c.code?.fragInputs.set(id, field)
-                } else c.code?.vertInputs.set(id, field)
+                if (c.label === 'compute') c.code?.computeInputs.set(id, field)
+                else if (c.label === 'frag') c.code?.fragInputs.set(id, field)
+                else if (c.label === 'vert') c.code?.vertInputs.set(id, field)
                 return `in.${id}`
         }
         if (type === 'attribute') {

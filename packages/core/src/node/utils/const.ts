@@ -95,6 +95,7 @@ export const BUILTIN_TYPES = {
         sample_index: 'uint',
         sample_mask: 'uint',
         point_coord: 'vec2',
+        global_invocation_id: 'vec3u',
 
         // TSL compatible variables
         positionLocal: 'vec3',
