@@ -122,7 +122,7 @@ export const webgpu = async (gl: GL) => {
                 if (needsUpdate) update()
                 needsUpdate = false
                 const encoder = device.createCommandEncoder()
-                computeFlush(encoder.beginComputePass())
+                if (comp) computeFlush(encoder.beginComputePass())
                 flush(encoder.beginRenderPass(createDescriptor(context, depthTexture)))
                 device.queue.submit([encoder.finish()])
         }

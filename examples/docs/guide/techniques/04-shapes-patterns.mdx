@@ -135,9 +135,9 @@ const fragment = () => {
 const fragment = () => {
         // Pentagram (5-pointed star) using distance field
         const center = uv.sub(0.5)
-        const edge1 = constant(vec2(0.809016994, -0.587785252))
-        const edge2 = constant(vec2(edge1.x.negate(), edge1.y))
-        const edge3 = constant(vec2(0.309016994, -0.951056516))
+        const edge1 = vec2(0.809016994, -0.587785252).constant()
+        const edge2 = vec2(edge1.x.negate(), edge1.y).constant()
+        const edge3 = vec2(0.309016994, -0.951056516).constant()
         const sdPentagram = Fn(([p, radius]) => {
                 let point = vec2(p.x.abs(), p.y)
                 // First edge reflection
