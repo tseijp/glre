@@ -66,7 +66,11 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'function') return inferFunction(x) || infer(y, c)
-        if (type === 'define' && isConstants(layout?.type)) return layout?.type as T
+        if (type === 'define') {
+                if (isConstants(layout?.type)) return layout?.type as T
+                if (!inferFrom || inferFrom.length === 0) return 'void' as T
+                return inferFromArray(inferFrom, c)
+        }
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
         if (type === 'member') {
                 if (isSwizzle(y)) return inferFromCount(y.length)

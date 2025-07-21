@@ -118,8 +118,10 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                 ret.push(`${returnType} ${id}(${params}) {`)
         } else {
                 for (const [paramId, type] of argParams) params.push(`${paramId}: ${getConversions(type, c)}`)
-                console.log(returnType)
-                ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
+                const isVoid = returnType === 'void'
+                if (isVoid) {
+                        ret.push(`fn ${id}(${params}) {`)
+                } else ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
         }
         const scopeCode = code(x, c)
         if (scopeCode) ret.push(scopeCode)

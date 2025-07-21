@@ -53,7 +53,8 @@ export default function () {
         const gl = useGL({
                 isWebGL: false,
                 cs: compute(globalInvocationId),
-                fs: fragment(uv),
+                // fs: fragment(uv),
+                fs: particleFragment,
         })
 
         const particleCount = 1024
@@ -72,3 +73,25 @@ export default function () {
 
         return <canvas ref={gl.ref} />
 }
+const particleFragment = `
+@group(0) @binding(0) var<uniform> iResolution: vec2f;
+@group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
+
+struct In {
+        @builtin(position) position: vec4f
+}
+
+@fragment
+fn main(in: In) -> @location(0) vec4f {
+        var uv = in.position.xy / iResolution;
+        var particleCount = arrayLength(&positions);
+        var intensity = f32(0.0);
+        for (var i = 0u; i < particleCount; i++) {
+                var pos = positions[i];
+                var dist = distance(uv, pos);
+                intensity += 1.0 / dist / f32(particleCount);
+        }
+        var color = vec3f(0.3, 0.2, 0.2) * intensity;
+        return vec4f(color, 1.0);
+}
+`
