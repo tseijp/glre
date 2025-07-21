@@ -1,4 +1,4 @@
-# Configuration System
+# Configuration
 
 GLRE configuration system for customizing engine behavior and platform settings.
 

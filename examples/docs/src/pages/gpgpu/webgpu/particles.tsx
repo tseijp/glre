@@ -1,29 +1,30 @@
 import { useGL } from 'glre/src/react'
 
 const particleCompute = `
-struct In {
-     @builtin(global_invocation_id) global_invocation_id: vec3u
-}
+@group(0) @binding(0) var<uniform> iTime: f32;
 @group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
 @group(2) @binding(1) var<storage, read_write> velocities: array<vec2f>;
-fn x2(p0: vec3u) -> void {
-     var pos: vec2f = positions[p0.x];
-     var vel: vec2f = velocities[p0.x];
-     pos = (pos + (vel * 0.01));
-     if (((pos.x < 0.0) || (pos.x > 1.0))) {
-          vel.x = (vel.x * -1.0);
-          pos.x = clamp(pos.x, 0.0, 1.0);
-     }
-     if (((pos.y < 0.0) || (pos.y > 1.0))) {
-          vel.y = (vel.y * -1.0);
-          pos.y = clamp(pos.y, 0.0, 1.0);
-     }
-     positions[p0.x] = pos;
-     velocities[p0.x] = vel;
+
+struct In {
+        @builtin(global_invocation_id) global_invocation_id: vec3u
 }
+
 @compute @workgroup_size(32)
 fn main(in: In) {
-     x2(in.global_invocation_id);
+        var index = in.global_invocation_id.x;
+        var pos = positions[index];
+        var vel = velocities[index];
+        pos += vel * 0.01;
+        if (pos.x < 0.0 || pos.x > 1.0) {
+                vel.x *= -1.0;
+                pos.x = clamp(pos.x, 0.0, 1.0);
+        }
+        if (pos.y < 0.0 || pos.y > 1.0) {
+                vel.y *= -1.0;
+                pos.y = clamp(pos.y, 0.0, 1.0);
+        }
+        positions[index] = pos;
+        velocities[index] = vel;
 }
 `
 
