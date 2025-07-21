@@ -80,23 +80,23 @@ export const webgl = async (gl: GL) => {
                 const storageArray = Array.from(storages.map.values())
                 if (storageArray.length === 0) return
                 for (const [key, { unit, a, b }] of storages.map) {
-                        // const input = currentNum % 2 ? a : b
-                        // c.activeTexture(c.TEXTURE0 + unit)
-                        // c.bindTexture(c.TEXTURE_2D, input.texture)
+                        const input = currentNum % 2 ? a : b
                         const loc = uniforms2(key)
+                        c.activeTexture(c.TEXTURE0 + unit)
+                        c.bindTexture(c.TEXTURE_2D, input.texture)
                         c.uniform1i(loc, unit)
                 }
                 const outputs = storageArray.map((storage) => (currentNum % 2 ? storage.b : storage.a))
                 c.bindFramebuffer(c.FRAMEBUFFER, outputs[0].buffer)
-                outputs.forEach((output, i) => {
-                        c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0 + i, c.TEXTURE_2D, output.texture, 0)
+                const colorAttachments = outputs.map((_, i) => c.COLOR_ATTACHMENT0 + i)
+                outputs.forEach(({ texture }, i) => {
+                        c.framebufferTexture2D(c.FRAMEBUFFER, colorAttachments[i], c.TEXTURE_2D, texture, 0)
                 })
-                // c.drawBuffers(colorAttachments)
-                // c.viewport(0, 0, storageArray[0].width, storageArray[0].height)
+                c.drawBuffers(colorAttachments)
                 c.drawArrays(c.TRIANGLES, 0, 6)
-                // c.bindFramebuffer(c.FRAMEBUFFER, null)
-                currentNum++
+                c.bindFramebuffer(c.FRAMEBUFFER, null)
                 c.useProgram(pg1)
+                currentNum++
         }
 
         const render = () => {
@@ -104,13 +104,6 @@ export const webgl = async (gl: GL) => {
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
                 c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...gl.size)
-                for (const [key, { unit, a, b }] of storages.map) {
-                        const loc = uniforms1(key)
-                        const output = currentNum % 2 ? a : b
-                        c.activeTexture(c.TEXTURE0 + unit)
-                        c.bindTexture(c.TEXTURE_2D, output.texture)
-                        c.uniform1i(loc, unit)
-                }
                 c.drawArrays(c.TRIANGLES, 0, gl.count)
         }
 
