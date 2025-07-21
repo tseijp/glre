@@ -56,7 +56,7 @@ export const webgl = async (gl: GL) => {
         const _storage = (key: string, value: number[] | Float32Array) => {
                 const array = value instanceof Float32Array ? value : new Float32Array(value)
                 const storage = storages(key)
-                const size = Math.ceil(Math.sqrt(array.length))
+                const size = Math.ceil(Math.sqrt(array.length / 2))
                 storage.width = size
                 storage.height = size
                 createStorage(c, size, storage, array)
@@ -77,14 +77,24 @@ export const webgl = async (gl: GL) => {
 
         const _compute = () => {
                 c.useProgram(pg2)
-                for (const [, storage] of storages.map) {
-                        const output = currentNum % 2 ? storage.b : storage.a
-                        c.bindFramebuffer(c.FRAMEBUFFER, output.buffer)
-                        c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0, c.TEXTURE_2D, output.texture, 0)
-                        c.viewport(0, 0, storage.width, storage.height)
-                        c.drawArrays(c.TRIANGLES, 0, 6)
-                        c.bindFramebuffer(c.FRAMEBUFFER, null)
+                const storageArray = Array.from(storages.map.values())
+                if (storageArray.length === 0) return
+                for (const [key, { unit, a, b }] of storages.map) {
+                        // const input = currentNum % 2 ? a : b
+                        // c.activeTexture(c.TEXTURE0 + unit)
+                        // c.bindTexture(c.TEXTURE_2D, input.texture)
+                        const loc = uniforms2(key)
+                        c.uniform1i(loc, unit)
                 }
+                const outputs = storageArray.map((storage) => (currentNum % 2 ? storage.b : storage.a))
+                c.bindFramebuffer(c.FRAMEBUFFER, outputs[0].buffer)
+                outputs.forEach((output, i) => {
+                        c.framebufferTexture2D(c.FRAMEBUFFER, c.COLOR_ATTACHMENT0 + i, c.TEXTURE_2D, output.texture, 0)
+                })
+                // c.drawBuffers(colorAttachments)
+                // c.viewport(0, 0, storageArray[0].width, storageArray[0].height)
+                c.drawArrays(c.TRIANGLES, 0, 6)
+                // c.bindFramebuffer(c.FRAMEBUFFER, null)
                 currentNum++
                 c.useProgram(pg1)
         }
