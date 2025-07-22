@@ -4,7 +4,7 @@ import { is } from '../utils/helpers'
 import type { Functions, NodeProps, NodeProxy, NodeTypes, Operators, X, Constants as C } from './types'
 
 const toPrimitive = (x: X, hint: string) => {
-        if (hint === 'string') return code(x)
+        if (hint === 'string') return code(x, null)
 }
 
 export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...args: X[]) => {

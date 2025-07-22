@@ -1,6 +1,4 @@
-import { fragment, vertex } from '../node'
 import { is } from './helpers'
-import type { X } from '../node'
 import type { GL } from '../types'
 
 const createShader = (c: WebGLRenderingContext, source: string, type: number, onError = console.warn) => {
@@ -14,11 +12,8 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number, on
         onError(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vert: X, frag: X, gl: GL) => {
+export const createProgram = (c: WebGLRenderingContext, vert: string, frag: string, gl: GL) => {
         if (!vert || !frag) return
-        const config = { isWebGL: true, gl }
-        frag = fragment(frag, config) // needs to be before vertex
-        vert = vertex(vert, config)
         const pg = c.createProgram()
         const vs = createShader(c, vert, c.VERTEX_SHADER, gl.error)
         const fs = createShader(c, frag, c.FRAGMENT_SHADER, gl.error)

@@ -45,7 +45,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'member') return `${code(x, c)}.${code(y, c)}`
         if (type === 'element') return `${code(x, c)}[${code(y, c)}]`
         if (type === 'gather') {
-                if (c.isWebGL) parseGather(c, x, y, target)
+                if (c.isWebGL) return parseGather(c, x, y, target)
                 return `${code(x, c)}[${code(y, c)}]`
         }
         if (type === 'scatter') {

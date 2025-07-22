@@ -96,18 +96,32 @@ export const vertex = (x: X, c: NodeContext) => {
 
 export const compute = (x: X, c: NodeContext) => {
         if (is.str(x)) return x.trim()
-        if (c.isWebGL) return '' // ignore WebGL compute shaders
         c.code?.headers?.clear()
         c.label = 'compute'
         const [head, body] = generateHead(x, c)
         const ret = []
-        if (c.code?.computeInputs?.size) ret.push(generateStruct('In', c.code.computeInputs))
-        ret.push(head)
-        ret.push('@compute @workgroup_size(32)')
-        ret.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
-        ret.push(`  ${body};`)
-        ret.push('}')
+        if (c.isWebGL) {
+                // WebGL compute simulation using fragment shader
+                ret.push('#version 300 es')
+                ret.push('precision mediump float;')
+                ret.push('out vec4 fragColor;')
+                // Add storage inputs as sampler2D uniforms
+                for (const code of c.code?.fragInputs?.values() || []) ret.push(`in ${code}`)
+                ret.push(head)
+                ret.push('void main() {')
+                ret.push(`  ${body};`)
+                ret.push('  fragColor = vec4(0.0, 0.0, 0.0, 1.0);') // dummy output
+                ret.push('}')
+        } else {
+                // WebGPU compute shader
+                if (c.code?.computeInputs?.size) ret.push(generateStruct('In', c.code.computeInputs))
+                ret.push(head)
+                ret.push('@compute @workgroup_size(32)')
+                ret.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
+                ret.push(`  ${body};`)
+                ret.push('}')
+        }
         const main = ret.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }

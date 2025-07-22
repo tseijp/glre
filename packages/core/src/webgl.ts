@@ -1,6 +1,7 @@
 import { nested as cached } from 'reev'
 import { loadingImage } from './utils/helpers'
 import { createAttrib, createProgram, createStorage, createTexture, createUniform } from './utils/program'
+import { compute, fragment, vertex } from './node'
 import type { GL, WebGLState } from './types'
 
 const vert = /* cpp */ `
@@ -12,7 +13,8 @@ void main() {
 }`.trim()
 
 const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
-        const pg = createProgram(c, vert, gl.cs, gl)!
+        const config = { isWebGL: true, gl }
+        const pg = createProgram(c, vert, compute(gl.cs, config), gl)!
         if (!pg) return null
 
         gl.uniform({ iParticles: gl.particles }) // set arrayLength uniform
@@ -80,9 +82,10 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
 }
 
 export const webgl = async (gl: GL) => {
+        const config = { isWebGL: true, gl }
         const c = gl.el!.getContext('webgl2')!
         const cp = computeProgram(gl, c)
-        const pg = createProgram(c, gl.vs, gl.fs, gl)!
+        const pg = createProgram(c, vertex(gl.vs, config), fragment(gl.fs, config), gl)!
         c.useProgram(pg)
 
         let activeUnit = 0 // for texture units
