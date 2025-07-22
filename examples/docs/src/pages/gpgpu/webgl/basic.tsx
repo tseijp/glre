@@ -1,6 +1,6 @@
 import { useGL } from 'glre/src/react'
 
-const computeShader = `
+const computeShader = /* c */ `
 #version 300 es
 precision highp float;
 uniform float iTime;
@@ -8,16 +8,17 @@ uniform sampler2D data;
 out vec4 fragColor;
 
 void main() {
+        // global invocation id
         ivec2 coord = ivec2(gl_FragCoord.xy);
         vec2 texSize = vec2(textureSize(data, 0));
         float index = float(coord.y * int(texSize.x) + coord.x);
+        // out
         float t = iTime + index * 0.1;
-        float result = sin(t) * 0.5 + 0.5;
-        fragColor = vec4(result, 0.0, 0.0, 1.0);
+        fragColor = vec4(sin(t) * 0.5 + 0.5, 0.0, 0.0, 1.0);
 }
 `
 
-const fragmentShader = `
+const fragmentShader = /* c */ `
 #version 300 es
 precision highp float;
 uniform vec2 iResolution;

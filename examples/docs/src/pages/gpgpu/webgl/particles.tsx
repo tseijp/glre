@@ -1,6 +1,7 @@
 import { useGL } from 'glre/src/react'
+import { useMemo } from 'react'
 
-const particleCompute = `
+const particleCompute = /* c */ `
 #version 300 es
 precision highp float;
 uniform float iTime;
@@ -11,11 +12,10 @@ layout(location = 0) out vec4 outPositions;
 layout(location = 1) out vec4 outVelocities;
 
 void main() {
+        // global invocation id (not using gl_GlobalInvocationID)
         ivec2 coord = ivec2(gl_FragCoord.xy);
         vec2 texSize = vec2(textureSize(positions, 0));
-        if (coord.x >= int(texSize.x) || coord.y >= int(texSize.y)) {
-                discard;
-        }
+        // texel fetch
         vec2 pos = texelFetch(positions, coord, 0).xy;
         vec2 vel = texelFetch(velocities, coord, 0).xy;
         pos += vel * 0.01;
@@ -32,7 +32,7 @@ void main() {
 }
 `
 
-const particleFragment = `
+const particleFragment = /* c */ `
 #version 300 es
 precision highp float;
 uniform vec2 iResolution;
@@ -41,16 +41,20 @@ out vec4 fragColor;
 
 void main() {
         vec2 uv = gl_FragCoord.xy / iResolution;
+        // array length
         vec2 texSize = vec2(textureSize(positions, 0));
-        int particleCount = int(texSize.x * texSize.y);
+        int length = int(texSize.x * texSize.y);
+        // color
         float intensity = 0.0;
-        for (int i = 0; i < particleCount; i++) {
+        for (int i = 0; i < length; i++) {
+                // texel fetch
                 int y = i / int(texSize.x);
                 int x = i % int(texSize.x);
                 ivec2 coord = ivec2(x, y);
                 vec2 pos = texelFetch(positions, coord, 0).xy;
+                // color
                 float dist = distance(uv, pos);
-                intensity += 1.0 / dist / float(particleCount);
+                intensity += 1.0 / dist / float(length);
         }
         vec3 color = vec3(0.3, 0.2, 0.2) * intensity;
         fragColor = vec4(color, 1.0);
@@ -60,27 +64,25 @@ void main() {
 export default function () {
         const gl = useGL({
                 isWebGL: true,
+                particles: 1024,
                 cs: particleCompute,
                 fs: particleFragment,
-                loop() {
-                        const t = Date.now() / 1000
-                        gl.uniform('iTime', t)
-                },
         })
 
-        const particleCount = 1024
-        const positions = new Float32Array(particleCount * 2)
-        const velocities = new Float32Array(particleCount * 2)
+        useMemo(() => {
+                const positions = []
+                const velocities = []
 
-        for (let i = 0; i < particleCount; i++) {
-                positions[i * 2] = Math.random()
-                positions[i * 2 + 1] = Math.random()
-                velocities[i * 2] = (Math.random() - 0.5) * 0.5
-                velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.5
-        }
+                for (let i = 0; i < gl.particles; i++) {
+                        positions[i * 2] = Math.random()
+                        positions[i * 2 + 1] = Math.random()
+                        velocities[i * 2] = (Math.random() - 0.5) * 0.5
+                        velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.5
+                }
 
-        gl.storage('positions', positions)
-        gl.storage('velocities', velocities)
+                gl.storage('positions', positions)
+                gl.storage('velocities', velocities)
+        }, [])
 
         return <canvas ref={gl.ref} />
 }

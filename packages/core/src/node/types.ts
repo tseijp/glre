@@ -295,10 +295,10 @@ export interface BaseNodeProxy<T extends Constants> {
         // 3. Always return vec3
         cross<U extends Constants>(y: X<U>): Vec3
         // 4. Always return vec4
-        cubeTexture(...args: X[]): 'vec4'
-        texture(...args: X[]): 'vec4'
-        texelFetch(...args: X[]): 'vec4'
-        textureLod(...args: X[]): 'vec4'
+        cubeTexture(...args: X[]): Vec4
+        texture(...args: X[]): Vec4
+        texelFetch(...args: X[]): Vec4
+        textureLod(...args: X[]): Vec4
         textureSize<U extends Constants>(x: X<U>, y?: X<U>): Vec2
 
         /**

@@ -1,6 +1,7 @@
 import { useGL } from 'glre/src/react'
+import { useMemo } from 'react'
 
-const particleCompute = `
+const particleCompute = /* rust */ `
 @group(0) @binding(0) var<uniform> iTime: f32;
 @group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
 @group(2) @binding(1) var<storage, read_write> velocities: array<vec2f>;
@@ -11,9 +12,11 @@ struct In {
 
 @compute @workgroup_size(32)
 fn main(in: In) {
-        var index = in.global_invocation_id.x;
-        var pos = positions[index];
-        var vel = velocities[index];
+        // global invocation id
+        var index: u32 = in.global_invocation_id.x;
+        // texel fetch
+        var pos: vec2f = positions[index];
+        var vel: vec2f = velocities[index];
         pos += vel * 0.01;
         if (pos.x < 0.0 || pos.x > 1.0) {
                 vel.x *= -1.0;
@@ -28,7 +31,7 @@ fn main(in: In) {
 }
 `
 
-const particleFragment = `
+const particleFragment = /* rust */ `
 @group(0) @binding(0) var<uniform> iResolution: vec2f;
 @group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
 
@@ -38,40 +41,45 @@ struct In {
 
 @fragment
 fn main(in: In) -> @location(0) vec4f {
-        var uv = in.position.xy / iResolution;
-        var particleCount = arrayLength(&positions);
-        var intensity = f32(0.0);
-        for (var i = 0u; i < particleCount; i++) {
-                var pos = positions[i];
-                var dist = distance(uv, pos);
-                intensity += 1.0 / dist / f32(particleCount);
+        var uv: vec2f = in.position.xy / iResolution;
+        // array length
+        var length: u32 = arrayLength(&positions);
+        // color
+        var intensity: f32 = f32(0.0);
+        for (var i = 0u; i < length; i++) {
+                // texel fetch
+                var pos: vec2f = positions[i];
+                // color
+                var dist: f32 = distance(uv, pos);
+                intensity += 1.0 / dist / f32(length);
         }
-        var color = vec3f(0.3, 0.2, 0.2) * intensity;
+        var color: vec3f = vec3f(0.3, 0.2, 0.2) * intensity;
         return vec4f(color, 1.0);
 }
 `
 
 export default function () {
         const gl = useGL({
-                count: 3,
                 isWebGL: false,
+                particles: 1024,
                 cs: particleCompute,
                 fs: particleFragment,
         })
 
-        const particleCount = 1024
-        const positions = new Float32Array(particleCount * 2)
-        const velocities = new Float32Array(particleCount * 2)
+        useMemo(() => {
+                const positions = []
+                const velocities = []
 
-        for (let i = 0; i < particleCount; i++) {
-                positions[i * 2] = Math.random()
-                positions[i * 2 + 1] = Math.random()
-                velocities[i * 2] = (Math.random() - 0.5) * 0.5
-                velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.5
-        }
+                for (let i = 0; i < gl.particles; i++) {
+                        positions[i * 2] = Math.random()
+                        positions[i * 2 + 1] = Math.random()
+                        velocities[i * 2] = (Math.random() - 0.5) * 0.5
+                        velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.5
+                }
 
-        gl.storage('positions', positions)
-        gl.storage('velocities', velocities)
+                gl.storage('positions', positions)
+                gl.storage('velocities', velocities)
+        }, [])
 
         return <canvas ref={gl.ref} />
 }
