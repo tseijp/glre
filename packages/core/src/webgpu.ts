@@ -17,8 +17,10 @@ import { compute, fragment, vertex } from './node'
 
 const WORKING_GROUP_SIZE = 32
 
-const computeProgram = (device: GPUDevice, bindings: any, gl: GL) => {
+const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
+
+        gl.uniform({ iParticles: gl.particles }) // set arrayLength uniform
 
         const storages = cached((_key, value: number[] | Float32Array) => {
                 // needsUpdate = true @TODO FIX
@@ -37,8 +39,7 @@ const computeProgram = (device: GPUDevice, bindings: any, gl: GL) => {
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                        const particles = gl.particles
-                        const workgroupCount = Math.ceil(particles / WORKING_GROUP_SIZE)
+                        const workgroupCount = Math.ceil(gl.particles / WORKING_GROUP_SIZE)
                         pass.dispatchWorkgroups(workgroupCount, 1, 1)
                         pass.end()
                 }
@@ -59,7 +60,7 @@ export const webgpu = async (gl: GL) => {
         const context = gl.el!.getContext('webgpu') as GPUCanvasContext
         const { device, format } = await createDevice(context, gl.error)
         const bindings = createBindings()
-        const cp = computeProgram(device, bindings, gl)
+        const cp = computeProgram(gl, device, bindings)
         let frag: string
         let comp: string
         let vert: string

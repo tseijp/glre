@@ -59,6 +59,7 @@ export const color = (r?: X, g?: X, b?: X) => {
 export const iResolution = u(vec2(), 'iResolution')
 export const iMouse = u(vec2(), 'iMouse')
 export const iTime = u(float(), 'iTime')
+export const iParticles = u(uint(), 'iParticles')
 export const uv = position.xy.div(iResolution)
 
 /**

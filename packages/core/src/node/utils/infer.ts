@@ -72,6 +72,8 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
                 return inferFromArray(inferFrom, c)
         }
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
+        if (type === 'gather') return infer(x, c)
+        if (type === 'scatter') return 'void' as T
         if (type === 'member') {
                 if (isSwizzle(y)) return inferFromCount(y.length)
                 if (isNodeProxy(x)) {

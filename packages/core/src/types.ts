@@ -118,4 +118,5 @@ export interface WebGPUState {
 export interface WebGLState {
         context: WebGLRenderingContext
         program: WebGLProgram
+        storages: any
 }

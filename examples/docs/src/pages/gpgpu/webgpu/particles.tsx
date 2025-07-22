@@ -3,6 +3,7 @@ import { useMemo } from 'react'
 
 const particleCompute = /* rust */ `
 @group(0) @binding(0) var<uniform> iTime: f32;
+// storage
 @group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
 @group(2) @binding(1) var<storage, read_write> velocities: array<vec2f>;
 
@@ -12,9 +13,8 @@ struct In {
 
 @compute @workgroup_size(32)
 fn main(in: In) {
-        // global invocation id
-        var index: u32 = in.global_invocation_id.x;
         // texel fetch
+        var index: u32 = in.global_invocation_id.x;
         var pos: vec2f = positions[index];
         var vel: vec2f = velocities[index];
         pos += vel * 0.01;
@@ -26,6 +26,7 @@ fn main(in: In) {
                 vel.y *= -1.0;
                 pos.y = clamp(pos.y, 0.0, 1.0);
         }
+        // texel output
         positions[index] = pos;
         velocities[index] = vel;
 }
@@ -47,7 +48,7 @@ fn main(in: In) -> @location(0) vec4f {
         // color
         var intensity: f32 = f32(0.0);
         for (var i = 0u; i < length; i++) {
-                // texel fetch
+                // texel fetch2
                 var pos: vec2f = positions[i];
                 // color
                 var dist: f32 = distance(uv, pos);

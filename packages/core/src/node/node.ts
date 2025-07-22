@@ -26,7 +26,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
                 if (y === 'variable') return (id = getId()) => variable(id)
                 if (y === 'builtin') return (id = getId()) => builtin(id)
                 if (y === 'vertexStage') return (id = getId()) => vertexStage(x, id)
-                if (y === 'element') return (z: X) => element(x, z)
+                if (y === 'element') return (z: X) => type === 'storage' ? gather(x, z) : element(x, z)
                 if (y === 'member') return (z: X) => member(x, z)
                 if (isOperator(y)) return (...z: X[]) => operator(y, x, ...z)
                 if (isFunction(y)) return (...z: X[]) => function_(y, x, ...z)
@@ -57,6 +57,8 @@ export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
 // Node shorthands with proper typing
 export const member = <T extends C>(x: X, index: X) => node<T>('member', null, x, index)
 export const element = <T extends C>(x: X, index: X) => node<T>('element', null, x, index)
+export const gather = <T extends C>(x: X, index: X) => node<T>('gather', null, x, index)
+export const scatter = <T extends C>(x: X, index: X) => node<T>('scatter', null, x, index)
 export const select = <T extends C>(x: X<T>, y: X<T>, z: X) => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
 export const operator = <T extends C>(key: Operators, ...x: X[]) => node<T>('operator', null, key, ...x)
 export const function_ = <T extends C>(key: Functions, ...x: X[]) => node<T>('function', null, key, ...x)

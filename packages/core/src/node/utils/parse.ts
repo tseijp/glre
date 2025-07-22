@@ -11,6 +11,18 @@ export const parseArray = (children: X[], c: NodeContext) => {
                 .join(', ')
 }
 
+export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
+        const baseVar = code(x, c)
+        const indexVar = code(y, c)
+        const texSizeVar = `int(sqrt(float(iParticles)))`
+        const coordX = `${indexVar} % ${texSizeVar}`
+        const coordY = `${indexVar} / ${texSizeVar}`
+        const inferredType = infer(target, c)
+        const swizzle =
+                inferredType === 'vec2' ? '.xy' : inferredType === 'vec3' ? '.xyz' : inferredType === 'vec4' ? '' : '.x'
+        return `texelFetch(${baseVar}, ivec2(${coordX}, ${coordY}), 0)${swizzle}`
+}
+
 export const parseTexture = (c: NodeContext, y: X, z: X, w: X) => {
         if (c.isWebGL) {
                 const args = w ? [y, z, w] : [y, z]
@@ -164,7 +176,10 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
 }
 
 export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
-        if (c.isWebGL) return `buffer ${id}: ${type};`
+        if (c.isWebGL) {
+                const location = c.gl?.webgl?.storages?.map?.get(id)?.location || 0
+                return `uniform sampler2D ${id};\nlayout(location = ${location}) out vec4 out${id};`
+        }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.storages.map.get(id) || {}
         const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`

@@ -15,6 +15,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         const pg = createProgram(c, vert, gl.cs, gl)!
         if (!pg) return null
 
+        gl.uniform({ iParticles: gl.particles }) // set arrayLength uniform
         c.getExtension('EXT_color_buffer_float')
 
         let activeUnit = 0 // for texture units
@@ -75,7 +76,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
                 currentNum++
         }
 
-        return { render, clean, _uniform, _storage }
+        return { render, clean, _uniform, _storage, storages }
 }
 
 export const webgl = async (gl: GL) => {
@@ -125,7 +126,7 @@ export const webgl = async (gl: GL) => {
                 c.drawArrays(c.TRIANGLES, 0, gl.count)
         }
 
-        const webgl: WebGLState = { context: c, program: pg }
+        const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }
 
         return { webgl, render, clean, _attribute, _uniform, _texture, _storage: cp?._storage }
 }

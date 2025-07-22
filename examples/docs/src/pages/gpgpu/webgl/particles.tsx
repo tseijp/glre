@@ -5,6 +5,7 @@ const particleCompute = /* c */ `
 #version 300 es
 precision highp float;
 uniform float iTime;
+// storage
 uniform sampler2D positions;
 uniform sampler2D velocities;
 
@@ -12,10 +13,8 @@ layout(location = 0) out vec4 outPositions;
 layout(location = 1) out vec4 outVelocities;
 
 void main() {
-        // global invocation id (not using gl_GlobalInvocationID)
-        ivec2 coord = ivec2(gl_FragCoord.xy);
-        vec2 texSize = vec2(textureSize(positions, 0));
         // texel fetch
+        ivec2 coord = ivec2(gl_FragCoord.xy);
         vec2 pos = texelFetch(positions, coord, 0).xy;
         vec2 vel = texelFetch(velocities, coord, 0).xy;
         pos += vel * 0.01;
@@ -27,6 +26,7 @@ void main() {
                 vel.y *= -1.0;
                 pos.y = clamp(pos.y, 0.0, 1.0);
         }
+        // texel output
         outPositions = vec4(pos, 0.0, 1.0);
         outVelocities = vec4(vel, 0.0, 1.0);
 }
@@ -47,7 +47,7 @@ void main() {
         // color
         float intensity = 0.0;
         for (int i = 0; i < length; i++) {
-                // texel fetch
+                // texel fetch2
                 int y = i / int(texSize.x);
                 int x = i % int(texSize.x);
                 ivec2 coord = ivec2(x, y);

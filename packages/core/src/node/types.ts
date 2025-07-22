@@ -37,6 +37,8 @@ export type NodeTypes =
         | 'array'
         | 'member'
         | 'element'
+        | 'gather'
+        | 'scatter'
         // scopes
         | 'scope'
         | 'assign'

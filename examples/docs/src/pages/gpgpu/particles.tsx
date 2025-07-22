@@ -1,10 +1,10 @@
 import {
         array,
-        arrayLength,
         float,
         Fn,
         globalInvocationId,
         If,
+        iParticles,
         int,
         Loop,
         storage,
@@ -38,12 +38,13 @@ const compute = Fn(([globalInvocationId]) => {
 })
 
 const fragment = Fn(([uv]) => {
-        const particleCount = arrayLength(positions).toVar('particleCount')
         const intensity = float(0.0).toVar('intensity')
-        Loop(int(particleCount), ({ i }) => {
-                const pos = positions.element(i)
-                const dist = uv.distance(pos)
-                intensity.assign(intensity.add(float(1.0).div(dist).div(float(particleCount))))
+        // Loop(int(iParticles), ({ i }) => {
+        Loop(int(1024), ({ i }) => {
+                const pos = positions.element(i).toVar('pos')
+                const dist = uv.distance(pos).toVar('dist')
+                // intensity.assign(intensity.add(float(1.0).div(dist).div(float(iParticles))))
+                intensity.assign(intensity.add(float(1.0).div(dist).div(float(1024))))
         })
         const color = vec3(0.3, 0.2, 0.2).mul(intensity)
         return vec4(color, 1.0)
@@ -51,10 +52,9 @@ const fragment = Fn(([uv]) => {
 
 export default function () {
         const gl = useGL({
-                isWebGL: false,
+                isWebGL: true,
                 cs: compute(globalInvocationId),
-                // fs: fragment(uv),
-                fs: particleFragment,
+                fs: fragment(uv),
         })
 
         const particleCount = 1024
@@ -73,25 +73,3 @@ export default function () {
 
         return <canvas ref={gl.ref} />
 }
-const particleFragment = `
-@group(0) @binding(0) var<uniform> iResolution: vec2f;
-@group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
-
-struct In {
-        @builtin(position) position: vec4f
-}
-
-@fragment
-fn main(in: In) -> @location(0) vec4f {
-        var uv = in.position.xy / iResolution;
-        var particleCount = arrayLength(&positions);
-        var intensity = f32(0.0);
-        for (var i = 0u; i < particleCount; i++) {
-                var pos = positions[i];
-                var dist = distance(uv, pos);
-                intensity += 1.0 / dist / f32(particleCount);
-        }
-        var color = vec3f(0.3, 0.2, 0.2) * intensity;
-        return vec4f(color, 1.0);
-}
-`

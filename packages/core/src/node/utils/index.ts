@@ -5,6 +5,7 @@ import {
         parseConstantHead,
         parseDeclare,
         parseDefine,
+        parseGather,
         parseIf,
         parseStorageHead,
         parseStruct,
@@ -43,6 +44,16 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'variable') return id
         if (type === 'member') return `${code(x, c)}.${code(y, c)}`
         if (type === 'element') return `${code(x, c)}[${code(y, c)}]`
+        if (type === 'gather') {
+                if (c.isWebGL) parseGather(c, x, y, target)
+                return `${code(x, c)}[${code(y, c)}]`
+        }
+        if (type === 'scatter') {
+                if (c.isWebGL) {
+                        return `out${code(x, c)} = vec4(${code(z, c)}, 0.0, 1.0);`
+                }
+                return `${code(x, c)}[${code(y, c)}] = ${code(z, c)};`
+        }
         if (type === 'ternary')
                 return c.isWebGL
                         ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
@@ -56,7 +67,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 if (x === 'negate') return `(-${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
-                if (x === 'arrayLength') return c.isWebGL ? `length(${code(y, c)})` : `arrayLength(&${code(y, c)})`
+                if (x === 'arrayLength') return `uint(iParticles)`
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
