@@ -1,5 +1,30 @@
 export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
+// Unified order with TYPE_MAPPING array
+export const CONVERSIONS = [
+        'toBool',
+        'toUint',
+        'toInt',
+        'toFloat',
+        'toBvec2',
+        'toIvec2',
+        'toUvec2',
+        'toVec2',
+        'toBvec3',
+        'toIvec3',
+        'toUvec3',
+        'toVec3',
+        'toBvec4',
+        'toIvec4',
+        'toUvec4',
+        'toVec4',
+        'toColor',
+        'toMat2',
+        'toMat3',
+        'toMat4',
+] as const
+
+// Unified order with CONVERSIONS array
 export const TYPE_MAPPING = {
         bool: 'bool',
         uint: 'u32',
@@ -28,29 +53,6 @@ export const TYPE_MAPPING = {
 
 export const CONSTANTS = Object.keys(TYPE_MAPPING) as unknown as keyof typeof TYPE_MAPPING
 
-export const CONVERSIONS = [
-        'toBool',
-        'toUint',
-        'toInt',
-        'toFloat',
-        'toBvec2',
-        'toIvec2',
-        'toUvec2',
-        'toVec2',
-        'toBvec3',
-        'toIvec3',
-        'toUvec3',
-        'toVec3',
-        'toBvec4',
-        'toIvec4',
-        'toUvec4',
-        'toVec4',
-        'toColor',
-        'toMat2',
-        'toMat3',
-        'toMat4',
-] as const
-
 export const OPERATORS = {
         add: '+',
         sub: '-',
@@ -74,84 +76,6 @@ export const OPERATORS = {
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-// All shader functions (type inference now handled by inferFrom)
-export const FUNCTIONS = [
-        // Float return functions
-        'dot',
-        'distance',
-        'length',
-        'lengthSq',
-        'determinant',
-        'luminance',
-        // Bool return functions
-        'all',
-        'any',
-        // Component-wise functions (preserve input type)
-        'abs',
-        'sign',
-        'floor',
-        'ceil',
-        'round',
-        'fract',
-        'trunc',
-        'sin',
-        'cos',
-        'tan',
-        'asin',
-        'acos',
-        'atan',
-        'sinh',
-        'cosh',
-        'tanh',
-        'asinh',
-        'acosh',
-        'atanh',
-        'exp',
-        'exp2',
-        'log',
-        'log2',
-        'sqrt',
-        'inverseSqrt',
-        'normalize',
-        'oneMinus',
-        'saturate',
-        'negate',
-        'reciprocal',
-        'dFdx',
-        'dFdy',
-        'fwidth',
-        'degrees',
-        'radians',
-        // Vector functions
-        'cross',
-        'reflect',
-        'refract',
-        // Multi-argument functions
-        'min',
-        'max',
-        'mix',
-        'clamp',
-        'step',
-        'smoothstep',
-        'pow',
-        'atan2',
-        // Texture functions
-        'texture',
-        'textureLod',
-        'textureSize',
-        'cubeTexture',
-        // Utility functions
-        'faceforward',
-        'bitcast',
-        'cbrt',
-        'difference',
-        'equals',
-        'pow2',
-        'pow3',
-        'pow4',
-        'transformDirection',
-] as const
-
 export const COMPONENT_COUNT_TO_TYPE = {
         1: 'float',
         2: 'vec2',
@@ -159,24 +83,6 @@ export const COMPONENT_COUNT_TO_TYPE = {
         4: 'vec4',
         9: 'mat3',
         16: 'mat4',
-} as const
-
-// Function return type mapping for method chaining
-export const FUNCTION_RETURN_TYPES = {
-        // Always return vec4
-        texture: 'vec4',
-        cubeTexture: 'vec4',
-        textureSize: 'vec4',
-        // Always return float
-        length: 'float',
-        lengthSq: 'float',
-        distance: 'float',
-        dot: 'float',
-        // Always return bool
-        all: 'bool',
-        any: 'bool',
-        // Always return vec3
-        cross: 'vec3',
 } as const
 
 export const BUILTIN_TYPES = {
@@ -189,6 +95,7 @@ export const BUILTIN_TYPES = {
         sample_index: 'uint',
         sample_mask: 'uint',
         point_coord: 'vec2',
+        global_invocation_id: 'vec3u',
 
         // TSL compatible variables
         positionLocal: 'vec3',
@@ -238,3 +145,91 @@ export const WGSL_TO_GLSL_BUILTIN = {
         point_coord: 'gl_PointCoord',
         uv: 'gl_FragCoord.xy',
 } as const
+
+/**
+ * 2.1. unified with:
+ * 1.1. index.ts functions and
+ * 3.1. types.ts BaseNodeProxy
+ */
+// Function return type mapping for method chaining
+export const FUNCTION_RETURN_TYPES = {
+        // 0. Always return bool
+        all: 'bool',
+        any: 'bool',
+        // 1. Always return int
+        arrayLength: 'uint',
+        // 2. Always return float
+        determinant: 'float',
+        distance: 'float',
+        dot: 'float',
+        length: 'float',
+        lengthSq: 'float',
+        luminance: 'float',
+        // 3. Always return vec3
+        cross: 'vec3',
+        // 4. Always return vec4
+        cubeTexture: 'vec4',
+        texture: 'vec4',
+        texelFetch: 'vec4',
+        textureLod: 'vec4',
+        textureSize: 'vec2',
+} as const
+
+/**
+ * 2.2. unified with:
+ * 1.2. index.ts functions and
+ * 3.2. types.ts BaseNodeProxy
+ */
+// All shader functions (type inference now handled by inferFrom)
+export const FUNCTIONS = [
+        ...(Object.keys(FUNCTION_RETURN_TYPES) as (keyof typeof FUNCTION_RETURN_TYPES)[]),
+        // 0. Component-wise functions
+        'abs',
+        'acos',
+        'acosh',
+        'asin',
+        'asinh',
+        'atan',
+        'atanh',
+        'ceil',
+        'cos',
+        'cosh',
+        'dFdx',
+        'dFdy',
+        'degrees',
+        'exp',
+        'exp2',
+        'floor',
+        'fract',
+        'fwidth',
+        'inverseSqrt',
+        'log',
+        'log2',
+        'negate',
+        'normalize',
+        'oneMinus',
+        'radians',
+        'reciprocal',
+        'round',
+        'saturate',
+        'sign',
+        'sin',
+        'sinh',
+        'sqrt',
+        'tan',
+        'tanh',
+        'trunc',
+        // 1. Functions where first argument determines return type
+        'atan2',
+        'clamp',
+        'max',
+        'min',
+        'mix',
+        'pow',
+        'reflect',
+        'refract',
+        // 2. Functions where not first argument determines return type
+        'smoothstep',
+        'step',
+        // @NOTE: mod is operator
+] as const

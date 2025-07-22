@@ -1,21 +1,24 @@
 import { useGL } from 'glre/src/react'
 
-const computeShader = `
+const computeShader = /* c */ `
 #version 300 es
 precision highp float;
 uniform float iTime;
+uniform sampler2D data;
 out vec4 fragColor;
 
 void main() {
+        // global invocation id
         ivec2 coord = ivec2(gl_FragCoord.xy);
-        float index = float(coord.y * 32 + coord.x);
+        vec2 texSize = vec2(textureSize(data, 0));
+        float index = float(coord.y * int(texSize.x) + coord.x);
+        // out
         float t = iTime + index * 0.1;
-        float result = sin(t) * 0.5 + 0.5;
-        fragColor = vec4(result, 0.0, 0.0, 1.0);
+        fragColor = vec4(sin(t) * 0.5 + 0.5, 0.0, 0.0, 1.0);
 }
 `
 
-const fragmentShader = `
+const fragmentShader = /* c */ `
 #version 300 es
 precision highp float;
 uniform vec2 iResolution;
@@ -26,10 +29,10 @@ void main() {
         vec2 uv = gl_FragCoord.xy / iResolution;
         vec2 texSize = vec2(textureSize(data, 0));
         float totalElements = texSize.x * texSize.y;
-        float indexFloat = uv.x * 1024.0;
-        int index = int(mod(indexFloat, 1024.0));
+        float indexFloat = uv.x * totalElements;
+        int index = int(mod(indexFloat, totalElements));
         int y = index / int(texSize.x);
-        int x = index - y * int(texSize.x);
+        int x = index % int(texSize.x);
         ivec2 coord = ivec2(x, y);
         float value = texelFetch(data, coord, 0).r;
         fragColor = vec4(value, value * 0.5, 1.0 - value, 1.0);

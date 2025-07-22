@@ -18,6 +18,7 @@ export type GL = EventState<{
         mouse: [number, number]
         count: number
         loading: number
+        particles: 64 | 256 | 576 | 1024 | 1600 | 2304 | 3136 | 4096 | 4096 | 5184 | 6400 // (8k)^2
         el: HTMLCanvasElement
         vs?: string | Vec4
         cs?: string | Vec4

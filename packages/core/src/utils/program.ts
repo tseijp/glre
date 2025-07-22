@@ -93,18 +93,24 @@ export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, l
         c.bindTexture(c.TEXTURE_2D, texture)
 }
 
-export const createStorage = (c: WebGL2RenderingContext, size: number, storage: any, array: any) => {
-        const data = new Float32Array(size * size * 4)
-        for (let i = 0; i < array.length; i++) data[i * 4] = array[i]
-        c.activeTexture(c.TEXTURE0 + storage.unit)
-        c.bindTexture(c.TEXTURE_2D, storage.a.texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, data)
+export const createStorage = (c: WebGL2RenderingContext, value: number[] | Float32Array, storage: any) => {
+        const { a, b, unit, size, array, particles } = storage
+        const vectorSize = value.length / particles
+        array.fill(0)
+        for (let i = 0; i < particles; i++) {
+                for (let j = 0; j < Math.min(vectorSize, 4); j++) {
+                        array[4 * i + j] = value[i * vectorSize + j] || 0
+                }
+        }
+        c.activeTexture(c.TEXTURE0 + unit)
+        c.bindTexture(c.TEXTURE_2D, a.texture)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, array)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
-        c.bindTexture(c.TEXTURE_2D, storage.b.texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, null)
+        c.bindTexture(c.TEXTURE_2D, b.texture)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, array)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)

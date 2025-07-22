@@ -1,65 +1,63 @@
-import { useGL } from 'glre/src/react'
+import {
+        array,
+        arrayLength,
+        float,
+        Fn,
+        globalInvocationId,
+        If,
+        int,
+        Loop,
+        storage,
+        useGL,
+        uv,
+        vec2,
+        vec3,
+        vec4,
+} from 'glre/src/react'
 
-const particleCompute = `
-@group(0) @binding(0) var<uniform> iTime: f32;
-@group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
-@group(2) @binding(1) var<storage, read_write> velocities: array<vec2f>;
+const positions = storage(array(vec2()), 'positions')
+const velocities = storage(array(vec2()), 'velocities')
 
-@compute @workgroup_size(64)
-fn main(@builtin(global_invocation_id) global_invocation_id: vec3u) {
-        var index = global_invocation_id.x;
-        if (index >= arrayLength(&positions)) {
-                return;
-        }
-        var dt = 0.016;
-        var pos = positions[index];
-        var vel = velocities[index];
-        pos += vel * dt;
-        if (pos.x < 0.0 || pos.x > 1.0) {
-                vel.x *= -1.0;
-                pos.x = clamp(pos.x, 0.0, 1.0);
-        }
-        if (pos.y < 0.0 || pos.y > 1.0) {
-                vel.y *= -1.0;
-                pos.y = clamp(pos.y, 0.0, 1.0);
-        }
-        positions[index] = pos;
-        velocities[index] = vel;
-}
-`
+const compute = Fn(([globalInvocationId]) => {
+        const index = globalInvocationId.x
+        const pos = positions.element(index).toVar('pos')
+        const vel = velocities.element(index).toVar('vel')
+        pos.assign(pos.add(vel.mul(0.01)))
+        const isReverseX = pos.x.lessThan(0.0).or(pos.x.greaterThan(1.0))
+        const isReverseY = pos.y.lessThan(0.0).or(pos.y.greaterThan(1.0))
+        If(isReverseX, () => {
+                vel.x.assign(vel.x.mul(-1.0))
+                pos.x.assign(pos.x.clamp(0.0, 1.0))
+        })
+        If(isReverseY, () => {
+                vel.y.assign(vel.y.mul(-1.0))
+                pos.y.assign(pos.y.clamp(0.0, 1.0))
+        })
+        positions.element(index).assign(pos)
+        velocities.element(index).assign(vel)
+})
 
-const particleFragment = `
-@group(0) @binding(0) var<uniform> iResolution: vec2f;
-@group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
-
-@fragment
-fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
-        var uv = position.xy / iResolution;
-        var particleCount = arrayLength(&positions);
-        var color = vec3f(0.0);
-        for (var i = 0u; i < particleCount; i++) {
-                var pos = positions[i];
-                var dist = distance(uv, pos);
-                var intensity = 1.0 / (1.0 + dist * f32(particleCount));
-                color += vec3f(intensity, intensity * 0.5, intensity * 0.8) * 0.5;
-        }
-        return vec4f(color, 1.0);
-}
-`
+const fragment = Fn(([uv]) => {
+        const particleCount = arrayLength(positions).toVar('particleCount')
+        const intensity = float(0.0).toVar('intensity')
+        Loop(int(particleCount), ({ i }) => {
+                const pos = positions.element(i)
+                const dist = uv.distance(pos)
+                intensity.assign(intensity.add(float(1.0).div(dist).div(float(particleCount))))
+        })
+        const color = vec3(0.3, 0.2, 0.2).mul(intensity)
+        return vec4(color, 1.0)
+})
 
 export default function () {
         const gl = useGL({
-                count: 3,
                 isWebGL: false,
-                cs: particleCompute,
+                cs: compute(globalInvocationId),
+                // fs: fragment(uv),
                 fs: particleFragment,
-                loop() {
-                        const t = Date.now() / 1000
-                        gl.uniform('iTime', t)
-                },
         })
 
-        const particleCount = 2048
+        const particleCount = 1024
         const positions = new Float32Array(particleCount * 2)
         const velocities = new Float32Array(particleCount * 2)
 
@@ -75,3 +73,25 @@ export default function () {
 
         return <canvas ref={gl.ref} />
 }
+const particleFragment = `
+@group(0) @binding(0) var<uniform> iResolution: vec2f;
+@group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
+
+struct In {
+        @builtin(position) position: vec4f
+}
+
+@fragment
+fn main(in: In) -> @location(0) vec4f {
+        var uv = in.position.xy / iResolution;
+        var particleCount = arrayLength(&positions);
+        var intensity = f32(0.0);
+        for (var i = 0u; i < particleCount; i++) {
+                var pos = positions[i];
+                var dist = distance(uv, pos);
+                intensity += 1.0 / dist / f32(particleCount);
+        }
+        var color = vec3f(0.3, 0.2, 0.2) * intensity;
+        return vec4f(color, 1.0);
+}
+`

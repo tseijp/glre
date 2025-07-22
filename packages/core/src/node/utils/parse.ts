@@ -118,7 +118,10 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                 ret.push(`${returnType} ${id}(${params}) {`)
         } else {
                 for (const [paramId, type] of argParams) params.push(`${paramId}: ${getConversions(type, c)}`)
-                ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
+                const isVoid = returnType === 'void'
+                if (isVoid) {
+                        ret.push(`fn ${id}(${params}) {`)
+                } else ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
         }
         const scopeCode = code(x, c)
         if (scopeCode) ret.push(scopeCode)
@@ -133,6 +136,13 @@ export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
         return c.isWebGL
                 ? `${type} ${id};`
                 : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
+}
+
+export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
+        if (c.isWebGL) return `${type} ${id};`
+        const { location = 0 } = c.gl?.webgpu?.attribs.map.get(id) || {}
+        const wgslType = getConversions(type, c)
+        return `@location(${location}) ${id}: ${wgslType}`
 }
 
 export const parseUniformHead = (c: NodeContext, id: string, type: Constants) => {
@@ -153,11 +163,11 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
 
-export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
-        if (c.isWebGL) return `${type} ${id};`
-        const { location = 0 } = c.gl?.webgpu?.attribs.map.get(id) || {}
+export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
+        if (c.isWebGL) return `buffer ${id}: ${type};`
+        const { group = 0, binding = 0 } = c.gl?.webgpu?.storages.map.get(id) || {}
         const wgslType = getConversions(type, c)
-        return `@location(${location}) ${id}: ${wgslType}`
+        return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`
 }
 
 export const parseConstantHead = (c: NodeContext, id: string, type: Constants, value: string) => {

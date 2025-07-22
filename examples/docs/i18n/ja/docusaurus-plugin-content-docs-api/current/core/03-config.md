@@ -1,4 +1,4 @@
-# Configuration System
+# Configuration
 
 ## Basic Configuration
 

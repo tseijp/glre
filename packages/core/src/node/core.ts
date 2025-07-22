@@ -43,7 +43,7 @@ const generateStruct = (id: string, map: Map<string, string>) => {
 export const fragment = (x: X, c: NodeContext) => {
         if (is.str(x)) return x.trim()
         c.code?.headers?.clear()
-        c.isFrag = true // for varying inputs or outputs
+        c.label = 'frag' // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
@@ -66,7 +66,7 @@ export const fragment = (x: X, c: NodeContext) => {
 export const vertex = (x: X, c: NodeContext) => {
         if (is.str(x)) return x.trim()
         c.code?.headers?.clear()
-        c.isFrag = false // for varying inputs or outputs
+        c.label = 'vert' // for varying inputs or outputs
         const [head, body] = generateHead(x, c)
         const ret = []
         if (c.isWebGL) {
@@ -94,7 +94,20 @@ export const vertex = (x: X, c: NodeContext) => {
         return main
 }
 
-export const compute = (x: X, _c: NodeContext) => {
+export const compute = (x: X, c: NodeContext) => {
         if (is.str(x)) return x.trim()
-        return ''
+        if (c.isWebGL) return '' // ignore WebGL compute shaders
+        c.code?.headers?.clear()
+        c.label = 'compute'
+        const [head, body] = generateHead(x, c)
+        const ret = []
+        if (c.code?.computeInputs?.size) ret.push(generateStruct('In', c.code.computeInputs))
+        ret.push(head)
+        ret.push('@compute @workgroup_size(32)')
+        ret.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
+        ret.push(`  ${body};`)
+        ret.push('}')
+        const main = ret.filter(Boolean).join('\n').trim()
+        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        return main
 }
