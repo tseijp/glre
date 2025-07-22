@@ -43,8 +43,8 @@ const fragment = Fn(([uv]) => {
         Loop(int(1024), ({ i }) => {
                 const pos = positions.element(i).toVar('pos')
                 const dist = uv.distance(pos).toVar('dist')
-                // intensity.assign(intensity.add(float(1.0).div(dist).div(float(iParticles))))
-                intensity.assign(intensity.add(float(1.0).div(dist).div(float(1024))))
+                intensity.assign(intensity.add(float(1.0).div(dist).div(float(iParticles))))
+                // intensity.assign(intensity.add(float(1.0).div(dist).div(float(1024))))
         })
         const color = vec3(0.3, 0.2, 0.2).mul(intensity)
         return vec4(color, 1.0)

@@ -14,7 +14,7 @@ export const parseArray = (children: X[], c: NodeContext) => {
 export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
         const baseVar = code(x, c)
         const indexVar = code(y, c)
-        const texSizeVar = `int(sqrt(float(iParticles)))`
+        const texSizeVar = `uint(sqrt(float(iParticles)))`
         const coordX = `${indexVar} % ${texSizeVar}`
         const coordY = `${indexVar} / ${texSizeVar}`
         const inferredType = infer(target, c)
