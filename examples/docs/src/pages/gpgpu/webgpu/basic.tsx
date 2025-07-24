@@ -1,7 +1,8 @@
 import { useGL } from 'glre/src/react'
 
 const computeShader = /* rust */ `
-@group(0) @binding(0) var<uniform> iTime: f32;
+@group(0) @binding(0) var<uniform> iResolution: vec3f;
+@group(0) @binding(2) var<uniform> iTime: f32;
 @group(2) @binding(0) var<storage, read_write> data: array<f32>;
 
 @compute @workgroup_size(64)
@@ -10,7 +11,7 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3u) {
         var index: u32 = global_invocation_id.x;
         // out
         var t: f32 = iTime + f32(index) * 0.1;
-        data[index] = sin(t) * 0.5 + 0.5;
+        data[index] = sin(t) * 0.5 + 0.5; // 0 ~ 1
 }
 `
 

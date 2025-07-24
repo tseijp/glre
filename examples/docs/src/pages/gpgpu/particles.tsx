@@ -36,7 +36,7 @@ const fragment = Fn(([uv]) => {
 export default function () {
         const gl = useGL({
                 particles: 1024,
-                isWebGL: true,
+                isWebGL: false,
                 cs: compute(id),
                 fs: fragment(uv),
         })
