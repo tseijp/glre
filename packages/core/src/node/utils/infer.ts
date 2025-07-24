@@ -72,19 +72,6 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
                 return inferFromArray(inferFrom, c)
         }
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
-        if (type === 'gather' || type === 'element') {
-                if (x?.type === 'storage') {
-                        const elementNode = x?.props?.children?.[0]
-                        if (elementNode) return infer(elementNode, c)
-                }
-                return 'vec4' as T
-        }
-        if (type === 'scatter') return 'void' as T
-        if (type === 'storage') {
-                const elementNode = x?.props?.children?.[0]
-                if (elementNode) return infer(elementNode, c)
-                return infer(x, c)
-        }
         if (type === 'member') {
                 if (isSwizzle(y)) return inferFromCount(y.length)
                 if (isNodeProxy(x)) {
@@ -94,7 +81,7 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
                 return 'float' as T // fallback @TODO FIX
         }
         if (inferFrom) return inferFromArray(inferFrom, c)
-        return infer(x, c) // for uniform
+        return infer(x, c) // for uniform and storage gather and scatter
 }
 
 export const infer = <T extends C>(target: X<T>, c?: NodeContext | null): T => {

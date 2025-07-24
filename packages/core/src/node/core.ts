@@ -103,7 +103,6 @@ export const compute = (x: X, c: NodeContext) => {
         if (c.isWebGL) {
                 ret.push('#version 300 es')
                 ret.push('precision mediump float;')
-                ret.push(`const float iParticles = ${c.gl?.particles || 1024}.0;`)
                 ret.push(head)
                 ret.push('void main() {')
                 ret.push(`  ${body};`)
@@ -111,7 +110,6 @@ export const compute = (x: X, c: NodeContext) => {
         } else {
                 if (c.code?.computeInputs?.size) ret.push(generateStruct('In', c.code.computeInputs))
                 ret.push(head)
-                ret.push(`const iParticles: f32 = ${c.gl?.particles || 1024}.0;`)
                 ret.push('@compute @workgroup_size(32)')
                 ret.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
                 ret.push(`  ${body};`)

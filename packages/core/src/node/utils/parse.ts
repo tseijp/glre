@@ -11,21 +11,24 @@ export const parseArray = (children: X[], c: NodeContext) => {
                 .join(', ')
 }
 
+// only for webgl
 export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
-        const baseVar = code(x, c)
+        const parseSwizzle = () => {
+                const valueType = infer(target, c)
+                if (valueType === 'float') return '.x'
+                if (valueType === 'vec2') return '.xy'
+                if (valueType === 'vec3') return '.xyz'
+                if (valueType === 'vec4') return ''
+                throw new Error(`Unsupported storage scatter type: ${valueType}`)
+        }
         const indexVar = code(y, c)
-        const particleCount = c.gl?.particles || 1024
-        const texSizeFloat = Math.sqrt(particleCount)
-        const texSizeInt = Math.floor(texSizeFloat)
-        const coordX = `int(${indexVar}) % ${texSizeInt}`
-        const coordY = `int(${indexVar}) / ${texSizeInt}`
-        const inferredType = infer(target, c)
-        const swizzle =
-                inferredType === 'vec2' ? '.xy' : inferredType === 'vec3' ? '.xyz' : inferredType === 'vec4' ? '' : '.x'
-        const samplerName = (x as any)?.props?.id || baseVar
-        return `texelFetch(${samplerName}, ivec2(${coordX}, ${coordY}), 0)${swizzle}`
+        const texSize = Math.floor(Math.sqrt(c.gl?.particles || 1024))
+        const coordX = `int(${indexVar}) % ${texSize}`
+        const coordY = `int(${indexVar}) / ${texSize}`
+        return `texelFetch(${code(x, c)}, ivec2(${coordX}, ${coordY}), 0)${parseSwizzle()}`
 }
 
+// only for webgl
 export const parseScatter = (c: NodeContext, storageNode: X, valueNode: X) => {
         const storageId = code(storageNode, c)
         const valueCode = code(valueNode, c)

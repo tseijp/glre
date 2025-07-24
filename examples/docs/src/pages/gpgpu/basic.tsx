@@ -20,7 +20,7 @@ const fragment = Fn(([uv]) => {
 
 export default function () {
         const gl = useGL({
-                isWebGL: false,
+                isWebGL: true,
                 cs: compute(id),
                 fs: fragment(uv),
         })

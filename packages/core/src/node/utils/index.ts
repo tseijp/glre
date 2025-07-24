@@ -104,7 +104,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 return c.isWebGL ? `${id}` : `out.${id}`
         }
         if (type === 'builtin') {
-                if (c.isWebGL) return getBluiltin(id)
+                if (c.isWebGL) return getBluiltin(c, id)
                 if (id === 'position') return 'out.position'
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.label === 'compute') c.code?.computeInputs.set(id, field)

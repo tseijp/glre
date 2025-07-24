@@ -48,8 +48,11 @@ let count = 0
 
 export const getId = () => `x${count++}`
 
-export const getBluiltin = (id: string) => {
-        if (id === 'global_invocation_id') return 'uvec3(uint(gl_FragCoord.y) * uint(sqrt(iParticles)) + uint(gl_FragCoord.x), 0u, 0u)'
+export const getBluiltin = (c: NodeContext, id: string) => {
+        if (id === 'global_invocation_id') {
+                const size = Math.floor(Math.sqrt(c.gl?.particles || 1024))
+                return `uvec3(uint(gl_FragCoord.y) * uint(${size}) + uint(gl_FragCoord.x), 0u, 0u)`
+        }
         const ret = WGSL_TO_GLSL_BUILTIN[id as keyof typeof WGSL_TO_GLSL_BUILTIN]
         if (!ret) throw new Error(`Error: unknown builtin variable ${id}`)
         return ret
