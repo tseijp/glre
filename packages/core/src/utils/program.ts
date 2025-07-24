@@ -88,10 +88,22 @@ export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, l
         c.bindTexture(c.TEXTURE_2D, texture)
 }
 
-export const createStorage = (c: WebGL2RenderingContext, value: number[] | Float32Array, storage: any) => {
-        const { a, b, unit, size, array, particles } = storage
+interface TextureBuffer {
+        texture: WebGLTexture
+        buffer: WebGLFramebuffer
+}
+
+export const createStorage = (
+        c: WebGL2RenderingContext,
+        value: number[],
+        size: number,
+        a: TextureBuffer,
+        b: TextureBuffer,
+        unit: number,
+        array: Float32Array
+) => {
+        const particles = size * size
         const vectorSize = value.length / particles
-        array.fill(0)
         for (let i = 0; i < particles; i++) {
                 for (let j = 0; j < Math.min(vectorSize, 4); j++) {
                         array[4 * i + j] = value[i * vectorSize + j] || 0
