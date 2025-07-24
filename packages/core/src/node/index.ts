@@ -84,7 +84,6 @@ export const cubeTexture = (x: X, y: X, z?: X) => f<'vec4'>('cubeTexture', x, y,
 export const texture = (x: X, y: X, z?: X) => f<'vec4'>('texture', x, y, z)
 export const texelFetch = (x: X, y: X, z?: X) => f<'vec4'>('texelFetch', x, y, z)
 export const textureLod = (x: X, y: X, z?: X) => f<'vec4'>('textureLod', x, y, z)
-export const textureSize = (x: X, y?: X) => f<'vec4'>('textureSize', x, y)
 
 /**
  * 1.2. unified with:

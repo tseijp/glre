@@ -34,7 +34,6 @@ export type NodeTypes =
         | 'function'
         // struct
         | 'struct'
-        | 'array'
         | 'member'
         | 'element'
         | 'gather'
@@ -299,7 +298,6 @@ export interface BaseNodeProxy<T extends Constants> {
         texture(...args: X[]): Vec4
         texelFetch(...args: X[]): Vec4
         textureLod(...args: X[]): Vec4
-        textureSize<U extends Constants>(x: X<U>, y?: X<U>): Vec2
 
         /**
          * 3.1. unified with:

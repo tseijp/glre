@@ -7,6 +7,7 @@ import {
         parseDefine,
         parseGather,
         parseIf,
+        parseScatter,
         parseStorageHead,
         parseStruct,
         parseStructHead,
@@ -48,10 +49,12 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 return c.isWebGL //
                         ? parseGather(c, x, y, target)
                         : `${code(x, c)}[${code(y, c)}]`
-        if (type === 'scatter')
+        if (type === 'scatter') {
+                const [storageNode, indexNode] = x.props.children ?? [] // x is gather node
                 return c.isWebGL
-                        ? `out${code(x, c)} = vec4(${code(z, c)}, 0.0, 1.0);`
-                        : `${code(x, c)}[${code(y, c)}] = ${code(z, c)};`
+                        ? parseScatter(c, storageNode, y) // indexNode is not using
+                        : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
+        }
         if (type === 'ternary')
                 return c.isWebGL
                         ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`

@@ -24,14 +24,8 @@ export const toVar = <T extends Constants>(x: X<T>, id?: string): NodeProxy<T> =
         return y
 }
 
-export const assign = <T extends Constants>(x: NodeProxy<T>, y: X<T>): X<T> => {
-        if (x.type === 'gather') {
-                const [storageNode, indexNode] = x.props.children ?? []
-                const z = node('scatter', null, storageNode, indexNode, y)
-                addToScope(z)
-                return x
-        }
-        const z = node('assign', null, x, y)
+export const assign = <T extends Constants>(x: NodeProxy<T>, isScatter = false, y: X<T>): X<T> => {
+        const z = node(isScatter ? 'scatter' : 'assign', null, x, y)
         addToScope(z)
         return x
 }

@@ -170,7 +170,6 @@ export const FUNCTION_RETURN_TYPES = {
         texture: 'vec4',
         texelFetch: 'vec4',
         textureLod: 'vec4',
-        textureSize: 'vec2',
 } as const
 
 /**

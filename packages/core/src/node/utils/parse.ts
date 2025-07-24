@@ -15,13 +15,26 @@ export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
         const baseVar = code(x, c)
         const indexVar = code(y, c)
         const particleCount = c.gl?.particles || 1024
-        const texSizeVar = `int(sqrt(float(${particleCount})))`
-        const coordX = `int(${indexVar}) % ${texSizeVar}`
-        const coordY = `int(${indexVar}) / ${texSizeVar}`
+        const texSizeFloat = Math.sqrt(particleCount)
+        const texSizeInt = Math.floor(texSizeFloat)
+        const coordX = `int(${indexVar}) % ${texSizeInt}`
+        const coordY = `int(${indexVar}) / ${texSizeInt}`
         const inferredType = infer(target, c)
         const swizzle =
                 inferredType === 'vec2' ? '.xy' : inferredType === 'vec3' ? '.xyz' : inferredType === 'vec4' ? '' : '.x'
-        return `texelFetch(${baseVar}, ivec2(${coordX}, ${coordY}), 0)${swizzle}`
+        const samplerName = (x as any)?.props?.id || baseVar
+        return `texelFetch(${samplerName}, ivec2(${coordX}, ${coordY}), 0)${swizzle}`
+}
+
+export const parseScatter = (c: NodeContext, storageNode: X, valueNode: X) => {
+        const storageId = code(storageNode, c)
+        const valueCode = code(valueNode, c)
+        const valueType = infer(valueNode, c)
+        if (valueType === 'float') return `_${storageId} = vec4(${valueCode}, 0.0, 0.0, 1.0);`
+        if (valueType === 'vec2') return `_${storageId} = vec4(${valueCode}, 0.0, 1.0);`
+        if (valueType === 'vec3') return `_${storageId} = vec4(${valueCode}, 1.0);`
+        if (valueType === 'vec4') return `_${storageId} = ${valueCode};`
+        throw new Error(`Unsupported storage scatter type: ${valueType}`)
 }
 
 export const parseTexture = (c: NodeContext, y: X, z: X, w: X) => {
@@ -178,11 +191,10 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
 
 export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
         if (c.isWebGL) {
-                let ret = `uniform sampler2D ${id}`
-                if (c.label !== 'compute') return
+                const ret = `uniform sampler2D ${id};`
+                if (c.label !== 'compute') return ret
                 const location = c.units?.(id)
-                ret += `;\nlayout(location = ${location}) out vec4 out${id};`
-                return ret
+                return `${ret}\nlayout(location = ${location}) out vec4 _${id};` // out texture buffer
         }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.storages.map.get(id) || {}
         const wgslType = getConversions(type, c)

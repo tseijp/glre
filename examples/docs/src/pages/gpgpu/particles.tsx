@@ -1,7 +1,7 @@
-import { array, float, Fn, id, If, int, Loop, storage, useGL, uv, vec2, vec3, vec4 } from 'glre/src/react'
+import { float, Fn, id, If, int, Loop, storage, useGL, uv, vec2, vec3, vec4 } from 'glre/src/react'
 
-const positions = storage(array(vec2()), 'positions')
-const velocities = storage(array(vec2()), 'velocities')
+const positions = storage(vec2(), 'positions')
+const velocities = storage(vec2(), 'velocities')
 
 const compute = Fn(([id]) => {
         const index = id.x
@@ -36,7 +36,7 @@ const fragment = Fn(([uv]) => {
 export default function () {
         const gl = useGL({
                 particles: 1024,
-                isWebGL: true,
+                isWebGL: false,
                 cs: compute(id),
                 fs: fragment(uv),
         })
