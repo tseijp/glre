@@ -97,6 +97,7 @@ export const webgpu = async (gl: GL) => {
                 if (is.num(value)) value = [value]
                 const { array, buffer } = uniforms(key, value)
                 device.queue.writeBuffer(buffer, 0, array as any)
+                _computeUniform(key, value)
         }
 
         const _texture = (key: string, src: string) => {
@@ -115,6 +116,7 @@ export const webgpu = async (gl: GL) => {
                         textures.map.values(),
                         cp.storages.map.values()
                 )
+                
                 const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vert, frag)
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
@@ -161,5 +163,16 @@ export const webgpu = async (gl: GL) => {
 
         const webgpu = { device, uniforms, textures, attribs, storages: cp.storages } as WebGPUState
 
-        return { webgpu, render, resize, clean, _attribute, _uniform, _texture, _storage: cp._storage }
+        
+        const _computeUniform = (key: string, value: number | number[]) => {
+                // Direct buffer update for compute shader uniforms
+                if (gl.cs && uniforms.map.has(key)) {
+                        if (is.num(value)) value = [value]
+                        const { buffer } = uniforms(key, value)
+                        const array = new Float32Array(value)
+                        device.queue.writeBuffer(buffer, 0, array)
+                }
+        }
+
+        return { webgpu, render, resize, clean, _attribute, _uniform, _texture, _storage: cp._storage, _computeUniform }
 }
