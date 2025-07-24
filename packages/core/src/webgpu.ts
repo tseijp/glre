@@ -20,8 +20,6 @@ const WORKING_GROUP_SIZE = 32
 const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
 
-        gl.uniform({ iParticles: gl.particles }) // set arrayLength uniform
-
         const storages = cached((_key, value: number[] | Float32Array) => {
                 // needsUpdate = true @TODO FIX
                 const { array, buffer } = createArrayBuffer(device, value, 'storage')

@@ -14,9 +14,10 @@ export const parseArray = (children: X[], c: NodeContext) => {
 export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
         const baseVar = code(x, c)
         const indexVar = code(y, c)
-        const texSizeVar = `uint(sqrt(float(iParticles)))`
-        const coordX = `${indexVar} % ${texSizeVar}`
-        const coordY = `${indexVar} / ${texSizeVar}`
+        const particleCount = c.gl?.particles || 1024
+        const texSizeVar = `int(sqrt(float(${particleCount})))`
+        const coordX = `int(${indexVar}) % ${texSizeVar}`
+        const coordY = `int(${indexVar}) / ${texSizeVar}`
         const inferredType = infer(target, c)
         const swizzle =
                 inferredType === 'vec2' ? '.xy' : inferredType === 'vec3' ? '.xyz' : inferredType === 'vec4' ? '' : '.x'
@@ -177,8 +178,11 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
 
 export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
         if (c.isWebGL) {
-                const location = c.gl?.webgl?.storages?.map?.get(id)?.location || 0
-                return `uniform sampler2D ${id};\nlayout(location = ${location}) out vec4 out${id};`
+                let ret = `uniform sampler2D ${id}`
+                if (c.label !== 'compute') return
+                const location = c.units?.(id)
+                ret += `;\nlayout(location = ${location}) out vec4 out${id};`
+                return ret
         }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.storages.map.get(id) || {}
         const wgslType = getConversions(type, c)

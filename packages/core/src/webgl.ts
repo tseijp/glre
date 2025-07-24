@@ -13,24 +13,25 @@ void main() {
 }`.trim()
 
 const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
-        const config = { isWebGL: true, gl }
-        const pg = createProgram(c, vert, compute(gl.cs, config), gl)!
-        if (!pg) return null
-
-        gl.uniform({ iParticles: gl.particles }) // set arrayLength uniform
-        c.getExtension('EXT_color_buffer_float')
-
         let activeUnit = 0 // for texture units
         let currentNum = 0 // for storage buffers
 
+        const units = cached(() => activeUnit++)
+        const config = { isWebGL: true, gl, units }
+
+        const pg = createProgram(c, vert, compute(gl.cs, config), gl)!
+        if (!pg) return null
+
+        c.getExtension('EXT_color_buffer_float')
+
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
-        const storages = cached(() => {
-                const unit = activeUnit++
+        const storages = cached((key) => {
+                const unit = units(key)
                 const size = Math.ceil(Math.sqrt(gl.particles))
                 const array = new Float32Array(size * size * 4) // RGBA texture data
                 const a = { texture: c.createTexture(), buffer: c.createFramebuffer() }
                 const b = { texture: c.createTexture(), buffer: c.createFramebuffer() }
-                return { a, b, unit, size, array, particles: gl.particles }
+                return { a, b, unit, size, array }
         })
 
         const _uniform = (key: string, value: number | number[]) => {

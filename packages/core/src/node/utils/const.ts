@@ -156,8 +156,6 @@ export const FUNCTION_RETURN_TYPES = {
         // 0. Always return bool
         all: 'bool',
         any: 'bool',
-        // 1. Always return int
-        arrayLength: 'uint',
         // 2. Always return float
         determinant: 'float',
         distance: 'float',

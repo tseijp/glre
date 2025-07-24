@@ -54,7 +54,7 @@ with argument formats identical to React.createElement.
 NodeProxy objects construct dynamic abstract syntax trees
 through getter/setter methods using the Proxy pattern.
 They have type, props, and children properties,
-and these relationships are analyzed by code.ts and converted to shader code.
+and these relationships are analyzed by code function and converted to shader code.
 
 ```
 Abstract Syntax Tree Example:
@@ -65,7 +65,7 @@ Abstract Syntax Tree Example:
 
 ### Code Generation Process
 
-code.ts provides core functionality for converting abstract syntax trees to string-based shader code.
+code function provides core functionality for converting abstract syntax trees to string-based shader code.
 This function performs conditional branching based on type and generates strings compatible
 with both WebGL (GLSL) and WebGPU (WGSL).
 

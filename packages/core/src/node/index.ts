@@ -16,7 +16,7 @@ export const fragDepth = b<'float'>('frag_depth')
 export const sampleIndex = b<'uint'>('sample_index')
 export const sampleMask = b<'uint'>('sample_mask')
 export const pointCoord = b<'vec2'>('point_coord')
-export const globalInvocationId = b<'vec3'>('global_invocation_id')
+export const id = b<'vec3'>('global_invocation_id')
 
 // TSL Compatible Builtin Variables
 export const positionLocal = b<'vec3'>('position')
@@ -59,7 +59,6 @@ export const color = (r?: X, g?: X, b?: X) => {
 export const iResolution = u(vec2(), 'iResolution')
 export const iMouse = u(vec2(), 'iMouse')
 export const iTime = u(float(), 'iTime')
-export const iParticles = u(uint(), 'iParticles')
 export const uv = position.xy.div(iResolution)
 
 /**
@@ -70,9 +69,6 @@ export const uv = position.xy.div(iResolution)
 // 0. Always return bool
 export const all = <T extends C>(x: X<T>) => f<'bool'>('all', x)
 export const any = <T extends C>(x: X<T>) => f<'bool'>('any', x)
-
-// 1. Always return int
-export const arrayLength = (x: X) => f<'uint'>('arrayLength', x)
 
 // 2. Always return float
 export const length = (x: X) => f<'float'>('length', x)
@@ -89,9 +85,6 @@ export const texture = (x: X, y: X, z?: X) => f<'vec4'>('texture', x, y, z)
 export const texelFetch = (x: X, y: X, z?: X) => f<'vec4'>('texelFetch', x, y, z)
 export const textureLod = (x: X, y: X, z?: X) => f<'vec4'>('textureLod', x, y, z)
 export const textureSize = (x: X, y?: X) => f<'vec4'>('textureSize', x, y)
-
-// Functions that always return int
-// export const arrayLength = (x: X) => f<'int'>('arrayLength', x)
 
 /**
  * 1.2. unified with:
@@ -148,4 +141,4 @@ export const refract = <T extends C>(I: X<T>, N: X, eta: X) => f<T>('refract', I
 // 2. Functions where not first argument determines return type
 export const smoothstep = <T extends C>(e0: X, e1: X, x: X<T>) => f<T>('smoothstep', e0, e1, x)
 export const step = <T extends C>(edge: X, x: X<T>) => f<T>('step', edge, x)
-export const mod = <T extends C>(x: NodeProxy<T>, y: X<T>) => x.sub(x.div(y).floor().mul(y)) // @NOTE: mod is operator
+export const mod = <T extends C>(x: NodeProxy<T>, y: X<T>) => x.sub(x.div(y).toFloat().floor().mul(y))

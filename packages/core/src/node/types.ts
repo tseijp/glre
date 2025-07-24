@@ -65,7 +65,7 @@ export interface NodeContext {
         gl?: Partial<GL>
         label?: 'vert' | 'frag' | 'compute'
         isWebGL?: boolean
-        binding?: number
+        units?: any // @TODO FIX
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
         code?: {
@@ -285,8 +285,6 @@ export interface BaseNodeProxy<T extends Constants> {
         // 0. Always return bool
         all(): Bool
         any(): Bool
-        // 1. Always return int
-        arrayLength(): UInt
         // 2. Always return float
         determinant(): Float
         distance<U extends Constants>(y: X<U>): Float
