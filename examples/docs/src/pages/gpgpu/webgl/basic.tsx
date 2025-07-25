@@ -10,8 +10,7 @@ out vec4 fragColor;
 void main() {
         // global invocation id
         ivec2 coord = ivec2(gl_FragCoord.xy);
-        vec2 texSize = vec2(textureSize(data, 0));
-        float index = float(coord.y * int(texSize.x) + coord.x);
+        float index = float(coord.y * int(32) + coord.x);
         // out
         float t = iTime + index * 0.1;
         fragColor = vec4(sin(t) * 0.5 + 0.5, 0.0, 0.0, 1.0);

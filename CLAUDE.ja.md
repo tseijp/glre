@@ -43,7 +43,7 @@ cached 関数を使用して uniforms、textures、attribs のデータをキャ
 node.ts の node 関数は、React.createElement と同じ引数形式で抽象構文木を構築する。
 
 NodeProxy オブジェクトは、Proxy パターンを使用して getter/setter による動的な抽象構文木を構築する。
-type、props、children のプロパティを持ち、これらの関係性が code.ts によって解析されてシェーダコードに変換される。
+type、props、children のプロパティを持ち、これらの関係性が code 関数によって解析されてシェーダコードに変換される。
 
 ```
 抽象構文木の例:
@@ -54,7 +54,7 @@ type、props、children のプロパティを持ち、これらの関係性が c
 
 ### コード生成プロセス
 
-code.ts は、抽象構文木を文字列のシェーダコードに変換する中核機能を提供する。
+code 関数は、抽象構文木を文字列のシェーダコードに変換する中核機能を提供する。
 この関数は type による条件分岐を行い、WebGL（GLSL）と WebGPU（WGSL）の両方に対応した文字列を生成する。
 
 生成プロセスは、variables、scopes、headers の三つのカテゴリに分類される。

@@ -11,6 +11,35 @@ export const parseArray = (children: X[], c: NodeContext) => {
                 .join(', ')
 }
 
+// only for webgl
+export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
+        const parseSwizzle = () => {
+                const valueType = infer(target, c)
+                if (valueType === 'float') return '.x'
+                if (valueType === 'vec2') return '.xy'
+                if (valueType === 'vec3') return '.xyz'
+                if (valueType === 'vec4') return ''
+                throw new Error(`Unsupported storage scatter type: ${valueType}`)
+        }
+        const indexVar = code(y, c)
+        const texSize = Math.floor(Math.sqrt(c.gl?.particles || 1024))
+        const coordX = `int(${indexVar}) % ${texSize}`
+        const coordY = `int(${indexVar}) / ${texSize}`
+        return `texelFetch(${code(x, c)}, ivec2(${coordX}, ${coordY}), 0)${parseSwizzle()}`
+}
+
+// only for webgl
+export const parseScatter = (c: NodeContext, storageNode: X, valueNode: X) => {
+        const storageId = code(storageNode, c)
+        const valueCode = code(valueNode, c)
+        const valueType = infer(valueNode, c)
+        if (valueType === 'float') return `_${storageId} = vec4(${valueCode}, 0.0, 0.0, 1.0);`
+        if (valueType === 'vec2') return `_${storageId} = vec4(${valueCode}, 0.0, 1.0);`
+        if (valueType === 'vec3') return `_${storageId} = vec4(${valueCode}, 1.0);`
+        if (valueType === 'vec4') return `_${storageId} = ${valueCode};`
+        throw new Error(`Unsupported storage scatter type: ${valueType}`)
+}
+
 export const parseTexture = (c: NodeContext, y: X, z: X, w: X) => {
         if (c.isWebGL) {
                 const args = w ? [y, z, w] : [y, z]
@@ -164,7 +193,12 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
 }
 
 export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
-        if (c.isWebGL) return `buffer ${id}: ${type};`
+        if (c.isWebGL) {
+                const ret = `uniform sampler2D ${id};`
+                if (c.label !== 'compute') return ret
+                const location = c.units?.(id)
+                return `${ret}\nlayout(location = ${location}) out vec4 _${id};` // out texture buffer
+        }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.storages.map.get(id) || {}
         const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`

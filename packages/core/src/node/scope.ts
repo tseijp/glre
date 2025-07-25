@@ -14,7 +14,6 @@ const addToScope = (x: NodeProxy) => {
         const { props } = define
         if (!props.inferFrom) props.inferFrom = []
         props.inferFrom.push(x)
-        console.log('addToScope: added return node to define.inferFrom', x)
 }
 
 export const toVar = <T extends Constants>(x: X<T>, id?: string): NodeProxy<T> => {
@@ -25,8 +24,8 @@ export const toVar = <T extends Constants>(x: X<T>, id?: string): NodeProxy<T> =
         return y
 }
 
-export const assign = <T extends Constants>(x: X<T>, y: X<T>): X<T> => {
-        const z = node('assign', null, x, y)
+export const assign = <T extends Constants>(x: NodeProxy<T>, isScatter = false, y: X<T>): X<T> => {
+        const z = node(isScatter ? 'scatter' : 'assign', null, x, y)
         addToScope(z)
         return x
 }

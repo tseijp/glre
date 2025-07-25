@@ -5,7 +5,9 @@ import {
         parseConstantHead,
         parseDeclare,
         parseDefine,
+        parseGather,
         parseIf,
+        parseScatter,
         parseStorageHead,
         parseStruct,
         parseStructHead,
@@ -43,6 +45,16 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'variable') return id
         if (type === 'member') return `${code(x, c)}.${code(y, c)}`
         if (type === 'element') return `${code(x, c)}[${code(y, c)}]`
+        if (type === 'gather')
+                return c.isWebGL //
+                        ? parseGather(c, x, y, target)
+                        : `${code(x, c)}[${code(y, c)}]`
+        if (type === 'scatter') {
+                const [storageNode, indexNode] = x.props.children ?? [] // x is gather node
+                return c.isWebGL
+                        ? parseScatter(c, storageNode, y) // indexNode is not using
+                        : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
+        }
         if (type === 'ternary')
                 return c.isWebGL
                         ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
@@ -56,7 +68,6 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 if (x === 'negate') return `(-${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'texture') return parseTexture(c, y, z, w)
-                if (x === 'arrayLength') return c.isWebGL ? `length(${code(y, c)})` : `arrayLength(&${code(y, c)})`
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
@@ -93,7 +104,7 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
                 return c.isWebGL ? `${id}` : `out.${id}`
         }
         if (type === 'builtin') {
-                if (c.isWebGL) return getBluiltin(id)
+                if (c.isWebGL) return getBluiltin(c, id)
                 if (id === 'position') return 'out.position'
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.label === 'compute') c.code?.computeInputs.set(id, field)

@@ -17,11 +17,10 @@ import { compute, fragment, vertex } from './node'
 
 const WORKING_GROUP_SIZE = 32
 
-const computeProgram = (device: GPUDevice, bindings: any, gl: GL) => {
+const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
 
         const storages = cached((_key, value: number[] | Float32Array) => {
-                // needsUpdate = true @TODO FIX
                 const { array, buffer } = createArrayBuffer(device, value, 'storage')
                 const { binding, group } = bindings.storage()
                 return { array, buffer, binding, group }
@@ -37,8 +36,7 @@ const computeProgram = (device: GPUDevice, bindings: any, gl: GL) => {
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                        const particles = gl.particles
-                        const workgroupCount = Math.ceil(particles / WORKING_GROUP_SIZE)
+                        const workgroupCount = Math.ceil(gl.particles / WORKING_GROUP_SIZE)
                         pass.dispatchWorkgroups(workgroupCount, 1, 1)
                         pass.end()
                 }
@@ -59,7 +57,7 @@ export const webgpu = async (gl: GL) => {
         const context = gl.el!.getContext('webgpu') as GPUCanvasContext
         const { device, format } = await createDevice(context, gl.error)
         const bindings = createBindings()
-        const cp = computeProgram(device, bindings, gl)
+        const cp = computeProgram(gl, device, bindings)
         let frag: string
         let comp: string
         let vert: string
@@ -97,6 +95,7 @@ export const webgpu = async (gl: GL) => {
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
                 const { array, buffer } = uniforms(key, value)
+                array.set(value) // needs to set leatest value
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
@@ -131,8 +130,8 @@ export const webgpu = async (gl: GL) => {
                 if (!frag || !vert) {
                         const config = { isWebGL: false, gl }
                         frag = fragment(gl.fs, config) // needs to be before vertex
-                        comp = compute(gl.cs, config)
                         vert = vertex(gl.vs, config)
+                        comp = compute(gl.cs, config)
                 }
                 if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()

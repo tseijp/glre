@@ -81,7 +81,7 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
                 return 'float' as T // fallback @TODO FIX
         }
         if (inferFrom) return inferFromArray(inferFrom, c)
-        return infer(x, c) // for uniform
+        return infer(x, c) // for uniform and storage gather and scatter
 }
 
 export const infer = <T extends C>(target: X<T>, c?: NodeContext | null): T => {

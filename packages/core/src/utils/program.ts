@@ -1,6 +1,4 @@
-import { fragment, vertex } from '../node'
 import { is } from './helpers'
-import type { X } from '../node'
 import type { GL } from '../types'
 
 const createShader = (c: WebGLRenderingContext, source: string, type: number, onError = console.warn) => {
@@ -14,17 +12,13 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number, on
         onError(`Could not compile shader: ${error}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, vert: X, frag: X, gl: GL) => {
-        if (!vert || !frag) return
-        const config = { isWebGL: true, gl }
-        frag = fragment(frag, config) // needs to be before vertex
-        vert = vertex(vert, config)
+export const createProgram = (c: WebGLRenderingContext, frag: string, vert: string, gl: GL) => {
         const pg = c.createProgram()
-        const vs = createShader(c, vert, c.VERTEX_SHADER, gl.error)
         const fs = createShader(c, frag, c.FRAGMENT_SHADER, gl.error)
+        const vs = createShader(c, vert, c.VERTEX_SHADER, gl.error)
         if (!fs || !vs) return
-        c.attachShader(pg, vs!)
         c.attachShader(pg, fs!)
+        c.attachShader(pg, vs!)
         c.linkProgram(pg)
         if (c.getProgramParameter(pg, c.LINK_STATUS)) return pg
         const error = c.getProgramInfoLog(pg)
@@ -93,26 +87,70 @@ export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, l
         c.bindTexture(c.TEXTURE_2D, texture)
 }
 
-export const createStorage = (c: WebGL2RenderingContext, value: number[] | Float32Array, storage: any) => {
-        const { a, b, unit, size, array, particles } = storage
+/**
+ * for gpgpu
+ */
+interface TextureBuffer {
+        texture: WebGLTexture
+        buffer: WebGLFramebuffer
+}
+
+export const createStorage = (
+        c: WebGL2RenderingContext,
+        value: number[],
+        size: number,
+        ping: TextureBuffer,
+        pong: TextureBuffer,
+        unit: number,
+        array: Float32Array
+) => {
+        const particles = size * size
         const vectorSize = value.length / particles
-        array.fill(0)
         for (let i = 0; i < particles; i++) {
                 for (let j = 0; j < Math.min(vectorSize, 4); j++) {
                         array[4 * i + j] = value[i * vectorSize + j] || 0
                 }
         }
         c.activeTexture(c.TEXTURE0 + unit)
-        c.bindTexture(c.TEXTURE_2D, a.texture)
+        c.bindTexture(c.TEXTURE_2D, ping.texture)
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, array)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
-        c.bindTexture(c.TEXTURE_2D, b.texture)
+        c.bindTexture(c.TEXTURE_2D, pong.texture)
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, array)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
+}
+
+export const cleanStorage = (
+        c: WebGL2RenderingContext,
+        map: Iterable<{ ping: TextureBuffer; pong: TextureBuffer }>
+) => {
+        for (const { ping, pong } of map) {
+                c.deleteTexture(ping.texture)
+                c.deleteTexture(pong.texture)
+                c.deleteFramebuffer(ping.buffer)
+                c.deleteFramebuffer(pong.buffer)
+        }
+}
+
+export const createAttachment = (
+        c: WebGL2RenderingContext,
+        i: TextureBuffer,
+        o: TextureBuffer,
+        loc: WebGLUniformLocation,
+        unit: number,
+        index: number
+) => {
+        c.activeTexture(c.TEXTURE0 + unit)
+        c.bindTexture(c.TEXTURE_2D, i.texture)
+        c.uniform1i(loc, unit)
+        if (index === 0) c.bindFramebuffer(c.FRAMEBUFFER, o.buffer)
+        const attachment = c.COLOR_ATTACHMENT0 + index
+        c.framebufferTexture2D(c.FRAMEBUFFER, attachment, c.TEXTURE_2D, o.texture, 0)
+        return attachment
 }

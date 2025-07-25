@@ -1,25 +1,10 @@
-import {
-        array,
-        arrayLength,
-        float,
-        Fn,
-        globalInvocationId,
-        If,
-        int,
-        Loop,
-        storage,
-        useGL,
-        uv,
-        vec2,
-        vec3,
-        vec4,
-} from 'glre/src/react'
+import { float, Fn, id, If, int, Loop, storage, useGL, uv, vec2, vec3, vec4 } from 'glre/src/react'
 
-const positions = storage(array(vec2()), 'positions')
-const velocities = storage(array(vec2()), 'velocities')
+const positions = storage(vec2(), 'positions')
+const velocities = storage(vec2(), 'velocities')
 
-const compute = Fn(([globalInvocationId]) => {
-        const index = globalInvocationId.x
+const compute = Fn(([id]) => {
+        const index = id.x
         const pos = positions.element(index).toVar('pos')
         const vel = velocities.element(index).toVar('vel')
         pos.assign(pos.add(vel.mul(0.01)))
@@ -38,12 +23,11 @@ const compute = Fn(([globalInvocationId]) => {
 })
 
 const fragment = Fn(([uv]) => {
-        const particleCount = arrayLength(positions).toVar('particleCount')
         const intensity = float(0.0).toVar('intensity')
-        Loop(int(particleCount), ({ i }) => {
-                const pos = positions.element(i)
-                const dist = uv.distance(pos)
-                intensity.assign(intensity.add(float(1.0).div(dist).div(float(particleCount))))
+        Loop(int(1024), ({ i }) => {
+                const pos = positions.element(i).toVar('pos')
+                const dist = uv.distance(pos).toVar('dist')
+                intensity.assign(intensity.add(float(1.0).div(dist).div(float(1024))))
         })
         const color = vec3(0.3, 0.2, 0.2).mul(intensity)
         return vec4(color, 1.0)
@@ -51,13 +35,13 @@ const fragment = Fn(([uv]) => {
 
 export default function () {
         const gl = useGL({
+                particles: 1024,
                 isWebGL: false,
-                cs: compute(globalInvocationId),
-                // fs: fragment(uv),
-                fs: particleFragment,
+                cs: compute(id),
+                fs: fragment(uv),
         })
 
-        const particleCount = 1024
+        const particleCount = gl.particles
         const positions = new Float32Array(particleCount * 2)
         const velocities = new Float32Array(particleCount * 2)
 
@@ -73,25 +57,3 @@ export default function () {
 
         return <canvas ref={gl.ref} />
 }
-const particleFragment = `
-@group(0) @binding(0) var<uniform> iResolution: vec2f;
-@group(2) @binding(0) var<storage, read_write> positions: array<vec2f>;
-
-struct In {
-        @builtin(position) position: vec4f
-}
-
-@fragment
-fn main(in: In) -> @location(0) vec4f {
-        var uv = in.position.xy / iResolution;
-        var particleCount = arrayLength(&positions);
-        var intensity = f32(0.0);
-        for (var i = 0u; i < particleCount; i++) {
-                var pos = positions[i];
-                var dist = distance(uv, pos);
-                intensity += 1.0 / dist / f32(particleCount);
-        }
-        var color = vec3f(0.3, 0.2, 0.2) * intensity;
-        return vec4f(color, 1.0);
-}
-`

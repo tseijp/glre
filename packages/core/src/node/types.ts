@@ -34,9 +34,10 @@ export type NodeTypes =
         | 'function'
         // struct
         | 'struct'
-        | 'array'
         | 'member'
         | 'element'
+        | 'gather'
+        | 'scatter'
         // scopes
         | 'scope'
         | 'assign'
@@ -63,7 +64,7 @@ export interface NodeContext {
         gl?: Partial<GL>
         label?: 'vert' | 'frag' | 'compute'
         isWebGL?: boolean
-        binding?: number
+        units?: any // @TODO FIX
         infers?: WeakMap<NodeProxy, Constants>
         onMount?: (name: string) => void
         code?: {
@@ -283,8 +284,6 @@ export interface BaseNodeProxy<T extends Constants> {
         // 0. Always return bool
         all(): Bool
         any(): Bool
-        // 1. Always return int
-        arrayLength(): UInt
         // 2. Always return float
         determinant(): Float
         distance<U extends Constants>(y: X<U>): Float
@@ -299,7 +298,6 @@ export interface BaseNodeProxy<T extends Constants> {
         texture(...args: X[]): Vec4
         texelFetch(...args: X[]): Vec4
         textureLod(...args: X[]): Vec4
-        textureSize<U extends Constants>(x: X<U>, y?: X<U>): Vec2
 
         /**
          * 3.1. unified with:

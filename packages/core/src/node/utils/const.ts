@@ -95,7 +95,7 @@ export const BUILTIN_TYPES = {
         sample_index: 'uint',
         sample_mask: 'uint',
         point_coord: 'vec2',
-        global_invocation_id: 'vec3u',
+        global_invocation_id: 'uvec3',
 
         // TSL compatible variables
         positionLocal: 'vec3',
@@ -156,8 +156,6 @@ export const FUNCTION_RETURN_TYPES = {
         // 0. Always return bool
         all: 'bool',
         any: 'bool',
-        // 1. Always return int
-        arrayLength: 'uint',
         // 2. Always return float
         determinant: 'float',
         distance: 'float',
@@ -172,7 +170,6 @@ export const FUNCTION_RETURN_TYPES = {
         texture: 'vec4',
         texelFetch: 'vec4',
         textureLod: 'vec4',
-        textureSize: 'vec2',
 } as const
 
 /**
