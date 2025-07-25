@@ -90,7 +90,7 @@ export const vertex = (x: X, c: NodeContext) => {
         }
         ret.push('}')
         const main = ret.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
@@ -116,6 +116,6 @@ export const compute = (x: X, c: NodeContext) => {
                 ret.push('}')
         }
         const main = ret.filter(Boolean).join('\n').trim()
-        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        // console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }

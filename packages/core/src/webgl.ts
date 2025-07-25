@@ -1,6 +1,14 @@
 import { nested as cached } from 'reev'
 import { loadingImage } from './utils/helpers'
-import { createAttrib, createProgram, createStorage, createTexture, createUniform } from './utils/program'
+import {
+        cleanStorage,
+        createAttachment,
+        createAttrib,
+        createProgram,
+        createStorage,
+        createTexture,
+        createUniform,
+} from './utils/program'
 import { compute, fragment, vertex } from './node'
 import type { GL, WebGLState } from './types'
 
@@ -13,68 +21,49 @@ void main() {
 }`.trim()
 
 const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
+        if (!gl.cs) return null // ignore if no compute shader
+        c.getExtension('EXT_color_buffer_float')
+
         let activeUnit = 0 // for texture units
         let currentNum = 0 // for storage buffers
 
-        const size = Math.ceil(Math.sqrt(gl.particles))
         const units = cached(() => activeUnit++)
         const config = { isWebGL: true, gl, units }
 
-        const pg = createProgram(c, vert, compute(gl.cs, config), gl)!
-        if (!pg) return null
+        const pg = createProgram(c, compute(gl.cs, config), vert, gl)!
+        const size = Math.ceil(Math.sqrt(gl.particles))
 
-        c.getExtension('EXT_color_buffer_float')
-
-        const uniforms = cached((key) => c.getUniformLocation(pg, key))
+        const uniforms = cached((key) => c.getUniformLocation(pg, key)!)
         const storages = cached((key) => {
-                const unit = units(key)
                 const array = new Float32Array(size * size * 4) // RGBA texture data
-                const a = { texture: c.createTexture(), buffer: c.createFramebuffer() }
-                const b = { texture: c.createTexture(), buffer: c.createFramebuffer() }
-                return { a, b, unit, array }
+                const ping = { texture: c.createTexture(), buffer: c.createFramebuffer() }
+                const pong = { texture: c.createTexture(), buffer: c.createFramebuffer() }
+                return { ping, pong, array, loc: uniforms(key), unit: units(key) }
         })
 
         const _uniform = (key: string, value: number | number[]) => {
                 c.useProgram(pg)
-                createUniform(c, uniforms(key)!, value)
+                createUniform(c, uniforms(key), value)
         }
 
         const _storage = (key: string, value: number[]) => {
-                const { a, b, unit, array } = storages(key)
-                createStorage(c, value, size, a, b, unit, array)
-                c.useProgram(pg)
-                c.uniform1i(uniforms(key), unit)
+                const { ping, pong, unit, array } = storages(key)
+                createStorage(c, value, size, ping, pong, unit, array)
         }
 
         const clean = () => {
-                if (pg) c.deleteProgram(pg)
-                for (const { a, b } of storages.map.values()) {
-                        c.deleteTexture(a.texture)
-                        c.deleteTexture(b.texture)
-                        c.deleteFramebuffer(a.buffer)
-                        c.deleteFramebuffer(b.buffer)
-                }
+                c.deleteProgram(pg)
+                cleanStorage(c, storages.map.values())
         }
 
         const render = () => {
                 c.useProgram(pg)
-                const storageArray = Array.from(storages.map.values())
-                if (storageArray.length === 0) return
-                for (const [key, { unit, a, b }] of storages.map) {
-                        const input = currentNum % 2 ? a : b
-                        const loc = uniforms(key)
-                        c.activeTexture(c.TEXTURE0 + unit)
-                        c.bindTexture(c.TEXTURE_2D, input.texture)
-                        c.uniform1i(loc, unit)
-                }
-                const outputs = storageArray.map((storage) => (currentNum % 2 ? storage.b : storage.a))
-                c.bindFramebuffer(c.FRAMEBUFFER, outputs[0].buffer)
-                const colorAttachments = outputs.map((_, i) => c.COLOR_ATTACHMENT0 + i)
-                outputs.forEach(({ texture }, i) => {
-                        c.framebufferTexture2D(c.FRAMEBUFFER, colorAttachments[i], c.TEXTURE_2D, texture, 0)
+                const attachments = storages.map.values().map(({ ping, pong, loc, unit }, index) => {
+                        const [i, o] = currentNum % 2 ? [ping, pong] : [pong, ping]
+                        return createAttachment(c, i, o, loc, unit, index)
                 })
-                c.drawBuffers(colorAttachments)
-                c.drawArrays(c.TRIANGLES, 0, 6)
+                c.drawBuffers(attachments)
+                c.drawArrays(c.TRIANGLES, 0, 3)
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
                 currentNum++
         }
@@ -86,14 +75,14 @@ export const webgl = async (gl: GL) => {
         const config = { isWebGL: true, gl }
         const c = gl.el!.getContext('webgl2')!
         const cp = computeProgram(gl, c)
-        const pg = createProgram(c, vertex(gl.vs, config), fragment(gl.fs, config), gl)!
+        const pg = createProgram(c, fragment(gl.fs, config), vertex(gl.vs, config), gl)!
         c.useProgram(pg)
 
         let activeUnit = 0 // for texture units
 
+        const units = cached(() => activeUnit++)
         const attribs = cached((key) => c.getAttribLocation(pg, key))
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
-        const textures = cached(() => activeUnit++)
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
                 const loc = attribs(key, true)
@@ -103,31 +92,28 @@ export const webgl = async (gl: GL) => {
         const _uniform = (key: string, value: number | number[]) => {
                 c.useProgram(pg)
                 createUniform(c, uniforms(key)!, value)
-                if (cp) cp._uniform(key, value)
+                cp?._uniform(key, value)
         }
 
         const _texture = (key: string, src: string) => {
                 c.useProgram(pg)
                 loadingImage(gl, src, (source) => {
-                        const loc = uniforms(key)
-                        const unit = textures(key)
-                        createTexture(c, source, loc, unit)
+                        createTexture(c, source, uniforms(key), units(key))
                 })
         }
 
         const clean = () => {
-                if (cp) cp.clean()
+                cp?.clean()
                 c.deleteProgram(pg)
                 c.getExtension('WEBGL_lose_context')?.loseContext()
         }
 
         const render = () => {
-                if (cp) cp.render()
+                cp?.render()
                 c.useProgram(pg)
-                c.bindFramebuffer(c.FRAMEBUFFER, null)
-                c.clear(c.COLOR_BUFFER_BIT)
                 c.viewport(0, 0, ...gl.size)
                 c.drawArrays(c.TRIANGLES, 0, gl.count)
+                c.bindFramebuffer(c.FRAMEBUFFER, null)
         }
 
         const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }

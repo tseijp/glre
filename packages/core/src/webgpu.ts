@@ -21,7 +21,6 @@ const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
 
         const storages = cached((_key, value: number[] | Float32Array) => {
-                // needsUpdate = true @TODO FIX
                 const { array, buffer } = createArrayBuffer(device, value, 'storage')
                 const { binding, group } = bindings.storage()
                 return { array, buffer, binding, group }
@@ -96,7 +95,7 @@ export const webgpu = async (gl: GL) => {
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
                 const { array, buffer } = uniforms(key, value)
-                array.set(value)
+                array.set(value) // needs to set leatest value
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
@@ -116,7 +115,6 @@ export const webgpu = async (gl: GL) => {
                         textures.map.values(),
                         cp.storages.map.values()
                 )
-                
                 const pipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vert, frag)
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
@@ -132,8 +130,8 @@ export const webgpu = async (gl: GL) => {
                 if (!frag || !vert) {
                         const config = { isWebGL: false, gl }
                         frag = fragment(gl.fs, config) // needs to be before vertex
-                        comp = compute(gl.cs, config)
                         vert = vertex(gl.vs, config)
+                        comp = compute(gl.cs, config)
                 }
                 if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()
