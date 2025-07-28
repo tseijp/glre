@@ -9,7 +9,7 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number, on
         if (c.getShaderParameter(shader, c.COMPILE_STATUS)) return shader
         const error = c.getShaderInfoLog(shader)
         c.deleteShader(shader)
-        onError(`Could not compile shader: ${error}`)
+        onError(`Could not compile shader: ${error}\n\n↓↓↓generated↓↓↓\n${source}`)
 }
 
 export const createProgram = (c: WebGLRenderingContext, frag: string, vert: string, gl: GL) => {

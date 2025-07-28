@@ -612,6 +612,10 @@ It receives conditional expressions, true values, and false values to generate c
 In the children array, conditional expressions and scopes are arranged alternately, with scopes placed without conditional expressions for the Else clause.
 This arrangement enables determination of conditional branch structures during code generation.
 
+```ts
+select(value if condition is false, value if condition is true, condition)
+```
+
 ## Function Definition System
 
 ### Fn() Function Details

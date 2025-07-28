@@ -74,7 +74,7 @@ export const OPERATORS = {
         shiftRight: '>>',
 } as const
 
-export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
+export const OPERATOR_KEYS = [...Object.keys(OPERATORS), 'not'] as (keyof typeof OPERATORS | 'not')[]
 
 export const COMPONENT_COUNT_TO_TYPE = {
         1: 'float',
