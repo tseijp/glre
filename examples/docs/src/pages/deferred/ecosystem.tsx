@@ -25,6 +25,7 @@ import {
         vec3,
         vec4,
 } from 'glre/src/react'
+import { useControls } from 'leva'
 
 // Living Ecosystem Deferred Shading Demo
 // G-Buffer stores: species populations, nutrient levels, terrain height, ecosystem health
@@ -42,14 +43,15 @@ const hash = Fn(([coord]) => {
 
 // Geometry pass - ecosystem state calculation
 const ecosystemGeometry = Fn(([uv]) => {
+        uv.y = uv.y.mul(iResolution.y).div(iResolution.x)
         const time = iTime.mul(growthRate).toVar('time')
-        const gridSize = float(20.0).toVar('gridSize')
+        const gridSize = float(100.0).toVar('gridSize')
         const cell = uv.mul(gridSize).toVar('cell')
         const cellCoord = floor(cell).toVar('cellCoord')
         const localPos = fract(cell).toVar('localPos')
 
         // Terrain height using noise-like function
-        const terrainSeed = cellCoord.add(vec2(1000, 2000)).toVar('terrainSeed')
+        const terrainSeed = vec2(1000, 2000).add(cellCoord).toVar('terrainSeed')
         const height1 = hash(terrainSeed).toVar('height1')
         const height2 = hash(terrainSeed.add(vec2(0.1, 0.2))).toVar('height2')
         const terrainHeight = height1.mul(0.7).add(height2.mul(0.3)).toVar('terrainHeight')
@@ -185,10 +187,13 @@ export default function EcosystemDeferred() {
         })
 
         // Set ecosystem parameters
-        gl.uniform('speciesCount', 4)
-        gl.uniform('growthRate', 0.5)
-        gl.uniform('carryingCapacity', 1.0)
-        gl.uniform('migrationSpeed', 0.2)
+        gl.uniform(
+                useControls({
+                        growthRate: 1,
+                        carryingCapacity: 1,
+                        migrationSpeed: 1,
+                })
+        )
 
         return <canvas ref={gl.ref} width={800} height={600} />
 }

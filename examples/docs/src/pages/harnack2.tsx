@@ -36,10 +36,8 @@ const epsilon = constant(0.025)
 const max_iterations = int(100)
 const animation_speed = constant(0.0)
 const unit_shift = constant(3.0)
-const wall_thickness = constant(0.1)
 const scale = constant(9.0)
 const use_grad_termination = constant(true)
-const fill_material = constant(false)
 const sphereCenter = vec3(0.0, 0.0, 0.0)
 const sphereRadius = constant(1.0)
 const outerRadius = sphereRadius.add(0.5)
@@ -115,139 +113,11 @@ const intersectSphere = Fn(([ro, rd, center, radius]) => {
         return vec3(hasHit.toFloat(), t0, t1)
 })
 
-const closeToLevelset = Fn(([f, levelset, tol, gradNorm]) => {
-        const eps = float(0.0).toVar('eps')
-        If(use_grad_termination, () => {
-                eps.assign(tol.mul(gradNorm))
-        }).Else(() => {
-                eps.assign(tol)
-        })
-        return abs(f.sub(levelset)).lessThan(eps)
-})
-
-const betweenLevelsets = Fn(([f, loBound, hiBound, tol, gradNorm]) => {
-        const eps = float(0.0).toVar('eps')
-        If(use_grad_termination, () => {
-                eps.assign(tol.mul(gradNorm))
-        }).Else(() => {
-                eps.assign(tol)
-        })
-        return max(loBound.sub(f), f.sub(hiBound)).lessThan(eps)
-})
-
-const getMaxStep4D = Fn(([fx, R, levelset, shift]) => {
-        const a = fx.add(shift).div(levelset.add(shift)).toVar('a')
-        const term1 = float(3.0)
-                .mul(sqrt(float(3.0).mul(pow(a, float(3.0)).add(float(81.0).mul(pow(a, float(2.0)))))))
-                .toVar('term1')
-        const term2 = float(27.0).mul(a).toVar('term2')
-        const u = pow(term2.add(term1), float(1.0).div(float(3.0))).toVar('u')
-        return R.mul(abs(u.div(float(3.0)).sub(a.div(u)).sub(float(1.0))))
-})
-
-const harnack = Fn(([ro, rd, tmax]) => {
-        const t = float(0.0).toVar('t')
-        const levelset = sin(animation_speed.mul(iTime)).toVar('levelset')
-        const didHit = bool(false).toVar('didHit')
-        const normal = vec3(0.0).toVar('normal')
-        const pos = vec3(0.0).toVar('pos')
-
-        const sphereResult = intersectSphere(ro, rd, sphereCenter, sphereRadius).toVar('sphereResult')
-        const hitSphere = sphereResult.x.greaterThan(0.5).toVar('hitSphere')
-        const t0 = sphereResult.y.toVar('t0')
-        const t1 = sphereResult.z.toVar('t1')
-        const tMax = tmax.toVar('tMax')
-
-        If(hitSphere.not().or(tmax.lessThan(0.0)), () => {
-                return vec4(didHit.toFloat(), t, normal)
-        })
-
-        If(t0.greaterThan(0.0), () => {
-                t.assign(t0)
-        })
-        If(t1.lessThan(tmax), () => {
-                tMax.assign(t1)
-        })
-
-        pos.assign(ro.add(t.mul(rd)))
-        const val = gyroid(pos).toVar('val')
-        const gradF = gradient(pos).toVar('gradF')
-
-        If(
-                betweenLevelsets(
-                        val,
-                        levelset.sub(wall_thickness),
-                        levelset.add(wall_thickness),
-                        epsilon,
-                        length(gradF)
-                ),
-                () => {
-                        normal.assign(pos)
-                        didHit.assign(true)
-                        return vec4(didHit.toFloat(), t, normal)
-                }
-        )
-
-        If(fill_material.and(val.lessThan(levelset)), () => {
-                normal.assign(pos)
-                didHit.assign(true)
-                return vec4(didHit.toFloat(), t, normal)
-        })
-
-        const t_overstep = float(0.0).toVar('t_overstep')
-        const iters = int(0).toVar('iters')
-
-        Loop(max_iterations, () => {
-                If(t.lessThan(tMax).and(didHit.not()), () => {
-                        iters.assign(iters.add(int(1)))
-                        pos.assign(ro.add(t.mul(rd)).add(t_overstep.mul(rd)))
-
-                        If(iters.greaterThan(max_iterations), () => {
-                                return vec4(didHit.toFloat(), t, normal)
-                        })
-
-                        const val = gyroid(pos).toVar('val')
-                        const gradF = gradient(pos).toVar('gradF')
-
-                        const offset_levelset = levelset.toVar('offset_levelset')
-                        If(val.greaterThan(levelset.add(wall_thickness)), () => {
-                                offset_levelset.assign(levelset.add(wall_thickness))
-                        }).ElseIf(val.lessThan(levelset.sub(wall_thickness)), () => {
-                                offset_levelset.assign(levelset.sub(wall_thickness))
-                        })
-
-                        const R = getRadius(pos).toVar('R')
-                        const shift = exp(sqrt(float(2.0)).mul(R))
-                                .mul(unit_shift)
-                                .toVar('shift')
-                        const r = getMaxStep4D(val, R, offset_levelset, shift).toVar('r')
-
-                        If(
-                                r
-                                        .greaterThanEqual(t_overstep)
-                                        .and(closeToLevelset(val, offset_levelset, epsilon, length(gradF))),
-                                () => {
-                                        normal.assign(gradF)
-                                        didHit.assign(true)
-                                }
-                        ).Else(() => {
-                                const stepSize = float(0.0).toVar('stepSize')
-                                If(r.greaterThanEqual(t_overstep), () => {
-                                        stepSize.assign(t_overstep.add(r))
-                                        t_overstep.assign(r.mul(0.75))
-                                })
-                                t.assign(t.add(stepSize))
-                        })
-                })
-        })
-
-        return vec4(didHit.toFloat(), t, normal)
-})
-
 const fragment = Fn(([position]) => {
         const rotation = cameraRotation.toVar('rotation')
         const distance = cameraDistance.toVar('distance')
 
+        // Use rotation for camera matrix like original shader
         const cr = cos(rotation).toVar('cr')
         const sr = sin(rotation).toVar('sr')
 
@@ -277,10 +147,88 @@ const fragment = Fn(([position]) => {
         const ro = camPos.toVar('ro')
 
         const tmax = constant(10.0)
-        const result = harnack(ro, rd, tmax).toVar('result')
-        const didHit = result.x.greaterThan(0.5).toVar('didHit')
-        const t = result.y.toVar('t')
-        const normal = result.yzw.toVar('normal')
+        const levelset = sin(animation_speed.mul(iTime)).toVar('levelset')
+
+        const sphereResult = intersectSphere(ro, rd, sphereCenter, sphereRadius).toVar('sphereResult')
+        const hitSphere = sphereResult.x.greaterThan(0.5).toVar('hitSphere')
+        const t0 = sphereResult.y.toVar('t0')
+        const t1 = sphereResult.z.toVar('t1')
+
+        const t = t0.toVar('t')
+        const didHit = bool(false).toVar('didHit')
+        const normal = vec3(0.0).toVar('normal')
+
+        If(hitSphere.and(t1.greaterThan(0.0)), () => {
+                If(t0.greaterThan(0.0), () => {
+                        t.assign(t0)
+                })
+                const tMax = min(tmax, t1).toVar('tMax')
+
+                const pos = ro.add(t.mul(rd)).toVar('pos')
+                const maxSteps = bool(false).toVar('maxSteps')
+                const t_overstep = float(0.0).toVar('t_overstep')
+                const iters = int(0).toVar('iters')
+
+                Loop(max_iterations, () => {
+                        If(t.lessThan(tMax).and(didHit.not()).and(maxSteps.not()), () => {
+                                iters.assign(iters.add(int(1)))
+                                pos.assign(ro.add(t.mul(rd)).add(t_overstep.mul(rd)))
+
+                                If(iters.lessThanEqual(max_iterations), () => {
+                                        const val = gyroid(pos).toVar('val')
+                                        const gradF = gradient(pos).toVar('gradF')
+
+                                        // Simple levelset calculation without complex type inference
+                                        const offset_levelset = levelset.toVar('offset_levelset')
+
+                                        // Simplified Harnack step calculation
+                                        const R = getRadius(pos).toVar('R')
+                                        const shift = exp(sqrt(2.0).mul(R)).mul(unit_shift).toVar('shift')
+                                        const a = val.add(shift).div(offset_levelset.add(shift)).toVar('a')
+                                        const term1 = float(27.0).mul(a).toVar('term1')
+                                        const term2 = float(3.0)
+                                                .mul(
+                                                        sqrt(
+                                                                float(3.0).mul(
+                                                                        pow(a, float(3.0)).add(
+                                                                                float(81.0).mul(pow(a, float(2.0)))
+                                                                        )
+                                                                )
+                                                        )
+                                                )
+                                                .toVar('term2')
+                                        const u = pow(term1.add(term2), float(1.0).div(float(3.0))).toVar('u')
+                                        const r = R.mul(abs(u.div(float(3.0)).sub(a.div(u)).sub(float(1.0)))).toVar('r')
+
+                                        // Simple convergence check
+                                        const eps = float(0.0).toVar('eps')
+                                        If(use_grad_termination, () => {
+                                                eps.assign(epsilon.mul(length(gradF)))
+                                        }).Else(() => {
+                                                eps.assign(epsilon)
+                                        })
+                                        const close = abs(val.sub(offset_levelset)).lessThan(eps).toVar('close')
+
+                                        If(r.greaterThanEqual(t_overstep).and(close), () => {
+                                                normal.assign(gradF)
+                                                didHit.assign(true)
+                                        }).Else(() => {
+                                                const stepSize = float(0.0).toVar('stepSize')
+                                                If(r.greaterThanEqual(t_overstep), () => {
+                                                        stepSize.assign(t_overstep.add(r))
+                                                        t_overstep.assign(r.mul(0.75))
+                                                }).Else(() => {
+                                                        stepSize.assign(float(0.0))
+                                                        t_overstep.assign(float(0.0))
+                                                })
+                                                t.assign(t.add(stepSize))
+                                        })
+                                }).Else(() => {
+                                        maxSteps.assign(true)
+                                })
+                        })
+                })
+        })
 
         const col = vec3(1.0).toVar('col')
 
@@ -288,13 +236,11 @@ const fragment = Fn(([position]) => {
                 const nor = normalize(normal).toVar('nor')
                 const baseColor = vec3(0.7, 0.6, 0.7).toVar('baseColor')
                 const outwardNormal = vec3(0.0).toVar('outwardNormal')
-
                 If(dot(nor, rd).lessThan(0.0), () => {
                         outwardNormal.assign(nor)
                 }).Else(() => {
                         outwardNormal.assign(nor.negate())
                 })
-
                 const lightDir = normalize(light.sub(ro.add(t.mul(rd)))).toVar('lightDir')
                 const diffuse = max(dot(lightDir, outwardNormal), 0.3).toVar('diffuse')
                 col.assign(baseColor.mul(diffuse))
@@ -310,8 +256,9 @@ export default function App() {
 
         const update = () => {
                 const [x, y] = drag.offset
-                const rotX = -(y / 100)
-                const rotY = -(x / 100)
+                // Convert mouse movement to rotation angles
+                const rotX = -(y / 100) // vertical rotation
+                const rotY = -(x / 100) // horizontal rotation
                 cameraRotation.value = [rotX, rotY]
         }
 

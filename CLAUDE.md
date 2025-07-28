@@ -10,7 +10,7 @@ as well as shader generation through a TypeScript-like node system.
 
 ### CPU-GPU Binding Automation System
 
-The core functionality of GLRE is to automatically construct configurations
+The core functionality is to automatically construct configurations
 for transmitting CPU-side data to GPU-side shader programs.
 This process is managed by the createGL function in `src/index.ts`,
 which abstracts the differences between WebGL2 and WebGPU.
@@ -292,7 +292,7 @@ when transitioning to let to visually represent variable role changes.
 Establish clear spacing between functions to emphasize each function's independence.
 This management enables code placement within the 100-line constraint.
 
-# GLRE Node System Language Specification
+# Node System Language Specification
 
 ## Fundamental Concepts
 

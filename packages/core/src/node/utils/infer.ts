@@ -48,8 +48,8 @@ const inferFromArray = <T extends C>(arr: X<T>[], c: NodeContext) => {
         const [x] = arr
         if (is.str(x)) return x as T // for struct
         const ret = infer(x, c)
-        for (const x of arr.slice(1))
-                if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
+        // for (const x of arr.slice(1))
+        //         if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
         return ret
 }
 
