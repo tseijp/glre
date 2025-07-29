@@ -24,7 +24,6 @@ const unit_shift = constant(3)
 const scale = constant(10)
 const sphereRadius = constant(1)
 const fovY = constant(50)
-const ambient = constant(0.5)
 const outerRadius = sphereRadius.add(0.5)
 const lightPosition = vec3(2, 10, 1)
 const cameraPosition = uniform([0, 0, 3])
@@ -99,6 +98,31 @@ const harnack = Fn(([ro, rd]) => {
         return vec4(0, vec3(0))
 })
 
+const shade = Fn(([pos, ray, normal, materialColor]) => {
+        const lightDir = lightPosition.sub(pos).normalize()
+        const viewDir = ray.negate()
+        const halfVector = lightDir.add(viewDir).normalize()
+        const dotNL = lightDir.dot(normal).max(0).toVar('dotNL')
+        const dotLH = lightDir.dot(halfVector).max(0).toVar('dotLH')
+
+        const dotLH5 = constant(1).sub(dotLH).pow(5).toVar('dotLH5')
+        const F0 = constant(0.2)
+        const F = F0.add(constant(1).sub(F0).mul(dotLH5)).toVar('F')
+
+        const specular = F.mul(dotNL).toVar('specular')
+        const diffuse = materialColor.mul(dotNL).toVar('diffuse')
+        const fresnel = viewDir.dot(normal).abs().toVar('fresnel')
+        const fresnelTerm = constant(1).sub(fresnel).pow(4).toVar('fresnelTerm')
+
+        const ambient = materialColor.mul(0.3)
+        const finalColor = diffuse
+                .add(ambient)
+                .add(specular.mul(vec3(1)).mul(0.5))
+                .add(fresnelTerm.mul(vec3(1)).mul(0.2))
+
+        return finalColor.min(vec3(1))
+})
+
 const fragment = Fn(([position]) => {
         const cr = cameraRotation.cos().toVar('cr')
         const sr = cameraRotation.sin().toVar('sr')
@@ -115,14 +139,24 @@ const fragment = Fn(([position]) => {
         const result = harnack(camPos, rd).toVar('result')
         If(result.x.greaterThan(0.5), () => {
                 const nor = result.yzw.normalize().toVar('nor')
-                const finalNormal = sign(nor.dot(rd)).mul(nor.negate()).toVar('finalNormal')
-                const lightDir = lightPosition
-                        .sub(camPos.add(result.x.mul(rd)))
-                        .normalize()
-                        .toVar('lightDir')
-                const diffuse = lightDir.dot(finalNormal).max(0.2).toVar('diffuse')
-                const fresnel = finalNormal.dot(rd.negate()).pow(2).mul(0.3).toVar('fresnel')
-                return vec4(vec3(0.9, 0.8, 0.9).mul(diffuse.add(ambient)).add(vec3(1).mul(fresnel)), 1)
+                const dotProduct = nor.dot(rd).toVar('dotProduct')
+                const flipSign = sign(dotProduct).toVar('flipSign')
+                const finalNormal = nor.mul(flipSign.negate()).toVar('finalNormal')
+                const hitPos = camPos.add(result.x.mul(rd)).toVar('hitPos')
+
+                const lightDir = lightPosition.sub(hitPos).normalize().toVar('lightDir')
+                const shadowRayOrigin = hitPos.add(lightDir.mul(0.05)).toVar('shadowRayOrigin')
+                const lightDistance = lightPosition.sub(hitPos).length().toVar('lightDistance')
+                const shadowResult = harnack(shadowRayOrigin, lightDir).toVar('shadowResult')
+                const inShadow = shadowResult.x
+                        .greaterThan(1)
+                        .and(shadowResult.x.lessThan(lightDistance))
+                        .toVar('inShadow')
+                const materialColor = vec3(0.7, 0.6, 0.7)
+                const shadedColor = shade(hitPos, rd, finalNormal, materialColor).toVar('shadedColor')
+                const shadowFactor = inShadow.toFloat().mul(0.4).add(0.6).toVar('shadowFactor')
+                const finalColor = shadedColor.mul(shadowFactor).toVar('finalColor')
+                return vec4(finalColor.sqrt(), 1)
         })
         return vec4(1)
 })

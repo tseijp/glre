@@ -74,8 +74,9 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
         if (type === 'member') {
                 if (isSwizzle(y)) return inferFromCount(y.length)
+                console.log(isNodeProxy(x), x.props)
                 if (isNodeProxy(x)) {
-                        const field = (x as any).props.fields[y] // for variable node of struct member
+                        const field = (x as any)?.props?.fields?.[y] // for variable node of struct member
                         if (field) return infer(field, c)
                 }
                 return 'float' as T // fallback @TODO FIX
