@@ -88,6 +88,7 @@ export const parseDeclare = (c: NodeContext, x: X, y: X) => {
 }
 
 export const parseStructHead = (c: NodeContext, id: string, fields: Record<string, NodeProxy> = {}) => {
+        c.code?.structFields?.set(id, fields)
         const lines: string[] = []
         for (const key in fields) {
                 const fieldType = fields[key]
@@ -99,13 +100,8 @@ export const parseStructHead = (c: NodeContext, id: string, fields: Record<strin
         return `struct ${id} {\n  ${ret}\n};`
 }
 
-export const parseStruct = (
-        c: NodeContext,
-        id: string,
-        instanceId = '',
-        fields?: Record<string, NodeProxy>,
-        initialValues?: Record<string, NodeProxy>
-) => {
+export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: Record<string, NodeProxy>) => {
+        const fields = c.code?.structFields?.get(id) || {}
         if (c.isWebGL) {
                 if (initialValues) {
                         const ordered = []
@@ -124,7 +120,7 @@ export const parseStruct = (
 /**
  * define
  */
-export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Constants) => {
+export const parseDefine = (c: NodeContext, props: NodeProps, target: NodeProxy) => {
         const { id, children = [], layout } = props
         const [x, ...args] = children
         const argParams: [name: string, type: string][] = []
@@ -137,6 +133,8 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                 for (let i = 0; i < args.length; i++) {
                         argParams.push([`p${i}`, infer(args[i], c)])
                 }
+        const scopeCode = code(x, c) // build struct headers before inferring returnType
+        const returnType = infer(target, c)
         const ret = []
         if (c?.isWebGL) {
                 for (const [paramId, type] of argParams) {
@@ -152,7 +150,6 @@ export const parseDefine = (c: NodeContext, props: NodeProps, returnType: Consta
                         ret.push(`fn ${id}(${params}) {`)
                 } else ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
         }
-        const scopeCode = code(x, c)
         if (scopeCode) ret.push(scopeCode)
         ret.push('}')
         return ret.join('\n')

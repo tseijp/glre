@@ -103,6 +103,7 @@ export const initNodeContext = (c: NodeContext) => {
                 vertVaryings: new Map(),
                 computeInputs: new Map(),
                 dependencies: new Map(),
+                structFields: new Map(),
         }
         if (c.isWebGL) return c
         c.code.fragInputs.set('position', '@builtin(position) position: vec4f')
