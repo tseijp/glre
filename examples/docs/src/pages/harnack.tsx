@@ -20,15 +20,17 @@ import { useDrag } from 'rege/react'
 const epsilon = constant(0.025)
 const max_iterations = constant(int(100))
 const unit_shift = constant(3)
-const wall_thickness = constant(0.1)
+const thickness = constant(0.1)
 const scale = constant(9)
 const sphereCenter = constant(vec3(0, 0, 0))
 const sphereRadius = constant(1)
+const fovY = constant(50)
+const tmax = constant(10)
+const ambient = constant(0.5)
 const outerRadius = sphereRadius.add(0.5)
 const lightPosition = vec3(2, 10, 1)
 const cameraRotation = uniform([0, 0])
 const cameraDistance = uniform(3)
-const use_grad_termination = constant(true)
 
 const gyroid = Fn(([pos]) => {
         const p = scale.mul(pos).toVar('p')
@@ -75,11 +77,7 @@ const intersectSphere = Fn(([ro, rd, center, radius]) => {
 })
 
 const closeToLevelset = Fn(([f, levelset, tol, gradNorm]) => {
-        const eps = use_grad_termination
-                .toFloat()
-                .mul(tol.mul(gradNorm))
-                .add(use_grad_termination.not().toFloat().mul(tol))
-                .toVar('eps')
+        const eps = tol.mul(gradNorm).toVar('eps')
         return f.sub(levelset).abs().lessThan(eps)
 })
 
@@ -113,41 +111,41 @@ const harnack = Fn(([ro, rd, tmax]) => {
         const eps = epsilon.mul(gradF.length()).toVar('eps')
         If(
                 levelset
-                        .sub(wall_thickness)
+                        .sub(thickness)
                         .sub(val)
-                        .max(val.sub(levelset.add(wall_thickness)))
+                        .max(val.sub(levelset.add(thickness)))
                         .lessThan(eps),
                 () => {
                         return vec4(true, t, gradF)
                 }
         )
-        const t_overstep = float(0).toVar('t_overstep')
+        const overstep = float(0).toVar('overstep')
         const found = bool(false).toVar('found')
         const result = vec4(false, 0, vec3(0)).toVar('result')
         Loop(max_iterations, () => {
                 If(t.greaterThanEqual(tMax).or(found), () => {
                         return result
                 })
-                pos.assign(ro.add(t.mul(rd)).add(t_overstep.mul(rd)))
+                pos.assign(ro.add(t.mul(rd)).add(overstep.mul(rd)))
                 val.assign(gyroid(pos))
                 gradF.assign(gradient(pos))
                 const R = getRadius(pos).toVar('R')
                 const shift = sqrt(2).mul(R).exp().mul(unit_shift).toVar('shift')
                 const r = getMaxStep4D(val, R, levelset, shift).toVar('r')
-                If(r.greaterThanEqual(t_overstep).and(closeToLevelset(val, levelset, epsilon, gradF.length())), () => {
+                If(r.greaterThanEqual(overstep).and(closeToLevelset(val, levelset, epsilon, gradF.length())), () => {
                         result.assign(vec4(true, t, gradF))
                         found.assign(true)
                 })
                 const stepSize = float(0).toVar('stepSize')
                 const new_overstep = float(0).toVar('new_overstep')
-                If(r.greaterThanEqual(t_overstep), () => {
-                        stepSize.assign(t_overstep.add(r))
+                If(r.greaterThanEqual(overstep), () => {
+                        stepSize.assign(overstep.add(r))
                         new_overstep.assign(r.mul(0.75))
                 }).Else(() => {
                         stepSize.assign(0)
                         new_overstep.assign(0)
                 })
-                t_overstep.assign(new_overstep)
+                overstep.assign(new_overstep)
                 t.assign(t.add(stepSize))
         })
         return result
@@ -157,26 +155,19 @@ const fragment = Fn(([position]) => {
         const camRot = cameraRotation.toVar('camRot')
         const cr = camRot.cos().toVar('cr')
         const sr = camRot.sin().toVar('sr')
+        // prettier-ignore
         const v2wRotMat = mat3(
-                cr.y,
-                0,
-                sr.y.negate(),
-                sr.x.mul(sr.y),
-                cr.x,
-                cr.y.mul(sr.x),
-                cr.x.mul(sr.y),
-                sr.x.negate(),
-                cr.x.mul(cr.y)
+                cr.y,           0,             sr.y.negate(),
+                sr.x.mul(sr.y), cr.x,          cr.y.mul(sr.x),
+                cr.x.mul(sr.y), sr.x.negate(), cr.x.mul(cr.y)
         ).toVar('v2wRotMat')
         const camPos = v2wRotMat.mul(vec3(0, 0, cameraDistance)).toVar('camPos')
-        const fovY = constant(50).toVar('fovY')
         const tanHalfFov = fovY.radians().mul(0.5).tan().toVec2().toVar('tanHalfFov')
         tanHalfFov.x.assign(tanHalfFov.x.mul(iResolution.x.div(iResolution.y)))
         const cCoord = position.xy.div(iResolution.xy).mul(2).sub(1).toVar('cCoord')
         const vDir = vec3(cCoord.mul(tanHalfFov), -1).normalize().toVar('vDir')
         const rd = v2wRotMat.mul(vDir).toVar('rd')
         const ro = camPos.toVar('ro')
-        const tmax = constant(10).toVar('tmax')
         const result = harnack(ro, rd, tmax).toVar('result')
         const didHit = result.x.greaterThan(0.5).toVar('didHit')
         const hit_t = result.y.toVar('hit_t')
@@ -196,7 +187,6 @@ const fragment = Fn(([position]) => {
                         .normalize()
                         .toVar('lightDir')
                 const diffuse = lightDir.dot(finalNormal).max(0.2).toVar('diffuse')
-                const ambient = constant(0.4).toVar('ambient')
                 const fresnel = finalNormal.dot(rd.negate()).pow(2).mul(0.3).toVar('fresnel')
                 const finalColor = baseColor.mul(diffuse.add(ambient)).add(vec3(1).mul(fresnel)).toVar('finalColor')
                 col.assign(finalColor)
@@ -205,15 +195,15 @@ const fragment = Fn(([position]) => {
 })
 
 export default function App() {
-        const drag = useDrag(() => {
-                update()
-        })
         const update = () => {
                 const [x, y] = drag.offset
                 const rotX = y / 200
                 const rotY = x / 200
                 cameraRotation.value = [-rotX, -rotY]
         }
+        const drag = useDrag(() => {
+                update()
+        })
         const gl = useGL({
                 fs: fragment(position),
                 loop() {
