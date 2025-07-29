@@ -1,209 +1,135 @@
 import {
-        useGL,
+        constant,
+        float,
         Fn,
+        If,
+        int,
+        iResolution,
+        Loop,
+        mat3,
+        position,
+        sign,
+        sqrt,
+        uniform,
+        useGL,
+        vec2,
         vec3,
         vec4,
-        float,
-        int,
-        bool,
-        Loop,
-        iResolution,
-        constant,
-        position,
-        sqrt,
-        If,
-        uniform,
-        mat3,
 } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
 const epsilon = constant(0.025)
-const max_iterations = constant(int(100))
+const iterations = constant(int(100))
 const unit_shift = constant(3)
-const thickness = constant(0.1)
-const scale = constant(9)
-const sphereCenter = constant(vec3(0, 0, 0))
+const scale = constant(10)
 const sphereRadius = constant(1)
 const fovY = constant(50)
-const tmax = constant(10)
 const ambient = constant(0.5)
 const outerRadius = sphereRadius.add(0.5)
 const lightPosition = vec3(2, 10, 1)
+const cameraPosition = uniform([0, 0, 3])
 const cameraRotation = uniform([0, 0])
-const cameraDistance = uniform(3)
-
-const gyroid = Fn(([pos]) => {
-        const p = scale.mul(pos).toVar('p')
-        return p.x.sin().mul(p.y.cos()).add(p.y.sin().mul(p.z.cos())).add(p.z.sin().mul(p.x.cos()))
-})
-
-const gradient = Fn(([pos]) => {
-        const p = scale.mul(pos).toVar('p')
-        return vec3(
-                p.x.cos().mul(p.y.cos()).sub(p.z.sin().mul(p.x.sin())),
-                p.y.cos().mul(p.z.cos()).sub(p.x.sin().mul(p.y.sin())),
-                p.z.cos().mul(p.x.cos()).sub(p.y.sin().mul(p.z.sin()))
-        ).mul(scale)
-})
-
-const getRadius = Fn(([p]) => {
-        return outerRadius.sub(p.length())
-})
 
 const intersectSphere = Fn(([ro, rd, center, radius]) => {
         const a = rd.dot(rd).toVar('a')
         const b = rd.dot(ro.sub(center)).mul(2).toVar('b')
         const c = ro.sub(center).dot(ro.sub(center)).sub(radius.mul(radius)).toVar('c')
-        const discr = b.mul(b).sub(a.mul(c).mul(4)).toVar('discr')
-        If(discr.lessThan(0), () => {
-                return vec3(0, -1, -1)
+        const d = b.mul(b).sub(a.mul(c).mul(4)).toVar('d')
+        If(d.lessThan(0), () => {
+                return vec2(0, -1)
         })
-        If(discr.lessThan(0.0001), () => {
-                const t = b.negate().mul(0.5).div(a).toVar('t')
-                return vec3(1, t, t)
-        })
-        const q = float(0).toVar('q')
-        If(b.greaterThan(0), () => {
-                q.assign(b.add(discr.sqrt()).mul(-0.5))
-        }).Else(() => {
-                q.assign(b.sub(discr.sqrt()).mul(-0.5))
-        })
+        const q = sign(b).mul(d.sqrt()).add(b).mul(-0.5).toVar('q')
         const t0 = q.div(a).toVar('t0')
         const t1 = c.div(q).toVar('t1')
         If(t1.lessThan(t0), () => {
-                return vec3(1, t1, t0)
+                return vec2(1, t1)
         })
-        return vec3(1, t0, t1)
+        return vec2(1, t0)
 })
 
-const closeToLevelset = Fn(([f, levelset, tol, gradNorm]) => {
-        const eps = tol.mul(gradNorm).toVar('eps')
-        return f.sub(levelset).abs().lessThan(eps)
+const gyroid = Fn(([pos]) => {
+        const p = pos.mul(scale).toVar('p')
+        const s = p.sin().toVar('s')
+        const c = p.cos().toVar('c')
+        const val = s.x.mul(c.y).add(s.y.mul(c.z)).add(s.z.mul(c.x))
+        const grad = vec3(
+                c.x.mul(c.y).sub(s.z.mul(s.x)),
+                c.y.mul(c.z).sub(s.x.mul(s.y)),
+                c.z.mul(c.x).sub(s.y.mul(s.z))
+        )
+        return vec4(val, grad.mul(scale))
 })
 
-const getMaxStep4D = Fn(([fx, R, levelset, shift]) => {
-        const a = fx.add(shift).div(levelset.add(shift)).toVar('a')
-        const inner = a.pow(3).mul(3).add(a.pow(2).mul(81)).sqrt().mul(3).add(a.mul(27)).toVar('inner')
-        const u = inner.pow(0.33333).toVar('u')
+const getMaxStep4D = Fn(([fx, R]) => {
+        const shift = sqrt(2).mul(R).exp().mul(unit_shift)
+        const a = fx.add(shift).div(shift).toVar('a')
+        const u = a.pow(3).mul(3).add(a.pow(2).mul(81)).sqrt().mul(3).add(a.mul(27)).pow(0.33333).toVar('u')
         return u.div(3).sub(a.div(u)).sub(1).abs().mul(R)
 })
 
-const harnack = Fn(([ro, rd, tmax]) => {
+const harnack = Fn(([ro, rd]) => {
         const t = float(0).toVar('t')
-        const levelset = float(0).toVar('levelset')
-        const hitResult = intersectSphere(ro, rd, sphereCenter, sphereRadius).toVar('hitResult')
-        const hitSphere = hitResult.x.greaterThan(0.5).toVar('hitSphere')
-        const t0 = hitResult.y.toVar('t0')
-        const t1 = hitResult.z.toVar('t1')
-        const tMax = tmax.toVar('tMax')
-        If(hitSphere.not().or(tmax.lessThan(0)), () => {
-                return vec4(false, 0, vec3(0))
+        const sphere = intersectSphere(ro, rd, vec3(0, 0, 0), sphereRadius).toVar('sphere')
+        If(sphere.x.lessThan(0.5), () => {
+                return vec4(0, vec3(0))
         })
-        If(t0.greaterThan(0), () => {
-                t.assign(t0)
-        })
-        If(t1.lessThan(tmax), () => {
-                tMax.assign(t1)
-        })
+        t.assign(sphere.y.max(0))
         const pos = ro.add(t.mul(rd)).toVar('pos')
-        const val = gyroid(pos).toVar('val')
-        const gradF = gradient(pos).toVar('gradF')
-        const eps = epsilon.mul(gradF.length()).toVar('eps')
-        If(
-                levelset
-                        .sub(thickness)
-                        .sub(val)
-                        .max(val.sub(levelset.add(thickness)))
-                        .lessThan(eps),
-                () => {
-                        return vec4(true, t, gradF)
-                }
-        )
-        const overstep = float(0).toVar('overstep')
-        const found = bool(false).toVar('found')
-        const result = vec4(false, 0, vec3(0)).toVar('result')
-        Loop(max_iterations, () => {
-                If(t.greaterThanEqual(tMax).or(found), () => {
-                        return result
-                })
-                pos.assign(ro.add(t.mul(rd)).add(overstep.mul(rd)))
-                val.assign(gyroid(pos))
-                gradF.assign(gradient(pos))
-                const R = getRadius(pos).toVar('R')
-                const shift = sqrt(2).mul(R).exp().mul(unit_shift).toVar('shift')
-                const r = getMaxStep4D(val, R, levelset, shift).toVar('r')
-                If(r.greaterThanEqual(overstep).and(closeToLevelset(val, levelset, epsilon, gradF.length())), () => {
-                        result.assign(vec4(true, t, gradF))
-                        found.assign(true)
-                })
-                const stepSize = float(0).toVar('stepSize')
-                const new_overstep = float(0).toVar('new_overstep')
-                If(r.greaterThanEqual(overstep), () => {
-                        stepSize.assign(overstep.add(r))
-                        new_overstep.assign(r.mul(0.75))
-                }).Else(() => {
-                        stepSize.assign(0)
-                        new_overstep.assign(0)
-                })
-                overstep.assign(new_overstep)
-                t.assign(t.add(stepSize))
+        const res = gyroid(pos).toVar('gyroidGradResult')
+        const val = res.x.toVar('val')
+        const grad = res.yzw.toVar('grad')
+        If(val.abs().lessThan(epsilon.mul(grad.length())), () => {
+                return vec4(t, grad)
         })
-        return result
+        const overstep = float(0).toVar('overstep')
+        Loop(iterations, () => {
+                pos.assign(ro.add(t.mul(rd)).add(overstep.mul(rd)))
+                const result = gyroid(pos).toVar('result')
+                val.assign(result.x)
+                grad.assign(result.yzw)
+                const R = outerRadius.sub(pos.length()).toVar('R')
+                const r = getMaxStep4D(val, R).toVar('r')
+                If(r.greaterThanEqual(overstep).and(val.abs().lessThan(epsilon.mul(grad.length()))), () => {
+                        return vec4(t, grad)
+                })
+                const isValid = r.greaterThanEqual(overstep).toFloat().toVar('isValid')
+                t.assign(t.add(isValid.mul(overstep.add(r))))
+                overstep.assign(isValid.mul(r.mul(0.75)))
+        })
+        return vec4(0, vec3(0))
 })
 
 const fragment = Fn(([position]) => {
-        const camRot = cameraRotation.toVar('camRot')
-        const cr = camRot.cos().toVar('cr')
-        const sr = camRot.sin().toVar('sr')
+        const cr = cameraRotation.cos().toVar('cr')
+        const sr = cameraRotation.sin().toVar('sr')
         // prettier-ignore
-        const v2wRotMat = mat3(
+        const mat = mat3(
                 cr.y,           0,             sr.y.negate(),
                 sr.x.mul(sr.y), cr.x,          cr.y.mul(sr.x),
                 cr.x.mul(sr.y), sr.x.negate(), cr.x.mul(cr.y)
-        ).toVar('v2wRotMat')
-        const camPos = v2wRotMat.mul(vec3(0, 0, cameraDistance)).toVar('camPos')
-        const tanHalfFov = fovY.radians().mul(0.5).tan().toVec2().toVar('tanHalfFov')
-        tanHalfFov.x.assign(tanHalfFov.x.mul(iResolution.x.div(iResolution.y)))
+        ).toVar('mat')
+        const camPos = mat.mul(cameraPosition).toVar('camPos')
         const cCoord = position.xy.div(iResolution.xy).mul(2).sub(1).toVar('cCoord')
-        const vDir = vec3(cCoord.mul(tanHalfFov), -1).normalize().toVar('vDir')
-        const rd = v2wRotMat.mul(vDir).toVar('rd')
-        const ro = camPos.toVar('ro')
-        const result = harnack(ro, rd, tmax).toVar('result')
-        const didHit = result.x.greaterThan(0.5).toVar('didHit')
-        const hit_t = result.y.toVar('hit_t')
-        const normal = result.zyw.toVar('normal')
-        const col = vec3(1).toVar('col')
-        If(didHit, () => {
-                const nor = normal.normalize().toVar('nor')
-                const baseColor = vec3(0.9, 0.8, 0.9).toVar('baseColor')
-                const outwardNormal = float(0).greaterThan(nor.dot(rd)).toVar('outwardNormal')
-                const finalNormal = outwardNormal
-                        .toFloat()
-                        .mul(nor)
-                        .add(outwardNormal.not().toFloat().mul(nor.negate()))
-                        .toVar('finalNormal')
+        cCoord.x.assign(cCoord.x.mul(iResolution.x.div(iResolution.y)))
+        const rd = mat.mul(vec3(fovY.radians().mul(0.5).tan().mul(cCoord), -1)).toVar('rd')
+        const result = harnack(camPos, rd).toVar('result')
+        If(result.x.greaterThan(0.5), () => {
+                const nor = result.yzw.normalize().toVar('nor')
+                const finalNormal = sign(nor.dot(rd)).mul(nor.negate()).toVar('finalNormal')
                 const lightDir = lightPosition
-                        .sub(ro.add(hit_t.mul(rd)))
+                        .sub(camPos.add(result.x.mul(rd)))
                         .normalize()
                         .toVar('lightDir')
                 const diffuse = lightDir.dot(finalNormal).max(0.2).toVar('diffuse')
                 const fresnel = finalNormal.dot(rd.negate()).pow(2).mul(0.3).toVar('fresnel')
-                const finalColor = baseColor.mul(diffuse.add(ambient)).add(vec3(1).mul(fresnel)).toVar('finalColor')
-                col.assign(finalColor)
+                return vec4(vec3(0.9, 0.8, 0.9).mul(diffuse.add(ambient)).add(vec3(1).mul(fresnel)), 1)
         })
-        return vec4(col, 1)
+        return vec4(1)
 })
 
 export default function App() {
-        const update = () => {
-                const [x, y] = drag.offset
-                const rotX = y / 200
-                const rotY = x / 200
-                cameraRotation.value = [-rotX, -rotY]
-        }
-        const drag = useDrag(() => {
-                update()
-        })
+        const update = () => (cameraRotation.value = [-drag.offset[1] / 200, -drag.offset[0] / 200])
+        const drag = useDrag(update)
         const gl = useGL({
                 fs: fragment(position),
                 loop() {
