@@ -48,7 +48,7 @@ export type NodeTypes =
         | 'declare'
         | 'return'
 
-export interface NodeProps<T extends Record<string, NodeProxy> = {}> {
+export interface NodeProps {
         id?: string
         args?: any[]
         type?: string
@@ -56,8 +56,8 @@ export interface NodeProps<T extends Record<string, NodeProxy> = {}> {
         inferFrom?: any[]
         layout?: FnLayout
         // for struct
-        fields?: T
-        initialValues?: T
+        fields?: Record<string, NodeProxy>
+        initialValues?: Record<string, NodeProxy>
 }
 
 export interface NodeContext {
@@ -75,6 +75,7 @@ export interface NodeContext {
                 vertVaryings: Map<string, string>
                 computeInputs: Map<string, string>
                 dependencies: Map<string, Set<string>>
+                structFields: Map<string, Record<string, NodeProxy>>
         }
 }
 

@@ -36,8 +36,8 @@ export const Return = <T extends Constants>(x: X<T>): NodeProxy<T> => {
         return y
 }
 
-export const struct = <T extends Record<string, NodeProxy>>(fields: T, id = getId()) => {
-        return (initialValues: T = {} as T, instanceId = getId()) => {
+export const struct = (fields: Record<string, NodeProxy>, id = getId()) => {
+        return (initialValues: Record<string, NodeProxy> = {}, instanceId = getId()) => {
                 const x = node('variable', { id: instanceId, inferFrom: [id] })
                 const y = node('struct', { id, fields, initialValues }, x)
                 addToScope(y)

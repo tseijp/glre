@@ -85,12 +85,12 @@ export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null):
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
         if (type === 'define') {
-                if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseDefine(c, props, infer(target, c)))
+                if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseDefine(c, props, target))
                 return `${id}(${parseArray(children.slice(1), c)})`
         }
         if (type === 'struct') {
                 if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
-                return parseStruct(c, id, x.props.id, fields, initialValues)
+                return parseStruct(c, id, x.props.id, initialValues)
         }
         /**
          * headers
