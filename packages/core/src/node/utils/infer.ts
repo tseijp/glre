@@ -77,7 +77,6 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
                 if (isNodeProxy(x)) {
                         const structType = infer(x, c)
                         const fields = c.code?.structFields?.get(structType)
-                        console.log(c.code?.structFields) // size 0！！！！！！
                         if (fields && fields[y]) return infer(fields[y], c) as T
                 }
                 return 'float' as T
