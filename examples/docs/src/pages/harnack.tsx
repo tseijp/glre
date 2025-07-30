@@ -1,7 +1,10 @@
 import {
+        Float,
         Fn,
         If,
         Loop,
+        Vec3,
+        Vec4,
         bool,
         constant,
         float,
@@ -10,8 +13,6 @@ import {
         int,
         mat3,
         position,
-        radians,
-        sqrt,
         struct,
         uniform,
         useGL,
@@ -40,12 +41,12 @@ const baseColor = uniform(vec3(), 'baseColor')
 const cameraRotation = uniform(vec2(0))
 const cameraPosition = uniform(vec3(), 'cameraPosition')
 
-const closeToLevelset = Fn(([f = float(), levelset = float(), tol = float(), gradNorm = float()]) => {
+const closeToLevelset = Fn(([f, levelset, tol, gradNorm]: Float[]) => {
         const eps = tol.mul(gradNorm).toVar('eps')
         return f.sub(levelset).abs().lessThan(eps)
 })
 
-const getMaxStep4D = Fn(([fx, R, levelset, shift]) => {
+const getMaxStep4D = Fn(([fx, R, levelset, shift]: Float[]) => {
         const a = fx.add(shift).div(levelset.add(shift)).toVar('a')
         const u = a.pow(3).mul(3).add(a.pow(2).mul(81)).sqrt().mul(3).add(a.mul(27)).pow(0.33333).toVar('u')
         return u.div(3).sub(a.div(u)).sub(1).abs().mul(R)
@@ -70,7 +71,7 @@ const gyroid = Fn(([pos]) => {
         return Ray({ hit: bool(true), t, n })
 })
 
-const intersectSphere = Fn(([ro, rd, center, radius]) => {
+const intersectSphere = Fn(([ro, rd, center, radius]: [Vec3, Vec3, Vec3, Float]) => {
         const a = ro.sub(center).toVar('a')
         const b = a.dot(rd).toVar('b')
         const c = a.dot(a).sub(radius.mul(radius)).toVar('c')
@@ -88,7 +89,7 @@ const intersectSphere = Fn(([ro, rd, center, radius]) => {
         return ray
 })
 
-const harnack = Fn(([ro, rd]) => {
+const harnack = Fn(([ro, rd]: Vec3[]) => {
         const levelset = float(0).toVar('levelset')
         const sphere = intersectSphere(ro, rd, vec3(0), radius).toVar('sphere')
         If(sphere.hit.not(), () => {
@@ -112,7 +113,7 @@ const harnack = Fn(([ro, rd]) => {
                 pos.assign(t.mul(rd).add(ro).add(overstep.mul(rd)))
                 gyr.assign(gyroid(pos))
                 const R = radius.add(0.5).sub(pos.length()).toVar('R')
-                const shift = sqrt(2).mul(R).exp().mul(unitShift).toVar('shift')
+                const shift = float(2).sqrt().mul(R).exp().mul(unitShift).toVar('shift')
                 const r = getMaxStep4D(gyr.t, R, levelset, shift).toVar('r')
 
                 If(r.greaterThan(overstep), () => {
@@ -128,7 +129,7 @@ const harnack = Fn(([ro, rd]) => {
         return gyr
 })
 
-const shade = Fn(([hitPos = vec3(), rd, nor]) => {
+const shade = Fn(([hitPos, rd, nor]: Vec3[]) => {
         const outwardNormal = nor
                 .dot(rd)
                 .greaterThan(0)
@@ -161,7 +162,7 @@ const shade = Fn(([hitPos = vec3(), rd, nor]) => {
         return diffuse.mul(fresnelFactor.oneMinus()).add(reflection).add(vec3(specular)).add(vec3(ambient)).min(vec3(1))
 })
 
-const fragment = Fn(([position = vec4()]) => {
+const fragment = Fn(([position]: [Vec4]) => {
         const cr = cameraRotation.cos().toVar('cr')
         const sr = cameraRotation.sin().toVar('sr')
         // prettier-ignore
@@ -171,7 +172,7 @@ const fragment = Fn(([position = vec4()]) => {
                 cr.x.mul(sr.y), sr.x.negate(), cr.x.mul(cr.y)
         ).toVar('mat')
         const ro = mat.mul(cameraPosition).toVar('camPos')
-        const fov = radians(50).mul(0.5).tan().toVec2().toVar('fov')
+        const fov = float(50).radians().mul(0.5).tan().toVec2().toVar('fov')
         fov.x.assign(fov.x.mul(iResolution.x.div(iResolution.y)))
         const coord = position.xy.div(iResolution.xy).mul(2).sub(1).toVar('coord')
         const vDir = vec3(coord.mul(fov), -1).normalize().toVar('vDir')
