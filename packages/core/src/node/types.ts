@@ -306,41 +306,41 @@ export interface BaseNodeProxy<T extends Constants> {
          * 2.1. const.ts FUNCTIONS
          */
         // 0. Component-wise functions
-        abs(): NodeProxy
-        acos(): NodeProxy
-        acosh(): NodeProxy
-        asin(): NodeProxy
-        asinh(): NodeProxy
-        atan(): NodeProxy
-        atanh(): NodeProxy
-        ceil(): NodeProxy
-        cos(): NodeProxy
-        cosh(): NodeProxy
-        degrees(): NodeProxy
-        dFdx(): NodeProxy
-        dFdy(): NodeProxy
-        exp(): NodeProxy
-        exp2(): NodeProxy
-        floor(): NodeProxy
-        fract(): NodeProxy
-        fwidth(): NodeProxy
-        inverseSqrt(): NodeProxy
-        log(): NodeProxy
-        log2(): NodeProxy
-        negate(): NodeProxy
-        normalize(): NodeProxy
-        oneMinus(): NodeProxy
-        radians(): NodeProxy
-        reciprocal(): NodeProxy
-        round(): NodeProxy
-        saturate(): NodeProxy
-        sign(): NodeProxy
-        sin(): NodeProxy
-        sinh(): NodeProxy
-        sqrt(): NodeProxy
-        tan(): NodeProxy
-        tanh(): NodeProxy
-        trunc(): NodeProxy
+        abs(): NodeProxy<T>
+        acos(): NodeProxy<T>
+        acosh(): NodeProxy<T>
+        asin(): NodeProxy<T>
+        asinh(): NodeProxy<T>
+        atan(): NodeProxy<T>
+        atanh(): NodeProxy<T>
+        ceil(): NodeProxy<T>
+        cos(): NodeProxy<T>
+        cosh(): NodeProxy<T>
+        degrees(): NodeProxy<T>
+        dFdx(): NodeProxy<T>
+        dFdy(): NodeProxy<T>
+        exp(): NodeProxy<T>
+        exp2(): NodeProxy<T>
+        floor(): NodeProxy<T>
+        fract(): NodeProxy<T>
+        fwidth(): NodeProxy<T>
+        inverseSqrt(): NodeProxy<T>
+        log(): NodeProxy<T>
+        log2(): NodeProxy<T>
+        negate(): NodeProxy<T>
+        normalize(): NodeProxy<T>
+        oneMinus(): NodeProxy<T>
+        radians(): NodeProxy<T>
+        reciprocal(): NodeProxy<T>
+        round(): NodeProxy<T>
+        saturate(): NodeProxy<T>
+        sign(): NodeProxy<T>
+        sin(): NodeProxy<T>
+        sinh(): NodeProxy<T>
+        sqrt(): NodeProxy<T>
+        tan(): NodeProxy<T>
+        tanh(): NodeProxy<T>
+        trunc(): NodeProxy<T>
 
         // 1. Functions where first argument determines return type
         atan2<U extends Constants>(x: X<U>): NodeProxy<T>
