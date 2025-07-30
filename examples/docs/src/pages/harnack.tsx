@@ -223,7 +223,7 @@ export default function App() {
         )
 
         return (
-                <div ref={drag.ref} style={{ touchAction: 'none' }}>
+                <div ref={drag.ref} style={{ position: 'fixed', top: 0, left: 0, touchAction: 'none' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )
