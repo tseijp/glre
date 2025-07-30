@@ -86,11 +86,11 @@ export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isT
 
 export const safeEventCall = <T extends Constants>(x: X<T>, fun: (value: unknown) => void) => {
         if (is.und(x)) return
-        if (!isNodeProxy(x)) return fun(x) // for uniform(1)
+        if (!isNodeProxy(x)) return fun(x) // for uniform(0) or uniform([0, 1])
         if (x.type !== 'conversion') return
-        const value = x.props.children?.slice(1).filter(Boolean)
-        if (!value?.length) return // for uniform(vec2())
-        fun(value)
+        const args = x.props.children?.slice(1)
+        if (is.und(args?.[0])) return // ignore if uniform(vec2())
+        fun(args.map((x) => x ?? args[0])) // for uniform(vec2(1)) or uniform(vec2(1, 1))
 }
 
 export const initNodeContext = (c: NodeContext) => {
