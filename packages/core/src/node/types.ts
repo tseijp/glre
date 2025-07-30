@@ -14,7 +14,6 @@ export interface FnLayout {
                 type: Constants
         }>
 }
-
 /**
  * Node
  */
@@ -56,8 +55,8 @@ export interface NodeProps {
         inferFrom?: any[]
         layout?: FnLayout
         // for struct
-        fields?: Record<string, NodeProxy>
-        initialValues?: Record<string, NodeProxy>
+        fields?: StructFields
+        initialValues?: StructFields
 }
 
 export interface NodeContext {
@@ -75,7 +74,7 @@ export interface NodeContext {
                 vertVaryings: Map<string, string>
                 computeInputs: Map<string, string>
                 dependencies: Map<string, Set<string>>
-                structFields: Map<string, Record<string, NodeProxy>>
+                structFields: Map<string, StructFields>
         }
 }
 
@@ -185,7 +184,16 @@ export type Mat4 = NodeProxyImpl<'mat4'>
 export type Texture = NodeProxyImpl<'texture'>
 export type Sampler2D = NodeProxyImpl<'sampler2D'>
 export type Struct = NodeProxyImpl<'struct'>
+export type StructFields = Record<string, NodeProxy>
+export type StructNode<T extends StructFields> = Omit<Struct, keyof T> & {
+        [K in keyof T]: T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never
+} & {
+        toVar(id?: string): StructNode<T>
+}
 
+export interface StructFactory<T extends StructFields> {
+        (initialValues?: StructFields, instanceId?: string): StructNode<T>
+}
 export interface ConstantsToType {
         bool: Bool
         uint: UInt
@@ -230,6 +238,11 @@ export interface BaseNodeProxy<T extends Constants> {
 
         // Element access for array/matrix types
         element<Index extends X>(index: Index): NodeProxy<InferArrayElement<T>>
+
+        // Enhanced member access with type preservation
+        member<K extends string>(
+                key: K
+        ): K extends keyof T ? (T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never) : never
 
         // Operators methods
         add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>

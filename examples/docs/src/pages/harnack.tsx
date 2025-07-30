@@ -40,7 +40,7 @@ const baseColor = uniform(vec3(), 'baseColor')
 const cameraRotation = uniform(vec2(0))
 const cameraPosition = uniform(vec3(), 'cameraPosition')
 
-const closeToLevelset = Fn(([f, levelset, tol, gradNorm]) => {
+const closeToLevelset = Fn(([f = float(), levelset = float(), tol = float(), gradNorm = float()]) => {
         const eps = tol.mul(gradNorm).toVar('eps')
         return f.sub(levelset).abs().lessThan(eps)
 })
