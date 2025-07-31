@@ -11,32 +11,32 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
         if (!props) props = {}
         if (args.length) props.children = args
         const listeners = new Set<(value: any) => void>()
-        const get = (_: unknown, y: string | Symbol) => {
-                if (y === 'type') return type
-                if (y === 'props') return props
-                if (y === '__nodeType') return undefined // Will be inferred by TypeScript
-                if (y === 'toVar') return toVar.bind(null, x as any)
-                if (y === 'isProxy') return true
-                if (y === 'toString') return code.bind(null, x)
-                if (y === Symbol.toPrimitive) return toPrimitive.bind(null, x)
-                if (y === 'listeners') return listeners
-                if (y === 'attribute') return (id = getId()) => attribute(x, id)
-                if (y === 'constant') return (id = getId()) => constant(x, id)
-                if (y === 'uniform') return (id = getId()) => uniform(x, id)
-                if (y === 'variable') return (id = getId()) => variable(id)
-                if (y === 'builtin') return (id = getId()) => builtin(id)
-                if (y === 'vertexStage') return (id = getId()) => vertexStage(x, id)
-                if (y === 'element') return (z: X) => (type === 'storage' ? gather(x, z) : element(x, z))
-                if (y === 'member') return (z: X) => member(x, z)
-                if (y === 'assign') return assign.bind(null, x, x.type === 'gather')
-                if (isOperator(y)) return (...z: X[]) => operator(y, x, ...z)
-                if (isFunction(y)) return (...z: X[]) => function_(y, x, ...z)
-                if (isConversion(y)) return () => conversion(getConstant(y), x)
-                if (is.str(y)) return isArrayAccess(y) ? element(x, y) : member(x, y)
+        const get = (_: unknown, key: string | Symbol) => {
+                if (key === 'type') return type
+                if (key === 'props') return props
+                if (key === '__nodeType') return undefined // Will be inferred by TypeScript
+                if (key === 'toVar') return toVar.bind(null, x as any)
+                if (key === 'isProxy') return true
+                if (key === 'toString') return code.bind(null, x)
+                if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
+                if (key === 'listeners') return listeners
+                if (key === 'attribute') return (id = getId()) => attribute(x, id)
+                if (key === 'constant') return (id = getId()) => constant(x, id)
+                if (key === 'uniform') return (id = getId()) => uniform(x, id)
+                if (key === 'variable') return (id = getId()) => variable(id)
+                if (key === 'builtin') return (id = getId()) => builtin(id)
+                if (key === 'vertexStage') return (id = getId()) => vertexStage(x, id)
+                if (key === 'element') return (arg: X) => (type === 'storage' ? gather(x, arg) : element(x, z))
+                if (key === 'member') return (arg: X) => member(x, arg)
+                if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
+                if (isOperator(key)) return (...args: X[]) => operator(key, x, ...args)
+                if (isFunction(key)) return (...args: X[]) => function_(key, x, ...args)
+                if (isConversion(key)) return () => conversion(getConstant(key), x)
+                if (is.str(key)) return isArrayAccess(key) ? element(x, key) : member(x, key)
         }
-        const set = (_: unknown, y: string, z: X) => {
-                if (y === 'value') listeners.forEach((fun) => fun(z))
-                if (is.str(y)) member(x, y).assign(z)
+        const set = (_: unknown, key: string, arg: X) => {
+                if (key === 'value') listeners.forEach((fun) => fun(arg))
+                if (is.str(key)) member(x, key).assign(arg)
                 return true
         }
         const x = new Proxy({}, { get, set }) as unknown as NodeProxy<T>

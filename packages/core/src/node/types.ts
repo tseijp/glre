@@ -144,13 +144,9 @@ type IsInRules<L, R, Rules extends readonly (readonly [any, any, any])[]> = Rule
                 : false
         : false
 
-// Unified logic with infer.ts validateOperator function (using OPERATOR_TYPE_RULES)
-type ValidateOperator<L extends Constants, R extends Constants> =
-        // Same type operations are always valid
-        L extends R
-                ? true
-                : // Check if combination exists in OPERATOR_TYPE_RULES using recursive type checking
-                  IsInRules<L, R, typeof OPERATOR_TYPE_RULES>
+type ValidateOperator<L extends Constants, R extends Constants> = L extends R
+        ? true
+        : IsInRules<L, R, typeof OPERATOR_TYPE_RULES>
 
 type InferSwizzleType<S extends string> = _StringLength<S> extends 4
         ? 'vec4'
@@ -359,7 +355,7 @@ export interface BaseNodeProxy<T extends Constants> {
                                 : never
                         : never
         ): T extends `ivec${string}` ? Int : Float
-        length(): T extends 'float' | 'vec2' | 'vec3' | 'vec4' ? Float : never
+        length(): T extends 'vec2' | 'vec3' | 'vec4' ? Float : never
         lengthSq(): Float
         luminance(): Float
         // 3. Always return vec3 with vector constraint
@@ -425,13 +421,20 @@ export interface BaseNodeProxy<T extends Constants> {
         mix<U extends Constants>(y: X<U>, a: X): NodeProxy<InferOperator<T, U>>
         pow(y: number): NodeProxy<T>
         pow<U extends Constants>(y: X<U>): NodeProxy<T>
+        reflect(N: T extends 'vec2' | 'vec3' | 'vec4' ? number : never): NodeProxy<T>
         reflect<U extends Constants>(
                 N: T extends U ? (T extends 'vec2' | 'vec3' | 'vec4' ? X<U> : never) : never
         ): NodeProxy<T>
-        refract<U extends Constants>(N: T extends U ? (T extends 'vec2' | 'vec3' | 'vec4' ? X<U> : never) : never, eta: number): T extends 'vec2' | 'vec3' | 'vec4' ? NodeProxy<T> : never
+        refract(N: number, eta: number): T extends 'vec2' | 'vec3' | 'vec4' ? NodeProxy<T> : never
+        refract<U extends Constants>(
+                N: T extends U ? (T extends 'vec2' | 'vec3' | 'vec4' ? X<U> : never) : never,
+                eta: number
+        ): T extends 'vec2' | 'vec3' | 'vec4' ? NodeProxy<T> : never
 
-        // 2. Functions where not first argument determines return type
-        smoothstep<U extends Constants>(low: T extends U ? X<U> : never, high: T extends U ? X<U> : never, x: X<T>): NodeProxy<T>
-        step<U extends Constants>(edge: T extends U ? X<U> : never, x: X<T>): NodeProxy<T>
+        // 2. Functions where not first argument determines return type with number support
+        smoothstep(edge0: number, edge1: number): NodeProxy<T>
+        smoothstep<U extends Constants>(edge0: X<U>, edge1: X<U>): NodeProxy<InferOperator<T, U>>
+        step(edge: number): NodeProxy<T>
+        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperator<T, U>>
         // @NOTE: mod is operator
 }

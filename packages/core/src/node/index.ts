@@ -1,7 +1,7 @@
 import { hex2rgb } from './utils'
 import { builtin as b, conversion as c, function_ as f, uniform as u } from './node'
 import { is } from '../utils/helpers'
-import type { Constants as C, X, NodeProxy } from './types'
+import type { Constants as C, X, NodeProxy, Float } from './types'
 export * from './core'
 export * from './node'
 export * from './scope'
@@ -70,17 +70,17 @@ export const uv = position.xy.div(iResolution)
 export const all = <T extends C>(x: X<T>) => f<'bool'>('all', x)
 export const any = <T extends C>(x: X<T>) => f<'bool'>('any', x)
 
-// 2. Always return appropriate type based on WGSL specification
-export const length = <T extends 'float' | 'vec2' | 'vec3' | 'vec4'>(x: X<T>) => f<'float'>('length', x)
+// 2. Always return float with WGSL-compliant type constraints (vector only)
+export const length = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>) => f<'float'>('length', x)
 export const lengthSq = (x: X) => f<'float'>('lengthSq', x)
-export const distance = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>, y: X<T>) => f<'float'>('distance', x, y)
-export const dot = <T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'>(x: X<T>, y: X<T>) =>
+export const distance = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>, y: X<T> | number) => f<'float'>('distance', x, y)
+export const dot = <T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'>(x: X<T>, y: X<T> | number) =>
         f<T extends `ivec${string}` ? 'int' : 'float'>('dot', x, y)
 export const determinant = <T extends 'mat2' | 'mat3' | 'mat4'>(x: X<T>) => f<'float'>('determinant', x)
 export const luminance = (x: X) => f<'float'>('luminance', x)
 
-// 3. Always return vec3 with strict vec3 constraints per WGSL spec
-export const cross = (x: X<'vec3'>, y: X<'vec3'>) => f<'vec3'>('cross', x, y)
+// 3. Always return vec3 with vec3 constraint and number support
+export const cross = (x: X<'vec3'>, y: X<'vec3'> | number) => f<'vec3'>('cross', x, y)
 
 // 4. Always return vec4
 export const cubeTexture = (x: X, y: X, z?: X) => f<'vec4'>('cubeTexture', x, y, z)
@@ -137,13 +137,13 @@ export const max = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('max', x, y)
 export const min = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('min', x, y)
 export const mix = <T extends C>(x: X<T>, y: X<T> | number, a: number) => f<T>('mix', x, y, a)
 export const pow = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('pow', x, y)
-export const reflect = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T>) => f<T>('reflect', I, N)
-export const refract = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T>, eta: number) => f<T>('refract', I, N, eta)
+export const reflect = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T> | number) => f<T>('reflect', I, N)
+export const refract = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T> | number, eta: Float | number) =>
+        f<T>('refract', I, N, eta)
 
-// 2. Functions where not first argument determines return type
-export const smoothstep = <T extends C>(low: X<T>, high: X<T>, x: X<T>) => f<T>('smoothstep', low, high, x)
-export const step = <T extends C>(edge: X<T>, x: X<T>) => f<T>('step', edge, x)
-
+// 2. Functions where not first argument determines return type with number support
+export const smoothstep = <T extends C>(e0: X<T> | number, e1: X<T> | number, x: X<T>) => f<T>('smoothstep', e0, e1, x)
+export const step = <T extends C>(edge: X<T> | number, x: X<T>) => f<T>('step', edge, x)
 export const mod = <T extends C>(x: NodeProxy<T>, y: X<T>) => {
-        return (x as any).sub((x as any).div(y).floor().mul(y))
+        return (x as any).sub((x as any).div(y).floor().mul(y)) as NodeProxy<T>
 }
