@@ -70,17 +70,20 @@ export const uv = position.xy.div(iResolution)
 export const all = <T extends C>(x: X<T>) => f<'bool'>('all', x)
 export const any = <T extends C>(x: X<T>) => f<'bool'>('any', x)
 
-// 2. Always return float with WGSL-compliant type constraints (vector only)
+// 2. Always return float with WGSL-compliant type constraints and unified parameter types
 export const length = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>) => f<'float'>('length', x)
 export const lengthSq = (x: X) => f<'float'>('lengthSq', x)
-export const distance = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>, y: X<T> | number) => f<'float'>('distance', x, y)
-export const dot = <T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'>(x: X<T>, y: X<T> | number) =>
-        f<T extends `ivec${string}` ? 'int' : 'float'>('dot', x, y)
+export const distance = <T extends 'vec2' | 'vec3' | 'vec4', U extends C = T>(x: X<T>, y: number | X<U>) =>
+        f<'float'>('distance', x, y)
+export const dot = <T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4', U extends C = T>(
+        x: X<T>,
+        y: number | X<U>
+) => f<T extends `ivec${string}` ? 'int' : 'float'>('dot', x, y)
 export const determinant = <T extends 'mat2' | 'mat3' | 'mat4'>(x: X<T>) => f<'float'>('determinant', x)
 export const luminance = (x: X) => f<'float'>('luminance', x)
 
-// 3. Always return vec3 with vec3 constraint and number support
-export const cross = (x: X<'vec3'>, y: X<'vec3'> | number) => f<'vec3'>('cross', x, y)
+// 3. Always return vec3 with vec3 constraint and unified parameter types
+export const cross = <U extends C = 'vec3'>(x: X<'vec3'>, y: number | X<U>) => f<'vec3'>('cross', x, y)
 
 // 4. Always return vec4
 export const cubeTexture = (x: X, y: X, z?: X) => f<'vec4'>('cubeTexture', x, y, z)
@@ -130,20 +133,23 @@ export const tan = <T extends C>(x: X<T>) => f<T>('tan', x)
 export const tanh = <T extends C>(x: X<T>) => f<T>('tanh', x)
 export const trunc = <T extends C>(x: X<T>) => f<T>('trunc', x)
 
-// 1. Functions where first argument determines return type with number support
-export const atan2 = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('atan2', x, y)
-export const clamp = <T extends C>(x: X<T>, min: X<T> | number, max: X<T> | number) => f<T>('clamp', x, min, max)
-export const max = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('max', x, y)
-export const min = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('min', x, y)
-export const mix = <T extends C>(x: X<T>, y: X<T> | number, a: number) => f<T>('mix', x, y, a)
-export const pow = <T extends C>(x: X<T>, y: X<T> | number) => f<T>('pow', x, y)
-export const reflect = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T> | number) => f<T>('reflect', I, N)
-export const refract = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T> | number, eta: Float | number) =>
+// 1. Functions where first argument determines return type with unified parameter types
+export const atan2 = <T extends C, U extends C = T>(x: X<T>, y: number | X<U>) => f<T>('atan2', x, y)
+export const clamp = <T extends C, U extends C = T>(x: X<T>, min: number | X<U>, max: number | X<U>) =>
+        f<T>('clamp', x, min, max)
+export const max = <T extends C, U extends C = T>(x: X<T>, y: number | X<U>) => f<T>('max', x, y)
+export const min = <T extends C, U extends C = T>(x: X<T>, y: number | X<U>) => f<T>('min', x, y)
+export const mix = <T extends C, U extends C = T>(x: X<T>, y: number | X<U>, a: number) => f<T>('mix', x, y, a)
+export const pow = <T extends C, U extends C = T>(x: X<T>, y: number | X<U>) => f<T>('pow', x, y)
+export const reflect = <T extends 'vec2' | 'vec3' | 'vec4', U extends C = T>(I: X<T>, N: number | X<U>) =>
+        f<T>('reflect', I, N)
+export const refract = <T extends 'vec2' | 'vec3' | 'vec4', U extends C = T>(I: X<T>, N: number | X<U>, eta: number) =>
         f<T>('refract', I, N, eta)
 
-// 2. Functions where not first argument determines return type with number support
-export const smoothstep = <T extends C>(e0: X<T> | number, e1: X<T> | number, x: X<T>) => f<T>('smoothstep', e0, e1, x)
-export const step = <T extends C>(edge: X<T> | number, x: X<T>) => f<T>('step', edge, x)
-export const mod = <T extends C>(x: NodeProxy<T>, y: X<T>) => {
+// 2. Functions where not first argument determines return type with unified parameter types
+export const smoothstep = <T extends C, U extends C = T>(e0: number | X<U>, e1: number | X<U>, x: X<T>) =>
+        f<T>('smoothstep', e0, e1, x)
+export const step = <T extends C, U extends C = T>(edge: number | X<U>, x: X<T>) => f<T>('step', edge, x)
+export const mod = <T extends C, U extends C = T>(x: NodeProxy<T>, y: number | X<U>) => {
         return (x as any).sub((x as any).div(y).floor().mul(y)) as NodeProxy<T>
 }
