@@ -44,7 +44,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
 }
 
 // headers with proper type inference
-export const attribute = <T extends C>(x: X, id = getId()) => node<T>('attribute', { id }, x)
+export const attribute = <T extends C>(x: X<T>, id = getId()) => node<T>('attribute', { id }, x)
 export const constant = <T extends C>(x: X<T>, id = getId()) => node<T>('constant', { id }, x)
 export const uniform = <T extends C>(x: X<T>, id = getId()) => node<T>('uniform', { id }, x)
 export const storage = <T extends C>(x: X<T>, id = getId()) => node<T>('storage', { id }, x)

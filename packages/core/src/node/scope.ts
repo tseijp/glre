@@ -115,7 +115,10 @@ export const Switch = (x: NodeProxy) => {
         return ret()
 }
 
-export function Fn<T extends NodeProxy | StructNode, Args extends any[]>(fun: (args: Args) => T, defaultId = getId()) {
+export function Fn<T extends NodeProxy | StructNode | void, Args extends any[]>(
+        fun: (args: Args) => T,
+        defaultId = getId()
+) {
         let layout: FnLayout
         const ret = (...args: any[]) => {
                 const id = layout?.name || defaultId
@@ -133,7 +136,7 @@ export function Fn<T extends NodeProxy | StructNode, Args extends any[]>(fun: (a
                 }
                 for (const props of paramDefs) paramVars.push(node('variable', props))
                 const y = node('define', { id, layout }, x, ...args)
-                scoped(x, () => fun(paramVars as Args), y)
+                scoped(x, () => fun(paramVars as Args) as any, y)
                 return y
         }
         ret.setLayout = (_layout: FnLayout) => {

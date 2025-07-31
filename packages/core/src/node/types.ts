@@ -18,8 +18,8 @@ export interface FnLayout {
         }>
 }
 
-export interface FnType<T extends NodeProxy | StructNode, Args extends any[]> {
-        (...args: Args): T
+export interface FnType<T extends NodeProxy | StructNode | void, Args extends any[]> {
+        (...args: Args): T extends void ? Void : T
         setLayout(layout: FnLayout): FnType<T, Args>
 }
 
@@ -171,6 +171,7 @@ type ReadNodeProxy = {
 // Internal NodeProxy implementation (renamed from original)
 type NodeProxyImpl<T extends Constants> = BaseNodeProxy<T> & ReadNodeProxy
 
+export type Void = NodeProxyImpl<'void'>
 export type Bool = NodeProxyImpl<'bool'>
 export type UInt = NodeProxyImpl<'uint'>
 export type Int = NodeProxyImpl<'int'>
@@ -206,6 +207,7 @@ export interface StructFactory<T extends StructFields> {
 }
 
 export interface ConstantsToType {
+        void: Void
         bool: Bool
         uint: UInt
         int: Int
@@ -231,9 +233,11 @@ export interface ConstantsToType {
         struct: Struct
 }
 
-export type NodeProxy<T extends Constants = any> = T extends keyof ConstantsToType ? ConstantsToType[T] : never
+export type NodeProxy<T extends Constants = Constants> = T extends keyof ConstantsToType
+        ? ConstantsToType[T]
+        : BaseNodeProxy<T>
 
-export type X<T extends Constants = any> = number | string | boolean | undefined | NodeProxy<T>
+export type X<T extends Constants = Constants> = number | string | boolean | undefined | NodeProxy<T>
 
 export interface BaseNodeProxy<T extends Constants> {
         // System properties
