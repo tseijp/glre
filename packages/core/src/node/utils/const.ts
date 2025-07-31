@@ -135,6 +135,28 @@ export const COMPARISON_OPERATORS = [
 
 export const LOGICAL_OPERATORS = ['and', 'or'] as const
 
+// Operator type rules [L, R, Result] format (no duplicates, same-type handled by logic)
+export const OPERATOR_TYPE_RULES = [
+        // Scalar broadcast operations (result follows vector type)
+        ['float', 'vec2', 'vec2'],
+        ['float', 'vec3', 'vec3'],
+        ['float', 'vec4', 'vec4'],
+        ['int', 'ivec2', 'ivec2'],
+        ['int', 'ivec3', 'ivec3'],
+        ['int', 'ivec4', 'ivec4'],
+        ['uint', 'uvec2', 'uvec2'],
+        ['uint', 'uvec3', 'uvec3'],
+        ['uint', 'uvec4', 'uvec4'],
+        // Matrix-vector operations (mat * vec → vec)
+        ['mat2', 'vec2', 'vec2'],
+        ['mat3', 'vec3', 'vec3'],
+        ['mat4', 'vec4', 'vec4'],
+        // Vector-matrix operations (vec * mat → vec)
+        ['vec2', 'mat2', 'vec2'],
+        ['vec3', 'mat3', 'vec3'],
+        ['vec4', 'mat4', 'vec4'],
+] as const
+
 export const WGSL_TO_GLSL_BUILTIN = {
         position: 'gl_FragCoord',
         vertex_index: 'gl_VertexID',
@@ -231,3 +253,31 @@ export const FUNCTIONS = [
         'step',
         // @NOTE: mod is operator
 ] as const
+
+// Check if two types are the same (for same-type operations)
+const isSameType = (L: string, R: string): boolean => L === R
+
+// Check if combination exists in rules (handles bidirectional matching)
+const isValidCombination = (L: string, R: string): boolean => {
+        return OPERATOR_TYPE_RULES.some(
+                ([left, right, _]) => (left === L && right === R) || (left === R && right === L)
+        )
+}
+
+// Type constraint validation for operators ([L, R, Result] format)
+export const validateOperatorTypes = (L: string, R: string, op: string): boolean => {
+        if (COMPARISON_OPERATORS.includes(op as any) || LOGICAL_OPERATORS.includes(op as any)) return isSameType(L, R)
+        if (isSameType(L, R)) return true
+        return isValidCombination(L, R)
+}
+
+// Get result type for operator (used by inferOperator)
+export const getOperatorResultType = (L: string, R: string, op: string): string => {
+        if (COMPARISON_OPERATORS.includes(op as any) || LOGICAL_OPERATORS.includes(op as any)) return 'bool'
+        // Same type operations return the same type
+        if (isSameType(L, R)) return L
+        const rule = OPERATOR_TYPE_RULES.find(
+                ([left, right, _]) => (left === L && right === R) || (left === R && right === L)
+        )
+        return rule ? rule[2] : L
+}

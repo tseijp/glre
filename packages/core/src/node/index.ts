@@ -1,7 +1,7 @@
 import { hex2rgb } from './utils'
 import { builtin as b, conversion as c, function_ as f, uniform as u } from './node'
 import { is } from '../utils/helpers'
-import type { Constants as C, X, NodeProxy } from './types'
+import type { Constants as C, Float, X, NodeProxy } from './types'
 export * from './core'
 export * from './node'
 export * from './scope'
@@ -70,11 +70,12 @@ export const uv = position.xy.div(iResolution)
 export const all = <T extends C>(x: X<T>) => f<'bool'>('all', x)
 export const any = <T extends C>(x: X<T>) => f<'bool'>('any', x)
 
-// 2. Always return float
-export const length = (x: X) => f<'float'>('length', x)
+// 2. Always return float with WGSL-compliant type constraints
+export const length = <T extends 'float' | 'vec2' | 'vec3' | 'vec4'>(x: X<T>) => f<'float'>('length', x)
 export const lengthSq = (x: X) => f<'float'>('lengthSq', x)
-export const distance = (x: X, y: X) => f<'float'>('distance', x, y)
-export const dot = (x: X, y: X) => f<'float'>('dot', x, y)
+export const distance = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>, y: X<T>) => f<'float'>('distance', x, y)
+export const dot = <T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'>(x: X<T>, y: X<T>) =>
+        f<T extends `ivec${string}` ? 'int' : 'float'>('dot', x, y)
 
 // 3. Always return vec3
 export const cross = (x: X<'vec3'>, y: X<'vec3'>) => f<'vec3'>('cross', x, y)
@@ -113,7 +114,7 @@ export const inverseSqrt = <T extends C>(x: X<T>) => f<T>('inverseSqrt', x)
 export const log = <T extends C>(x: X<T>) => f<T>('log', x)
 export const log2 = <T extends C>(x: X<T>) => f<T>('log2', x)
 export const negate = <T extends C>(x: X<T>) => f<T>('negate', x)
-export const normalize = <T extends C>(x: X<T>) => f<T>('normalize', x)
+export const normalize = <T extends 'vec2' | 'vec3' | 'vec4'>(x: X<T>) => f<T>('normalize', x)
 export const oneMinus = <T extends C>(x: X<T>) => f<T>('oneMinus', x)
 export const radians = <T extends C>(x: X<T>) => f<T>('radians', x)
 export const reciprocal = <T extends C>(x: X<T>) => f<T>('reciprocal', x)
@@ -127,17 +128,17 @@ export const tan = <T extends C>(x: X<T>) => f<T>('tan', x)
 export const tanh = <T extends C>(x: X<T>) => f<T>('tanh', x)
 export const trunc = <T extends C>(x: X<T>) => f<T>('trunc', x)
 
-// 1. Functions where first argument determines return type
-export const atan2 = <T extends C>(x: X<T>, y: X) => f<T>('atan2', x, y)
-export const clamp = <T extends C>(x: X<T>, y: X, z: X) => f<T>('clamp', x, y, z)
-export const max = <T extends C>(x: X<T>, y: X) => f<T>('max', x, y)
-export const min = <T extends C>(x: X<T>, y: X) => f<T>('min', x, y)
-export const mix = <T extends C>(x: X<T>, y: X, a: X) => f<T>('mix', x, y, a)
-export const pow = <T extends C>(x: X<T>, y: X) => f<T>('pow', x, y)
-export const reflect = <T extends C>(I: X<T>, N: X) => f<T>('reflect', I, N)
-export const refract = <T extends C>(I: X<T>, N: X, eta: X) => f<T>('refract', I, N, eta)
+// 1. Functions where first argument determines return type with constraints
+export const atan2 = <T extends C>(x: X<T>, y: X<T>) => f<T>('atan2', x, y)
+export const clamp = <T extends C>(x: X<T>, y: X<T>, z: X<T>) => f<T>('clamp', x, y, z)
+export const max = <T extends C>(x: X<T>, y: X<T>) => f<T>('max', x, y)
+export const min = <T extends C>(x: X<T>, y: X<T>) => f<T>('min', x, y)
+export const mix = <T extends C>(x: X<T>, y: X<T>, a: Float) => f<T>('mix', x, y, a)
+export const pow = <T extends C>(x: X<T>, y: X<T>) => f<T>('pow', x, y)
+export const reflect = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T>) => f<T>('reflect', I, N)
+export const refract = <T extends 'vec2' | 'vec3' | 'vec4'>(I: X<T>, N: X<T>, eta: Float) => f<T>('refract', I, N, eta)
 
 // 2. Functions where not first argument determines return type
-export const smoothstep = <T extends C>(e0: X, e1: X, x: X<T>) => f<T>('smoothstep', e0, e1, x)
-export const step = <T extends C>(edge: X, x: X<T>) => f<T>('step', edge, x)
+export const smoothstep = <T extends C>(e0: X<T>, e1: X<T>, x: Float) => f<T>('smoothstep', e0, e1, x)
+export const step = <T extends C>(edge: X<T> | Float, x: X<T>) => f<T>('step', edge, x)
 export const mod = <T extends C>(x: NodeProxy<T>, y: X<T>) => x.sub(x.div(y).toFloat().floor().mul(y))
