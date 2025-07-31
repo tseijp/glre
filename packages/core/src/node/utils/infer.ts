@@ -63,7 +63,6 @@ export const inferImpl = <T extends C>(target: NodeProxy<T>, c: NodeContext): T 
         const [x, y, z] = children
         if (type === 'conversion') return x
         if (type === 'operator') return inferOperator(infer(y, c), infer(z, c), x)
-        if (type === 'ternary') return inferOperator(infer(y, c), infer(z, c), 'add')
         if (type === 'builtin') return inferBuiltin(id)
         if (type === 'function') return inferFunction(x) || infer(y, c)
         if (type === 'define') {
@@ -93,5 +92,5 @@ export const infer = <T extends C>(target: X<T>, c?: NodeContext | null): T => {
         if (c.infers.has(target)) return c.infers.get(target) as T
         const ret = inferImpl(target, c)
         c.infers.set(target, ret)
-        return ret
+        return ret as T
 }

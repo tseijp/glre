@@ -6,6 +6,9 @@ export type Conversions = (typeof CONVERSIONS)[number]
 export type Functions = (typeof FUNCTIONS)[number]
 export type Operators = (typeof OPERATOR_KEYS)[number]
 
+/**
+ * scope
+ */
 export interface FnLayout {
         name: string
         type: Constants | 'auto'
@@ -15,8 +18,13 @@ export interface FnLayout {
         }>
 }
 
+export interface FnType<T extends NodeProxy | StructNode | void, Args extends any[]> {
+        (...args: Args): T extends void ? Void : T
+        setLayout(layout: FnLayout): FnType<T, Args>
+}
+
 /**
- * Node
+ * node
  */
 export type NodeTypes =
         // headers
@@ -56,8 +64,8 @@ export interface NodeProps {
         inferFrom?: any[]
         layout?: FnLayout
         // for struct
-        fields?: Record<string, NodeProxy>
-        initialValues?: Record<string, NodeProxy>
+        fields?: StructFields
+        initialValues?: StructFields
 }
 
 export interface NodeContext {
@@ -75,7 +83,7 @@ export interface NodeContext {
                 vertVaryings: Map<string, string>
                 computeInputs: Map<string, string>
                 dependencies: Map<string, Set<string>>
-                structFields: Map<string, Record<string, NodeProxy>>
+                structFields: Map<string, StructFields>
         }
 }
 
@@ -145,6 +153,7 @@ type NodeProxyMethods =
         | Conversions
         | Swizzles
         // system property
+        | '__nodeType'
         | 'type'
         | 'props'
         | 'isProxy'
@@ -160,8 +169,9 @@ type ReadNodeProxy = {
 }
 
 // Internal NodeProxy implementation (renamed from original)
-type NodeProxyImpl<T extends Constants = string> = BaseNodeProxy<T> & ReadNodeProxy
+type NodeProxyImpl<T extends Constants> = BaseNodeProxy<T> & ReadNodeProxy
 
+export type Void = NodeProxyImpl<'void'>
 export type Bool = NodeProxyImpl<'bool'>
 export type UInt = NodeProxyImpl<'uint'>
 export type Int = NodeProxyImpl<'int'>
@@ -185,8 +195,19 @@ export type Mat4 = NodeProxyImpl<'mat4'>
 export type Texture = NodeProxyImpl<'texture'>
 export type Sampler2D = NodeProxyImpl<'sampler2D'>
 export type Struct = NodeProxyImpl<'struct'>
+export type StructFields = Record<string, NodeProxy>
+export type StructNode<T extends StructFields = any> = Omit<Struct, keyof T> & {
+        [K in keyof T]: T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never
+} & {
+        toVar(id?: string): StructNode<T>
+}
+
+export interface StructFactory<T extends StructFields> {
+        (initialValues?: StructFields, instanceId?: string): StructNode<T>
+}
 
 export interface ConstantsToType {
+        void: Void
         bool: Bool
         uint: UInt
         int: Int
@@ -212,14 +233,15 @@ export interface ConstantsToType {
         struct: Struct
 }
 
-export type NodeProxy<T extends Constants = string> = T extends keyof ConstantsToType
+export type NodeProxy<T extends Constants = Constants> = T extends keyof ConstantsToType
         ? ConstantsToType[T]
-        : NodeProxyImpl<T>
+        : BaseNodeProxy<T>
 
-export type X<T extends Constants = string> = number | string | boolean | undefined | NodeProxy<T> | X[]
+export type X<T extends Constants = Constants> = number | string | boolean | undefined | NodeProxy<T>
 
 export interface BaseNodeProxy<T extends Constants> {
         // System properties
+        readonly __nodeType?: T
         assign(x: any): NodeProxy<T>
         toVar(name?: string): NodeProxy<T>
         toString(c?: NodeContext): string
@@ -230,6 +252,11 @@ export interface BaseNodeProxy<T extends Constants> {
 
         // Element access for array/matrix types
         element<Index extends X>(index: Index): NodeProxy<InferArrayElement<T>>
+
+        // Enhanced member access with type preservation
+        member<K extends string>(
+                key: K
+        ): K extends keyof T ? (T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never) : never
 
         // Operators methods
         add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
@@ -306,41 +333,41 @@ export interface BaseNodeProxy<T extends Constants> {
          * 2.1. const.ts FUNCTIONS
          */
         // 0. Component-wise functions
-        abs(): NodeProxy
-        acos(): NodeProxy
-        acosh(): NodeProxy
-        asin(): NodeProxy
-        asinh(): NodeProxy
-        atan(): NodeProxy
-        atanh(): NodeProxy
-        ceil(): NodeProxy
-        cos(): NodeProxy
-        cosh(): NodeProxy
-        degrees(): NodeProxy
-        dFdx(): NodeProxy
-        dFdy(): NodeProxy
-        exp(): NodeProxy
-        exp2(): NodeProxy
-        floor(): NodeProxy
-        fract(): NodeProxy
-        fwidth(): NodeProxy
-        inverseSqrt(): NodeProxy
-        log(): NodeProxy
-        log2(): NodeProxy
-        negate(): NodeProxy
-        normalize(): NodeProxy
-        oneMinus(): NodeProxy
-        radians(): NodeProxy
-        reciprocal(): NodeProxy
-        round(): NodeProxy
-        saturate(): NodeProxy
-        sign(): NodeProxy
-        sin(): NodeProxy
-        sinh(): NodeProxy
-        sqrt(): NodeProxy
-        tan(): NodeProxy
-        tanh(): NodeProxy
-        trunc(): NodeProxy
+        abs(): NodeProxy<T>
+        acos(): NodeProxy<T>
+        acosh(): NodeProxy<T>
+        asin(): NodeProxy<T>
+        asinh(): NodeProxy<T>
+        atan(): NodeProxy<T>
+        atanh(): NodeProxy<T>
+        ceil(): NodeProxy<T>
+        cos(): NodeProxy<T>
+        cosh(): NodeProxy<T>
+        degrees(): NodeProxy<T>
+        dFdx(): NodeProxy<T>
+        dFdy(): NodeProxy<T>
+        exp(): NodeProxy<T>
+        exp2(): NodeProxy<T>
+        floor(): NodeProxy<T>
+        fract(): NodeProxy<T>
+        fwidth(): NodeProxy<T>
+        inverseSqrt(): NodeProxy<T>
+        log(): NodeProxy<T>
+        log2(): NodeProxy<T>
+        negate(): NodeProxy<T>
+        normalize(): NodeProxy<T>
+        oneMinus(): NodeProxy<T>
+        radians(): NodeProxy<T>
+        reciprocal(): NodeProxy<T>
+        round(): NodeProxy<T>
+        saturate(): NodeProxy<T>
+        sign(): NodeProxy<T>
+        sin(): NodeProxy<T>
+        sinh(): NodeProxy<T>
+        sqrt(): NodeProxy<T>
+        tan(): NodeProxy<T>
+        tanh(): NodeProxy<T>
+        trunc(): NodeProxy<T>
 
         // 1. Functions where first argument determines return type
         atan2<U extends Constants>(x: X<U>): NodeProxy<T>

@@ -1,15 +1,15 @@
-import { Fn, iTime, mod, id, storage, useGL, uv, vec2, vec4 } from 'glre/src/react'
+import { Fn, iTime, mod, id, storage, useGL, uv, vec2, vec4, Vec2, Vec3 } from 'glre/src/react'
 
 const data = storage(vec4(), 'data')
 
-const compute = Fn(([id]) => {
+const compute = Fn(([id]: [Vec3]) => {
         const index = id.x.toFloat()
         const t = index.mul(0.1).add(iTime).toVar('t')
         const result = t.sin().mul(0.5).add(0.5).toVar('result')
         data.element(index.toInt()).assign(vec4(result, 0.0, 0.0, 1.0))
 })
 
-const fragment = Fn(([uv]) => {
+const fragment = Fn(([uv]: [Vec2]) => {
         const texSize = vec2(32.0, 32.0).toVar('texSize')
         const totalElements = texSize.x.mul(texSize.y).toVar('totalElements')
         const indexFloat = uv.x.mul(totalElements).toVar('indexFloat')

@@ -14,7 +14,8 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
         const get = (_: unknown, y: string | Symbol) => {
                 if (y === 'type') return type
                 if (y === 'props') return props
-                if (y === 'toVar') return toVar.bind(null, x)
+                if (y === '__nodeType') return undefined // Will be inferred by TypeScript
+                if (y === 'toVar') return toVar.bind(null, x as any)
                 if (y === 'isProxy') return true
                 if (y === 'toString') return code.bind(null, x)
                 if (y === Symbol.toPrimitive) return toPrimitive.bind(null, x)
@@ -43,7 +44,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
 }
 
 // headers with proper type inference
-export const attribute = <T extends C>(x: X, id = getId()) => node<T>('attribute', { id }, x)
+export const attribute = <T extends C>(x: X<T>, id = getId()) => node<T>('attribute', { id }, x)
 export const constant = <T extends C>(x: X<T>, id = getId()) => node<T>('constant', { id }, x)
 export const uniform = <T extends C>(x: X<T>, id = getId()) => node<T>('uniform', { id }, x)
 export const storage = <T extends C>(x: X<T>, id = getId()) => node<T>('storage', { id }, x)

@@ -1,6 +1,6 @@
 import type { EventState, Nested } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
-import type { NodeProxy, Vec4 } from './node'
+import type { NodeProxy, Vec4, Void } from './node'
 export type { Fun, Queue, Frame }
 
 export type GL = EventState<{
@@ -21,13 +21,13 @@ export type GL = EventState<{
         particles: 64 | 256 | 576 | 1024 | 1600 | 2304 | 3136 | 4096 | 4096 | 5184 | 6400 // (8k)^2
         el: HTMLCanvasElement
         vs?: string | Vec4
-        cs?: string | Vec4
+        cs?: string | Void
         fs?: string | Vec4
         vert?: string | Vec4
-        comp?: string | Vec4
+        comp?: string | Void
         frag?: string | Vec4
         vertex?: string | Vec4
-        compute?: string | Vec4
+        compute?: string | Void
         fragment?: string | Vec4
 
         /**

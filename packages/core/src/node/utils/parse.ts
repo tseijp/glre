@@ -2,7 +2,7 @@ import { code } from '.'
 import { infer } from './infer'
 import { getConversions, addDependency } from './utils'
 import { is } from '../../utils/helpers'
-import type { Constants, NodeContext, NodeProps, NodeProxy, X } from '../types'
+import type { Constants, NodeContext, NodeProps, NodeProxy, StructFields, X } from '../types'
 
 export const parseArray = (children: X[], c: NodeContext) => {
         return children
@@ -87,7 +87,7 @@ export const parseDeclare = (c: NodeContext, x: X, y: X) => {
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
-export const parseStructHead = (c: NodeContext, id: string, fields: Record<string, NodeProxy> = {}) => {
+export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
         c.code?.structFields?.set(id, fields)
         const lines: string[] = []
         for (const key in fields) {
@@ -100,7 +100,7 @@ export const parseStructHead = (c: NodeContext, id: string, fields: Record<strin
         return `struct ${id} {\n  ${ret}\n};`
 }
 
-export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: Record<string, NodeProxy>) => {
+export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: StructFields) => {
         const fields = c.code?.structFields?.get(id) || {}
         if (c.isWebGL) {
                 if (initialValues) {
