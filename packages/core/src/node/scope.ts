@@ -26,11 +26,10 @@ const addToScope = (x: NodeProxy) => {
 }
 
 export function toVar<T extends StructFields>(x: StructNode<T>, id?: string): StructNode<T>
-export function toVar<T extends Constants>(x: X<T>, id?: string): NodeProxy<T>
-export function toVar<T extends any>(x: T, id?: string) {
+export function toVar<T extends Constants>(x: NodeProxy<T>, id?: string): NodeProxy<T> {
         if (!id) id = getId()
-        const y = node('variable', { id, inferFrom: [x] })
-        const z = node('declare', null, x as NodeProxy, y)
+        const y = node<T>('variable', { id, inferFrom: [x] })
+        const z = node<T>('declare', null, x as NodeProxy, y)
         addToScope(z)
         return y
 }
@@ -115,26 +114,22 @@ export const Switch = (x: NodeProxy) => {
         return ret()
 }
 
-// Function overloads with explicit struct field mapping
-export function Fn<T extends { uv: NodeProxy<'vec2'>; aspect: NodeProxy<'float'>; color: NodeProxy<'vec4'> }>(
-        fun: (paramVars: NodeProxy[]) => StructNode<T>
-): <Args extends Constants[]>(...args: X<Args[number]>[]) => StructNode<T>
+type StrictFunctionType<T> = T extends (args: infer Args) => infer Return
+        ? Args extends readonly unknown[]
+                ? (...args: Args) => Return
+                : never
+        : never
 
-export function Fn<R extends Constants>(
-        fun: (paramVars: NodeProxy[]) => NodeProxy<R>
-): <Args extends Constants[]>(...args: X<Args[number]>[]) => NodeProxy<R>
-
-export function Fn<T>(fun: (paramVars: NodeProxy[]) => T): <Args extends Constants[]>(...args: X<Args[number]>[]) => T
-
-export function Fn<T extends any>(fun: (paramVars: NodeProxy[]) => T, defaultId = getId()): any {
+export function Fn<T extends (args: any) => NodeProxy | StructNode<any>>(
+        fun: T,
+        defaultId = getId()
+): StrictFunctionType<T> {
         let layout: FnLayout
-
-        const ret = <Args extends Constants[]>(...args: X<Args[number]>[]): T => {
+        const ret = (...args: any[]): any => {
                 const id = layout?.name || defaultId
                 const x = node('scope')
                 const paramVars: NodeProxy[] = []
                 const paramDefs: NodeProps[] = []
-
                 if (layout?.inputs) {
                         for (const input of layout.inputs) {
                                 paramDefs.push({ id: input.name, inferFrom: [conversion(input.type)] })
@@ -144,17 +139,14 @@ export function Fn<T extends any>(fun: (paramVars: NodeProxy[]) => T, defaultId 
                                 paramDefs.push({ id: `p${i}`, inferFrom: [args[i]] })
                         }
                 }
-
                 for (const props of paramDefs) paramVars.push(node('variable', props))
                 const y = node('define', { id, layout }, x, ...args)
-                scoped(x, () => fun(paramVars) as any, y)
-                return y as T
+                scoped(x, () => fun(paramVars as any) as any, y)
+                return y
         }
-
         ret.setLayout = (_layout: FnLayout) => {
                 layout = _layout
                 return ret
         }
-
-        return ret
+        return ret as unknown as StrictFunctionType<T>
 }

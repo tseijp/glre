@@ -93,5 +93,5 @@ export const infer = <T extends C>(target: X<T>, c?: NodeContext | null): T => {
         if (c.infers.has(target)) return c.infers.get(target) as T
         const ret = inferImpl(target, c)
         c.infers.set(target, ret)
-        return ret
+        return ret as T
 }

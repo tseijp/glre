@@ -58,7 +58,7 @@ const Ray = struct({
         n: vec3(),
 })
 
-const gyroid = Fn(([pos]) => {
+const gyroid = Fn(([pos]: [Vec3]) => {
         const p = scale.mul(pos).toVar('p')
         const c = p.cos().toVar('c')
         const s = p.sin().toVar('s')

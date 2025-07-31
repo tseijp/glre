@@ -159,7 +159,7 @@ type ReadNodeProxy = {
 }
 
 // Internal NodeProxy implementation (renamed from original)
-type NodeProxyImpl<T extends Constants = string> = BaseNodeProxy<T> & ReadNodeProxy
+type NodeProxyImpl<T extends Constants> = BaseNodeProxy<T> & ReadNodeProxy
 
 export type Bool = NodeProxyImpl<'bool'>
 export type UInt = NodeProxyImpl<'uint'>
@@ -189,11 +189,13 @@ export type StructNode<T extends StructFields> = Omit<Struct, keyof T> & {
         [K in keyof T]: T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never
 } & {
         toVar(id?: string): StructNode<T>
+        readonly __nodeType?: 'struct'
 }
 
 export interface StructFactory<T extends StructFields> {
         (initialValues?: StructFields, instanceId?: string): StructNode<T>
 }
+
 export interface ConstantsToType {
         bool: Bool
         uint: UInt
@@ -220,14 +222,15 @@ export interface ConstantsToType {
         struct: Struct
 }
 
-export type NodeProxy<T extends Constants = string> = T extends keyof ConstantsToType
+export type NodeProxy<T extends Constants = any> = T extends keyof ConstantsToType
         ? ConstantsToType[T]
         : NodeProxyImpl<T>
 
-export type X<T extends Constants = string> = number | string | boolean | undefined | NodeProxy<T> | X[]
+export type X<T extends Constants = any> = number | string | boolean | undefined | NodeProxy<T>
 
 export interface BaseNodeProxy<T extends Constants> {
         // System properties
+        readonly __nodeType?: T
         assign(x: any): NodeProxy<T>
         toVar(name?: string): NodeProxy<T>
         toString(c?: NodeContext): string
