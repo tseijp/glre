@@ -13,12 +13,8 @@ const inferBuiltin = <T extends C>(id: string | undefined) => {
         return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES] as T
 }
 
-const validateOperatorImpl = (L: string, R: string, op: string): boolean => {
-        return validateOperatorTypes(L, R, op)
-}
-
 const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
-        if (!validateOperatorImpl(L, R, op))
+        if (!validateOperatorTypes(L, R, op))
                 console.warn(`GLRE Type Warning: Invalid operator '${op}' between types '${L}' and '${R}'`)
         return getOperatorResultType(L, R, op) as T
 }
