@@ -2,6 +2,7 @@ import { getId } from './utils'
 import { conversion, node } from './node'
 import type {
         FnLayout,
+        FnType,
         NodeProps,
         NodeProxy,
         X,
@@ -114,7 +115,7 @@ export const Switch = (x: NodeProxy) => {
         return ret()
 }
 
-export function Fn<T extends NodeProxy | StructNode, Args extends any>(fun: (args: Args) => T, defaultId = getId()) {
+export function Fn<T extends NodeProxy | StructNode, Args extends any[]>(fun: (args: Args) => T, defaultId = getId()) {
         let layout: FnLayout
         const ret = (...args: any[]) => {
                 const id = layout?.name || defaultId
@@ -139,5 +140,5 @@ export function Fn<T extends NodeProxy | StructNode, Args extends any>(fun: (arg
                 layout = _layout
                 return ret
         }
-        return ret as unknown as Args extends readonly unknown[] ? (...args: Args) => T : never
+        return ret as unknown as Args extends readonly unknown[] ? FnType<T, Args> : never
 }

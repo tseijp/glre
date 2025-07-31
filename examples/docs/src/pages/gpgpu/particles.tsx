@@ -1,9 +1,9 @@
-import { float, Fn, id, If, int, Loop, storage, useGL, uv, vec2, vec3, vec4 } from 'glre/src/react'
+import { float, Fn, id, If, int, Loop, storage, useGL, uv, Vec2, vec2, Vec3, vec3, vec4 } from 'glre/src/react'
 
 const positions = storage(vec2(), 'positions')
 const velocities = storage(vec2(), 'velocities')
 
-const compute = Fn(([id]) => {
+const compute = Fn(([id]: [Vec3]) => {
         const index = id.x
         const pos = positions.element(index).toVar('pos')
         const vel = velocities.element(index).toVar('vel')
@@ -22,7 +22,7 @@ const compute = Fn(([id]) => {
         velocities.element(index).assign(vel)
 })
 
-const fragment = Fn(([uv]) => {
+const fragment = Fn(([uv]: [Vec2]) => {
         const intensity = float(0.0).toVar('intensity')
         Loop(int(1024), ({ i }) => {
                 const pos = positions.element(i).toVar('pos')

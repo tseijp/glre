@@ -21,13 +21,13 @@ export type GL = EventState<{
         particles: 64 | 256 | 576 | 1024 | 1600 | 2304 | 3136 | 4096 | 4096 | 5184 | 6400 // (8k)^2
         el: HTMLCanvasElement
         vs?: string | Vec4
-        cs?: string | Vec4
+        cs?: string | void
         fs?: string | Vec4
         vert?: string | Vec4
-        comp?: string | Vec4
+        comp?: string | void
         frag?: string | Vec4
         vertex?: string | Vec4
-        compute?: string | Vec4
+        compute?: string | void
         fragment?: string | Vec4
 
         /**

@@ -6,6 +6,9 @@ export type Conversions = (typeof CONVERSIONS)[number]
 export type Functions = (typeof FUNCTIONS)[number]
 export type Operators = (typeof OPERATOR_KEYS)[number]
 
+/**
+ * scope
+ */
 export interface FnLayout {
         name: string
         type: Constants | 'auto'
@@ -14,8 +17,14 @@ export interface FnLayout {
                 type: Constants
         }>
 }
+
+export interface FnType<T extends NodeProxy | StructNode, Args extends any[]> {
+        (...args: Args): T
+        setLayout(layout: FnLayout): FnType<T, Args>
+}
+
 /**
- * Node
+ * node
  */
 export type NodeTypes =
         // headers
@@ -144,6 +153,7 @@ type NodeProxyMethods =
         | Conversions
         | Swizzles
         // system property
+        | '__nodeType'
         | 'type'
         | 'props'
         | 'isProxy'
