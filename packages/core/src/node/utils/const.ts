@@ -51,7 +51,7 @@ export const TYPE_MAPPING = {
         struct: 'struct',
 } as const
 
-export const CONSTANTS = Object.keys(TYPE_MAPPING) as unknown as keyof typeof TYPE_MAPPING
+export const CONSTANTS = Object.keys(TYPE_MAPPING) as (keyof typeof TYPE_MAPPING)[]
 
 export const OPERATORS = {
         add: '+',

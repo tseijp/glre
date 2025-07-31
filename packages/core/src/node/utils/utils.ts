@@ -34,7 +34,7 @@ export const isNodeProxy = <T extends Constants>(x: unknown): x is NodeProxy<T> 
 
 export const isConstants = (type?: unknown): type is Constants => {
         if (!is.str(type)) return false
-        return CONSTANTS.includes(type)
+        return CONSTANTS.includes(type as any)
 }
 
 export const hex2rgb = (hex: number) => {
@@ -64,7 +64,7 @@ export const getConversions = <T extends Constants>(x: X<T>, c?: NodeContext) =>
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING] || x // for struct type
 }
 
-export const getOperator = (op: X<string>) => {
+export const getOperator = (op: X) => {
         return OPERATORS[op as keyof typeof OPERATORS] || op
 }
 

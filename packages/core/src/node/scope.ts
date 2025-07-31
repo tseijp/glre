@@ -114,18 +114,9 @@ export const Switch = (x: NodeProxy) => {
         return ret()
 }
 
-type StrictFunctionType<T> = T extends (args: infer Args) => infer Return
-        ? Args extends readonly unknown[]
-                ? (...args: Args) => Return
-                : never
-        : never
-
-export function Fn<T extends (args: any) => NodeProxy | StructNode<any>>(
-        fun: T,
-        defaultId = getId()
-): StrictFunctionType<T> {
+export function Fn<T extends NodeProxy | StructNode, Args extends any>(fun: (args: Args) => T, defaultId = getId()) {
         let layout: FnLayout
-        const ret = (...args: any[]): any => {
+        const ret = (...args: any[]) => {
                 const id = layout?.name || defaultId
                 const x = node('scope')
                 const paramVars: NodeProxy[] = []
@@ -141,12 +132,12 @@ export function Fn<T extends (args: any) => NodeProxy | StructNode<any>>(
                 }
                 for (const props of paramDefs) paramVars.push(node('variable', props))
                 const y = node('define', { id, layout }, x, ...args)
-                scoped(x, () => fun(paramVars as any) as any, y)
+                scoped(x, () => fun(paramVars as Args), y)
                 return y
         }
         ret.setLayout = (_layout: FnLayout) => {
                 layout = _layout
                 return ret
         }
-        return ret as unknown as StrictFunctionType<T>
+        return ret as unknown as Args extends readonly unknown[] ? (...args: Args) => T : never
 }

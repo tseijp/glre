@@ -185,11 +185,10 @@ export type Texture = NodeProxyImpl<'texture'>
 export type Sampler2D = NodeProxyImpl<'sampler2D'>
 export type Struct = NodeProxyImpl<'struct'>
 export type StructFields = Record<string, NodeProxy>
-export type StructNode<T extends StructFields> = Omit<Struct, keyof T> & {
+export type StructNode<T extends StructFields = any> = Omit<Struct, keyof T> & {
         [K in keyof T]: T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never
 } & {
         toVar(id?: string): StructNode<T>
-        readonly __nodeType?: 'struct'
 }
 
 export interface StructFactory<T extends StructFields> {
@@ -222,9 +221,7 @@ export interface ConstantsToType {
         struct: Struct
 }
 
-export type NodeProxy<T extends Constants = any> = T extends keyof ConstantsToType
-        ? ConstantsToType[T]
-        : NodeProxyImpl<T>
+export type NodeProxy<T extends Constants = any> = T extends keyof ConstantsToType ? ConstantsToType[T] : never
 
 export type X<T extends Constants = any> = number | string | boolean | undefined | NodeProxy<T>
 
