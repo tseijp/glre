@@ -44,10 +44,10 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
 }
 
 // headers with proper type inference
-export const attribute = <T extends C>(x: X<T>, id = getId()) => node<T>('attribute', { id }, x)
-export const constant = <T extends C>(x: X<T>, id = getId()) => node<T>('constant', { id }, x)
-export const uniform = <T extends C>(x: X<T>, id = getId()) => node<T>('uniform', { id }, x)
-export const storage = <T extends C>(x: X<T>, id = getId()) => node<T>('storage', { id }, x)
+export const attribute = <T extends C>(x: Y<T>, id = getId()) => node<T>('attribute', { id }, x)
+export const constant = <T extends C>(x: Y<T>, id = getId()) => node<T>('constant', { id }, x)
+export const uniform = <T extends C>(x: Y<T>, id = getId()) => node<T>('uniform', { id }, x)
+export const storage = <T extends C>(x: Y<T>, id = getId()) => node<T>('storage', { id }, x)
 export const variable = <T extends C>(id = getId()) => node<T>('variable', { id })
 export const builtin = <T extends C>(id = getId()) => node<T>('builtin', { id })
 export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
@@ -55,10 +55,10 @@ export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
 }
 
 // Node shorthands with proper typing
-export const member = <T extends C>(x: Y, index: Y) => node<T>('member', null, x, index)
-export const element = <T extends C>(x: Y, index: Y) => node<T>('element', null, x, index)
-export const gather = <T extends C>(x: Y, index: Y) => node<T>('gather', null, x, index)
-export const scatter = <T extends C>(x: Y, index: Y) => node<T>('scatter', null, x, index)
+export const member = <T extends C>(x: X, index: Y) => node<T>('member', null, x, index)
+export const element = <T extends C>(x: X, index: Y) => node<T>('element', null, x, index)
+export const gather = <T extends C>(x: X, index: Y) => node<T>('gather', null, x, index)
+export const scatter = <T extends C>(x: X, index: Y) => node<T>('scatter', null, x, index)
 export const select = <T extends C>(x: Y, y: Y, z: Y) => node<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
 export const operator = <T extends C>(key: Operators, ...x: Y[]) => node<T>('operator', null, key, ...x)
 export const function_ = <T extends C>(key: Functions, ...x: Y[]) => node<T>('function', null, key, ...x)
