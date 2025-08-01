@@ -98,7 +98,7 @@ export const webgl = async (gl: GL) => {
         const _texture = (key: string, src: string) => {
                 c.useProgram(pg)
                 loadingImage(gl, src, (source) => {
-                        createTexture(c, source, uniforms(key), units(key))
+                        createTexture(c, source, uniforms(key)!, units(key))
                 })
         }
 
