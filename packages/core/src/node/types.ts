@@ -412,7 +412,7 @@ export interface BaseNodeProxy<T extends Constants> {
         // 2. Functions where not first argument determines return type with unified parameter types
         smoothstep<U extends Constants = T>(
                 edge0: number | NodeProxy<U>,
-                edge1: number | X<U>
+                edge1: number | NodeProxy<U>
         ): NodeProxy<InferOperator<T, U>>
         step<U extends Constants = T>(edge: number | NodeProxy<U>): NodeProxy<InferOperator<T, U>>
         // @NOTE: mod is operator
