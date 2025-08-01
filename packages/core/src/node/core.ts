@@ -1,6 +1,6 @@
 import { code } from './utils'
 import { is } from '../utils/helpers'
-import type { NodeContext, X } from './types'
+import type { NodeContext, Y } from './types'
 
 const GLSL_FRAGMENT_HEAD = `
 #version 300 es
@@ -26,7 +26,7 @@ const topological = (headers: Map<string, string>, dependencies: Map<string, Set
         return sorted
 }
 
-const generateHead = (x: X, c: NodeContext) => {
+const generateHead = (x: Y, c: NodeContext) => {
         const body = code(x, c)
         let head = ''
         if (c.isWebGL && c.code?.dependencies) {
@@ -40,7 +40,7 @@ const generateStruct = (id: string, map: Map<string, string>) => {
         return `struct ${id} {\n  ${Array.from(map.values()).join(',\n  ')}\n}`
 }
 
-export const fragment = (x: X, c: NodeContext) => {
+export const fragment = (x: Y, c: NodeContext) => {
         if (is.str(x)) return x.trim()
         c.code?.headers?.clear()
         c.label = 'frag' // for varying inputs or outputs
@@ -63,7 +63,7 @@ export const fragment = (x: X, c: NodeContext) => {
         return main
 }
 
-export const vertex = (x: X, c: NodeContext) => {
+export const vertex = (x: Y, c: NodeContext) => {
         if (is.str(x)) return x.trim()
         c.code?.headers?.clear()
         c.label = 'vert' // for varying inputs or outputs
@@ -94,7 +94,7 @@ export const vertex = (x: X, c: NodeContext) => {
         return main
 }
 
-export const compute = (x: X, c: NodeContext) => {
+export const compute = (x: Y, c: NodeContext) => {
         if (is.str(x)) return x.trim()
         c.code?.headers?.clear()
         c.label = 'compute'

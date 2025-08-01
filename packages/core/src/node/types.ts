@@ -1,4 +1,4 @@
-import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS } from './utils/const'
+import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATOR_TYPE_RULES } from './utils/const'
 import type { GL } from '../types'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
@@ -11,16 +11,22 @@ export type Operators = (typeof OPERATOR_KEYS)[number]
  */
 export interface FnLayout {
         name: string
-        type: Constants | 'auto'
+        type: C | 'auto'
         inputs?: Array<{
                 name: string
-                type: Constants
+                type: C
         }>
 }
 
-export interface FnType<T extends NodeProxy | StructNode | void, Args extends any[]> {
+export interface FnType<T extends X | Struct | void, Args extends any[]> {
         (...args: Args): T extends void ? Void : T
         setLayout(layout: FnLayout): FnType<T, Args>
+}
+
+export type StructFields = Record<string, X>
+
+export interface StructFactory<T extends StructFields> {
+        (initialValues?: StructFields, instanceId?: string): Struct<T>
 }
 
 /**
@@ -73,7 +79,7 @@ export interface NodeContext {
         label?: 'vert' | 'frag' | 'compute'
         isWebGL?: boolean
         units?: any // @TODO FIX
-        infers?: WeakMap<NodeProxy, Constants>
+        infers?: WeakMap<X, C>
         onMount?: (name: string) => void
         code?: {
                 headers: Map<string, string>
@@ -83,30 +89,24 @@ export interface NodeContext {
                 vertVaryings: Map<string, string>
                 computeInputs: Map<string, string>
                 dependencies: Map<string, Set<string>>
-                structFields: Map<string, StructFields>
+                structStructFields: Map<string, StructFields>
         }
 }
 
 /**
  * infer
  */
-type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
-        ? Rest extends ''
-                ? 1
-                : Rest extends `${infer _}${infer Rest2}`
-                ? Rest2 extends ''
-                        ? 2
-                        : Rest2 extends `${infer _}${infer Rest3}`
-                        ? Rest3 extends ''
-                                ? 3
-                                : 4
-                        : never
-                : never
-        : 0
+// Optimized string length using direct pattern matching
+// prettier-ignore
+type _StringLength<A extends string> =
+        A extends `${infer _}${infer A}` ? A extends '' ? 1 :
+        A extends `${infer _}${infer B}` ? B extends '' ? 2 :
+        B extends `${infer _}${infer C}` ? C extends '' ? 3 :
+        4 : never : never : never
 
 // Unified logic with infer.ts inferOperator function
 // prettier-ignore
-type InferOperator<L extends Constants, R extends Constants> =
+type InferOperator<L extends C, R extends C> =
         L extends R ? L :
         // broadcast
         L extends 'float' | 'int' ? R :
@@ -122,19 +122,23 @@ type InferOperator<L extends Constants, R extends Constants> =
 
 // Unified logic with infer.ts inferArrayElement function
 // prettier-ignore
-type InferArrayElement<T extends Constants> =
+type InferArrayElement<T extends C> =
         T extends 'mat4' ? 'vec4' :
         T extends 'mat3' ? 'vec3' :
         T extends 'mat2' ? 'vec2' :
         'float'
 
-type InferSwizzleType<S extends string> = _StringLength<S> extends 4
-        ? 'vec4'
-        : _StringLength<S> extends 3
-        ? 'vec3'
-        : _StringLength<S> extends 2
-        ? 'vec2'
-        : 'float'
+type ExtractPairs<T> = T extends readonly [infer L, infer R, string] ? [L, R] | [R, L] : never
+type OperatorTypeRules = ExtractPairs<(typeof OPERATOR_TYPE_RULES)[number]>
+type IsInRules<L extends C, R extends C> = [L, R] extends OperatorTypeRules ? 1 : 0
+type ValidateOperator<L extends C, R extends C> = L extends R ? 1 : IsInRules<L, R>
+
+// prettier-ignore
+type InferSwizzleType<S extends string> =
+        _StringLength<S> extends 4 ? 'vec4' :
+        _StringLength<S> extends 3 ? 'vec3' :
+        _StringLength<S> extends 2 ? 'vec2' :
+        'float'
 
 /**
  * Swizzles
@@ -147,63 +151,34 @@ export type Swizzles =
         | _Swizzles<'p' | 'q'>
         | _Swizzles<'s' | 't'>
 
-type NodeProxyMethods =
-        | Functions
-        | Operators
-        | Conversions
-        | Swizzles
-        // system property
-        | '__nodeType'
-        | 'type'
-        | 'props'
-        | 'isProxy'
-        | 'assign'
-        | 'toVar'
-        | 'toString'
-        | 'element'
-
-type ReadNodeProxy = {
-        [K in string as K extends NodeProxyMethods ? never : K]: any
+export type Void = XImpl<'void'>
+export type Bool = XImpl<'bool'>
+export type UInt = XImpl<'uint'>
+export type Int = XImpl<'int'>
+export type Float = XImpl<'float'>
+export type BVec2 = XImpl<'bvec2'>
+export type IVec2 = XImpl<'ivec2'>
+export type UVec2 = XImpl<'uvec2'>
+export type Vec2 = XImpl<'vec2'>
+export type BVec3 = XImpl<'bvec3'>
+export type IVec3 = XImpl<'ivec3'>
+export type UVec3 = XImpl<'uvec3'>
+export type Vec3 = XImpl<'vec3'>
+export type BVec4 = XImpl<'bvec4'>
+export type IVec4 = XImpl<'ivec4'>
+export type UVec4 = XImpl<'uvec4'>
+export type Vec4 = XImpl<'vec4'>
+export type Color = XImpl<'color'>
+export type Mat2 = XImpl<'mat2'>
+export type Mat3 = XImpl<'mat3'>
+export type Mat4 = XImpl<'mat4'>
+export type Texture = XImpl<'texture'>
+export type Sampler2D = XImpl<'sampler2D'>
+export type StructBase = XImpl<'struct'>
+export type Struct<T extends StructFields = any> = Omit<StructBase, keyof T> & {
+        [K in keyof T]: T[K] extends X<infer U> ? X<U> : never
 } & {
-        [K in Swizzles]: NodeProxy<InferSwizzleType<K>>
-}
-
-// Internal NodeProxy implementation (renamed from original)
-type NodeProxyImpl<T extends Constants> = BaseNodeProxy<T> & ReadNodeProxy
-
-export type Void = NodeProxyImpl<'void'>
-export type Bool = NodeProxyImpl<'bool'>
-export type UInt = NodeProxyImpl<'uint'>
-export type Int = NodeProxyImpl<'int'>
-export type Float = NodeProxyImpl<'float'>
-export type BVec2 = NodeProxyImpl<'bvec2'>
-export type IVec2 = NodeProxyImpl<'ivec2'>
-export type UVec2 = NodeProxyImpl<'uvec2'>
-export type Vec2 = NodeProxyImpl<'vec2'>
-export type BVec3 = NodeProxyImpl<'bvec3'>
-export type IVec3 = NodeProxyImpl<'ivec3'>
-export type UVec3 = NodeProxyImpl<'uvec3'>
-export type Vec3 = NodeProxyImpl<'vec3'>
-export type BVec4 = NodeProxyImpl<'bvec4'>
-export type IVec4 = NodeProxyImpl<'ivec4'>
-export type UVec4 = NodeProxyImpl<'uvec4'>
-export type Vec4 = NodeProxyImpl<'vec4'>
-export type Color = NodeProxyImpl<'color'>
-export type Mat2 = NodeProxyImpl<'mat2'>
-export type Mat3 = NodeProxyImpl<'mat3'>
-export type Mat4 = NodeProxyImpl<'mat4'>
-export type Texture = NodeProxyImpl<'texture'>
-export type Sampler2D = NodeProxyImpl<'sampler2D'>
-export type Struct = NodeProxyImpl<'struct'>
-export type StructFields = Record<string, NodeProxy>
-export type StructNode<T extends StructFields = any> = Omit<Struct, keyof T> & {
-        [K in keyof T]: T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never
-} & {
-        toVar(id?: string): StructNode<T>
-}
-
-export interface StructFactory<T extends StructFields> {
-        (initialValues?: StructFields, instanceId?: string): StructNode<T>
+        toVar(id?: string): Struct<T>
 }
 
 export interface ConstantsToType {
@@ -230,20 +205,43 @@ export interface ConstantsToType {
         mat4: Mat4
         texture: Texture
         sampler2D: Sampler2D
-        struct: Struct
+        struct: StructBase
 }
 
-export type NodeProxy<T extends Constants = Constants> = T extends keyof ConstantsToType
-        ? ConstantsToType[T]
-        : BaseNodeProxy<T>
+/**
+ * X and Y
+ */
+type XImpl<T extends C> = _X<T> & {
+        [K in string as K extends Methods ? never : K]: any
+} & {
+        [K in Swizzles]: X<InferSwizzleType<K>>
+}
 
-export type X<T extends Constants = Constants> = number | string | boolean | undefined | NodeProxy<T>
+type C = Constants
 
-export interface BaseNodeProxy<T extends Constants> {
+export type X<T extends C = C> = T extends keyof ConstantsToType ? ConstantsToType[T] : _X<T>
+export type Y<T extends C = C> = number | number[] | string | boolean | undefined | X<T>
+
+type Methods =
+        | Functions
+        | Operators
+        | Conversions
+        | Swizzles
+        // system property
+        | '__nodeType'
+        | 'type'
+        | 'props'
+        | 'isProxy'
+        | 'assign'
+        | 'toVar'
+        | 'toString'
+        | 'element'
+
+interface _X<T extends C> {
         // System properties
         readonly __nodeType?: T
-        assign(x: any): NodeProxy<T>
-        toVar(name?: string): NodeProxy<T>
+        assign(x: any): X<T>
+        toVar(name?: string): X<T>
         toString(c?: NodeContext): string
         type: NodeTypes
         props: NodeProps
@@ -251,36 +249,34 @@ export interface BaseNodeProxy<T extends Constants> {
         listeners: Set<(value: any) => void>
 
         // Element access for array/matrix types
-        element<Index extends X>(index: Index): NodeProxy<InferArrayElement<T>>
+        element<Index extends X>(index: Index): X<InferArrayElement<T>>
 
         // Enhanced member access with type preservation
-        member<K extends string>(
-                key: K
-        ): K extends keyof T ? (T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never) : never
+        member<K extends string>(key: K): K extends keyof T ? (T[K] extends X<infer U> ? X<U> : never) : never
 
-        // Operators methods
-        add<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        sub<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        mul<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        div<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        mod<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        equal<U extends Constants>(x: X<U>): Bool
-        notEqual<U extends Constants>(x: X<U>): Bool
-        lessThan<U extends Constants>(x: X<U>): Bool
-        lessThanEqual<U extends Constants>(x: X<U>): Bool
-        greaterThan<U extends Constants>(x: X<U>): Bool
-        greaterThanEqual<U extends Constants>(x: X<U>): Bool
-        and(x: X<'bool'>): Bool
-        or(x: X<'bool'>): Bool
+        // Operators methods with unified type validation
+        add<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<InferOperator<T, U>>
+        sub<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<InferOperator<T, U>>
+        mul<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<InferOperator<T, U>>
+        div<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<InferOperator<T, U>>
+        mod<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<InferOperator<T, U>>
+        equal<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): Bool
+        notEqual<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): Bool
+        lessThan<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): Bool
+        lessThanEqual<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): Bool
+        greaterThan<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): Bool
+        greaterThanEqual<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): Bool
+        and(x: Bool): Bool
+        or(x: Bool): Bool
         not(): Bool
 
         // Bitwise operators
-        bitAnd(x: X<T>): NodeProxy<T>
-        bitOr(x: X<T>): NodeProxy<T>
-        bitXor(x: X<T>): NodeProxy<T>
-        bitNot(): NodeProxy<T>
-        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        bitAnd(x: X<T>): X<T>
+        bitOr(x: X<T>): X<T>
+        bitXor(x: X<T>): X<T>
+        bitNot(): X<T>
+        shiftLeft<U extends C>(x: X<U>): X<InferOperator<T, U>>
+        shiftRight<U extends C>(x: X<U>): X<InferOperator<T, U>>
 
         // Conversion methods
         toBool(): Bool
@@ -312,15 +308,26 @@ export interface BaseNodeProxy<T extends Constants> {
         // 0. Always return bool
         all(): Bool
         any(): Bool
-        // 2. Always return float
-        determinant(): Float
-        distance<U extends Constants>(y: X<U>): Float
-        dot<U extends Constants>(y: X<U>): Float
-        length(): Float
+
+        // 2. WGSL-compliant return types with individual function constraints
+        determinant(): T extends 'mat2' | 'mat3' | 'mat4' ? Float : never
+        distance<U extends C>(
+                y: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
+        ): Float
+        dot<U extends C>(
+                y: T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'
+                        ? U extends T
+                                ? number | X<U>
+                                : never
+                        : never
+        ): T extends `ivec${string}` ? Int : Float
+        length(): T extends 'vec2' | 'vec3' | 'vec4' ? Float : never
         lengthSq(): Float
         luminance(): Float
-        // 3. Always return vec3
-        cross<U extends Constants>(y: X<U>): Vec3
+
+        // 3. Always return vec3 with vector constraint
+        cross<U extends C = 'vec3'>(y: T extends 'vec3' ? (U extends 'vec3' ? number | X<U> : never) : never): Vec3
+
         // 4. Always return vec4
         cubeTexture(...args: X[]): Vec4
         texture(...args: X[]): Vec4
@@ -328,59 +335,64 @@ export interface BaseNodeProxy<T extends Constants> {
         textureLod(...args: X[]): Vec4
 
         /**
-         * 3.1. unified with:
-         * 1.1. index.ts functions and
-         * 2.1. const.ts FUNCTIONS
+         * 3.2. unified with:
+         * 1.2. index.ts functions and
+         * 2.2. const.ts FUNCTIONS
          */
-        // 0. Component-wise functions
-        abs(): NodeProxy<T>
-        acos(): NodeProxy<T>
-        acosh(): NodeProxy<T>
-        asin(): NodeProxy<T>
-        asinh(): NodeProxy<T>
-        atan(): NodeProxy<T>
-        atanh(): NodeProxy<T>
-        ceil(): NodeProxy<T>
-        cos(): NodeProxy<T>
-        cosh(): NodeProxy<T>
-        degrees(): NodeProxy<T>
-        dFdx(): NodeProxy<T>
-        dFdy(): NodeProxy<T>
-        exp(): NodeProxy<T>
-        exp2(): NodeProxy<T>
-        floor(): NodeProxy<T>
-        fract(): NodeProxy<T>
-        fwidth(): NodeProxy<T>
-        inverseSqrt(): NodeProxy<T>
-        log(): NodeProxy<T>
-        log2(): NodeProxy<T>
-        negate(): NodeProxy<T>
-        normalize(): NodeProxy<T>
-        oneMinus(): NodeProxy<T>
-        radians(): NodeProxy<T>
-        reciprocal(): NodeProxy<T>
-        round(): NodeProxy<T>
-        saturate(): NodeProxy<T>
-        sign(): NodeProxy<T>
-        sin(): NodeProxy<T>
-        sinh(): NodeProxy<T>
-        sqrt(): NodeProxy<T>
-        tan(): NodeProxy<T>
-        tanh(): NodeProxy<T>
-        trunc(): NodeProxy<T>
+        // 0. Component-wise functions with type validation
+        abs(): X<T>
+        acos(): X<T>
+        acosh(): X<T>
+        asin(): X<T>
+        asinh(): X<T>
+        atan(): X<T>
+        atanh(): X<T>
+        ceil(): X<T>
+        cos(): X<T>
+        cosh(): X<T>
+        degrees(): X<T>
+        dFdx(): X<T>
+        dFdy(): X<T>
+        exp(): X<T>
+        exp2(): X<T>
+        floor(): X<T>
+        fract(): X<T>
+        fwidth(): X<T>
+        inverseSqrt(): X<T>
+        log(): X<T>
+        log2(): X<T>
+        negate(): X<T>
+        normalize(): T extends 'vec2' | 'vec3' | 'vec4' ? X<T> : never
+        oneMinus(): X<T>
+        radians(): X<T>
+        reciprocal(): X<T>
+        round(): X<T>
+        saturate(): X<T>
+        sign(): X<T>
+        sin(): X<T>
+        sinh(): X<T>
+        sqrt(): X<T>
+        tan(): X<T>
+        tanh(): X<T>
+        trunc(): X<T>
 
-        // 1. Functions where first argument determines return type
-        atan2<U extends Constants>(x: X<U>): NodeProxy<T>
-        clamp<U extends Constants, V>(mix: X<U>, max: V): NodeProxy<InferOperator<T, U>>
-        max<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
-        min<U extends Constants>(y: X<U>): NodeProxy<InferOperator<T, U>>
-        mix<U extends Constants, V>(y: X<U>, a: V): NodeProxy<InferOperator<T, U>>
-        pow<U extends Constants>(y: X<U>): NodeProxy<T>
-        reflect<U extends Constants>(N: X<U>): NodeProxy<T>
-        refract<U extends Constants>(N: X<U>, eta: any): NodeProxy<T>
+        // 1. Functions where first argument determines return type with unified parameter types
+        atan2<U extends C>(x: number | X<U>): X<T>
+        clamp<U extends C>(min: number | X<U>, max: number | X<U>): X<InferOperator<T, U>>
+        max<U extends C>(y: number | X<U>): X<InferOperator<T, U>>
+        min<U extends C>(y: number | X<U>): X<InferOperator<T, U>>
+        mix<U extends C>(y: number | X<U>, a: number): X<InferOperator<T, U>>
+        pow<U extends C>(y: number | X<U>): X<T>
+        reflect<U extends C>(
+                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
+        ): X<T>
+        refract<U extends C>(
+                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never,
+                eta: number
+        ): T extends 'vec2' | 'vec3' | 'vec4' ? X<T> : never
 
-        // 2. Functions where not first argument determines return type
-        smoothstep<U extends Constants, V>(edge0: X<U>, edge1: V): NodeProxy<InferOperator<T, U>>
-        step<U extends Constants>(edge: X<U>): NodeProxy<InferOperator<T, U>>
+        // 2. Functions where not first argument determines return type with unified parameter types
+        smoothstep<U extends C>(edge0: number | X<U>, edge1: number | X<U>): X<InferOperator<T, U>>
+        step<U extends C>(edge: number | X<U>): X<InferOperator<T, U>>
         // @NOTE: mod is operator
 }

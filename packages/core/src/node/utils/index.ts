@@ -16,13 +16,13 @@ import {
         parseUniformHead,
         parseVaryingHead,
 } from './parse'
-import { getBluiltin, getOperator, getConversions, safeEventCall, getEventFun, initNodeContext } from './utils'
+import { getBluiltin, getConversions, getEventFun, getOperator, initNodeContext, safeEventCall } from './utils'
 import { is } from '../../utils/helpers'
-import type { Constants, NodeContext, X } from '../types'
+import type { Constants as C, NodeContext, Y } from '../types'
 
 export * from './utils'
 
-export const code = <T extends Constants>(target: X<T>, c?: NodeContext | null): string => {
+export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
         if (is.arr(target)) return parseArray(target, c)

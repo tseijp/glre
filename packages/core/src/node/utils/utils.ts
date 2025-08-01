@@ -8,7 +8,7 @@ import {
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
 import { is } from '../../utils/helpers'
-import type { Constants, Conversions, Functions, NodeContext, NodeProxy, Operators, Swizzles, X } from '../types'
+import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, X, Y } from '../types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -26,13 +26,13 @@ export const isConversion = (key: unknown): key is Conversions => {
         return CONVERSIONS.includes(key as Conversions)
 }
 
-export const isNodeProxy = <T extends Constants>(x: unknown): x is NodeProxy<T> => {
+export const isX = (x: unknown): x is X => {
         if (!x) return false
         if (typeof x !== 'object') return false // @ts-ignore
         return x.isProxy
 }
 
-export const isConstants = (type?: unknown): type is Constants => {
+export const isConstants = (type?: unknown): type is C => {
         if (!is.str(type)) return false
         return CONSTANTS.includes(type as any)
 }
@@ -58,17 +58,17 @@ export const getBluiltin = (c: NodeContext, id: string) => {
         return ret
 }
 
-export const getConversions = <T extends Constants>(x: X<T>, c?: NodeContext) => {
+export const getConversions = <T extends C>(x: T, c?: NodeContext) => {
         if (!is.str(x)) return ''
         if (c?.isWebGL) return x
         return TYPE_MAPPING[x as keyof typeof TYPE_MAPPING] || x // for struct type
 }
 
-export const getOperator = (op: X) => {
+export const getOperator = (op: Y) => {
         return OPERATORS[op as keyof typeof OPERATORS] || op
 }
 
-export const getConstant = (conversionKey: string): Constants => {
+export const getConstant = (conversionKey: string): C => {
         const index = CONVERSIONS.indexOf(conversionKey as Conversions)
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
@@ -84,9 +84,9 @@ export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isT
         return (value: any) => c.gl?._uniform?.(id, value)
 }
 
-export const safeEventCall = <T extends Constants>(x: X<T>, fun: (value: unknown) => void) => {
+export const safeEventCall = <T extends C>(x: X<T>, fun: (value: unknown) => void) => {
         if (is.und(x)) return
-        if (!isNodeProxy(x)) return fun(x) // for uniform(0) or uniform([0, 1])
+        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1])
         if (x.type !== 'conversion') return
         const args = x.props.children?.slice(1)
         if (is.und(args?.[0])) return // ignore if uniform(vec2())
@@ -103,7 +103,7 @@ export const initNodeContext = (c: NodeContext) => {
                 vertVaryings: new Map(),
                 computeInputs: new Map(),
                 dependencies: new Map(),
-                structFields: new Map(),
+                structStructFields: new Map(),
         }
         if (c.isWebGL) return c
         c.code.fragInputs.set('position', '@builtin(position) position: vec4f')

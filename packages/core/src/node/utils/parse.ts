@@ -2,9 +2,9 @@ import { code } from '.'
 import { infer } from './infer'
 import { getConversions, addDependency } from './utils'
 import { is } from '../../utils/helpers'
-import type { Constants, NodeContext, NodeProps, NodeProxy, StructFields, X } from '../types'
+import type { Constants, NodeContext, NodeProps, StructFields, Y } from '../types'
 
-export const parseArray = (children: X[], c: NodeContext) => {
+export const parseArray = (children: Y[], c: NodeContext) => {
         return children
                 .filter((x) => !is.und(x) && !is.nul(x))
                 .map((x) => code(x, c))
@@ -12,7 +12,7 @@ export const parseArray = (children: X[], c: NodeContext) => {
 }
 
 // only for webgl
-export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
+export const parseGather = (c: NodeContext, x: Y, y: Y, target: Y) => {
         const parseSwizzle = () => {
                 const valueType = infer(target, c)
                 if (valueType === 'float') return '.x'
@@ -29,7 +29,7 @@ export const parseGather = (c: NodeContext, x: X, y: X, target: X) => {
 }
 
 // only for webgl
-export const parseScatter = (c: NodeContext, storageNode: X, valueNode: X) => {
+export const parseScatter = (c: NodeContext, storageNode: Y, valueNode: Y) => {
         const storageId = code(storageNode, c)
         const valueCode = code(valueNode, c)
         const valueType = infer(valueNode, c)
@@ -40,7 +40,7 @@ export const parseScatter = (c: NodeContext, storageNode: X, valueNode: X) => {
         throw new Error(`Unsupported storage scatter type: ${valueType}`)
 }
 
-export const parseTexture = (c: NodeContext, y: X, z: X, w: X) => {
+export const parseTexture = (c: NodeContext, y: Y, z: Y, w: Y) => {
         if (c.isWebGL) {
                 const args = w ? [y, z, w] : [y, z]
                 return `texture(${parseArray(args, c)})`
@@ -55,7 +55,7 @@ export const parseTexture = (c: NodeContext, y: X, z: X, w: X) => {
 /**
  * scopes
  */
-export const parseIf = (c: NodeContext, x: X, y: X, children: X[]) => {
+export const parseIf = (c: NodeContext, x: Y, y: Y, children: Y[]) => {
         let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
         for (let i = 2; i < children.length; i += 2) {
                 const isElse = i >= children.length - 1
@@ -66,7 +66,7 @@ export const parseIf = (c: NodeContext, x: X, y: X, children: X[]) => {
         return ret
 }
 
-export const parseSwitch = (c: NodeContext, x: X, children: X[]) => {
+export const parseSwitch = (c: NodeContext, x: Y, children: Y[]) => {
         let ret = `switch (${code(x, c)}) {\n`
         for (let i = 1; i < children.length; i += 2) {
                 const isDefault = i >= children.length - 1
@@ -79,7 +79,7 @@ export const parseSwitch = (c: NodeContext, x: X, children: X[]) => {
         return ret
 }
 
-export const parseDeclare = (c: NodeContext, x: X, y: X) => {
+export const parseDeclare = (c: NodeContext, x: Y, y: Y) => {
         const type = infer(x, c)
         const varName = (y as any)?.props?.id
         if (c.isWebGL) return `${type} ${varName} = ${code(x, c)};`
@@ -88,7 +88,7 @@ export const parseDeclare = (c: NodeContext, x: X, y: X) => {
 }
 
 export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
-        c.code?.structFields?.set(id, fields)
+        c.code?.structStructFields?.set(id, fields)
         const lines: string[] = []
         for (const key in fields) {
                 const fieldType = fields[key]
@@ -101,7 +101,7 @@ export const parseStructHead = (c: NodeContext, id: string, fields: StructFields
 }
 
 export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: StructFields) => {
-        const fields = c.code?.structFields?.get(id) || {}
+        const fields = c.code?.structStructFields?.get(id) || {}
         if (c.isWebGL) {
                 if (initialValues) {
                         const ordered = []
@@ -120,7 +120,7 @@ export const parseStruct = (c: NodeContext, id: string, instanceId = '', initial
 /**
  * define
  */
-export const parseDefine = (c: NodeContext, props: NodeProps, target: NodeProxy) => {
+export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
         const { id, children = [], layout } = props
         const [x, ...args] = children
         const argParams: [name: string, type: string][] = []

@@ -1,6 +1,6 @@
 import type { EventState, Nested } from 'reev'
 import type { Fun, Queue, Frame } from 'refr'
-import type { NodeProxy, Vec4, Void } from './node'
+import type { Vec4, Void } from './node'
 export type { Fun, Queue, Frame }
 
 export type GL = EventState<{
@@ -55,7 +55,6 @@ export type GL = EventState<{
          */
         _uniform?(key: string, value: Uniform, isMatrix?: boolean): GL
         uniform(key: string, value: Uniform, isMatrix?: boolean): GL
-        uniform(node: NodeProxy): GL
         uniform(target: { [key: string]: Uniform }): GL
         _texture?(key: string, value: string): GL
         texture(key: string, value: string): GL
