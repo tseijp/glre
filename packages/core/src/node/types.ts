@@ -90,19 +90,16 @@ export interface NodeContext {
 /**
  * infer
  */
-type _StringLength<S extends string> = S extends `${infer _}${infer Rest}`
-        ? Rest extends ''
-                ? 1
-                : Rest extends `${infer _}${infer Rest2}`
-                ? Rest2 extends ''
-                        ? 2
-                        : Rest2 extends `${infer _}${infer Rest3}`
-                        ? Rest3 extends ''
-                                ? 3
-                                : 4
-                        : never
-                : never
-        : 0
+// Optimized string length using direct pattern matching
+// prettier-ignore
+type _StringLength<A extends string> =
+        A extends `${infer _}${infer A}` ?
+        A extends '' ? 1 :
+        A extends `${infer _}${infer B}` ?
+        B extends '' ? 2 :
+        B extends `${infer _}${infer C}` ?
+        C extends '' ? 3 :
+        4 : never : never : never
 
 // Unified logic with infer.ts inferOperator function
 // prettier-ignore
@@ -128,33 +125,17 @@ type InferArrayElement<T extends Constants> =
         T extends 'mat2' ? 'vec2' :
         'float'
 
-// Helper to check if specific [L, R] combination exists in OPERATOR_TYPE_RULES
-type IsInRules<L, R, Rules extends readonly (readonly [any, any, any])[]> = Rules extends readonly [
-        infer First,
-        ...infer Rest
-]
-        ? First extends readonly [infer Left, infer Right, any]
-                ? [L, R] extends [Left, Right]
-                        ? true
-                        : [L, R] extends [Right, Left]
-                        ? true
-                        : Rest extends readonly (readonly [any, any, any])[]
-                        ? IsInRules<L, R, Rest>
-                        : false
-                : false
-        : false
+type ExtractPairs<T> = T extends readonly [infer L, infer R, string] ? [L, R] | [R, L] : never
+type ValidOperatorCombinations = ExtractPairs<(typeof OPERATOR_TYPE_RULES)[number]>
+type IsInRules<L extends Constants, R extends Constants> = [L, R] extends ValidOperatorCombinations ? true : false
+type ValidateOperator<L extends Constants, R extends Constants> = L extends R ? true : IsInRules<L, R>
 
-type ValidateOperator<L extends Constants, R extends Constants> = L extends R
-        ? true
-        : IsInRules<L, R, typeof OPERATOR_TYPE_RULES>
-
-type InferSwizzleType<S extends string> = _StringLength<S> extends 4
-        ? 'vec4'
-        : _StringLength<S> extends 3
-        ? 'vec3'
-        : _StringLength<S> extends 2
-        ? 'vec2'
-        : 'float'
+// prettier-ignore
+type InferSwizzleType<S extends string> =
+        _StringLength<S> extends 4 ? 'vec4' :
+        _StringLength<S> extends 3 ? 'vec3' :
+        _StringLength<S> extends 2 ? 'vec2' :
+        'float'
 
 /**
  * Swizzles
