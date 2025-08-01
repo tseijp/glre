@@ -41,13 +41,13 @@ const baseColor = uniform(vec3(), 'baseColor')
 const cameraRotation = uniform(vec2(0))
 const cameraPosition = uniform(vec3(), 'cameraPosition')
 
-const closeToLevelset = Fn(([f, levelset, tol, gradNorm]: Float[]) => {
+const closeToLevel = Fn(([f, level, tol, gradNorm]: Float[]) => {
         const eps = tol.mul(gradNorm).toVar('eps')
-        return f.sub(levelset).abs().lessThan(eps)
+        return f.sub(level).abs().lessThan(eps)
 })
 
-const getMaxStep4D = Fn(([fx, R, levelset, shift]: Float[]) => {
-        const a = fx.add(shift).div(levelset.add(shift)).toVar('a')
+const getMaxStep4D = Fn(([fx, R, level, shift]: Float[]) => {
+        const a = fx.add(shift).div(level.add(shift)).toVar('a')
         const u = a.pow(3).mul(3).add(a.pow(2).mul(81)).sqrt().mul(3).add(a.mul(27)).pow(0.33333).toVar('u')
         return u.div(3).sub(a.div(u)).sub(1).abs().mul(R)
 })
@@ -90,7 +90,7 @@ const intersectSphere = Fn(([ro, rd, center, radius]: [Vec3, Vec3, Vec3, Float])
 })
 
 const harnack = Fn(([ro, rd]: Vec3[]) => {
-        const levelset = float(0).toVar('levelset')
+        const level = float(0).toVar('level')
         const sphere = intersectSphere(ro, rd, vec3(0), radius).toVar('sphere')
         If(sphere.hit.not(), () => {
                 return Ray({ hit: bool(false), t: float(0), n: vec3(0) })
@@ -98,10 +98,10 @@ const harnack = Fn(([ro, rd]: Vec3[]) => {
         const pos = sphere.t.mul(rd).add(ro).toVar('pos')
         const gyr = gyroid(pos).toVar('gyr')
         If(
-                levelset
+                level
                         .sub(thickness)
                         .sub(gyr.t)
-                        .max(gyr.t.sub(levelset.add(thickness)))
+                        .max(gyr.t.sub(level.add(thickness)))
                         .lessThan(epsilon.mul(gyr.n.length())),
                 () => {
                         return gyr
@@ -114,10 +114,10 @@ const harnack = Fn(([ro, rd]: Vec3[]) => {
                 gyr.assign(gyroid(pos))
                 const R = radius.add(0.5).sub(pos.length()).toVar('R')
                 const shift = float(2).sqrt().mul(R).exp().mul(unitShift).toVar('shift')
-                const r = getMaxStep4D(gyr.t, R, levelset, shift).toVar('r')
+                const r = getMaxStep4D(gyr.t, R, level, shift).toVar('r')
 
                 If(r.greaterThan(overstep), () => {
-                        If(closeToLevelset(gyr.t, levelset, epsilon, gyr.n.length()), () => {
+                        If(closeToLevel(gyr.t, level, epsilon, gyr.n.length()), () => {
                                 gyr.t = t
                                 return gyr
                         })

@@ -256,45 +256,43 @@ export interface BaseNodeProxy<T extends Constants> {
                 key: K
         ): K extends keyof T ? (T[K] extends NodeProxy<infer U> ? NodeProxy<U> : never) : never
 
-        // Operators methods with unified type validation (number | X<U>)
-        add<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        // Operators methods with unified type validation
+        add<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): NodeProxy<InferOperator<T, U>>
-        sub<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        sub<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): NodeProxy<InferOperator<T, U>>
-        mul<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        mul<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): NodeProxy<InferOperator<T, U>>
-        div<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        div<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): NodeProxy<InferOperator<T, U>>
-        mod<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        mod<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): NodeProxy<InferOperator<T, U>>
-        equal<U extends Constants = 'float'>(x: ValidateOperator<T, U> extends false ? never : number | X<U>): Bool
-        notEqual<U extends Constants = 'float'>(x: ValidateOperator<T, U> extends false ? never : number | X<U>): Bool
-        lessThan<U extends Constants = 'float'>(x: ValidateOperator<T, U> extends false ? never : number | X<U>): Bool
-        lessThanEqual<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        equal<U extends Constants>(x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>): Bool
+        notEqual<U extends Constants>(x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>): Bool
+        lessThan<U extends Constants>(x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>): Bool
+        lessThanEqual<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): Bool
-        greaterThan<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
+        greaterThan<U extends Constants>(x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>): Bool
+        greaterThanEqual<U extends Constants>(
+                x: ValidateOperator<T, U> extends false ? never : number | NodeProxy<U>
         ): Bool
-        greaterThanEqual<U extends Constants = 'float'>(
-                x: ValidateOperator<T, U> extends false ? never : number | X<U>
-        ): Bool
-        and(x: X<'bool'>): Bool
-        or(x: X<'bool'>): Bool
+        and(x: Bool): Bool
+        or(x: Bool): Bool
         not(): Bool
 
         // Bitwise operators
-        bitAnd(x: X<T>): NodeProxy<T>
-        bitOr(x: X<T>): NodeProxy<T>
-        bitXor(x: X<T>): NodeProxy<T>
+        bitAnd(x: NodeProxy<T>): NodeProxy<T>
+        bitOr(x: NodeProxy<T>): NodeProxy<T>
+        bitXor(x: NodeProxy<T>): NodeProxy<T>
         bitNot(): NodeProxy<T>
-        shiftLeft<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
-        shiftRight<U extends Constants>(x: X<U>): NodeProxy<InferOperator<T, U>>
+        shiftLeft<U extends Constants>(x: NodeProxy<U>): NodeProxy<InferOperator<T, U>>
+        shiftRight<U extends Constants>(x: NodeProxy<U>): NodeProxy<InferOperator<T, U>>
 
         // Conversion methods
         toBool(): Bool
@@ -329,12 +327,12 @@ export interface BaseNodeProxy<T extends Constants> {
         // 2. WGSL-compliant return types with individual function constraints
         determinant(): T extends 'mat2' | 'mat3' | 'mat4' ? Float : never
         distance<U extends Constants = T>(
-                y: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
+                y: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | NodeProxy<U> : never) : never
         ): Float
         dot<U extends Constants = T>(
                 y: T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'
                         ? U extends T
-                                ? number | X<U>
+                                ? number | NodeProxy<U>
                                 : never
                         : never
         ): T extends `ivec${string}` ? Int : Float
@@ -343,13 +341,13 @@ export interface BaseNodeProxy<T extends Constants> {
         luminance(): Float
         // 3. Always return vec3 with vector constraint
         cross<U extends Constants = 'vec3'>(
-                y: T extends 'vec3' ? (U extends 'vec3' ? number | X<U> : never) : never
+                y: T extends 'vec3' ? (U extends 'vec3' ? number | NodeProxy<U> : never) : never
         ): Vec3
         // 4. Always return vec4
-        cubeTexture(...args: X[]): Vec4
-        texture(...args: X[]): Vec4
-        texelFetch(...args: X[]): Vec4
-        textureLod(...args: X[]): Vec4
+        cubeTexture(...args: NodeProxy[]): Vec4
+        texture(...args: NodeProxy[]): Vec4
+        texelFetch(...args: NodeProxy[]): Vec4
+        textureLod(...args: NodeProxy[]): Vec4
 
         /**
          * 3.1. unified with:
@@ -394,22 +392,28 @@ export interface BaseNodeProxy<T extends Constants> {
         trunc(): NodeProxy<T>
 
         // 1. Functions where first argument determines return type with unified parameter types
-        atan2<U extends Constants = T>(x: number | X<U>): NodeProxy<T>
-        clamp<U extends Constants = T>(min: number | X<U>, max: number | X<U>): NodeProxy<InferOperator<T, U>>
-        max<U extends Constants = T>(y: number | X<U>): NodeProxy<InferOperator<T, U>>
-        min<U extends Constants = T>(y: number | X<U>): NodeProxy<InferOperator<T, U>>
-        mix<U extends Constants = T>(y: number | X<U>, a: number): NodeProxy<InferOperator<T, U>>
-        pow<U extends Constants = T>(y: number | X<U>): NodeProxy<T>
+        atan2<U extends Constants = T>(x: number | NodeProxy<U>): NodeProxy<T>
+        clamp<U extends Constants = T>(
+                min: number | NodeProxy<U>,
+                max: number | NodeProxy<U>
+        ): NodeProxy<InferOperator<T, U>>
+        max<U extends Constants = T>(y: number | NodeProxy<U>): NodeProxy<InferOperator<T, U>>
+        min<U extends Constants = T>(y: number | NodeProxy<U>): NodeProxy<InferOperator<T, U>>
+        mix<U extends Constants = T>(y: number | NodeProxy<U>, a: number): NodeProxy<InferOperator<T, U>>
+        pow<U extends Constants = T>(y: number | NodeProxy<U>): NodeProxy<T>
         reflect<U extends Constants = T>(
-                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
+                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | NodeProxy<U> : never) : never
         ): NodeProxy<T>
         refract<U extends Constants = T>(
-                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never,
+                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | NodeProxy<U> : never) : never,
                 eta: number
         ): T extends 'vec2' | 'vec3' | 'vec4' ? NodeProxy<T> : never
 
         // 2. Functions where not first argument determines return type with unified parameter types
-        smoothstep<U extends Constants = T>(edge0: number | X<U>, edge1: number | X<U>): NodeProxy<InferOperator<T, U>>
-        step<U extends Constants = T>(edge: number | X<U>): NodeProxy<InferOperator<T, U>>
+        smoothstep<U extends Constants = T>(
+                edge0: number | NodeProxy<U>,
+                edge1: number | X<U>
+        ): NodeProxy<InferOperator<T, U>>
+        step<U extends Constants = T>(edge: number | NodeProxy<U>): NodeProxy<InferOperator<T, U>>
         // @NOTE: mod is operator
 }
