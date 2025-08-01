@@ -93,12 +93,9 @@ export interface NodeContext {
 // Optimized string length using direct pattern matching
 // prettier-ignore
 type _StringLength<A extends string> =
-        A extends `${infer _}${infer A}` ?
-        A extends '' ? 1 :
-        A extends `${infer _}${infer B}` ?
-        B extends '' ? 2 :
-        B extends `${infer _}${infer C}` ?
-        C extends '' ? 3 :
+        A extends `${infer _}${infer A}` ? A extends '' ? 1 :
+        A extends `${infer _}${infer B}` ? B extends '' ? 2 :
+        B extends `${infer _}${infer C}` ? C extends '' ? 3 :
         4 : never : never : never
 
 // Unified logic with infer.ts inferOperator function
