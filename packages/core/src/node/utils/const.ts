@@ -172,7 +172,7 @@ export const WGSL_TO_GLSL_BUILTIN = {
 /**
  * 2.1. unified with:
  * 1.1. index.ts functions and
- * 3.1. types.ts BaseNodeProxy
+ * 3.1. types.ts _N
  */
 // Function return type mapping for method chaining
 export const FUNCTION_RETURN_TYPES = {
@@ -198,7 +198,7 @@ export const FUNCTION_RETURN_TYPES = {
 /**
  * 2.2. unified with:
  * 1.2. index.ts functions and
- * 3.2. types.ts BaseNodeProxy
+ * 3.2. types.ts _N
  */
 // All shader functions (type inference now handled by inferFrom)
 export const FUNCTIONS = [
