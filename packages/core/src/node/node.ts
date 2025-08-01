@@ -15,7 +15,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
                 if (key === 'type') return type
                 if (key === 'props') return props
                 if (key === '__nodeType') return undefined // Will be inferred by TypeScript
-                if (key === 'toVar') return toVar.bind(null, x as any)
+                if (key === 'toVar') return toVar.bind(null, x)
                 if (key === 'isProxy') return true
                 if (key === 'toString') return code.bind(null, x)
                 if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
@@ -26,7 +26,7 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
                 if (key === 'variable') return (id = getId()) => variable(id)
                 if (key === 'builtin') return (id = getId()) => builtin(id)
                 if (key === 'vertexStage') return (id = getId()) => vertexStage(x, id)
-                if (key === 'element') return (arg: X) => (type === 'storage' ? gather(x, arg) : element(x, z))
+                if (key === 'element') return (arg: X) => (type === 'storage' ? gather(x, arg) : element(x, arg))
                 if (key === 'member') return (arg: X) => member(x, arg)
                 if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
                 if (isOperator(key)) return (...args: X[]) => operator(key, x, ...args)

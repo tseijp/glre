@@ -72,7 +72,12 @@ export const createUniform = (c: WebGLRenderingContext, loc: WebGLUniformLocatio
         c[`uniformMatrix${l as 2}fv`](loc, false, value)
 }
 
-export const createTexture = (c: WebGLRenderingContext, img: HTMLImageElement, loc: any, unit: number) => {
+export const createTexture = (
+        c: WebGLRenderingContext,
+        img: HTMLImageElement,
+        loc: WebGLUniformLocation,
+        unit: number
+) => {
         const texture = c.createTexture()
         c.bindTexture(c.TEXTURE_2D, texture)
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img)
