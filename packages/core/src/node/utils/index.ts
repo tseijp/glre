@@ -62,6 +62,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
+                if (x.endsWith('Assign')) return `${code(y, c)} ${getOperator(x)} ${code(z, c)};`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
         if (type === 'function') {
@@ -77,6 +78,8 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'return') return `return ${code(x, c)};`
+        if (type === 'break') return 'break;'
+        if (type === 'continue') return 'continue;'
         if (type === 'loop')
                 return c.isWebGL
                         ? `for (int ${id} = 0; ${id} < ${code(x, c)}; ${id} += 1) {\n${code(y, c)}\n}`

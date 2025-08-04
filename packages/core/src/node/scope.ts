@@ -16,14 +16,15 @@ import type {
 let scope: X | null = null
 let define: X | null = null
 
-const addToScope = (x: X) => {
+export const addToScope = <T extends C>(x: X<T>) => {
         if (!scope) return
         if (!scope.props.children) scope.props.children = []
         scope.props.children.push(x)
-        if (x.type !== 'return' || !define) return
+        if (x.type !== 'return' || !define) return x
         const { props } = define
         if (!props.inferFrom) props.inferFrom = []
         props.inferFrom.push(x)
+        return x
 }
 
 export function toVar<T extends StructFields>(x: Struct<T>, id?: string): Struct<T>
@@ -41,10 +42,16 @@ export const assign = <T extends C>(x: X<T>, isScatter = false, y: Y<T>): X<T> =
         return x
 }
 
-export const Return = <T extends C>(x: Y<T>): X<T> => {
-        const y = node<T>('return', { inferFrom: [x] }, x)
-        addToScope(y)
-        return y
+export const Return = <T extends C>(x: Y<T>): Y<T> => {
+        return addToScope(node<T>('return', { inferFrom: [x] }, x))
+}
+
+export const Break = (): Y => {
+        return addToScope(node('break'))
+}
+
+export const Continue = (): Y => {
+        return addToScope(node('continue'))
 }
 
 export const struct = <T extends StructFields>(fields: T, id = getId()): StructFactory<T> => {
@@ -56,7 +63,7 @@ export const struct = <T extends StructFields>(fields: T, id = getId()): StructF
         }
 }
 
-const scoped = (x: X, fun: () => X | void, y = define) => {
+export const scoped = (x: X, fun: () => X | void, y = define) => {
         const [_scope, _define] = [scope, define]
         ;[scope, define] = [x, y]
         const z = fun()
@@ -90,8 +97,7 @@ export const Loop = (x: Y, fun: (params: { i: Int }) => void) => {
         const id = getId()
         scoped(y, () => fun({ i: node<'int'>('variable', { id, inferFrom: [conversion('int', 0)] }) }))
         const ret = node('loop', { id }, x, y)
-        addToScope(ret)
-        return ret
+        return addToScope(ret)
 }
 
 export const Switch = (x: Y) => {

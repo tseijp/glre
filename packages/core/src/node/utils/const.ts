@@ -73,6 +73,16 @@ export const OPERATORS = {
         bitXor: '^',
         shiftLeft: '<<',
         shiftRight: '>>',
+        addAssign: '+=',
+        subAssign: '-=',
+        mulAssign: '*=',
+        divAssign: '/=',
+        modAssign: '%=',
+        bitAndAssign: '&=',
+        bitOrAssign: '|=',
+        bitXorAssign: '^=',
+        shiftLeftAssign: '<<=',
+        shiftRightAssign: '>>=',
 } as const
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]

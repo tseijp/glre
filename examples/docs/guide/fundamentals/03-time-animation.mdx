@@ -164,7 +164,7 @@ const fragment = () => {
                         const pos = float(i).add(iTime).mul(grid).sin()
                         const distance = xy.sub(pos).length()
                         const line = smoothstep(0.1, 0.09, distance)
-                        ret.assign(ret.add(line))
+                        ret.addAssign(line)
                 })
                 return ret
         })
@@ -177,7 +177,7 @@ const fragment = () => {
                                 const pos = uv.sub(0.5).mul(N).mul(2).sub(center)
                                 const pattern = lissajous(grid, pos)
                                 const color = grid.mul(pattern)
-                                ret.assign(ret.add(color))
+                                ret.addAssign(color)
                         })
                 })
                 return ret.div(N)
@@ -341,7 +341,7 @@ const fragment = () => {
                         const layerPattern = position.mul(scale).mul(8).sin()
                         const layer = layerPattern.x.mul(layerPattern.y)
                         const layerContribution = layer.div(scale)
-                        result.assign(result.add(layerContribution))
+                        result.addAssign(layerContribution)
                 })
                 return result
         })

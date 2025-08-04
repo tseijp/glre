@@ -122,10 +122,10 @@ const harnack = Fn(([ro, rd]: Vec3[]) => {
                                 return gyr
                         })
                         overstep.assign(r.mul(0.75))
-                        t.assign(t.add(overstep.add(r)))
+                        t.addAssign(overstep.add(r))
                 })
         })
-        gyr.t.assign(t)
+        gyr.t = t
         return gyr
 })
 

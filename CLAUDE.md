@@ -431,6 +431,21 @@ In operations between vector types, higher-dimensional vector types take priorit
 | `.shiftLeft(x)`  | `<<`   | Left shift  | Input type  |
 | `.shiftRight(x)` | `>>`   | Right shift | Input type  |
 
+### Assignment Operators
+
+| Operator Method        | Symbol | Description               | Return Type           |
+| ---------------------- | ------ | ------------------------- | --------------------- | ---------- |
+| `.addAssign(x)`        | `+=`   | Addition assignment       | Input type            |
+| `.subAssign(x)`        | `-=`   | Subtraction assignment    | Input type            |
+| `.mulAssign(x)`        | `*=`   | Multiplication assignment | Input type            |
+| `.divAssign(x)`        | `/=`   | Division assignment       | Input type            |
+| `.modAssign(x)`        | `%=`   | Modulo assignment         | Input type            |
+| `.bitAndAssign(x)`     | `&=`   | Bitwise AND assignment    | Input type            |
+| `.bitOrAssign(x)`      | `      | =`                        | Bitwise OR assignment | Input type |
+| `.bitXorAssign(x)`     | `^=`   | Bitwise XOR assignment    | Input type            |
+| `.shiftLeftAssign(x)`  | `<<=`  | Left shift assignment     | Input type            |
+| `.shiftRightAssign(x)` | `>>=`  | Right shift assignment    | Input type            |
+
 ## Mathematical Function Library
 
 ### Trigonometric Functions

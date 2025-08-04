@@ -1,5 +1,5 @@
 import { code, getConstant, isConversion, isFunction, isOperator, getId, isArrayAccess } from './utils'
-import { assign, toVar } from './scope'
+import { addToScope, assign, toVar } from './scope'
 import { is } from '../utils/helpers'
 import type { Constants as C, Functions, NodeProps, NodeTypes, Operators, X, Y } from './types'
 
@@ -29,7 +29,11 @@ export const node = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...
                 if (key === 'element') return (arg: Y) => (type === 'storage' ? gather(x, arg) : element(x, arg))
                 if (key === 'member') return (arg: Y) => member(x, arg)
                 if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
-                if (isOperator(key)) return (...args: Y[]) => operator(key, x, ...args)
+                if (isOperator(key)) {
+                        return key.endsWith('Assign')
+                                ? (...args: Y[]) => addToScope(operator(key, x, ...args))
+                                : (...args: Y[]) => operator(key, x, ...args)
+                }
                 if (isFunction(key)) return (...args: Y[]) => function_(key, x, ...args)
                 if (isConversion(key)) return () => conversion(getConstant(key), x)
                 if (is.str(key)) return isArrayAccess(key) ? element(x, key) : member(x, key)

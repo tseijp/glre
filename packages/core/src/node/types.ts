@@ -61,6 +61,8 @@ export type NodeTypes =
         | 'switch'
         | 'declare'
         | 'return'
+        | 'break'
+        | 'continue'
 
 export interface NodeProps {
         id?: string
@@ -278,6 +280,18 @@ interface _X<T extends C> {
         shiftLeft<U extends C>(x: X<U>): X<InferOperator<T, U>>
         shiftRight<U extends C>(x: X<U>): X<InferOperator<T, U>>
 
+        // Assignment operators
+        addAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        subAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        mulAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        divAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        modAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        bitAndAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        bitOrAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        bitXorAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        shiftLeftAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+        shiftRightAssign<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<T>
+
         // Conversion methods
         toBool(): Bool
         toUint(): UInt
@@ -381,14 +395,14 @@ interface _X<T extends C> {
         clamp<U extends C>(min: number | X<U>, max: number | X<U>): X<InferOperator<T, U>>
         max<U extends C>(y: number | X<U>): X<InferOperator<T, U>>
         min<U extends C>(y: number | X<U>): X<InferOperator<T, U>>
-        mix<U extends C>(y: number | X<U>, a: number): X<InferOperator<T, U>>
+        mix<U extends C>(y: number | X<U>, a: number | Float | X<U>): X<InferOperator<T, U>>
         pow<U extends C>(y: number | X<U>): X<T>
         reflect<U extends C>(
                 N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
         ): X<T>
         refract<U extends C>(
                 N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never,
-                eta: number
+                eta: number | Float
         ): T extends 'vec2' | 'vec3' | 'vec4' ? X<T> : never
 
         // 2. Functions where not first argument determines return type with unified parameter types
