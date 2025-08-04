@@ -6,7 +6,8 @@ import type { Plugin } from 'esbuild'
  * Internal modules to exclude from framework bundles
  */
 const INTERNAL_MODULES = ['./node', './utils', './index', './types', './webgl', './webgpu']
-const FRAMEWORK_ENTRIES = ['react', 'native', 'solid']
+
+const FRAMEWORK_ENTRIES = ['index', 'react', 'native', 'solid']
 
 const BUILD_TARGETS: Options[] = [
         { format: 'cjs' },
@@ -23,45 +24,41 @@ const BASE_CONFIG: Options = {
         external: ['react', 'react-dom', 'react-native', 'reev', 'refr'],
 }
 
-const createConfig = (override: Options, options: Options): Options[] =>
-        BUILD_TARGETS.map((target) => ({
+/**
+ * Check if module path should be treated as external
+ */
+const isExternalModule = (path: string) => !INTERNAL_MODULES.some((str) => path.startsWith(str))
+
+const createExcludePlugin = (entry: string): Plugin => {
+        return {
+                name: `exclude-internal-${entry}`,
+                setup(build) {
+                        build.onResolve({ filter: /.*/ }, (args) => {
+                                if (args.kind === 'entry-point') return
+                                if (isExternalModule(args.path)) return
+                                if (args.path === './index') args.path = './index.js'
+                                return { path: args.path, external: true }
+                        })
+                },
+        }
+}
+
+/**
+ * Create build configuration for each entry point
+ */
+const createConfig = (options: Options, entry: string): Options[] => {
+        return BUILD_TARGETS.map((target) => ({
                 ...options,
                 ...target,
-                ...override,
                 ...BASE_CONFIG,
+                entry: [`src/${entry}.ts`],
+                esbuildPlugins: entry === 'index' ? void 0 : [createExcludePlugin(entry)],
                 sourcemap: !options.watch,
                 clean: !options.watch,
                 minify: !options.watch,
         }))
-
-/**
- * Check if module path should be treated as external
- */
-const isExternalModule = (path: string) => !INTERNAL_MODULES.some((pattern) => path.startsWith(pattern))
-
-const createExcludePlugin = (entryName: string): Plugin => ({
-        name: `exclude-internal-${entryName}`,
-        setup(build) {
-                build.onResolve({ filter: /.*/ }, (args) => {
-                        if (args.kind === 'entry-point') return
-                        if (isExternalModule(args.path)) return
-                        if (args.path === './index') args.path = './index.js'
-                        return { path: args.path, external: true }
-                })
-        },
-})
+}
 
 export default defineConfig((options) => {
-        const indexConfig = createConfig({ entry: ['src/index.ts'] }, options)
-        const entryConfigs = FRAMEWORK_ENTRIES.map((framework) => {
-                return createConfig(
-                        {
-                                entry: [`src/${framework}.ts`],
-                                esbuildPlugins: [createExcludePlugin(framework)],
-                        },
-                        options
-                )
-        })
-
-        return [...indexConfig, ...entryConfigs.flat()]
+        return FRAMEWORK_ENTRIES.map(createConfig.bind(null, options)).flat()
 })
