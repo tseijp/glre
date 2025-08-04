@@ -11,10 +11,7 @@ const FRAMEWORK_ENTRIES = ['index', 'react', 'native', 'solid']
 
 const BUILD_TARGETS: Options[] = [
         { format: 'cjs' },
-        {
-                format: 'esm',
-                dts: { compilerOptions: { moduleResolution: 'node' } },
-        },
+        { format: 'esm', dts: { compilerOptions: { moduleResolution: 'node' } } },
 ]
 
 const BASE_CONFIG: Options = {
