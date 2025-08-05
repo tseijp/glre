@@ -1,5 +1,6 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage } from './utils/helpers'
+import { compute, fragment, vertex } from '../node'
+import { is, loadingImage } from './helpers'
 import {
         createArrayBuffer,
         createBindGroup,
@@ -11,9 +12,8 @@ import {
         createPipeline,
         createTextureSampler,
         createVertexBuffers,
-} from './utils/pipeline'
-import type { GL, WebGPUState } from './types'
-import { compute, fragment, vertex } from './node'
+} from './pipeline'
+import type { GL, WebGPUState } from '../types'
 
 const WORKING_GROUP_SIZE = 32
 

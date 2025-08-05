@@ -5,10 +5,6 @@ import type { Plugin } from 'esbuild'
 /**
  * Internal modules to exclude from framework bundles
  */
-const INTERNAL_MODULES = ['./node', './utils', './index', './types', './webgl', './webgpu']
-
-const FRAMEWORK_ENTRIES = ['index', 'react', 'native', 'solid']
-
 const BUILD_TARGETS: Options[] = [
         { format: 'cjs' },
         { format: 'esm', dts: { compilerOptions: { moduleResolution: 'node' } } },
@@ -21,20 +17,37 @@ const BASE_CONFIG: Options = {
         external: ['react', 'react-dom', 'react-native', 'reev', 'refr'],
 }
 
-/**
- * Check if module path should be treated as external
- */
-const isExternalModule = (path: string) => !INTERNAL_MODULES.some((str) => path.startsWith(str))
+const MODULE_ENTRIES = {
+        addons: 'src/addons/index.ts',
+        node: 'src/node/index.ts',
+        index: 'src/index.ts',
+        native: 'src/native.ts',
+        react: 'src/react.ts',
+        solid: 'src/solid.ts',
+} as const
 
-const createExcludePlugin = (entry: string): Plugin => {
+type ModuleEntriesKey = keyof typeof MODULE_ENTRIES
+
+const MODULE_ENTRIES_KEYS = Object.keys(MODULE_ENTRIES) as ModuleEntriesKey[]
+
+/**
+ * Get exclusion patterns for each entry point
+ */
+const isEntryPoint = (kind: string) => kind === 'entry-point'
+
+const isModuleEntry = (path: string) => MODULE_ENTRIES_KEYS.some((p) => path.includes(p))
+
+const createPlugin = (entry: string, ext: string): Plugin => {
         return {
                 name: `exclude-internal-${entry}`,
                 setup(build) {
-                        build.onResolve({ filter: /.*/ }, (args) => {
-                                if (args.kind === 'entry-point') return
-                                if (isExternalModule(args.path)) return
-                                if (args.path === './index') args.path = './index.js'
-                                return { path: args.path, external: true }
+                        build.onResolve({ filter: /.*/ }, ({ kind, path }) => {
+                                console.log({ entry, path })
+                                if (isEntryPoint(kind)) return
+                                if (!isModuleEntry(path)) return
+                                path = path.replace(/^\.\.\//, './')
+                                path += ext
+                                return { path, external: true }
                         })
                 },
         }
@@ -43,19 +56,22 @@ const createExcludePlugin = (entry: string): Plugin => {
 /**
  * Create build configuration for each entry point
  */
-const createConfig = (options: Options, entry: string): Options[] => {
-        return BUILD_TARGETS.map((target) => ({
-                ...options,
-                ...target,
-                ...BASE_CONFIG,
-                entry: [`src/${entry}.ts`],
-                esbuildPlugins: entry === 'index' ? void 0 : [createExcludePlugin(entry)],
-                sourcemap: !options.watch,
-                clean: !options.watch,
-                minify: !options.watch,
-        }))
+const createConfig = (options: Options, entry: ModuleEntriesKey): Options[] => {
+        return BUILD_TARGETS.map((target) => {
+                const ext = target.format === 'cjs' ? '.cjs' : '.js'
+                return {
+                        ...options,
+                        ...target,
+                        ...BASE_CONFIG,
+                        entry: { [entry]: MODULE_ENTRIES[entry] },
+                        esbuildPlugins: [createPlugin(entry, ext)],
+                        sourcemap: !options.watch,
+                        clean: !options.watch,
+                        minify: !options.watch,
+                }
+        })
 }
 
 export default defineConfig((options) => {
-        return FRAMEWORK_ENTRIES.map(createConfig.bind(null, options)).flat()
+        return MODULE_ENTRIES_KEYS.map(createConfig.bind(null, options)).flat()
 })

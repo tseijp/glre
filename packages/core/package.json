@@ -33,6 +33,32 @@
                 "./src/*": {
                         "default": "./src/*.ts"
                 },
+                "./addons": {
+                        "types": "./dist/addons.d.ts",
+                        "import": {
+                                "types": "./dist/addons.d.ts",
+                                "default": "./dist/addons.js"
+                        },
+                        "module": {
+                                "types": "./dist/addons.d.ts",
+                                "default": "./dist/addons.js"
+                        },
+                        "require": "./dist/addons.cjs",
+                        "default": "./dist/addons.js"
+                },
+                "./node": {
+                        "types": "./dist/node.d.ts",
+                        "import": {
+                                "types": "./dist/node.d.ts",
+                                "default": "./dist/node.js"
+                        },
+                        "module": {
+                                "types": "./dist/node.d.ts",
+                                "default": "./dist/node.js"
+                        },
+                        "require": "./dist/node.cjs",
+                        "default": "./dist/node.js"
+                },
                 "./react": {
                         "types": "./dist/react.d.ts",
                         "import": {

@@ -1,5 +1,6 @@
 import { nested as cached } from 'reev'
-import { loadingImage } from './utils/helpers'
+import { loadingImage } from './helpers'
+import { compute, fragment, vertex } from '../node'
 import {
         cleanStorage,
         createAttachment,
@@ -8,9 +9,8 @@ import {
         createStorage,
         createTexture,
         createUniform,
-} from './utils/program'
-import { compute, fragment, vertex } from './node'
-import type { GL, WebGLState } from './types'
+} from './program'
+import type { GL, WebGLState } from '../types'
 
 const vert = /* cpp */ `
 #version 300 es
