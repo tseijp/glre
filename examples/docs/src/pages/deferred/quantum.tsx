@@ -13,12 +13,12 @@ import {
         smoothstep,
         sqrt,
         uniform,
-        useGL,
         uv,
         vec2,
         vec3,
         vec4,
-} from 'glre/src/react'
+} from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 
 // Quantum Interference Deferred Shading Demo

@@ -11,12 +11,12 @@ import {
         smoothstep,
         step,
         uniform,
-        useGL,
         uv,
         vec2,
         vec3,
         vec4,
-} from 'glre/src/react'
+} from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 
 // Time Paradox Deferred Shading Demo

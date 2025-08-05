@@ -5,9 +5,6 @@ import { webgl } from './utils/webgl'
 import { webgpu } from './utils/webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
-import { float, fract, int, iResolution, position, vec4, vertexIndex } from './node'
-export * from './addons'
-export * from './node'
 export * from './types'
 
 export const isGL = (a: unknown): a is EventState<GL> => {

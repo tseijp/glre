@@ -15,11 +15,11 @@ import {
         position,
         struct,
         uniform,
-        useGL,
         vec2,
         vec3,
         vec4,
-} from 'glre/src/react'
+} from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 import { useDrag } from 'rege/react'
 
