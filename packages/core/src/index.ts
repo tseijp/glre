@@ -110,10 +110,3 @@ export const createGL = (props?: Partial<GL>) => {
 
 export default createGL
 
-export const INDEX = `
-I
-N
-D
-E
-X
-`
