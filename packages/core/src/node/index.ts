@@ -1,9 +1,9 @@
 import { hex2rgb } from './utils'
-import { builtin as b, conversion as c, function_ as f, uniform as u } from './node'
+import { builtin as b, conversion as c, function_ as f, uniform as u } from './create'
 import { is } from '../utils/helpers'
 import type { Constants as C, Float, X, Y } from './types'
-export * from './core'
-export * from './node'
+export * from './build'
+export * from './create'
 export * from './scope'
 export * from './types'
 

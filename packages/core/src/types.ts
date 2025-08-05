@@ -1,7 +1,6 @@
 import type { EventState, Nested } from 'reev'
-import type { Fun, Queue, Frame } from 'refr'
+import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
-export type { Fun, Queue, Frame }
 
 export type GL = EventState<{
         /**

@@ -42,7 +42,6 @@ const createPlugin = (entry: string, ext: string): Plugin => {
                 name: `exclude-internal-${entry}`,
                 setup(build) {
                         build.onResolve({ filter: /.*/ }, ({ kind, path }) => {
-                                console.log({ entry, path })
                                 if (isEntryPoint(kind)) return
                                 if (!isModuleEntry(path)) return
                                 path = path.replace(/^\.\.\//, './')

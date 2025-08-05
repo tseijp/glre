@@ -243,8 +243,12 @@ interface _X<T extends C> {
         // System properties
         readonly __nodeType?: T
         assign(x: any): X<T>
+        fragment(c: NodeContext): string
         toVar(name?: string): X<T>
         toString(c?: NodeContext): string
+        fragment(c?: NodeContext): string
+        compute(c?: NodeContext): string
+        vertex(c?: NodeContext): string
         type: NodeTypes
         props: NodeProps
         isProxy: true
