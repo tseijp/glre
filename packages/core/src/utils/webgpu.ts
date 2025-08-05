@@ -1,5 +1,4 @@
 import { nested as cached } from 'reev'
-import { compute, fragment, vertex } from '../node'
 import { is, loadingImage } from './helpers'
 import {
         createArrayBuffer,
@@ -16,6 +15,28 @@ import {
 import type { GL, WebGPUState } from '../types'
 
 const WORKING_GROUP_SIZE = 32
+
+const DEFAULT_VERTEX = /* rust */ `
+struct In { @builtin(vertex_index) vertex_index: u32 }
+struct Out { @builtin(position) position: vec4f }
+@vertex
+fn main(in: In) -> Out {
+  var out: Out;
+  var x = f32(in.vertex_index % 2) * 4.0 - 1.0;
+  var y = f32(in.vertex_index / 2) * 4.0 - 1.0;
+  out.position = vec4f(x, y, 0.0, 1.0);
+  return out;
+}
+`.trim()
+
+const DEFAULT_FRAGMENT = /* rust */ `
+struct Out { @builtin(position) position: vec4f }
+@group(0) @binding(0) var<uniform> iResolution: vec2f;
+@fragment
+fn main(out: Out) -> @location(0) vec4f {
+  return vec4f(fract((out.position.xy / iResolution)), 0.0, 1.0);
+}
+`
 
 const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
@@ -129,9 +150,9 @@ export const webgpu = async (gl: GL) => {
         const render = () => {
                 if (!frag || !vert) {
                         const config = { isWebGL: false, gl }
-                        frag = fragment(gl.fs, config) // needs to be before vertex
-                        vert = vertex(gl.vs, config)
-                        comp = compute(gl.cs, config)
+                        frag = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : DEFAULT_FRAGMENT
+                        vert = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : DEFAULT_VERTEX
+                        comp = gl.cs ? (is.str(gl.cs) ? gl.cs : gl.cs.compute(config)) : ''
                 }
                 if (gl.loading) return // MEMO: loading after build node
                 if (needsUpdate) update()

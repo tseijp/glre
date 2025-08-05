@@ -27,19 +27,6 @@ export const isWebGPUSupported = () => {
 
 let iTime = performance.now()
 
-const defaultFragment = () => vec4(fract(position.xy.div(iResolution)), 0, 1)
-const defaultVertex = () =>
-        vec4(
-                float(int(vertexIndex).mod(int(2)))
-                        .mul(4)
-                        .sub(1),
-                float(int(vertexIndex).div(int(2)))
-                        .mul(4)
-                        .sub(1),
-                0,
-                1
-        )
-
 export const createGL = (props?: Partial<GL>) => {
         const gl = event({
                 isNative: false,
@@ -72,10 +59,10 @@ export const createGL = (props?: Partial<GL>) => {
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {
-                gl.vs = gl.vs || gl.vert || gl.vertex || defaultVertex()
-                gl.fs = gl.fs || gl.frag || gl.fragment || defaultFragment()
-                gl.cs = gl.cs || gl.comp || gl.compute
                 if (!isWebGPUSupported()) gl.isWebGL = true
+                gl.vs = gl.vs || gl.vert || gl.vertex
+                gl.fs = gl.fs || gl.frag || gl.fragment
+                gl.cs = gl.cs || gl.comp || gl.compute
                 if (gl.isWebGL) {
                         gl((await webgl(gl)) as GL)
                 } else gl((await webgpu(gl)) as GL)

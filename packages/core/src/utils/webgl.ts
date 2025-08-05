@@ -1,6 +1,5 @@
 import { nested as cached } from 'reev'
-import { loadingImage } from './helpers'
-import { compute, fragment, vertex } from '../node'
+import { is, loadingImage } from './helpers'
 import {
         cleanStorage,
         createAttachment,
@@ -12,13 +11,23 @@ import {
 } from './program'
 import type { GL, WebGLState } from '../types'
 
-const vert = /* cpp */ `
+const DEFAULT_FRAGMENT = /* cpp */ `
+#version 300 es
+precision mediump float;
+out vec4 fragColor;
+uniform vec2 iResolution;
+void main() {
+  fragColor = vec4(fract((gl_FragCoord.xy / iResolution)), 0.0, 1.0);
+}
+`
+
+const DEFAULT_VERTEX = /* cpp */ `
 #version 300 es
 void main() {
-        float x = float(gl_VertexID % 2) * 4.0 - 1.0;
-        float y = float(gl_VertexID / 2) * 4.0 - 1.0;
-        gl_Position = vec4(x, y, 0.0, 1.0);
-}`.trim()
+  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
+  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
+  gl_Position = vec4(x, y, 0.0, 1.0);
+}`
 
 const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         if (!gl.cs) return null // ignore if no compute shader
@@ -28,9 +37,8 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         let currentNum = 0 // for storage buffers
 
         const units = cached(() => activeUnit++)
-        const config = { isWebGL: true, gl, units }
-
-        const pg = createProgram(c, compute(gl.cs, config), vert, gl)!
+        const cs = is.str(gl.cs) ? gl.cs : gl.cs!.compute({ isWebGL: true, gl, units })
+        const pg = createProgram(c, cs, DEFAULT_VERTEX, gl)!
         const size = Math.ceil(Math.sqrt(gl.particles))
 
         const uniforms = cached((key) => c.getUniformLocation(pg, key)!)
@@ -75,7 +83,9 @@ export const webgl = async (gl: GL) => {
         const config = { isWebGL: true, gl }
         const c = gl.el!.getContext('webgl2')!
         const cp = computeProgram(gl, c)
-        const pg = createProgram(c, fragment(gl.fs, config), vertex(gl.vs, config), gl)!
+        const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs!.fragment(config)) : DEFAULT_FRAGMENT
+        const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs!.vertex(config)) : DEFAULT_VERTEX
+        const pg = createProgram(c, fs, vs, gl)!
         c.useProgram(pg)
 
         let activeUnit = 0 // for texture units
