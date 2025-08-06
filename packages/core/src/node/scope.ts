@@ -142,6 +142,7 @@ export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: 
                 scoped(x, () => fun(paramVars as Args) as any, y)
                 return y
         }
+        ret.getLayout = () => layout
         ret.setLayout = (_layout: FnLayout) => {
                 layout = _layout
                 return ret

@@ -40,7 +40,7 @@ cached 関数を使用して uniforms、textures、attribs のデータをキャ
 ### 抽象構文木構築メカニズム
 
 ノードシステムは、JavaScript コードから GLSL/WGSL シェーダコードを生成するための DSL（Domain Specific Language）である。
-node.ts の node 関数は、React.createElement と同じ引数形式で抽象構文木を構築する。
+create.ts の create 関数は、React.createElement と同じ引数形式で抽象構文木を構築する。
 
 NodeProxy オブジェクトは、Proxy パターンを使用して getter/setter による動的な抽象構文木を構築する。
 type、props、children のプロパティを持ち、これらの関係性が code 関数によって解析されてシェーダコードに変換される。
@@ -83,7 +83,7 @@ If、Loop、Switch などのコードはこのメカニズムでネストされ�
 
 ### パイプライン構築の自動化
 
-utils/pipeline.ts では、WebGPU 向けのリソース管理機能を提供する createBindings 関数は、
+pipeline.ts では、WebGPU 向けのリソース管理機能を提供する createBindings 関数は、
 uniform、texture、attribute のリソースに対して自動的に group と binding の番号を割り当てる。
 
 この番号割り当ては、シェーダコード生成時と実際の GPU リソース作成時で一致する必要があるため、

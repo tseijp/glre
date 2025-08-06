@@ -109,4 +109,3 @@ export const createGL = (props?: Partial<GL>) => {
 }
 
 export default createGL
-

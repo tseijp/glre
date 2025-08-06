@@ -34,10 +34,21 @@ const matRotate = Fn(([a]: [Float]) => {
         const c = a.cos().toVar('c')
         const s = a.sin().toVar('s')
         return mat3(c, s, 0, s.negate(), c, 0, 0, 0, 1)
+}).setLayout({
+        name: 'matRotate',
+        type: 'mat3',
+        inputs: [{ type: 'float', name: 'a' }],
 })
 
 const matTranslate = Fn(([x, y]: [Float, Float]) => {
         return mat3(1, 0, 0, 0, 1, 0, x.negate(), y.negate(), 1)
+}).setLayout({
+        name: 'matTranslate',
+        type: 'mat3',
+        inputs: [
+                { type: 'float', name: 'x' },
+                { type: 'float', name: 'y' },
+        ],
 })
 
 const sdBranch = Fn(([p, w, l]: [Vec2, Float, Float]) => {
@@ -51,6 +62,13 @@ const sdBranch = Fn(([p, w, l]: [Vec2, Float, Float]) => {
 const _getBranchTransform = Fn(([factor, l]: [Vec4, Float]) => {
         const angle = iTime.add(factor.x).sin().mul(factor.y).add(factor.z)
         return matRotate(angle).mul(matTranslate(float(0), l.div(LENF).mul(factor.w)))
+}).setLayout({
+        name: '_getBranchTransform',
+        type: 'mat3',
+        inputs: [
+                { type: 'vec4', name: 'factor' },
+                { type: 'float', name: 'l' },
+        ],
 })
 
 const getBranchTransform = Fn(([path, l]: [Int, Float]) => {
@@ -61,6 +79,13 @@ const getBranchTransform = Fn(([path, l]: [Int, Float]) => {
                 return _getBranchTransform(vec4(0, 0.21, -0.6, 0.6), l)
         })
         return _getBranchTransform(vec4(1, 0.23, 0, 1), l)
+}).setLayout({
+        name: 'getBranchTransform',
+        type: 'mat3',
+        inputs: [
+                { type: 'int', name: 'path' },
+                { type: 'float', name: 'l' },
+        ],
 })
 
 const map = Fn(([pos]: [Vec2]) => {
@@ -91,6 +116,10 @@ const map = Fn(([pos]: [Vec2]) => {
                 })
         })
         return d
+}).setLayout({
+        name: 'map',
+        type: 'float',
+        inputs: [{ type: 'vec2', name: 'pos' }],
 })
 
 const fragment = Fn(([pos]: [Vec4]) => {

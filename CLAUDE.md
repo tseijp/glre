@@ -48,7 +48,7 @@ and createPipeline functions based on this information.
 
 The node system is a DSL (Domain Specific Language)
 for generating GLSL/WGSL shader code from JavaScript code.
-The node function in node.ts constructs abstract syntax trees
+The create function in create.ts constructs abstract syntax trees
 with argument formats identical to React.createElement.
 
 NodeProxy objects construct dynamic abstract syntax trees
@@ -97,7 +97,7 @@ Code structures like If, Loop, and Switch use this mechanism to generate nested 
 
 ### Pipeline Construction Automation
 
-utils/pipeline.ts provides resource management functionality for WebGPU.
+pipeline.ts provides resource management functionality for WebGPU.
 The createBindings function automatically assigns group and binding numbers
 for uniform, texture, and attribute resources.
 

@@ -20,6 +20,7 @@ export interface FnLayout {
 
 export interface FnType<T extends X | Struct | void, Args extends any[]> {
         (...args: Args): T extends void ? Void : T
+        getLayout(): FnLayout
         setLayout(layout: FnLayout): FnType<T, Args>
 }
 
