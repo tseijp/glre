@@ -1,0 +1,118 @@
+---
+title: 'Inverse Cubic Phase Transformation'
+description: 'Reverse cubic interpolation revealing hidden mathematical harmonies through trigonometric inversion'
+keywords: ['invCubic', 'inverse', 'trigonometric', 'phase', 'arcsine', 'transformation', 'harmonics']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Inverse Cubic Phase Transformation
+
+### Unveiling Hidden Harmonic Structures Through Mathematical Inversion
+
+The inverse cubic function represents a fascinating exploration into the mathematical territory where cubic interpolation meets trigonometric inversion. The function `f(v) = 0.5 - sin(asin(1.0 - 2.0*v) / 3.0)` creates a unique phase transformation that reveals complex harmonic structures hidden within simple input values.
+
+### Trigonometric Phase Space Visualization
+
+The core mathematical beauty lies in the nested trigonometric operations, where the arcsine creates angular phase space and subsequent sine division by three produces triadic resonance patterns.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const r = uv.distance(vec2(0.5))
+        const theta = uv.sub(vec2(0.5)).y.atan2(uv.sub(vec2(0.5)).x)
+        const phase = invCubic(r.mul(2).clamp(0, 1))
+        const interference = theta.mul(6).add(phase.mul(20)).sin()
+        const resonance = phase.mul(interference).abs()
+        const harmonics = resonance.pow(0.7).mul(1.2)
+        return vec4(harmonics.mul(0.9), harmonics.mul(0.7).add(phase.mul(0.3)), harmonics.add(phase.mul(0.4)), 1)
+}`}
+/>
+
+### Temporal Phase Distortion Fields
+
+Combining the inverse cubic transformation with time creates non-linear temporal distortion, where different regions of space experience varying rates of temporal flow, mimicking relativistic effects.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const offset = uv.sub(center)
+        const dist = offset.length().mul(3)
+        const timeField = invCubic(dist.fract())
+        const warpedTime = iTime.add(timeField.mul(4))
+        const spiralAngle = offset.y.atan2(offset.x).add(warpedTime.mul(0.5))
+        const radiusWarp = dist.add(warpedTime.sin().mul(0.3))
+        const vortex = spiralAngle.mul(8).sin().div(radiusWarp.exp())
+        const intensity = vortex.abs().pow(0.6)
+        return vec4(intensity.mul(timeField), intensity.mul(0.8).add(timeField.mul(0.2)), intensity.add(timeField.mul(0.3)), 1)
+}`}
+/>
+
+### Quantum Interference Crystallization
+
+The inverse cubic function's unique mathematical properties create quantum-like interference patterns when applied to crystalline lattice structures, producing crystallographic beauty through numerical precision.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const lattice = uv.mul(12)
+        const cellX = lattice.x.fract().sub(0.5).abs()
+        const cellY = lattice.y.fract().sub(0.5).abs()
+        const cellDist = cellX.max(cellY)
+        const quantum = invCubic(cellDist.mul(2))
+        const wave1 = lattice.x.add(iTime.mul(2)).sin().mul(quantum)
+        const wave2 = lattice.y.add(iTime.mul(1.7)).sin().mul(quantum)
+        const interference = wave1.mul(wave2).add(quantum.mul(0.5))
+        const crystal = interference.abs().pow(1.8).clamp(0, 1)
+        return vec4(crystal.mul(0.6).add(quantum.mul(0.4)), crystal, crystal.mul(0.8).add(quantum.mul(0.2)), 1)
+}`}
+/>
+
+### Hyperdimensional Projection Mapping
+
+By interpreting the inverse cubic transformation as a projection from higher dimensions, we can visualize impossible geometries that exist only in mathematical space, creating surreal architectural forms.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(2).sub(1)
+        const x = coord.x
+        const y = coord.y
+        const r = coord.length()
+        const proj4d = invCubic(r.mod(0.8).div(0.8))
+        const rotX = x.mul(proj4d.cos()).sub(y.mul(proj4d.sin()))
+        const rotY = x.mul(proj4d.sin()).add(y.mul(proj4d.cos()))
+        const hyperbolic = rotX.mul(rotX).sub(rotY.mul(rotY))
+        const architecture = hyperbolic.add(iTime.mul(0.3)).sin().mul(proj4d)
+        const depth = architecture.abs().pow(0.5)
+        const shadow = float(1).sub(depth.mul(0.7))
+        return vec4(depth.mul(0.9).add(0.1), depth.mul(0.7).add(shadow.mul(0.3)), depth.mul(0.6).add(shadow.mul(0.4)), 1)
+}`}
+/>
+
+### Melodic Frequency Spectrum Analysis
+
+The mathematical structure of inverse cubic transformation mirrors harmonic series found in musical acoustics, creating visual representations of complex frequency relationships and overtone interactions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const frequency = uv.x.mul(32)
+        const amplitude = uv.y.sub(0.5).abs().mul(2)
+        const fundamental = invCubic(frequency.fract())
+        const overtone1 = invCubic(frequency.mul(1.5).fract()).mul(0.7)
+        const overtone2 = invCubic(frequency.mul(2.25).fract()).mul(0.4)
+        const spectrum = fundamental.add(overtone1).add(overtone2)
+        const envelope = amplitude.sub(spectrum).abs().mul(5).oneMinus().clamp(0, 1)
+        const harmonic = envelope.pow(2).mul(spectrum)
+        const melody = harmonic.add(iTime.mul(frequency.div(16)).sin().mul(0.1))
+        return vec4(melody.mul(0.8), melody.mul(0.9).add(spectrum.mul(0.1)), melody.add(envelope.mul(0.2)), 1)
+}`}
+/>
