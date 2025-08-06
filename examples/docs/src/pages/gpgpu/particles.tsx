@@ -1,4 +1,5 @@
-import { float, Fn, id, If, int, Loop, storage, useGL, uv, Vec2, vec2, Vec3, vec3, vec4 } from 'glre/src/react'
+import { float, Fn, id, If, int, Loop, storage, uv, Vec2, vec2, Vec3, vec3, vec4 } from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 
 const positions = storage(vec2(), 'positions')
 const velocities = storage(vec2(), 'velocities')

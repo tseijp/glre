@@ -8,12 +8,12 @@ import {
         select,
         smoothstep,
         uniform,
-        useGL,
         uv,
         vec2,
         vec3,
         vec4,
-} from 'glre/src/react'
+} from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 
 // Geometry pass - renders scene geometry to G-Buffer
 const geometryPass = Fn(([uv]) => {

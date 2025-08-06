@@ -256,7 +256,7 @@ const fragment = () => {
                         const alpha = idx.mul(0.1).add(0.3)
                         // Accumulate layers
                         const layerContribution = layerColor.mul(alpha)
-                        finalColor.assign(finalColor.add(layerContribution))
+                        finalColor.addAssign(layerContribution)
                 })
                 return finalColor
         })

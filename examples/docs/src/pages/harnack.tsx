@@ -15,11 +15,11 @@ import {
         position,
         struct,
         uniform,
-        useGL,
         vec2,
         vec3,
         vec4,
-} from 'glre/src/react'
+} from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 import { useDrag } from 'rege/react'
 
@@ -122,10 +122,10 @@ const harnack = Fn(([ro, rd]: Vec3[]) => {
                                 return gyr
                         })
                         overstep.assign(r.mul(0.75))
-                        t.assign(t.add(overstep.add(r)))
+                        t.addAssign(overstep.add(r))
                 })
         })
-        gyr.t.assign(t)
+        gyr.t = t
         return gyr
 })
 

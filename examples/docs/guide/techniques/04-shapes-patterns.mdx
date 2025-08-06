@@ -229,7 +229,7 @@ const fragment = () => {
                         const layerRatio = layerIndex.div(float(N))
                         const weight = layerRatio.oneMinus()
                         const circleVec = vec3(circle).mul(weight)
-                        ret.assign(ret.add(circleVec))
+                        ret.addAssign(circleVec)
                 })
                 const divisor = float(N)
                 return ret.div(divisor) // Normalize
@@ -300,8 +300,7 @@ const fragment = () => {
                         If(offset.length().greaterThan(0.1), () => {
                                 const coordOffset = coord.add(offset)
                                 const cell = step(0.5, hash(coordOffset))
-                                const newNeighbors = neighbors.add(cell)
-                                neighbors.assign(newNeighbors)
+                                neighbors.addAssign(cell)
                         })
                 })
                 const coordTime = coord.add(time)

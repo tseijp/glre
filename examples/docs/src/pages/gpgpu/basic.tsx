@@ -1,4 +1,5 @@
-import { Fn, iTime, mod, id, storage, useGL, uv, vec2, vec4, Vec2, Vec3 } from 'glre/src/react'
+import { Fn, iTime, mod, id, storage, uv, vec2, vec4, Vec2, Vec3 } from 'glre/src/node'
+import { useGL } from 'glre/src/react'
 
 const data = storage(vec4(), 'data')
 

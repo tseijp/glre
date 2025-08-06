@@ -1,15 +1,11 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
-import { webgl } from './webgl'
-import { webgpu } from './webgpu'
 import { is } from './utils/helpers'
+import { webgl } from './utils/webgl'
+import { webgpu } from './utils/webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
-import { float, fract, int, iResolution, position, vec4, vertexIndex } from './node'
-export * from './node'
 export * from './types'
-export * from './webgl'
-export * from './webgpu'
 
 export const isGL = (a: unknown): a is EventState<GL> => {
         if (!is.obj(a)) return false
@@ -27,19 +23,6 @@ export const isWebGPUSupported = () => {
 }
 
 let iTime = performance.now()
-
-const defaultFragment = () => vec4(fract(position.xy.div(iResolution)), 0, 1)
-const defaultVertex = () =>
-        vec4(
-                float(int(vertexIndex).mod(int(2)))
-                        .mul(4)
-                        .sub(1),
-                float(int(vertexIndex).div(int(2)))
-                        .mul(4)
-                        .sub(1),
-                0,
-                1
-        )
 
 export const createGL = (props?: Partial<GL>) => {
         const gl = event({
@@ -73,10 +56,10 @@ export const createGL = (props?: Partial<GL>) => {
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {
-                gl.vs = gl.vs || gl.vert || gl.vertex || defaultVertex()
-                gl.fs = gl.fs || gl.frag || gl.fragment || defaultFragment()
-                gl.cs = gl.cs || gl.comp || gl.compute
                 if (!isWebGPUSupported()) gl.isWebGL = true
+                gl.vs = gl.vs || gl.vert || gl.vertex
+                gl.fs = gl.fs || gl.frag || gl.fragment
+                gl.cs = gl.cs || gl.comp || gl.compute
                 if (gl.isWebGL) {
                         gl((await webgl(gl)) as GL)
                 } else gl((await webgpu(gl)) as GL)
@@ -126,3 +109,4 @@ export const createGL = (props?: Partial<GL>) => {
 }
 
 export default createGL
+

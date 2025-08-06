@@ -118,12 +118,12 @@ export const createPipeline = (
 ) => {
         return device.createRenderPipeline({
                 vertex: {
-                        module: device.createShaderModule({ label: 'vert', code: vs }),
+                        module: device.createShaderModule({ label: 'vert', code: vs.trim() }),
                         entryPoint: 'main',
                         buffers: bufferLayouts,
                 },
                 fragment: {
-                        module: device.createShaderModule({ label: 'frag', code: fs }),
+                        module: device.createShaderModule({ label: 'frag', code: fs.trim() }),
                         entryPoint: 'main',
                         targets: [{ format }],
                 },
@@ -140,7 +140,7 @@ export const createPipeline = (
 export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
         return device.createComputePipeline({
                 compute: {
-                        module: device.createShaderModule({ label: 'compute', code: cs }),
+                        module: device.createShaderModule({ label: 'compute', code: cs.trim() }),
                         entryPoint: 'main',
                 },
                 layout: device.createPipelineLayout({ bindGroupLayouts }),

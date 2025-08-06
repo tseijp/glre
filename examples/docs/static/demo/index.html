@@ -1,0 +1,16 @@
+<canvas id="canvas"></canvas>
+<script type="module">
+        import { createGL } from 'https://esm.sh/glre'
+        import { uv, vec4 } from 'https://esm.sh/glre/node'
+
+        const fragment = () => {
+                return uv.xxxy
+        }
+
+        const gl = createGL({
+                fs: fragment(),
+                el: document.getElementById('canvas'),
+        })
+
+        gl.mount()
+</script>

@@ -1,9 +1,9 @@
 import { hex2rgb } from './utils'
-import { builtin as b, conversion as c, function_ as f, uniform as u } from './node'
+import { builtin as b, conversion as c, function_ as f, uniform as u } from './create'
 import { is } from '../utils/helpers'
-import type { Constants as C, X, Y } from './types'
-export * from './core'
-export * from './node'
+import type { Constants as C, Float, X, Y } from './types'
+export * from './build'
+export * from './create'
 export * from './scope'
 export * from './types'
 
@@ -139,12 +139,16 @@ export const clamp = <T extends C, U extends C>(x: X<T>, min: number | X<U>, max
         f<T>('clamp', x, min, max)
 export const max = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => f<T>('max', x, y)
 export const min = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => f<T>('min', x, y)
-export const mix = <T extends C, U extends C>(x: X<T>, y: number | X<U>, a: number) => f<T>('mix', x, y, a)
+export const mix = <T extends C, U extends C>(x: X<T>, y: number | X<U>, a: number | Float | X<U>) =>
+        f<T>('mix', x, y, a)
 export const pow = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => f<T>('pow', x, y)
 export const reflect = <T extends 'vec2' | 'vec3' | 'vec4', U extends C>(I: X<T>, N: number | X<U>) =>
         f<T>('reflect', I, N)
-export const refract = <T extends 'vec2' | 'vec3' | 'vec4', U extends C>(I: X<T>, N: number | X<U>, eta: number) =>
-        f<T>('refract', I, N, eta)
+export const refract = <T extends 'vec2' | 'vec3' | 'vec4', U extends C>(
+        I: X<T>,
+        N: number | X<U>,
+        eta: number | Float
+) => f<T>('refract', I, N, eta)
 
 // 2. Functions where not first argument determines return type with unified parameter types
 export const smoothstep = <T extends C, U extends C>(e0: number | X<U>, e1: number | X<U>, x: X<T>) =>
