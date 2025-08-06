@@ -1,0 +1,81 @@
+---
+title: 'Anti-aliased Floor Function'
+description: 'Smooth floor function that prevents harsh edges and aliasing artifacts in visual patterns'
+keywords: [antialiasing, floor, smooth, edges, patterns, mathematical-functions]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-aliased Floor Function
+
+### Visual Smoothing Revolution
+
+Traditional floor functions create harsh pixel edges that destroy visual quality. The **aafloor** function eliminates these artifacts through derivative-based smoothing, creating seamless patterns that adapt to viewing distance and pixel density.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(20)
+        const pattern = aafloor(coord.x).add(aafloor(coord.y)).mod(2)
+        const color = pattern.mix(vec3(0.2, 0.3, 0.8), vec3(0.9, 0.7, 0.1))
+        return vec4(color, 1)
+}`}
+/>
+
+### Edge Detection Magic
+
+The function analyzes pixel derivatives to detect edge boundaries, applying selective smoothing only where aliasing would occur. This creates natural-looking transitions without sacrificing pattern sharpness.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const grid = uv.mul(12)
+        const floorX = aafloor(grid.x.add(iTime.mul(0.5)))
+        const floorY = aafloor(grid.y.add(iTime.mul(0.3)))
+        const checker = floorX.add(floorY).mod(2)
+        const pulse = sin(iTime.mul(2)).mul(0.5).add(0.5)
+        const color = checker.mix(
+                vec3(0.1, 0.8, pulse),
+                vec3(pulse, 0.2, 0.9)
+        )
+        return vec4(color, 1)
+}`}
+/>
+
+### Fractal Precision Architecture
+
+When creating complex mathematical visualizations, harsh floor boundaries destroy fractal details. Anti-aliased floor maintains mathematical precision while ensuring visual continuity across scale changes.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const spiral = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+        const radius = length(uv.sub(0.5)).mul(8)
+        const floorSpiral = aafloor(spiral.mul(3).add(iTime))
+        const floorRadius = aafloor(radius.add(iTime.mul(2)))
+        const pattern = floorSpiral.mul(floorRadius).mod(4).div(4)
+        const color = pattern.mul(vec3(0.8, 0.4, 0.9))
+        return vec4(color, 1)
+}`}
+/>
+
+### Pixel-perfect Animation Flow
+
+Moving patterns with traditional floor create stuttering motion artifacts. Anti-aliased floor ensures smooth animation flow regardless of movement speed or direction.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const wave = sin(uv.x.mul(10).add(iTime.mul(3))).mul(2)
+        const tiles = aafloor(uv.y.mul(15).add(wave))
+        const gradient = tiles.div(15).saturate()
+        const shimmer = sin(tiles.add(iTime.mul(4))).mul(0.3).add(0.7)
+        const color = gradient.mul(shimmer).mul(vec3(0.6, 0.9, 0.4))
+        return vec4(color, 1)
+}`}
+/>

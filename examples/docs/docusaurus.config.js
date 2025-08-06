@@ -51,6 +51,15 @@ const config = {
                                 editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                         },
                 ],
+                [
+                        '@docusaurus/plugin-content-docs',
+                        {
+                                id: 'addons',
+                                path: 'addons/',
+                                routeBasePath: 'addons',
+                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
+                        },
+                ],
                 // @TODO FIX primitives
                 // [
                 //         '@docusaurus/plugin-content-docs',
@@ -84,6 +93,7 @@ const config = {
                                         label: 'Docs',
                                 },
                                 { position: 'left', to: '/api', label: 'API' },
+                                { position: 'left', to: '/addons', label: 'Addons' },
                                 {
                                         position: 'left',
                                         to: '/guide',

@@ -123,16 +123,15 @@ export const parseStruct = (c: NodeContext, id: string, instanceId = '', initial
 export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
         const { id, children = [], layout } = props
         const [x, ...args] = children
-        const argParams: [name: string, type: string][] = []
+        const argParams: [name: string, type: Constants][] = []
         const params: string[] = []
-        if (layout?.inputs)
-                for (const input of layout.inputs) {
-                        argParams.push([input.name, input.type])
-                }
-        else
-                for (let i = 0; i < args.length; i++) {
-                        argParams.push([`p${i}`, infer(args[i], c)])
-                }
+        for (let i = 0; i < args.length; i++) {
+                const input = layout?.inputs?.[i]
+                const name = input?.name || `p${i}`
+                let type = input?.type || infer(args[i], c)
+                if (type === 'auto') type = infer(args[i], c)
+                argParams.push([name, type])
+        }
         const scopeCode = code(x, c) // build struct headers before inferring returnType
         const returnType = infer(target, c)
         const ret = []
@@ -158,7 +157,7 @@ export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
 /**
  * headers
  */
-export const parseVaryingHead = (c: NodeContext, id: string, type: string) => {
+export const parseVaryingHead = (c: NodeContext, id: string, type: Constants) => {
         return c.isWebGL
                 ? `${type} ${id};`
                 : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`

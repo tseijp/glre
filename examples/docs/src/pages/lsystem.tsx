@@ -1,3 +1,108 @@
+/**
+#version 300 es
+precision mediump float;
+
+out vec4 fragColor;
+
+uniform vec2 iResolution;
+uniform float iTime;
+uniform float WIDF;
+uniform float WID;
+uniform float LEN;
+uniform float LENF;
+
+const int maxDepth = int(6561.0);
+const int depth = int(8.0);
+const int branches = int(3.0);
+
+mat3 matRotate(float a) {
+        float c = cos(a);
+        float s = sin(a);
+        return mat3(
+                c, s, 0.0,
+                -s, c, 0.0,
+                0.0, 0.0, 1.0
+        );
+}
+
+mat3 matTranslate(float x, float y) {
+        return mat3(
+                1.0, 0.0, 0.0,
+                0.0, 1.0, 0.0,
+                -x, -y, 1.0
+        );
+}
+
+float x2(vec2 p0, float p1, float p2) {
+        float h = clamp(p0.y / p2, 0.0, 1.0);
+        return length(p0 - vec2(0.0, p2 * h)) - mix(p1, p1 * WIDF, h);
+}
+
+mat3 _getBranchTransform(vec4 factor, float l) {
+        float angle = sin(iTime + factor.x) * factor.y + factor.z;
+        return matRotate(angle) * matTranslate(0.0, (l / LENF) * factor.w);
+}
+
+mat3 getBranchTransform(int path, float l) {
+        if (path == int(0.0)) {
+                return _getBranchTransform(vec4(-1.0, 0.25, 0.75, 0.3), l);
+        }
+        if (path == int(1.0)) {
+                return _getBranchTransform(vec4(0.0, 0.21, -0.6, 0.6), l);
+        }
+        return _getBranchTransform(vec4(1.0, 0.23, 0.0, 1.0), l);
+}
+
+float map(vec2 pos) {
+        float d = x2(pos, WID, LEN);
+        int c = int(0.0);
+
+        for (int x7 = 0; x7 < maxDepth; x7 += 1) {
+                vec2 pt = pos;
+                float l = LEN;
+                float w = WID;
+                int off = maxDepth;
+
+                for (int x8 = 0; x8 < depth; x8 += 1) {
+                        l *= LENF;
+                        w *= WIDF;
+                        off /= branches;
+
+                        int dec = c / off;
+                        int path = dec - branches * (dec / branches);
+
+                        pt = (getBranchTransform(path, l) * vec3(pt, 1.0)).xy;
+
+                        if (length(vec2(0.0, l) - pt) - (l * 1.4) > 0.0) {
+                                c += off;
+                                c -= int(1.0);
+                                break;
+                        }
+
+                        d = min(x2(pt, w, l), d);
+                }
+
+                c += int(1.0);
+                if (c > maxDepth) {
+                        break;
+                }
+        }
+
+        return d;
+}
+
+vec4 fragment(vec4 pos) {
+        float px = float(8.0) / iResolution.y;
+        vec2 uv = (pos.xy - iResolution / 2.0) * px;
+        float color = smoothstep(0.0, px, map(uv + vec2(0.0, 4.0)));
+        return vec4(vec3(color), 1.0);
+}
+
+void main() {
+        fragColor = fragment(gl_FragCoord);
+}
+ */
+
 import {
         Break,
         Fn,
@@ -60,7 +165,7 @@ const sdBranch = Fn(([p, w, l]: [Vec2, Float, Float]) => {
 })
 
 const _getBranchTransform = Fn(([factor, l]: [Vec4, Float]) => {
-        const angle = iTime.add(factor.x).sin().mul(factor.y).add(factor.z)
+        const angle = iTime.add(factor.x).sin().mul(factor.y).add(factor.z).toVar('angle')
         return matRotate(angle).mul(matTranslate(float(0), l.div(LENF).mul(factor.w)))
 }).setLayout({
         name: '_getBranchTransform',
@@ -124,9 +229,13 @@ const map = Fn(([pos]: [Vec2]) => {
 
 const fragment = Fn(([pos]: [Vec4]) => {
         const px = float(8).div(iResolution.y).toVar('px')
-        const uv = vec2(0, 4).add(pos.xy.sub(iResolution.div(2)).mul(px))
-        const color = smoothstep(0, px, map(uv))
+        const uv = pos.xy.sub(iResolution.div(2)).mul(px).toVar('uv')
+        const color = smoothstep(0, px, map(uv.add(vec2(0, 4)))).toVar('color')
         return vec4(vec3(color), 1)
+}).setLayout({
+        name: 'fragment',
+        type: 'vec4',
+        inputs: [{ type: 'vec4', name: 'pos' }],
 })
 
 export default function App() {

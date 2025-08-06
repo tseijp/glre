@@ -14,7 +14,7 @@ export interface FnLayout {
         type: C | 'auto'
         inputs?: Array<{
                 name: string
-                type: C
+                type: C | 'auto'
         }>
 }
 
