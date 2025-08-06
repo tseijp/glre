@@ -1,0 +1,22 @@
+<script type="module" src="https://esm.sh/tsx"></script>
+<script type="text/babel">
+        /** @jsx create */
+        import { create, uv } from 'https://esm.sh/glre/node'
+        document.body.innerText = (
+                <scope>
+                        <declare>
+                                {uv.x}
+                                <variable id="x" />
+                        </declare>
+                        <return>
+                                <conversion>
+                                        vec4
+                                        <variable id="x" />
+                                        {0.4}
+                                        {0.6}
+                                        {0.8}
+                                </conversion>
+                        </return>
+                </scope>
+        )
+</script>

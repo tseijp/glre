@@ -33,7 +33,8 @@ You can create beautiful visual effects with just programming knowledge - no nee
 ```html
 <canvas id="canvas"></canvas>
 <script type="module">
-        import { createGL, vec4 } from 'https://esm.sh/glre'
+        import { createGL } from 'https://esm.sh/glre'
+        import { vec4 } from 'https://esm.sh/node'
 
         const fragment = () => {
                 return vec4(0.2, 0.4, 0.8, 1)

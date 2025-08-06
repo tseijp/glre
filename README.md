@@ -114,7 +114,8 @@ npm install glre
 
 ```ts
 import { createRoot } from 'react-dom/client'
-import { useGL, vec4, uv } from 'glre/react'
+import { useGL } from 'glre/react'
+import { vec4, uv } from 'glre/node'
 const Canvas = () => {
         const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
@@ -133,7 +134,8 @@ react-native supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre
 ```ts
 import { GLView } from 'expo-gl'
 import { registerRootComponent } from 'expo'
-import { useGL, vec4, uv } from 'glre/native'
+import { useGL } from 'glre/native'
+import { vec4, uv } from 'glre/node'
 const Canvas = () => {
         const gl = useGL({ frag: vec4(uv, 0, 1) })
         return <GLView style={{ flex: 1 }} onContextCreate={gl.ref} />
@@ -152,7 +154,8 @@ solid js supported ([codesandbox demo](https://codesandbox.io/p/sandbox/glre-sol
 
 ```ts
 import { render } from 'solid-js/web'
-import { onGL, vec4, uv } from 'glre/solid'
+import { onGL } from 'glre/solid'
+import { vec4, uv } from 'glre/node'
 const Canvas = () => {
         const gl = onGL({ frag: vec4(uv, 0, 1) })
         return <canvas ref={gl.ref} />
@@ -172,7 +175,8 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 ```html
 <canvas id="canvas"></canvas>
 <script type="module">
-        import { createGL, vec4, uv } from 'https://esm.sh/glre'
+        import { createGL } from 'https://esm.sh/glre'
+        import { vec4, uv } from 'https://esm.sh/node'
         const el = document.getElementById('canvas')
         createGL({ el, fs: vec4(uv, 0, 1) }).mount()
 </script>
@@ -308,4 +312,3 @@ freed from the constraints of traditional GPU programming models.
 ## LICENSE
 
 ###### MIT⚾️
-

@@ -1,6 +1,6 @@
 {
         "name": "glre",
-        "version": "0.38.0",
+        "version": "0.39.0",
         "author": "tseijp",
         "license": "MIT",
         "private": false,
@@ -30,25 +30,25 @@
         "module": "./dist/index.js",
         "exports": {
                 "./packages.json": "./packages.json",
-                "./src/node": {
-                        "types": "./src/node/index.ts",
-                        "import": "./src/node/index.ts",
-                        "default": "./src/node/index.ts"
-                },
-                "./src/react": {
-                        "types": "./src/react.ts",
-                        "import": "./src/react.ts", 
-                        "default": "./src/react.ts"
-                },
                 "./src/addons": {
                         "types": "./src/addons/index.ts",
                         "import": "./src/addons/index.ts",
                         "default": "./src/addons/index.ts"
                 },
+                "./src/node": {
+                        "types": "./src/node/index.ts",
+                        "import": "./src/node/index.ts",
+                        "default": "./src/node/index.ts"
+                },
                 "./src/native": {
                         "types": "./src/native.ts",
                         "import": "./src/native.ts",
                         "default": "./src/native.ts"
+                },
+                "./src/react": {
+                        "types": "./src/react.ts",
+                        "import": "./src/react.ts",
+                        "default": "./src/react.ts"
                 },
                 "./src/solid": {
                         "types": "./src/solid.ts",
@@ -86,19 +86,6 @@
                         "require": "./dist/node.cjs",
                         "default": "./dist/node.js"
                 },
-                "./react": {
-                        "types": "./dist/react.d.ts",
-                        "import": {
-                                "types": "./dist/react.d.ts",
-                                "default": "./dist/react.js"
-                        },
-                        "module": {
-                                "types": "./dist/react.d.ts",
-                                "default": "./dist/react.js"
-                        },
-                        "require": "./dist/react.cjs",
-                        "default": "./dist/react.js"
-                },
                 "./native": {
                         "types": "./dist/native.d.ts",
                         "import": {
@@ -111,6 +98,19 @@
                         },
                         "require": "./dist/native.cjs",
                         "default": "./dist/native.js"
+                },
+                "./react": {
+                        "types": "./dist/react.d.ts",
+                        "import": {
+                                "types": "./dist/react.d.ts",
+                                "default": "./dist/react.js"
+                        },
+                        "module": {
+                                "types": "./dist/react.d.ts",
+                                "default": "./dist/react.js"
+                        },
+                        "require": "./dist/react.cjs",
+                        "default": "./dist/react.js"
                 },
                 "./solid": {
                         "types": "./dist/solid.d.ts",
