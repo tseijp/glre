@@ -1,0 +1,82 @@
+---
+title: 'Low-Discrepancy Sampling for Monte Carlo Rendering'
+description: 'Generate mathematically optimal sample distributions using Hammersley sequences for advanced rendering techniques'
+keywords: [sampling, monte-carlo, hammersley, quasi-random, rendering, hemisphere]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Low-Discrepancy Sampling for Monte Carlo Rendering
+
+### Revolutionary Sampling Mathematics
+
+Traditional random sampling creates clustered and uneven distributions that produce noise artifacts in rendering applications. Hammersley sequences solve this fundamental problem by generating mathematically optimal point distributions with minimal discrepancy.
+
+The hammersley function transforms simple integer indices into precisely spaced sample coordinates, ensuring uniform coverage across parameter spaces. This mathematical precision eliminates the clustering issues inherent in pseudorandom number generation, creating smooth gradients and artifact-free results.
+
+Combined with hemisphereCosSample, these functions enable sophisticated light transport calculations and surface material simulations that approach photorealistic quality through mathematically sound sampling strategies.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(64.0)
+        const index = coord.x.add(coord.y.mul(64.0)).toUint()
+        
+        const sample = hammersley(index, 64)
+        const hemisphere = hemisphereCosSample(sample)
+        
+        const color = hemisphere.abs()
+        
+        return vec4(color, 1)
+}`}
+/>
+
+### Temporal Sampling Evolution
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = uv.mul(32.0)
+        const timeShift = iTime.mul(16.0).floor()
+        
+        const sampleIndex = pos.x.add(pos.y.mul(32.0)).add(timeShift).toUint()
+        const totalSamples = 1024
+        
+        const hammersleyPoint = hammersley(sampleIndex, totalSamples)
+        const hemisphereDirection = hemisphereCosSample(hammersleyPoint)
+        
+        const colorIntensity = hemisphereDirection.z.pow(2.0)
+        const colorHue = hammersleyPoint.xy.mul(0.8).add(0.2)
+        
+        return vec4(colorHue.mul(colorIntensity), colorIntensity, 1)
+}`}
+/>
+
+### Stratified Light Distribution
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const gridSize = 16.0
+        const cellPos = uv.mul(gridSize)
+        const cellIndex = cellPos.x.floor().add(cellPos.y.floor().mul(gridSize))
+        
+        const sampleCount = 256
+        const hammersleySample = hammersley(cellIndex.toUint(), sampleCount)
+        
+        const lightDirection = hemisphereCosSample(hammersleySample)
+        const surfaceNormal = vec3(0, 0, 1)
+        
+        const lambertian = lightDirection.dot(surfaceNormal).max(0.0)
+        const fresnel = float(1.0).sub(lambertian).pow(5.0).mul(0.04).add(0.96)
+        
+        const finalColor = vec3(lambertian).mul(fresnel)
+        const brightness = sin(iTime.add(cellIndex.mul(0.1))).mul(0.2).add(0.8)
+        
+        return vec4(finalColor.mul(brightness), 1)
+}`}
+/>
