@@ -1,0 +1,91 @@
+---
+title: 'Cubic Smooth Interpolation'
+description: 'Smooth cubic curve transitions that eliminate harsh linear edges'
+keywords: ['cubic', 'smooth', 'interpolation', 'easing', 'curve', 'transition', 'hermite']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Cubic Smooth Interpolation
+
+### Mathematical Magic for Natural Curves
+
+The cubic function transforms raw linear values into elegant smooth transitions using Hermite polynomial mathematics. This creates natural curves perfect for creating flowing artistic effects and eliminates the mechanical feel of linear interpolation.
+
+### Basic Smoothing Without Control
+
+The standard cubic function applies smoothstep-style easing that softly accelerates from zero and gently decelerates toward one, creating organic wave-like motions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.5).fract()
+        const smoothed = cubic(t)
+        const x = uv.x.sub(0.5)
+        const y = uv.y.sub(0.5)
+        const distance = x.mul(x).add(y.mul(y)).sqrt()
+        const wave = distance.sub(smoothed.mul(0.3)).abs().mul(10).oneMinus()
+        const color = wave.clamp(0, 1)
+        return vec4(color.mul(0.8).add(0.2), color.mul(0.6).add(0.3), color.mul(0.9).add(0.1), 1)
+}`}
+/>
+
+### Advanced Control with Slope Parameters
+
+The extended cubic function accepts slope parameters at both endpoints, enabling precise control over curve behavior. This technique creates custom easing curves for sophisticated visual effects.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = uv.x
+        const slope0 = iTime.sin().mul(2)
+        const slope1 = iTime.cos().mul(2)
+        const curved = cubicWithSlope(t, slope0, slope1)
+        const pattern = curved.mul(8).sin()
+        const gradient = pattern.mul(0.5).add(0.5)
+        return vec4(gradient.mul(0.9), gradient.mul(0.7).add(0.2), gradient.mul(0.8).add(0.1), 1)
+}`}
+/>
+
+### Distortion Field Generation
+
+Combining cubic interpolation with spatial coordinates creates complex distortion fields that bend and warp space naturally, producing surreal visual environments.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(2).sub(1)
+        const radius = p.x.mul(p.x).add(p.y.mul(p.y)).sqrt()
+        const angle = p.y.atan2(p.x)
+        const distortion = cubic(radius.clamp(0, 1))
+        const warpedRadius = radius.add(distortion.mul(0.3).mul(iTime.sin()))
+        const warpedAngle = angle.add(distortion.mul(2))
+        const newX = warpedRadius.mul(warpedAngle.cos())
+        const newY = warpedRadius.mul(warpedAngle.sin())
+        const color = newX.mul(newY).abs().mul(3)
+        return vec4(color.mul(0.7), color.mul(0.9), color.mul(0.6).add(0.3), 1)
+}`}
+/>
+
+### Multi-Layer Cubic Harmonics
+
+Stacking multiple cubic curves with varying frequencies creates complex harmonic patterns reminiscent of acoustic wave interference, generating rich textural details.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(4)
+        const layer1 = cubic(coord.x.fract()).mul(cubic(coord.y.fract()))
+        const layer2 = cubic(coord.x.mul(2.3).fract()).mul(cubic(coord.y.mul(1.7).fract())).mul(0.6)
+        const layer3 = cubic(coord.x.mul(3.9).fract()).mul(cubic(coord.y.mul(2.8).fract())).mul(0.3)
+        const combined = layer1.add(layer2).add(layer3)
+        const timeOffset = iTime.mul(0.2).add(combined)
+        const finalValue = cubic(timeOffset.fract())
+        return vec4(finalValue.mul(0.8), finalValue.mul(0.9).add(0.1), finalValue, 1)
+}`}
+/>

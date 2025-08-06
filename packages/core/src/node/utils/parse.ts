@@ -127,10 +127,8 @@ export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
         const params: string[] = []
         for (let i = 0; i < args.length; i++) {
                 const input = layout?.inputs?.[i]
-                const name = input?.name || `p${i}`
-                let type = input?.type || infer(args[i], c)
-                if (type === 'auto') type = infer(args[i], c)
-                argParams.push([name, type])
+                if (!input) argParams.push([`p${i}`, infer(args[i], c)])
+                else argParams.push([input.name, input.type === 'auto' ? infer(args[i], c) : input.type])
         }
         const scopeCode = code(x, c) // build struct headers before inferring returnType
         const returnType = infer(target, c)

@@ -19,7 +19,7 @@ Traditional floor functions create harsh pixel edges that destroy visual quality
 const fragment = () => {
         const coord = uv.mul(20)
         const pattern = aafloor(coord.x).add(aafloor(coord.y)).mod(2)
-        const color = pattern.mix(vec3(0.2, 0.3, 0.8), vec3(0.9, 0.7, 0.1))
+        const color = vec3(0.2, 0.3, 0.8).mix(vec3(0.9, 0.7, 0.1), pattern)
         return vec4(color, 1)
 }`}
 />
@@ -37,10 +37,7 @@ const fragment = () => {
         const floorY = aafloor(grid.y.add(iTime.mul(0.3)))
         const checker = floorX.add(floorY).mod(2)
         const pulse = sin(iTime.mul(2)).mul(0.5).add(0.5)
-        const color = checker.mix(
-                vec3(0.1, 0.8, pulse),
-                vec3(pulse, 0.2, 0.9)
-        )
+        const color =  vec3(0.1, 0.8, pulse).mix(vec3(pulse, 0.2, 0.9), checker)
         return vec4(color, 1)
 }`}
 />
@@ -59,23 +56,6 @@ const fragment = () => {
         const floorRadius = aafloor(radius.add(iTime.mul(2)))
         const pattern = floorSpiral.mul(floorRadius).mod(4).div(4)
         const color = pattern.mul(vec3(0.8, 0.4, 0.9))
-        return vec4(color, 1)
-}`}
-/>
-
-### Pixel-perfect Animation Flow
-
-Moving patterns with traditional floor create stuttering motion artifacts. Anti-aliased floor ensures smooth animation flow regardless of movement speed or direction.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const wave = sin(uv.x.mul(10).add(iTime.mul(3))).mul(2)
-        const tiles = aafloor(uv.y.mul(15).add(wave))
-        const gradient = tiles.div(15).saturate()
-        const shimmer = sin(tiles.add(iTime.mul(4))).mul(0.3).add(0.7)
-        const color = gradient.mul(shimmer).mul(vec3(0.6, 0.9, 0.4))
         return vec4(color, 1)
 }`}
 />

@@ -1,0 +1,105 @@
+---
+title: 'Integer Absolute Value Operations'
+description: 'High-performance absolute value calculations optimized for integer and vector data types'
+keywords: [integer absolute value, mathematical operations, vector processing, conditional logic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Integer Absolute Value Operations
+
+## Conditional Value Processing
+
+The `absi` function performs intelligent conditional processing to ensure all numeric values become positive. This operation examines each input value and applies selective transformation based on mathematical sign determination.
+
+Unlike standard absolute value functions, `absi` maintains computational precision across different numeric types while providing consistent behavior for both scalar and vector operations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(2)
+        
+        // Create symmetric patterns using absolute value
+        const pattern = absi(sin(uv.x.mul(8)).sub(0.3))
+        const color = vec3(pattern)
+        
+        return vec4(color, 1)
+}`}
+/>
+
+## Wave Symmetry Generation
+
+Advanced wave manipulation techniques use integer absolute value operations to create perfectly symmetric patterns that mirror across mathematical axes.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(6)
+        const time = iTime.mul(0.3)
+        
+        // Generate complex symmetric wave patterns
+        const wave1 = sin(uv.x.add(time)).mul(cos(uv.y.sub(time)))
+        const wave2 = cos(uv.x.mul(2).sub(time)).add(sin(uv.y.mul(1.5).add(time)))
+        
+        const symmetric1 = absi(wave1.sub(0.2))
+        const symmetric2 = absi(wave2.add(0.1))
+        
+        const color = vec3(symmetric1.mul(0.7), symmetric2.mul(0.5), symmetric1.mul(symmetric2))
+        return vec4(color, 1)
+}`}
+/>
+
+## Dynamic Threshold Visualization
+
+Threshold-based visual effects leverage absolute value operations to create dynamic boundaries that respond to mathematical conditions and time-based parameters.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(4)
+        const time = iTime.mul(0.8)
+        
+        // Create dynamic threshold patterns
+        const noise1 = sin(uv.x.mul(3).add(time)).mul(cos(uv.y.mul(2).sub(time.mul(0.7))))
+        const noise2 = cos(uv.x.mul(1.5).sub(time.mul(0.5))).add(sin(uv.y.mul(4).add(time.mul(1.2))))
+        
+        const threshold = sin(time.mul(2)).mul(0.4)
+        
+        const pattern1 = absi(noise1.sub(threshold))
+        const pattern2 = absi(noise2.add(threshold.mul(0.8)))
+        
+        const finalPattern = pattern1.mul(pattern2)
+        
+        const color = vec3(
+                finalPattern.mul(sin(time).mul(0.5).add(0.7)),
+                finalPattern.mul(cos(time.mul(1.3)).mul(0.5).add(0.6)),
+                finalPattern.mul(sin(time.mul(0.7)).mul(0.5).add(0.5))
+        )
+        
+        return vec4(color, 1)
+}`}
+/>
+
+## Implementation Architecture
+
+The `absi` function implements conditional logic through mathematical comparison operations rather than traditional branching structures, ensuring optimal execution across different processing architectures.
+
+### Computational Structure
+
+| Operation Phase | Mathematical Logic | Implementation Detail |
+|----------------|-------------------|----------------------|
+| Sign Detection | Negative value identification | `x.lessThan(0)` |
+| Conditional Negation | Selective value inversion | `x.mul(-1)` |
+| Value Selection | Conditional result choice | `select(negative, positive, condition)` |
+
+### Type System Integration
+
+The function operates with automatic type inference, maintaining input type characteristics while applying absolute value transformation. This approach ensures seamless integration with existing mathematical operations without requiring explicit type conversion.
+
+### Optimization Characteristics
+
+Conditional selection operations execute without branching penalties, making the function suitable for high-frequency mathematical computations where consistent execution timing is essential.

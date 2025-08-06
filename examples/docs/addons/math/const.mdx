@@ -1,0 +1,117 @@
+---
+title: 'Mathematical Constants for Creative Coding'
+description: 'Essential mathematical constants for creative visual programming. Access fundamental values like PI, PHI, and EPSILON directly in your graphics code.'
+keywords: [constants, math, pi, phi, golden ratio, epsilon, tau, creative coding]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Mathematical Constants for Creative Coding
+
+### Universal Values That Power Visual Expressions
+
+Mathematical constants form the foundation of algorithmic visual art. These universal values appear repeatedly in natural patterns, geometric relationships, and visual effects. GLRE provides immediate access to essential constants without manual calculation.
+
+## Core Constants Library
+
+| Constant | Value | Application |
+|----------|--------|-------------|
+| `PI` | 3.14159... | Circle geometry, wave functions |
+| `TAU` | 6.28318... | Full circle rotations |
+| `PHI` | 1.61803... | Golden ratio proportions |
+| `EPSILON` | 0.0000001 | Floating point comparisons |
+
+## Circle and Wave Mathematics
+
+`PI` and `TAU` constants enable precise circular motion and wave calculations. `TAU` represents a complete circle rotation, eliminating the need for `2 * PI` calculations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const angle = iTime.mul(TAU) // Complete rotation per time unit
+        const wave = sin(angle.mul(4)) // Four waves per rotation
+        
+        const radius = wave.mul(0.3).add(0.5)
+        const x = cos(angle).mul(radius)
+        const y = sin(angle).mul(radius)
+        
+        const color = vec3(x.add(0.5), y.add(0.5), wave.add(1).mul(0.5))
+        return vec4(color, 1)
+}`}
+/>
+
+## Golden Ratio Aesthetics
+
+`PHI` and `GOLDEN_RATIO` constants create naturally pleasing proportions. The golden angle creates spiral patterns found in nature.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const pos = uv.sub(center)
+        const radius = length(pos)
+        
+        const angle = atan2(pos.y, pos.x).add(iTime.mul(0.2))
+        const spiral = angle.div(GOLDEN_ANGLE).fract()
+        
+        const color1 = vec3(spiral, radius.mul(2), 1)
+        const color2 = vec3(1, spiral.mul(PHI.fract()), radius)
+        
+        const finalColor = color1.mix(color2, sin(iTime).mul(0.5).add(0.5))
+        return vec4(finalColor, 1)
+}`}
+/>
+
+## Precision Control
+
+`EPSILON` provides safe floating-point comparisons and smooth transitions in mathematical operations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const grid = uv.mul(8)
+        const lines = sin(grid.x).mul(sin(grid.y))
+        
+        // Smooth line rendering using epsilon
+        const lineWidth = EPSILON.mul(100)
+        const intensity = smoothstep(lineWidth.negate(), lineWidth, abs(lines))
+        
+        const pulsate = sin(iTime.mul(2)).mul(0.5).add(0.5)
+        const color = vec3(intensity).mul(pulsate)
+        
+        return vec4(color, 1)
+}`}
+/>
+
+## Advanced Pattern Generation
+
+Combine multiple constants to create complex mathematical patterns and animations with natural timing relationships.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const polar = uv.sub(center)
+        const radius = length(polar).mul(8)
+        const angle = atan2(polar.y, polar.x)
+        
+        // Multiple mathematical relationships
+        const spiral1 = angle.add(radius.mul(PHI)).div(TAU)
+        const spiral2 = angle.sub(radius.div(GOLDEN_ANGLE)).div(PI)
+        
+        const time = iTime.mul(0.5)
+        const pattern = sin(spiral1.mul(TAU).add(time)).mul(cos(spiral2.mul(PI).add(time)))
+        
+        const rings = floor(radius).mod(3).div(2)
+        const color = vec3(pattern.add(1).mul(0.5), rings, sin(time).add(1).mul(0.5))
+        
+        return vec4(color, 1)
+}`}
+/>
+
+Mathematical constants eliminate repetitive calculations and ensure precision across creative projects. They form the building blocks for sophisticated visual algorithms while maintaining code clarity and performance.

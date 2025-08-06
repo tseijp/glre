@@ -18,6 +18,7 @@ import {
 } from './parse'
 import { getBluiltin, getConversions, getEventFun, getOperator, initNodeContext, safeEventCall } from './utils'
 import { is } from '../../utils/helpers'
+import { mod } from '..'
 import type { Constants as C, NodeContext, Y } from '../types'
 
 export * from './utils'
@@ -62,6 +63,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
+                if (x === 'mod') return code(mod(y, z), c)
                 if (x.endsWith('Assign')) return `${code(y, c)} ${getOperator(x)} ${code(z, c)};`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }

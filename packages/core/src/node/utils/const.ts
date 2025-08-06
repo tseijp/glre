@@ -241,7 +241,6 @@ export const FUNCTIONS = [
         'radians',
         'reciprocal',
         'round',
-        'saturate',
         'sign',
         'sin',
         'sinh',

@@ -1,0 +1,99 @@
+---
+title: 'Anti-aliased Step Function'
+description: 'Smooth pixel-perfect transitions between colors and shapes using anti-aliased step function'
+keywords: [anti-aliasing, step function, edge smoothing, pixel perfect graphics, visual effects]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-aliased Step Function
+
+## Pixel Perfect Edge Rendering
+
+The `aastep` function creates crisp yet smooth transitions between different values. Unlike the harsh binary nature of the standard `step` function, `aastep` analyzes pixel boundaries and applies intelligent smoothing for professional-quality graphics.
+
+This technique eliminates jagged edges while preserving sharp visual boundaries, making it essential for creating clean geometric patterns and professional visual effects.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution)
+        const center = uv.sub(0.5)
+        const distance = center.length()
+        
+        // Create a crisp circle with anti-aliased edges
+        const circle = aastep(0.3, distance)
+        
+        const color = vec3(circle)
+        return vec4(color, 1)
+}`}
+/>
+
+## Gradient Boundary Detection
+
+Advanced boundary detection uses the `aastep` function to create smooth color transitions that respond intelligently to pixel density and screen resolution.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution)
+        const waves = sin(uv.x.mul(20)).add(sin(uv.y.mul(15)))
+        
+        // Multiple anti-aliased thresholds create layered effects
+        const layer1 = aastep(-0.5, waves)
+        const layer2 = aastep(0.0, waves)
+        const layer3 = aastep(0.5, waves)
+        
+        const color = vec3(layer1.mul(0.2), layer2.mul(0.6), layer3.mul(0.9))
+        return vec4(color, 1)
+}`}
+/>
+
+## Animated Shape Morphing
+
+Dynamic shape transitions become fluid and professional when using anti-aliased step functions for morphing between different geometric forms.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(4)
+        const time = iTime.mul(0.5)
+        
+        // Create morphing geometric shapes
+        const shape1 = abs(uv.x).add(abs(uv.y)).sub(1.5)
+        const shape2 = uv.length().sub(1.2)
+        const morphedShape = mix(shape1, shape2, sin(time).mul(0.5).add(0.5))
+        
+        const threshold = sin(time.mul(2)).mul(0.3).add(0.1)
+        const pattern = aastep(threshold, morphedShape)
+        
+        const color = vec3(pattern.mul(sin(time.add(uv.x)).mul(0.5).add(0.5)), 
+                          pattern.mul(cos(time.add(uv.y)).mul(0.5).add(0.5)), 
+                          pattern.mul(0.8))
+        return vec4(color, 1)
+}`}
+/>
+
+## Technical Implementation Details
+
+The `aastep` function automatically calculates pixel-level derivatives to determine optimal smoothing width. This ensures consistent visual quality across different screen resolutions and viewing distances.
+
+### Core Algorithm Structure
+
+| Component | Purpose | Implementation |
+|-----------|---------|----------------|
+| Derivative Analysis | Detects pixel boundaries | `vec2(dFdx(value), dFdy(value))` |
+| Smoothing Width | Calculates anti-alias range | `length(derivative) * 0.7` |
+| Smooth Transition | Applies intelligent interpolation | `smoothstep(threshold - width, threshold + width, value)` |
+
+### Performance Characteristics
+
+The function maintains constant performance regardless of geometric complexity, making it suitable for real-time graphics applications where consistent frame rates are essential.
+
+### Visual Quality Benefits
+
+Anti-aliased step functions eliminate visual artifacts that commonly appear in digital graphics, providing professional-quality results that rival traditional rendering techniques.

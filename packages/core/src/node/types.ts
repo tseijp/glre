@@ -239,11 +239,13 @@ type Methods =
         | 'toVar'
         | 'toString'
         | 'element'
+        | 'select'
 
 interface _X<T extends C> {
         // System properties
         readonly __nodeType?: T
         assign(x: any): X<T>
+        select(x: X<T>, y: Y): X<T>
         fragment(c: NodeContext): string
         toVar(name?: string): X<T>
         toString(c?: NodeContext): string
@@ -386,7 +388,6 @@ interface _X<T extends C> {
         radians(): X<T>
         reciprocal(): X<T>
         round(): X<T>
-        saturate(): X<T>
         sign(): X<T>
         sin(): X<T>
         sinh(): X<T>

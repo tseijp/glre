@@ -1,0 +1,70 @@
+---
+title: 'Bump: Smooth Falloff Functions'
+description: 'Create smooth falloff curves from center points using polynomial functions'
+keywords: [bump, falloff, smooth, polynomial, curves, distance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Bump: Smooth Falloff Functions
+
+### Mathematical Foundation
+
+The bump function generates smooth falloff curves that transition from maximum value at center to zero at boundaries. Built on polynomial mathematics, these functions create natural-looking gradients without harsh edges.
+
+The basic formula uses `1 - x²` which creates a smooth parabolic curve. Adding a threshold parameter `k` allows fine control over the falloff curve steepness.
+
+### Two Curve Styles
+
+**Standard Bump** accepts both input value and threshold control, enabling precise curve shaping for complex visual effects.
+
+**Simple Bump** provides immediate results with built-in threshold, perfect for rapid prototyping and basic falloff needs.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const d = uv.sub(0.5).length()
+        const falloff = bump(d, 0.2)
+        return vec4(falloff, falloff.mul(0.5), falloff.mul(0.8), 1)
+}`}
+/>
+
+### Radial Light Halos
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center1 = vec2(0.3, 0.6)
+        const center2 = vec2(0.7, 0.4)
+        const d1 = uv.sub(center1).length().mul(3)
+        const d2 = uv.sub(center2).length().mul(2)
+        const light1 = bumpSimple(d1).mul(vec3(1, 0.3, 0.1))
+        const light2 = bumpSimple(d2).mul(vec3(0.1, 0.8, 1))
+        return vec4(light1.add(light2), 1)
+}`}
+/>
+
+### Organic Texture Generation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const noise = sin(uv.x.mul(20)).mul(sin(uv.y.mul(15))).add(1).mul(0.5)
+        const texture = bump(noise, 0.1)
+        const color = mix(vec3(0.2, 0.1, 0.05), vec3(0.9, 0.7, 0.4), texture)
+        return vec4(color, 1)
+}`}
+/>
+
+### Control Parameters
+
+| Function        | Input          | Threshold         | Purpose                  |
+| --------------- | -------------- | ----------------- | ------------------------ |
+| `bump(x, k)`    | Distance value | Adjustable cutoff | Precise curve control    |
+| `bumpSimple(x)` | Distance value | Fixed at 0        | Quick falloff generation |
+
+Distance values work best between 0-1 range. Threshold values below 0.5 create wider falloffs, above 0.5 create tighter curves.

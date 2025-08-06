@@ -1,0 +1,128 @@
+---
+title: 'Anti-Aliased Fractional Part Function'
+description: 'Compute smooth fractional parts with automatic anti-aliasing for crisp, artifact-free patterns'
+keywords: [fractional, fract, antialiasing, smooth, patterns, nyquist, filtering]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-Aliased Fractional Part Function
+
+## Digital Pattern Revolution
+
+Traditional fractional functions create harsh digital artifacts when creating repeating patterns. The `aafract` function eliminates these jagged edges by intelligently applying anti-aliasing based on screen pixel density, producing silk-smooth visual patterns that adapt perfectly to any zoom level or viewing distance.
+
+### Mathematical Foundation
+
+The anti-aliased fractional function works by:
+
+1. **Measuring pixel density** - Calculates how quickly values change across screen pixels using derivatives
+2. **Smart filtering** - Applies Nyquist filtering to prevent unwanted high-frequency artifacts
+3. **Adaptive smoothing** - Automatically adjusts smoothing intensity based on visual requirements
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pattern = aafract(uv.x.mul(20))
+        const color = pattern.toVec3()
+        return vec4(color, 1)
+}`}
+/>
+
+### Organic Texture Generation
+
+Create complex organic-looking textures by layering multiple frequencies of anti-aliased fractional patterns.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(10)
+        const layer1 = aafract(coord.x.add(coord.y))
+        const layer2 = aafract(coord.x.mul(2.1).sub(coord.y.mul(1.7)))
+        const layer3 = aafract(coord.dot(vec2(0.707, 0.707)).mul(3.3))
+        const combined = layer1.mul(0.5).add(layer2.mul(0.3)).add(layer3.mul(0.2))
+        const color = combined.toVec3()
+        return vec4(color, 1)
+}`}
+/>
+
+### Animated Wave Patterns
+
+Transform static patterns into flowing animated waves by adding time-based offsets.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(8)
+        const wave1 = aafract(coord.x.add(iTime.mul(0.5)))
+        const wave2 = aafract(coord.y.sub(iTime.mul(0.3)))
+        const interference = wave1.mul(wave2)
+        
+        const color = vec3(interference, interference.mul(0.7), interference.mul(0.4))
+        return vec4(color, 1)
+}`}
+/>
+
+### Mosaic Tile Effects
+
+Generate sophisticated tile and mosaic patterns with perfectly smooth edges that maintain quality at any scale.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const tileSize = 12
+        const coord = uv.mul(tileSize)
+        
+        const tileX = aafract(coord.x)
+        const tileY = aafract(coord.y)
+        
+        const border = float(0.1)
+        const edgeX = tileX.lessThan(border).or(tileX.greaterThan(float(1).sub(border)))
+        const edgeY = tileY.lessThan(border).or(tileY.greaterThan(float(1).sub(border)))
+        const isEdge = edgeX.or(edgeY)
+        
+        const tile = tileX.mul(tileY)
+        const color = vec3(tile.mul(0.8).add(0.2))
+        const finalColor = select(vec3(0.2, 0.2, 0.8), color, isEdge)
+        
+        return vec4(finalColor, 1)
+}`}
+/>
+
+### Technical Specifications
+
+| Parameter | Type              | Description                            | Range           |
+| --------- | ----------------- | -------------------------------------- | --------------- |
+| `x`       | `float` \| `vec2` | Input value for fractional computation | Any real number |
+
+**Return Value**: Same type as input, containing smoothly anti-aliased fractional part
+
+### Implementation Details
+
+The function automatically detects areas where aliasing would occur and applies intelligent filtering:
+
+- **High-frequency regions**: Maximum smoothing applied
+- **Low-frequency regions**: Minimal filtering to preserve sharp details
+- **Transition zones**: Gradual blending between filtered and unfiltered regions
+
+### Performance Characteristics
+
+- **GPU-optimized**: Leverages hardware derivative functions for maximum performance
+- **Scale-adaptive**: Computational cost remains constant regardless of pattern frequency
+- **Memory-efficient**: No texture lookups or additional memory allocation required
+
+### Creative Applications
+
+Transform your visual projects with professional-quality pattern generation:
+
+- **Architectural visualization**: Clean building textures and material patterns
+- **Game environments**: Seamless terrain and surface details
+- **Motion graphics**: Smooth animated backgrounds and transitions
+- **Data visualization**: Clear, readable grid systems and charts
+
+The `aafract` function bridges the gap between mathematical precision and visual appeal, ensuring your patterns look crisp and professional at any viewing condition.
