@@ -1,0 +1,109 @@
+---
+title: 'Dynamic Contrast Amplifier'
+description: 'Advanced gain control for extreme contrast manipulation, color intensity amplification, and psychedelic visual transformations'
+keywords: [glre, gain, contrast, amplifier, color, intensity, psychedelic, transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Dynamic Contrast Amplifier
+
+### Intelligent Intensity Modulation
+
+The gain function provides sophisticated contrast control that goes beyond simple linear adjustments. By applying asymmetric transformations to values above and below the midpoint, it creates dramatic visual intensity shifts that enhance both subtle details and bold contrasts simultaneously.
+
+This mathematical approach enables precise control over visual punch, creating effects that range from subtle artistic enhancement to extreme psychedelic transformations, all while maintaining mathematical elegance and computational simplicity.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const intensity = sin(iTime).add(1).div(2).mul(4).add(1)
+        const pattern = sin(uv.x.mul(PI.mul(8))).mul(sin(uv.y.mul(PI.mul(6))))
+        const enhanced = gain(pattern.add(1).div(2), intensity)
+        return vec4(vec3(enhanced), 1)
+}`}
+/>
+
+### Chromatic Intensity Explosion
+
+Gain control applied independently to color channels creates spectacular chromatic explosions. Each color component responds differently to the gain curve, producing vibrant separations and unexpected color combinations that shift dynamically through the intensity spectrum.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(0.6)
+        const center = vec2(0.5)
+        const dist = length(uv.sub(center)).mul(3)
+        
+        const redGain = sin(time).add(1).mul(2).add(1)
+        const greenGain = sin(time.add(PI.div(3))).add(1).mul(2).add(1)
+        const blueGain = sin(time.add(PI.mul(2).div(3))).add(1).mul(2).add(1)
+        
+        const wave = sin(dist.sub(time.mul(2)).mul(PI))
+        const normWave = wave.add(1).div(2)
+        
+        const red = gain(normWave, redGain)
+        const green = gain(normWave, greenGain)
+        const blue = gain(normWave, blueGain)
+        
+        return vec4(red.mul(1.2), green.mul(1.1), blue.mul(1.3), 1)
+}`}
+/>
+
+### Fractal Contrast Architecture
+
+Multiple gain layers with different intensity parameters create complex fractal contrast structures. Each layer enhances different aspects of the base pattern, building architectural depth through mathematical precision rather than geometric complexity.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(4)
+        const basePattern = sin(coord.x.mul(PI)).mul(cos(coord.y.mul(PI)))
+        const normalized = basePattern.add(1).div(2)
+        
+        const time = iTime.mul(0.4)
+        const gain1 = sin(time).add(1).mul(3).add(0.5)
+        const gain2 = cos(time.mul(1.3)).add(1).mul(2).add(1)
+        const gain3 = sin(time.mul(0.7)).add(1).mul(4).add(0.8)
+        
+        const layer1 = gain(normalized, gain1)
+        const layer2 = gain(layer1, gain2)
+        const layer3 = gain(layer2, gain3)
+        
+        const final = layer3.mul(0.8).add(layer2.mul(0.15)).add(layer1.mul(0.05))
+        
+        return vec4(final.mul(0.9), final.mul(1.1), final.mul(0.7), 1)
+}`}
+/>
+
+### Quantum Field Visualization
+
+Gain modulation creates quantum-like field effects where energy densities appear to fluctuate according to mathematical probability distributions. The non-linear gain curve mimics quantum energy states, creating visual representations of theoretical physics concepts.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const quantumTime = iTime.mul(0.8)
+        const field1 = sin(uv.x.mul(12).add(quantumTime)).mul(cos(uv.y.mul(8).add(quantumTime.mul(1.2))))
+        const field2 = cos(uv.x.mul(6).sub(quantumTime.mul(0.8))).mul(sin(uv.y.mul(10).add(quantumTime.mul(0.6))))
+        
+        const interference = field1.add(field2).div(2)
+        const probability = interference.add(1).div(2)
+        
+        const energy1 = sin(quantumTime.mul(2.1)).add(1).mul(5).add(1)
+        const energy2 = cos(quantumTime.mul(1.7)).add(1).mul(3).add(2)
+        
+        const quantum1 = gain(probability, energy1)
+        const quantum2 = gain(probability.oneMinus(), energy2)
+        
+        const superposition = quantum1.add(quantum2).div(2)
+        const collapse = pow(superposition, sin(quantumTime.mul(3)).add(1).mul(2).add(1))
+        
+        return vec4(collapse.mul(0.4), collapse.mul(1.2), collapse.mul(0.8), 1)
+}`}
+/>
