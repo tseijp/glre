@@ -1,0 +1,81 @@
+---
+title: '4D Gradient Vector Generation'
+description: 'Generate pseudo-random 4D gradient vectors for noise functions with precise mathematical distribution'
+keywords: [noise, gradient, 4d, procedural, randomness, perlin]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# 4D Gradient Vector Generation
+
+### Mathematical Beauty in Four Dimensions
+
+Creating procedural patterns requires mathematical precision in generating gradient vectors. The grad4 function transforms simple input coordinates into precisely distributed 4D vectors that drive noise algorithms.
+
+Unlike traditional random number generators that produce uniform distributions, grad4 creates vectors with specific geometric properties essential for high-quality noise generation. The algorithm ensures consistent mathematical relationships between neighboring coordinates while maintaining unpredictable variation across the input space.
+
+This function forms the mathematical foundation for advanced procedural generation techniques, enabling the creation of organic textures, terrain features, and fluid simulations through controlled randomness.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = uv.mul(8.0)
+        const j = pos.x.add(pos.y.mul(47.0))
+        const ip = vec4(0.1, 0.2, 7.0, 1.0)
+        
+        const grad = grad4(j, ip)
+        const colorPattern = grad.xyz.abs()
+        
+        return vec4(colorPattern, 1)
+}`}
+/>
+
+### Dimensional Cascade Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = uv.mul(12.0)
+        const time = iTime.mul(0.3)
+        
+        const gradients = pos.x.add(pos.y.mul(31.0)).add(time)
+        const params = vec4(0.15, 0.25, 6.5, 0.8)
+        
+        const g1 = grad4(gradients, params)
+        const g2 = grad4(gradients.add(100.0), params.mul(1.3))
+        const g3 = grad4(gradients.add(200.0), params.mul(0.7))
+        
+        const blend = g1.xyz.mul(0.5).add(g2.xyz.mul(0.3)).add(g3.xyz.mul(0.2))
+        const intensity = blend.length().mul(2.0)
+        
+        return vec4(blend.abs().mul(intensity), 1)
+}`}
+/>
+
+### Noise Field Symphony
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(20.0)
+        const oscillation = iTime.mul(0.5)
+        
+        const base = coord.x.mul(13.0).add(coord.y.mul(71.0)).add(oscillation.mul(23.0))
+        const params = vec4(0.08, 0.12, 8.0, 1.2)
+        
+        const field1 = grad4(base, params)
+        const field2 = grad4(base.add(500.0), params.mul(vec4(1.5, 0.8, 0.9, 1.1)))
+        const field3 = grad4(base.add(1000.0), params.mul(vec4(0.6, 1.4, 1.1, 0.9)))
+        
+        const combined = field1.xyz.add(field2.xyz.mul(0.6)).add(field3.xyz.mul(0.4))
+        const normalized = combined.normalize().mul(0.5).add(0.5)
+        
+        const pulse = sin(combined.length().mul(10.0).add(oscillation.mul(2.0))).mul(0.3).add(0.7)
+        
+        return vec4(normalized.mul(pulse), 1)
+}`}
+/>
