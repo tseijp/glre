@@ -232,6 +232,7 @@ export const FUNCTIONS = [
         'floor',
         'fract',
         'fwidth',
+        'inverse',
         'inverseSqrt',
         'log',
         'log2',
