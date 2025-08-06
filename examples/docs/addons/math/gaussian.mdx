@@ -1,0 +1,154 @@
+---
+title: 'Probability Field Generator'
+description: 'Create smooth probability distributions, atmospheric glows, and quantum field visualizations using mathematical Gaussian functions'
+keywords: [glre, gaussian, probability, distribution, atmospheric, quantum, field, blur, glow]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Probability Field Generator
+
+### Mathematical Beauty in Natural Distribution
+
+The Gaussian function creates perfect bell curves that mirror natural phenomena found throughout the universe. From particle physics probability clouds to atmospheric light scattering, this mathematical foundation generates visually compelling effects that feel both organic and precisely controlled.
+
+By manipulating the distance parameter and spread factor, infinite variations of smooth falloff patterns emerge, creating everything from subtle ambient glows to dramatic energy concentrations that pulse with mathematical precision.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const distance = length(uv.sub(center))
+        const spread = sin(iTime.mul(0.5)).add(1).div(2).mul(0.3).add(0.1)
+        const intensity = gaussian(distance, spread)
+        return vec4(vec3(intensity.mul(2)), 1)
+}`}
+/>
+
+### Quantum Energy Cloud Dynamics
+
+Multiple Gaussian distributions interact to simulate quantum energy fields where probability densities shift and merge according to wave function principles. Each cloud represents a different energy state, creating interference patterns that visualize theoretical physics concepts.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(0.4)
+        
+        const center1 = vec2(sin(time).mul(0.2).add(0.3), cos(time.mul(1.2)).mul(0.15).add(0.4))
+        const center2 = vec2(cos(time.mul(0.8)).mul(0.25).add(0.7), sin(time.mul(1.5)).mul(0.2).add(0.6))
+        const center3 = vec2(sin(time.mul(1.3)).mul(0.18).add(0.5), cos(time.mul(0.6)).mul(0.22).add(0.3))
+        
+        const dist1 = length(uv.sub(center1))
+        const dist2 = length(uv.sub(center2))
+        const dist3 = length(uv.sub(center3))
+        
+        const cloud1 = gaussian(dist1, 0.15)
+        const cloud2 = gaussian(dist2, 0.12)
+        const cloud3 = gaussian(dist3, 0.18)
+        
+        const interference = cloud1.add(cloud2).add(cloud3)
+        const energy = pow(interference, 1.5)
+        
+        return vec4(energy.mul(0.6), energy.mul(1.2), energy.mul(0.9), 1)
+}`}
+/>
+
+### Atmospheric Light Scattering
+
+Gaussian distributions perfectly model how light scatters through atmospheric particles, creating realistic fog, haze, and volumetric lighting effects. The mathematical precision of the Gaussian curve matches the physical behavior of photon interactions with matter.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const lightPos = vec2(sin(iTime.mul(0.3)).mul(0.4).add(0.5), 0.8)
+        const particleDistance = length(uv.sub(lightPos))
+        
+        const scatterTime = iTime.mul(0.2)
+        const density = sin(scatterTime).add(1).div(2).mul(0.25).add(0.05)
+        const scattering = gaussian(particleDistance, density)
+        
+        const rayDirection = normalize(uv.sub(lightPos))
+        const rayEffect = abs(rayDirection.y).pow(0.5)
+        
+        const atmospheric = scattering.mul(rayEffect)
+        const warmth = atmospheric.mul(1.2)
+        const cool = atmospheric.mul(0.7)
+        
+        return vec4(warmth, warmth.mul(0.9), cool, 1)
+}`}
+/>
+
+### Crystalline Probability Lattice
+
+Gaussian functions arranged in grid patterns create crystalline structures where each node represents a probability center. The mathematical interference between neighboring distributions generates complex lattice patterns that evolve through probability space.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const gridSize = 4
+        const cellSize = 1.0 / gridSize
+        const time = iTime.mul(0.6)
+        
+        const gridCoord = floor(uv.mul(gridSize))
+        const localCoord = frac(uv.mul(gridSize))
+        
+        const centerOffset = vec2(
+                sin(time.add(gridCoord.x.mul(0.7)).add(gridCoord.y.mul(0.5))).mul(0.2).add(0.5),
+                cos(time.add(gridCoord.x.mul(0.9)).add(gridCoord.y.mul(0.3))).mul(0.2).add(0.5)
+        )
+        
+        const distance = length(localCoord.sub(centerOffset))
+        const spread = sin(time.add(gridCoord.x).add(gridCoord.y)).add(1).div(2).mul(0.15).add(0.05)
+        
+        const probability = gaussian(distance, spread)
+        const latticeStrength = pow(probability, 1.8).mul(3)
+        
+        const crystalColor = vec3(
+                latticeStrength.mul(0.8),
+                latticeStrength.mul(1.1),
+                latticeStrength.mul(1.3)
+        )
+        
+        return vec4(crystalColor, 1)
+}`}
+/>
+
+### Neural Network Visualization
+
+Gaussian activation patterns simulate neural network processing, where each distribution represents neuron firing probabilities. The overlapping fields create complex decision boundaries that visualize machine learning concepts through mathematical beauty.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const networkTime = iTime.mul(0.8)
+        
+        const neuron1 = vec2(0.2, 0.3)
+        const neuron2 = vec2(0.8, 0.7) 
+        const neuron3 = vec2(0.3, 0.8)
+        const neuron4 = vec2(0.7, 0.2)
+        const neuron5 = vec2(0.5, 0.5)
+        
+        const activation1 = sin(networkTime.add(0.1)).add(1).div(2)
+        const activation2 = sin(networkTime.add(0.3)).add(1).div(2)
+        const activation3 = sin(networkTime.add(0.7)).add(1).div(2)
+        const activation4 = sin(networkTime.add(1.2)).add(1).div(2)
+        const activation5 = sin(networkTime.add(1.8)).add(1).div(2)
+        
+        const signal1 = gaussian(length(uv.sub(neuron1)), 0.1).mul(activation1)
+        const signal2 = gaussian(length(uv.sub(neuron2)), 0.12).mul(activation2)
+        const signal3 = gaussian(length(uv.sub(neuron3)), 0.08).mul(activation3)
+        const signal4 = gaussian(length(uv.sub(neuron4)), 0.11).mul(activation4)
+        const signal5 = gaussian(length(uv.sub(neuron5)), 0.15).mul(activation5)
+        
+        const networkOutput = signal1.add(signal2).add(signal3).add(signal4).add(signal5)
+        const processing = smoothstep(0.2, 0.8, networkOutput)
+        
+        return vec4(processing.mul(0.9), processing.mul(0.6), processing.mul(1.1), 1)
+}`}
+/>
