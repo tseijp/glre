@@ -60,7 +60,7 @@ const fragment = () => {
                 sin(hue.mul(6.28).add(4.18)).mul(0.5).add(0.5)
         ).mul(saturation).add(vec3(intensity.mul(0.2)))
         
-        return vec4(color, 1)
+        return vec4(color, float(1))
 }`}
 />
 
@@ -81,23 +81,23 @@ const fragment = () => {
         const normalized = combined.mul(0.5).add(0.5)
         
         // Multi-threshold cascade effect
-        const threshold1 = 0.3
-        const threshold2 = 0.6
-        const threshold3 = 0.85
+        const threshold1 = float(0.3)
+        const threshold2 = float(0.6)
+        const threshold3 = float(0.85)
         
         const filter1 = highPass(normalized, threshold1)
-        const filter2 = highPass(filter1, threshold2.div(1.sub(threshold1)))
-        const filter3 = highPass(filter2, threshold3.div(1.sub(threshold2)))
+        const filter2 = highPass(filter1, threshold2.div(float(1).sub(threshold1)))
+        const filter3 = highPass(filter2, threshold3.div(float(1).sub(threshold2)))
         
         // Create layered color response
-        const base = vec3(0.1, 0.0, 0.2)
-        const layer1 = vec3(0.8, 0.2, 0.4).mul(filter1)
-        const layer2 = vec3(0.4, 0.9, 0.3).mul(filter2)
-        const layer3 = vec3(1.0, 0.8, 0.1).mul(filter3)
+        const base = vec3(float(0.1), float(0.0), float(0.2))
+        const layer1 = vec3(float(0.8), float(0.2), float(0.4)).mul(filter1)
+        const layer2 = vec3(float(0.4), float(0.9), float(0.3)).mul(filter2)
+        const layer3 = vec3(float(1.0), float(0.8), float(0.1)).mul(filter3)
         
         const color = base.add(layer1).add(layer2).add(layer3)
         
-        return vec4(color, 1)
+        return vec4(color, float(1))
 }`}
 />
 
@@ -142,7 +142,7 @@ const fragment = () => {
                 blueChannel.add(whiteBoost)
         )
         
-        return vec4(color, 1)
+        return vec4(color, float(1))
 }`}
 />
 
