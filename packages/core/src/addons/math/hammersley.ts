@@ -1,10 +1,10 @@
-import { Fn, UInt, Int, Vec2, Vec3, float, vec2, vec3, uint } from '../../node'
+import { Fn, UInt, Int, Vec2, Vec3, float, vec2, vec3, uint, int } from '../../node'
 
 const PI = 3.1415926535897932384626433832795
 
-export const hammersley = Fn(([index, numSamples]: [UInt, Int]): Vec2 => {
-        const tof = float(0.5).div(float(0x80000000)).toVar('tof')
-        const bits = index.toVar('bits')
+export const hammersley = Fn(([index, numSamples]: [Int, Int]): Vec2 => {
+        const tof = float(0.5).div(float(2147483648)).toVar('tof')
+        const bits = uint(index).toVar('bits')
         
         bits.assign(bits.shiftLeft(uint(16)).bitOr(bits.shiftRight(uint(16))))
         bits.assign(bits.bitAnd(uint(0x55555555)).shiftLeft(uint(1)).bitOr(bits.bitAnd(uint(0xAAAAAAAA)).shiftRight(uint(1))))
@@ -20,7 +20,7 @@ export const hammersley = Fn(([index, numSamples]: [UInt, Int]): Vec2 => {
         name: 'hammersley',
         type: 'vec2',
         inputs: [
-                { name: 'index', type: 'uint' },
+                { name: 'index', type: 'int' },
                 { name: 'numSamples', type: 'int' }
         ]
 })

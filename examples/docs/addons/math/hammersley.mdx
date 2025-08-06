@@ -22,9 +22,9 @@ Combined with hemisphereCosSample, these functions enable sophisticated light tr
         code={`
 const fragment = () => {
         const coord = uv.mul(64.0)
-        const index = coord.x.add(coord.y.mul(64.0)).toUint()
+        const index = coord.x.add(coord.y.mul(64.0)).floor().toInt()
         
-        const sample = hammersley(index, 64)
+        const sample = hammersley(index, int(64))
         const hemisphere = hemisphereCosSample(sample)
         
         const color = hemisphere.abs()
@@ -42,8 +42,8 @@ const fragment = () => {
         const pos = uv.mul(32.0)
         const timeShift = iTime.mul(16.0).floor()
         
-        const sampleIndex = pos.x.add(pos.y.mul(32.0)).add(timeShift).toUint()
-        const totalSamples = 1024
+        const sampleIndex = pos.x.add(pos.y.mul(32.0)).add(timeShift).floor().toInt()
+        const totalSamples = int(1024)
         
         const hammersleyPoint = hammersley(sampleIndex, totalSamples)
         const hemisphereDirection = hemisphereCosSample(hammersleyPoint)
@@ -65,8 +65,8 @@ const fragment = () => {
         const cellPos = uv.mul(gridSize)
         const cellIndex = cellPos.x.floor().add(cellPos.y.floor().mul(gridSize))
         
-        const sampleCount = 256
-        const hammersleySample = hammersley(cellIndex.toUint(), sampleCount)
+        const sampleCount = int(256)
+        const hammersleySample = hammersley(cellIndex.floor().toInt(), sampleCount)
         
         const lightDirection = hemisphereCosSample(hammersleySample)
         const surfaceNormal = vec3(0, 0, 1)
