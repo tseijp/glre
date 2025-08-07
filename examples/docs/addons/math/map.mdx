@@ -1,0 +1,125 @@
+---
+title: 'map'
+description: 'Range transformation engine that bridges dimensional scales, creating mathematical metamorphosis between infinite coordinate systems'
+keywords: [glre, map, range mapping, transformation, coordinate system, dimensional bridge, mathematical metamorphosis]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# map: Dimensional Range Metamorphosis Engine
+
+### Mathematical Bridge Between Infinite Scales
+
+Range mapping transforms mathematical dimensions by creating seamless bridges between distinct scale systems. This fundamental operation enables dimensional metamorphosis where coordinate systems undergo continuous transformation through precisely calculated proportional relationships.
+
+The mathematical foundation reveals two transformation modes:
+
+**Normalization mapping**: $map(v, a, b) = \frac{v - a}{b - a}$
+
+**Range transformation**: $mapRange(v, a, b, c, d) = c + (d - c) \cdot \frac{v - a}{b - a}$
+
+Where the first transforms values from range $[a, b]$ to $[0, 1]$, while the second creates direct transformation from $[a, b]$ to $[c, d]$, establishing mathematical correspondence between any dimensional scales.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const normalizedX = map(uv.x, 0.2, 0.8)
+        const normalizedY = map(uv.y, 0.1, 0.9)
+        
+        const waveAmplitude = mapRange(sin(iTime.mul(2)), -1, 1, 0.05, 0.25)
+        const fieldDistance = length(vec2(normalizedX, normalizedY).sub(0.5))
+        const oscillation = sin(fieldDistance.mul(15).sub(iTime.mul(3))).mul(waveAmplitude)
+        
+        const transformedField = mapRange(fieldDistance.add(oscillation), 0, 0.7, 1, 0)
+        const energyDistribution = pow(max(transformedField, 0), 2.5)
+        
+        return vec4(energyDistribution.mul(0.4), energyDistribution.mul(1.2), energyDistribution.mul(0.8), 1)
+}`}
+/>
+
+### Chromatic Scale Transformation Matrix
+
+Range mapping creates chromatic transformations that exist beyond conventional color boundaries. By systematically mapping color coordinates between mathematical spaces, new chromatic dimensions emerge through calculated scale metamorphosis.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const timePhase = iTime.mul(0.8)
+        const polarRadius = length(uv.sub(0.5)).mul(2)
+        const polarAngle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+        
+        const redMapping = mapRange(sin(polarRadius.mul(4).add(timePhase)), -1, 1, 0.1, 0.9)
+        const greenMapping = mapRange(cos(polarAngle.mul(3).add(timePhase.mul(1.3))), -1, 1, 0.2, 1.0)
+        const blueMapping = mapRange(sin(polarRadius.mul(6).sub(polarAngle.mul(2).add(timePhase.mul(0.7)))), -1, 1, 0.3, 0.8)
+        
+        const intensityField = mapRange(cos(polarRadius.mul(8).sub(timePhase.mul(2))), -1, 1, 0.6, 1.4)
+        const chromaMatrix = vec3(redMapping, greenMapping, blueMapping).mul(intensityField)
+        
+        return vec4(chromaMatrix, 1)
+}`}
+/>
+
+### Geometric Coordinate System Transmutation
+
+Range mapping enables geometric structures to undergo coordinate system transmutation through mathematical field transformations. Complex geometric relationships emerge from systematic mapping operations between dimensional coordinate spaces.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(0.5)
+        const baseCoord = uv.sub(0.5).mul(2)
+        
+        const transformedX = mapRange(baseCoord.x, -1, 1, -2, 2)
+        const transformedY = mapRange(baseCoord.y, -1, 1, -1.5, 1.5)
+        const newSpace = vec2(transformedX, transformedY)
+        
+        const distanceField1 = length(newSpace.sub(vec2(cos(time), sin(time)).mul(0.6)))
+        const distanceField2 = length(newSpace.sub(vec2(cos(time.add(PI)), sin(time.add(PI))).mul(0.4)))
+        
+        const morphFactor = sin(time.mul(1.2)).mul(0.5).add(0.5)
+        const combinedDistance = lerp(distanceField1, distanceField2, morphFactor)
+        
+        const geometricIntensity = mapRange(combinedDistance, 0, 1.2, 1.5, 0)
+        const fieldPattern = sin(combinedDistance.mul(12).sub(time.mul(4))).mul(0.3).add(0.7)
+        const finalGeometry = max(geometricIntensity, 0).mul(fieldPattern)
+        
+        return vec4(finalGeometry.mul(0.3), finalGeometry.mul(0.7), finalGeometry.mul(1.1), 1)
+}`}
+/>
+
+### Multidimensional Scale Probability Engine
+
+Range mapping creates probability fields where mathematical scales exist simultaneously across multiple dimensional transformation layers. Each mapping operation generates quantum-like scale superposition states that manifest as visual probability distributions through coordinate metamorphosis.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const timePhase = iTime.mul(0.6)
+        const coord = uv.sub(0.5).mul(3)
+        
+        const scaleA = mapRange(length(coord), 0, 1.5, 0, 8)
+        const scaleB = mapRange(atan2(coord.y, coord.x), -PI, PI, 2, 12)
+        const scaleC = mapRange(coord.x.add(coord.y), -3, 3, 6, 16)
+        
+        const fieldA = sin(coord.x.mul(scaleA).add(timePhase)).mul(sin(coord.y.mul(scaleA.mul(0.7)).add(timePhase.mul(1.4))))
+        const fieldB = cos(length(coord).mul(scaleB).add(timePhase.mul(0.8))).mul(0.8)
+        const fieldC = sin(coord.x.sub(coord.y).mul(scaleC).add(timePhase.mul(2)))
+        
+        const probabilityAlpha = mapRange(sin(coord.x.mul(2).add(timePhase)), -1, 1, 0, 1)
+        const probabilityBeta = mapRange(cos(coord.y.mul(3).add(timePhase.mul(1.3))), -1, 1, 0, 1)
+        
+        const superposition1 = lerp(fieldA, fieldB, probabilityAlpha)
+        const superposition2 = lerp(fieldB, fieldC, probabilityBeta)
+        const metamorphosis = lerp(superposition1, superposition2, sin(timePhase.mul(0.9)).mul(0.5).add(0.5))
+        
+        const densityMapping = mapRange(abs(metamorphosis), 0, 1, 0.2, 1.8)
+        const energyDistribution = pow(densityMapping, 1.3)
+        
+        return vec4(energyDistribution.mul(0.5), energyDistribution.mul(0.9), energyDistribution.mul(1.4), 1)
+}`}
+/>
