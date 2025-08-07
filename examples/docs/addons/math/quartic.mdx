@@ -1,0 +1,63 @@
+---
+title: 'quartic'
+description: 'Fourth-order polynomial smoothstep with quadratic acceleration dynamics'
+keywords: [quartic, polynomial, smoothstep, easing, interpolation, mathematical curves]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quartic: Fourth-Order Polynomial Smoothstep with Quadratic Acceleration Dynamics
+
+### Nonlinear Transformation Engine Through Quartic Polynomial Geometry
+
+The quartic function implements a sophisticated fourth-order polynomial smoothstep transformation defined by the mathematical expression $f(v) = v^2(2-v^2)$. This function exhibits unique acceleration characteristics through its quadratic-derived structure, creating smooth transitions with distinctive inflection properties that differ fundamentally from standard cubic or quintic interpolation curves.
+
+Unlike conventional smoothstep functions, quartic introduces asymmetric acceleration profiles through its derivative $f'(v) = 4v(1-v^2)$, which reaches maximum velocity at $v = 1/\sqrt{3} \approx 0.577$. This mathematical property enables the creation of naturally occurring acceleration patterns that mirror physical phenomena in fluid dynamics and wave propagation systems.
+
+The function's geometric characteristics include:
+
+$$f(v) = v^2(2-v^2) = 2v^2 - v^4$$
+
+$$f'(v) = 4v - 4v^3 = 4v(1-v^2)$$
+
+$$f''(v) = 4 - 12v^2 = 4(1-3v^2)$$
+
+The second derivative reveals inflection points at $v = \pm 1/\sqrt{3}$, creating natural transition zones that produce organic-feeling animation curves and spatial transformations.
+
+<FragmentEditor
+	isFun
+	code={`
+const fragment = () => {
+	const t = iTime.mul(0.3).fract()
+	const center = vec2(0.5)
+	const pos = uv.sub(center)
+	
+	const r = pos.length().mul(3)
+	const angle = pos.y.atan2(pos.x)
+	
+	const warpFactor = quartic(t.mul(2).sub(1).abs())
+	const spiralR = r.add(warpFactor.mul(sin(angle.mul(8).add(iTime.mul(2)))).mul(0.3))
+	const spiralAngle = angle.add(quartic(r.mul(0.5)).mul(t).mul(6.28))
+	
+	const warpedPos = vec2(spiralAngle.cos(), spiralAngle.sin()).mul(spiralR)
+	const pattern = warpedPos.x.mul(warpedPos.y).abs()
+	
+	const intensity = quartic(pattern.fract())
+	const depth = quartic(smoothstep(0.2, 0.8, spiralR.mul(0.2)))
+	
+	const color = vec3(
+		intensity.mul(0.8).add(0.2),
+		quartic(depth).mul(0.9).add(0.1), 
+		quartic(intensity.mul(depth)).mul(0.7).add(0.3)
+	)
+	
+	return vec4(color, 1)
+}`}
+/>
+
+This implementation demonstrates quartic's unique ability to generate spiral distortion fields through its nonlinear acceleration characteristics. The function creates natural-feeling rotation dynamics by applying quartic transformations to both radial and angular coordinates, producing organic spiral patterns that evolve with mathematical precision.
+
+The visualization exploits quartic's inflection point at $v \approx 0.577$ to create smooth transitions between different distortion states. By combining multiple quartic transformations with trigonometric functions, the system generates complex interference patterns that reveal the function's underlying geometric properties through dynamic visual feedback.
+
+The mathematical foundation enables sophisticated spatial transformations where quartic's acceleration profile directly influences the visual rhythm and flow of the generated patterns, creating a direct correspondence between the function's analytical properties and their visual manifestation.
