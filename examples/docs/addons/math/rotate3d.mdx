@@ -1,0 +1,81 @@
+---
+title: 'rotate3d'
+description: '3D rotation matrix generator using Rodrigues rotation formula'
+keywords: ['rotation', '3D', 'matrix', 'Rodrigues', 'quaternion', 'axis-angle']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate3d: Three-Dimensional Axis-Angle Rotation Matrix
+
+### Rodrigues Rotation Formula Implementation
+
+The `rotate3d` function constructs a 3×3 rotation matrix that rotates vectors around an arbitrary axis using the mathematical elegance of Rodrigues' rotation formula. This fundamental transformation enables precise control over spatial rotations in three-dimensional space.
+
+Given a unit vector **n** representing the rotation axis and an angle θ, the rotation matrix R is defined by Rodrigues' formula:
+
+$$
+R = I + \sin\theta \cdot [n]_× + (1 - \cos\theta) \cdot [n]_×^2
+$$
+
+Where [n]× represents the skew-symmetric matrix of the axis vector:
+
+$$
+[n]_× = \begin{pmatrix}
+0 & -n_z & n_y \\
+n_z & 0 & -n_x \\
+-n_y & n_x & 0
+\end{pmatrix}
+$$
+
+### Mathematical Properties of Axis-Angle Rotation
+
+The rotation matrix preserves fundamental geometric properties while enabling intuitive spatial transformations:
+
+**Orthonormality**: The matrix satisfies $R^T R = I$ and $\det(R) = 1$, preserving distances and orientations.
+
+**Axis Invariance**: Vectors aligned with the rotation axis remain unchanged: $R \cdot n = n$.
+
+**Angle Preservation**: The transformation preserves angles between non-collinear vectors.
+
+### Dynamic Crystalline Structure Formation
+
+This demonstration explores three-dimensional rotation applied to position vectors, creating dynamic crystal-like formations through systematic axis rotations combined with temporal evolution.
+
+<FragmentEditor
+    isFun
+    code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(3)
+    const axis = vec3(1, 1, 0).normalize()
+    const angle = iTime.mul(0.5)
+    const rotated = rotate3d(axis, angle).mul(pos)
+    const pattern = sin(rotated.length().mul(8)).mul(0.5).add(0.5)
+    const color = vec3(pattern.mul(0.8), pattern, pattern.mul(0.6))
+    return vec4(color, 1)
+}`}
+/>
+
+### Planetary Motion Through Multi-Axis Rotation
+
+This example demonstrates compound rotations mimicking celestial mechanics, where multiple rotation axes create complex orbital patterns reminiscent of planetary systems and atomic structures.
+
+<FragmentEditor
+    isFun
+    code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, sin(iTime.mul(0.3))).sub(center).mul(2)
+    const axis1 = vec3(0, 0, 1)
+    const axis2 = vec3(1, 0, 0)
+    const rotation1 = rotate3d(axis1, iTime)
+    const rotation2 = rotate3d(axis2, iTime.mul(0.3))
+    const transformed = rotation2.mul(rotation1).mul(pos)
+    const distance = transformed.length()
+    const rings = smoothstep(0.1, 0.0, abs(sin(distance.mul(15))))
+    const color = vec3(rings.mul(0.9), rings.mul(0.7), rings)
+    return vec4(color, 1)
+}`}
+/>
