@@ -43,25 +43,6 @@ const fragment = () => {
 }`}
 />
 
-### Animated Wave Patterns
-
-Transform static patterns into flowing animated waves by adding time-based offsets.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coord = uv.mul(8)
-        const wave1 = aafract(coord.x.add(iTime.mul(0.5)))
-        const wave2 = aafract(coord.y.sub(iTime.mul(0.3)))
-        const interference = wave1.mul(wave2)
-
-        const color = vec3(interference, interference.mul(0.7), interference.mul(0.4))
-        return vec4(color, 1)
-
-}`}
-/>
-
 ### Mosaic Tile Effects
 
 Generate sophisticated tile and mosaic patterns with perfectly smooth edges that maintain quality at any scale.

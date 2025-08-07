@@ -37,43 +37,6 @@ a_3 &= s_0 + s_1 - 2
 \end{align}
 $$
 
-### Basic Smoothing Without Control
-
-The standard cubic function applies smoothstep-style easing that softly accelerates from zero and gently decelerates toward one, creating organic wave-like motions.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const t = iTime.mul(0.5).fract()
-        const smoothed = cubic(t)
-        const x = uv.x.sub(0.5)
-        const y = uv.y.sub(0.5)
-        const distance = x.mul(x).add(y.mul(y)).sqrt()
-        const wave = distance.sub(smoothed.mul(0.3)).abs().mul(10).oneMinus()
-        const color = wave.clamp(0, 1)
-        return vec4(color.mul(0.8).add(0.2), color.mul(0.6).add(0.3), color.mul(0.9).add(0.1), 1)
-}`}
-/>
-
-### Advanced Control with Slope Parameters
-
-The extended cubic function accepts slope parameters at both endpoints, enabling precise control over curve behavior. This technique creates custom easing curves for sophisticated visual effects.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const t = uv.x
-        const slope0 = iTime.sin().mul(2)
-        const slope1 = iTime.cos().mul(2)
-        const curved = cubicWithSlope(t, slope0, slope1)
-        const pattern = curved.mul(8).sin()
-        const gradient = pattern.mul(0.5).add(0.5)
-        return vec4(gradient.mul(0.9), gradient.mul(0.7).add(0.2), gradient.mul(0.8).add(0.1), 1)
-}`}
-/>
-
 ### Distortion Field Generation
 
 Combining cubic interpolation with spatial coordinates creates complex distortion fields that bend and warp space naturally, producing surreal visual environments.

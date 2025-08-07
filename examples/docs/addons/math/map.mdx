@@ -25,10 +25,9 @@ Where the first transforms values from range $[a, b]$ to $[0, 1]$, while the sec
         isFun
         code={`
 const fragment = () => {
-        const normalizedX = map(uv.x, 0.2, 0.8)
-        const normalizedY = map(uv.y, 0.1, 0.9)
+        const normalized = map(uv, 0.2, 0.8)
         const waveAmplitude = mapRange(sin(iTime.mul(2)), -1, 1, 0.05, 0.25)
-        const fieldDistance = length(vec2(normalizedX, normalizedY).sub(0.5))
+        const fieldDistance = normalized.sub(0.5).length()
         const oscillation = sin(fieldDistance.mul(15).sub(iTime.mul(3))).mul(waveAmplitude)
         const transformedField = mapRange(fieldDistance.add(oscillation), 0, 0.7, 1, 0)
         const energyDistribution = pow(max(transformedField, 0), 2.5)
