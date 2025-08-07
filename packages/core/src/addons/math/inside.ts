@@ -7,18 +7,9 @@ export const inside = Fn(([x, min, max]: [X, X, X]): Bool => {
         name: 'inside',
         type: 'bool',
         inputs: [
-                {
-                        name: 'x',
-                        type: 'auto',
-                },
-                {
-                        name: 'min',
-                        type: 'auto',
-                },
-                {
-                        name: 'max',
-                        type: 'auto',
-                },
+                { name: 'x', type: 'auto' },
+                { name: 'min', type: 'auto' },
+                { name: 'max', type: 'auto' },
         ],
 })
 
@@ -44,14 +35,8 @@ export const insideVec2 = Fn(([v, min, max]: [Vec2, Vec2, Vec2]): Bool => {
         type: 'bool',
         inputs: [
                 { name: 'v', type: 'vec2' },
-                {
-                        name: 'min',
-                        type: 'vec2',
-                },
-                {
-                        name: 'max',
-                        type: 'vec2',
-                },
+                { name: 'min', type: 'vec2' },
+                { name: 'max', type: 'vec2' },
         ],
 })
 
@@ -65,18 +50,9 @@ export const insideVec3 = Fn(([v, min, max]: [Vec3, Vec3, Vec3]): Bool => {
         name: 'insideVec3',
         type: 'bool',
         inputs: [
-                {
-                        name: 'v',
-                        type: 'vec3',
-                },
-                {
-                        name: 'min',
-                        type: 'vec3',
-                },
-                {
-                        name: 'max',
-                        type: 'vec3',
-                },
+                { name: 'v', type: 'vec3' },
+                { name: 'min', type: 'vec3' },
+                { name: 'max', type: 'vec3' },
         ],
 })
 
@@ -86,13 +62,7 @@ export const insideAABB = Fn(([v, aabb]: [Vec2, Vec4]): Bool => {
         name: 'insideAABB',
         type: 'bool',
         inputs: [
-                {
-                        name: 'v',
-                        type: 'vec2',
-                },
-                {
-                        name: 'aabb',
-                        type: 'vec4',
-                },
+                { name: 'v', type: 'vec2' },
+                { name: 'aabb', type: 'vec4' },
         ],
 })

@@ -7,10 +7,5 @@ export const fcos = Fn(([x]: [Float]): Float => {
 }).setLayout({
         name: 'fcos',
         type: 'float',
-        inputs: [
-                {
-                        name: 'x',
-                        type: 'float',
-                },
-        ],
+        inputs: [{ name: 'x', type: 'float' }],
 })
