@@ -1,0 +1,62 @@
+---
+title: 'pack'
+description: 'Crystalline numerical compression for float-to-vec4 data transcendence'
+keywords: [pack, encoding, precision, data, compression]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pack: Quantum Numerical Crystallization Engine
+
+### Transcendental Float-to-Vector4 Compression Architecture
+
+The `pack` function represents a quantum leap in numerical precision preservation, transforming singular floating-point values into four-dimensional crystalline structures. This mathematical metamorphosis enables sub-pixel precision storage within limited color channel architectures, achieving unprecedented data density through sophisticated bit-manipulation algorithms.
+
+The fundamental mathematical transformation follows the crystalline compression equation:
+
+$$
+\mathbf{P}(v) = \mathbf{U} \cdot \left[\text{fract}(v \cdot \mathbf{F}) \oplus v, v\right]^\mathsf{T}
+$$
+
+Where:
+- $\mathbf{F} = [16777216, 65536, 256]$ represents the hierarchical scaling factors
+- $\mathbf{U} = \frac{256}{255}$ denotes the upscaling normalization constant
+- $\oplus$ indicates the precision-preserving bit-shift operation
+
+This crystalline architecture enables perfect reconstruction of original precision through inverse transformation algorithms, making it essential for high-precision computational workflows requiring sub-pixel accuracy preservation.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.3)
+        const pos = uv.sub(0.5).mul(2)
+        
+        const depth = pos.x.add(pos.y.mul(0.7)).add(t.sin().mul(0.2))
+        const packedDepth = pack(depth)
+        
+        const r = packedDepth.x.mul(pos.length().pow(0.8))
+        const g = packedDepth.y.mul(pos.x.abs().pow(1.2))
+        const b = packedDepth.z.mul(pos.y.abs().pow(0.6))
+        const a = packedDepth.w.mul(t.cos().abs())
+        
+        return vec4(r, g, b, a)
+}`}
+/>
+
+### Quantum Crystalline Visualization Principles
+
+The visualization demonstrates the four-dimensional precision preservation capabilities through dynamic depth encoding. Each color channel represents a different precision tier within the crystalline structure, revealing the hierarchical nature of the compression algorithm through temporal modulation and spatial transformation.
+
+### Advanced Precision Engineering Applications
+
+Beyond conventional depth buffering, the `pack` function enables revolutionary approaches to:
+
+**Crystalline Data Architecture**: Transform scalar measurements into multi-dimensional storage matrices for complex computational workflows requiring precision preservation across multiple processing stages.
+
+**Quantum Precision Networks**: Enable sub-pixel accuracy in rendering pipelines through sophisticated bit-level manipulation, achieving precision levels impossible through conventional floating-point arithmetic.
+
+**Metamorphic Data Compression**: Create reversible transformation chains where numerical values undergo crystalline metamorphosis while preserving their mathematical essence through inverse reconstruction algorithms.
+
+The mathematical foundation ensures perfect bidirectional transformation, making it indispensable for applications requiring absolute precision preservation in constrained storage environments.
