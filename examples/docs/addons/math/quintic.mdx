@@ -1,0 +1,69 @@
+---
+title: 'quintic'
+description: 'Fifth-order polynomial smoothstep with surface tension dynamics'
+keywords: [quintic, polynomial, smoothstep, perlin, interpolation, surface tension, fluid dynamics]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quintic: Fifth-Order Polynomial Smoothstep with Surface Tension Dynamics
+
+### Molecular-Level Continuity Through Quintic Polynomial Field Theory
+
+The quintic function represents the mathematical pinnacle of smoothstep interpolation, implementing a fifth-order polynomial defined by the expression $f(v) = 6v^5 - 15v^4 + 10v^3$. This function exhibits extraordinary continuity properties, achieving zero first and second derivatives at both endpoints, creating transitions that mirror the molecular behavior of surface tension in fluid dynamics systems.
+
+The function's expanded mathematical form reveals its sophisticated structure:
+
+$$f(v) = v^3(v(6v - 15) + 10) = 6v^5 - 15v^4 + 10v^3$$
+
+With derivatives:
+
+$$f'(v) = 30v^4 - 60v^3 + 30v^2 = 30v^2(v^2 - 2v + 1) = 30v^2(v-1)^2$$
+
+$$f''(v) = 120v^3 - 180v^2 + 60v = 60v(2v^2 - 3v + 1) = 60v(v-1)(2v-1)$$
+
+The second derivative achieves zero at $v = 0, \frac{1}{2}, 1$, creating a symmetric inflection structure that produces the smoothest possible transition curve. This mathematical property enables quintic to replicate natural phenomena where continuous acceleration changes are essential, such as fluid surface behavior and organic growth patterns.
+
+<FragmentEditor
+	isFun
+	code={`
+const fragment = () => {
+	const center = vec2(0.5)
+	const pos = uv.sub(center)
+	const t = iTime.mul(0.4)
+	
+	const r1 = pos.length().mul(4).add(t)
+	const r2 = pos.length().mul(6).add(t.mul(1.3))
+	
+	const wave1 = quintic(r1.sin().mul(0.5).add(0.5))
+	const wave2 = quintic(r2.cos().mul(0.5).add(0.5))
+	
+	const fieldStrength = wave1.mul(wave2)
+	const angle = pos.y.atan2(pos.x).add(fieldStrength.mul(6.28))
+	
+	const fluidR = pos.length().add(quintic(fieldStrength).mul(0.3))
+	const fluidPos = vec2(angle.cos(), angle.sin()).mul(fluidR)
+	
+	const density1 = quintic(smoothstep(0.15, 0.35, fluidPos.length()))
+	const density2 = quintic(smoothstep(0.25, 0.45, fluidPos.add(vec2(0.2, 0.1)).length()))
+	const density3 = quintic(smoothstep(0.1, 0.3, fluidPos.sub(vec2(0.15, -0.05)).length()))
+	
+	const surfaceTension = density1.add(density2).add(density3)
+	const molecularField = quintic(surfaceTension.clamp(0, 1))
+	
+	const color = vec3(
+		molecularField.mul(0.2).add(quintic(wave1).mul(0.4)),
+		quintic(wave2).mul(0.6).add(molecularField.mul(0.3)),
+		quintic(surfaceTension).mul(0.8).add(0.2)
+	)
+	
+	return vec4(color, 1)
+}`}
+/>
+
+This implementation exploits quintic's unique continuity properties to simulate molecular-level fluid dynamics. The function creates multiple overlapping density fields that interact through quintic transformations, generating organic surface tension effects. Each quintic application maintains perfect C² continuity, enabling seamless transitions between different fluid states without visible artifacts or discontinuities.
+
+The visualization demonstrates how quintic's mathematical smoothness translates directly into natural-looking fluid behavior. By combining multiple quintic-modified wave functions with radial field transformations, the system generates complex interference patterns that exhibit the characteristic smoothness of real fluid surfaces under surface tension forces.
+
+The mathematical foundation enables sophisticated multi-scale interactions where quintic's zero-derivative properties at boundaries create seamless blending between different density regions, producing the characteristic bulging and flowing behavior observed in actual fluid systems governed by molecular forces.
