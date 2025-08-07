@@ -19,9 +19,6 @@ export const adaptiveThresholdSimple = Fn(([v, blur_v]: [Float, Float]): Float =
         type: 'float',
         inputs: [
                 { name: 'v', type: 'float' },
-                {
-                        name: 'blur_v',
-                        type: 'float',
-                },
+                { name: 'blur_v', type: 'float' },
         ],
 })
