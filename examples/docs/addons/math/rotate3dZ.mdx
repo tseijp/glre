@@ -1,0 +1,57 @@
+---
+title: 'rotate3dZ'
+description: 'Optimized 3D rotation matrix for Z-axis rotations'
+keywords: ['rotation', '3D', 'Z-axis', 'matrix', 'planar', 'complex']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate3dZ: Specialized Z-Axis Rotation Matrix
+
+### Mathematical Foundation of Z-Axis Rotation
+
+The `rotate3dZ` function generates a specialized 3×3 rotation matrix for rotations around the Z-axis. This transformation is mathematically equivalent to 2D rotation extended into 3D space, preserving the Z-coordinate while rotating vectors in the XY-plane.
+
+The Z-axis rotation matrix follows the standard form:
+
+$$
+R_z(\theta) = \begin{pmatrix}
+\cos\theta & -\sin\theta & 0 \\
+\sin\theta & \cos\theta & 0 \\
+0 & 0 & 1
+\end{pmatrix}
+$$
+
+### Geometric Properties and Complex Plane Analogy
+
+Z-axis rotation exhibits unique mathematical properties that bridge 2D and 3D transformations:
+
+**Planar Equivalence**: Rotation in the XY-plane corresponds directly to complex number multiplication $z \cdot e^{i\theta}$.
+
+**Z-Axis Preservation**: Vectors along the Z-axis $(0,0,1)$ remain invariant under transformation.
+
+**Screen Space Rotation**: Fundamental operation for 2D graphics rotations within 3D coordinate systems.
+
+### Fractal Rosette Construction
+
+This example explores the mathematical relationship between rotation and fractal geometry, constructing self-similar rosette patterns through iterative angular transformations that reveal the deep connection between rotation and recursive mathematical structures.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec2(0.5)
+    const pos = uv.sub(center).mul(6)
+    const radius = pos.length()
+    const baseAngle = atan2(pos.y, pos.x).mul(3)
+    const rotatedAngle = baseAngle.add(iTime.mul(0.4))
+    const rotated = rotate3dZ(rotatedAngle).mul(vec3(pos, 0))
+    const petal = abs(sin(radius.mul(2)).mul(cos(rotated.x.mul(0.5))))
+    const fractal = petal.pow(radius.mul(0.3).add(1))
+    const rosette = smoothstep(0.1, 0.9, fractal)
+    const hue = rotatedAngle.div(6.28).fract()
+    const color = vec3(rosette.mul(hue), rosette, rosette.mul(0.8))
+    return vec4(color, 1)
+}`}
+/>

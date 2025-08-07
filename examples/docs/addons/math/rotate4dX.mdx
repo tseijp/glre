@@ -1,0 +1,81 @@
+---
+title: 'rotate4dX'
+description: 'Optimized 4D homogeneous X-axis rotation matrix'
+keywords: ['rotation', '4D', 'X-axis', 'homogeneous', 'projection', 'quaternion']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate4dX: Specialized Four-Dimensional X-Axis Rotation
+
+### Homogeneous X-Axis Transformation Theory
+
+The `rotate4dX` function generates a specialized 4×4 homogeneous rotation matrix for rotations around the X-axis. This transformation preserves the X-coordinate and W-coordinate while rotating vectors in the YZ-plane within the projective coordinate framework.
+
+The 4×4 X-axis rotation matrix follows the canonical form:
+
+$$
+R_{4D,x}(\theta) = \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+0 & \cos\theta & -\sin\theta & 0 \\
+0 & \sin\theta & \cos\theta & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+### Projective Geometry and Dimensional Folding
+
+X-axis rotation in homogeneous coordinates exhibits unique mathematical properties that bridge 3D rotation with projective transformations:
+
+**Projective Invariance**: The transformation maintains projective ratios while enabling seamless pipeline integration.
+
+**Dimensional Embedding**: 3D rotation is embedded within 4D space, enabling composition with translation and scaling operations.
+
+**Perspective Compatibility**: Direct integration with perspective projection matrices for camera transformations.
+
+### Quantum Interference Wave Function
+
+This demonstration visualizes quantum mechanical wave functions under rotational symmetry, exploring how X-axis rotation creates standing wave patterns that exhibit both particle and wave characteristics through mathematical interference.
+
+<FragmentEditor
+    isFun
+    code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0.2)
+    const pos = vec3(uv, iTime.mul(0.05)).sub(center).mul(6)
+    const phase1 = iTime.mul(0.8)
+    const phase2 = iTime.mul(1.2).add(3.14159)
+    const rotation1 = rotate4dX(phase1)
+    const rotation2 = rotate4dX(phase2)
+    const wave1 = rotation1.mul(vec4(pos, 1))
+    const wave2 = rotation2.mul(vec4(pos, 1))
+    const interference = sin(wave1.y.mul(3)).mul(cos(wave2.z.mul(3)))
+    const amplitude = interference.mul(exp(pos.length().negate().mul(0.3)))
+    const probability = amplitude.mul(amplitude).mul(0.5).add(0.5)
+    const color = vec3(probability.mul(0.3), probability.mul(0.8), probability)
+    return vec4(color, 1)
+}`}
+/>
+
+### Magnetic Field Line Topology
+
+This example demonstrates magnetic field line behavior under rotational perturbations, visualizing how electromagnetic field topology evolves through continuous X-axis rotations in four-dimensional parameter space.
+
+<FragmentEditor
+    isFun
+    code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(5)
+    const fieldAngle = pos.length().mul(0.8).add(iTime.mul(0.4))
+    const rotation = rotate4dX(fieldAngle)
+    const fieldVector = rotation.mul(vec4(pos, 1))
+    const fieldLines = sin(fieldVector.y.mul(2)).mul(cos(fieldVector.z.mul(2)))
+    const magnetic = abs(fieldLines).pow(0.7)
+    const topology = smoothstep(0.3, 0.8, magnetic)
+    const flux = fieldVector.y.mul(fieldVector.z).mul(0.01).add(0.5)
+    const color = vec3(topology.mul(flux), topology.mul(0.6), topology.mul(0.9))
+    return vec4(color, 1)
+}`}
+/>

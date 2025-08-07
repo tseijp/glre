@@ -1,0 +1,63 @@
+---
+title: 'transpose'
+description: 'Matrix transposition for linear algebra transformations'
+keywords: ['transpose', 'matrix', 'linear-algebra', 'transformation', 'inverse']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# transpose: Matrix Transposition Operation
+
+### Mathematical Foundation of Matrix Transposition
+
+The `transpose` function performs matrix transposition, a fundamental linear algebra operation that reflects matrix elements across the main diagonal. For a matrix $A$, the transpose $A^T$ satisfies $(A^T)_{ij} = A_{ji}$.
+
+For a 3×3 matrix, transposition transforms:
+
+$$
+A = \begin{pmatrix}
+a_{11} & a_{12} & a_{13} \\
+a_{21} & a_{22} & a_{23} \\
+a_{31} & a_{32} & a_{33}
+\end{pmatrix} \rightarrow A^T = \begin{pmatrix}
+a_{11} & a_{21} & a_{31} \\
+a_{12} & a_{22} & a_{32} \\
+a_{13} & a_{23} & a_{33}
+\end{pmatrix}
+$$
+
+### Geometric Properties and Transformations
+
+Matrix transposition exhibits important mathematical properties essential for geometric transformations:
+
+**Orthogonal Matrices**: For rotation matrices, $R^T = R^{-1}$, making transposition equivalent to matrix inversion.
+
+**Symmetric Matrices**: Matrices equal to their transpose ($A = A^T$) represent fundamental geometric properties like quadratic forms.
+
+**Linear Independence**: Transposition preserves linear independence and rank properties of matrix systems.
+
+### Reflection Symmetry Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec2(0.5)
+    const pos = uv.sub(center).mul(4)
+    const rotMatrix = mat3(
+        vec3(cos(iTime), sin(iTime), 0),
+        vec3(sin(iTime).negate(), cos(iTime), 0),
+        vec3(0, 0, 1)
+    )
+    const transposed = transpose(rotMatrix)
+    const transformed1 = rotMatrix.mul(vec3(pos, 1))
+    const transformed2 = transposed.mul(vec3(pos, 1))
+    const pattern1 = sin(transformed1.x.mul(3)).mul(cos(transformed1.y.mul(3)))
+    const pattern2 = sin(transformed2.x.mul(3)).mul(cos(transformed2.y.mul(3)))
+    const combined = pattern1.add(pattern2).mul(0.5)
+    const symmetry = abs(combined).pow(0.8)
+    const color = vec3(symmetry, symmetry.mul(0.7), symmetry.mul(0.9))
+    return vec4(color, 1)
+}`}
+/>

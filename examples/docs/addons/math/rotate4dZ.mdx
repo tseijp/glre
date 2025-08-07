@@ -1,0 +1,58 @@
+---
+title: 'rotate4dZ'
+description: 'Optimized 4D homogeneous Z-axis rotation matrix for planar transformations'
+keywords: ['rotation', '4D', 'Z-axis', 'homogeneous', 'planar', 'screen-space']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate4dZ: Four-Dimensional Z-Axis Planar Rotation
+
+### Homogeneous Planar Transformation Theory
+
+The `rotate4dZ` function generates a 4×4 homogeneous rotation matrix for rotations around the Z-axis, extending 2D planar rotation into projective coordinate space. This transformation preserves Z and W coordinates while rotating vectors in the XY-plane.
+
+The mathematical structure follows:
+
+$$
+R_{4D,z}(\theta) = \begin{pmatrix}
+\cos\theta & -\sin\theta & 0 & 0 \\
+\sin\theta & \cos\theta & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+### Mathematical Properties and Applications
+
+This transformation bridges 2D rotation mathematics with 4D homogeneous coordinate systems:
+
+**Complex Plane Isomorphism**: XY-plane rotation corresponds to complex multiplication $z \mapsto z \cdot e^{i\theta}$.
+
+**Screen Space Operations**: Direct application for 2D UI transformations within 3D rendering pipelines.
+
+**Projective Invariance**: Maintains consistency with perspective projection and camera transformations.
+
+### Plasma Confinement Dynamics
+
+This demonstration models plasma confinement in tokamak reactors, visualizing magnetic field containment through Z-axis rotation that creates toroidal plasma flows essential for fusion energy.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(4)
+    const toroidal = pos.length().sub(1.2)
+    const fieldAngle = atan2(pos.y, pos.x).mul(4).add(iTime.mul(3))
+    const rotation = rotate4dZ(fieldAngle)
+    const confined = rotation.mul(vec4(pos, 1))
+    const plasma = exp(abs(toroidal).negate().mul(8))
+    const temperature = sin(confined.x.mul(6)).mul(cos(confined.y.mul(6)))
+    const fusion = plasma.mul(temperature.add(1)).mul(0.5)
+    const heat = fusion.pow(0.4)
+    const color = vec3(heat, heat.mul(0.7).add(0.3), heat.mul(0.4).add(0.6))
+    return vec4(color, 1)
+}`}
+/>

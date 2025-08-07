@@ -1,0 +1,54 @@
+---
+title: 'rotate3dY'
+description: 'Optimized 3D rotation matrix for Y-axis rotations'
+keywords: ['rotation', '3D', 'Y-axis', 'matrix', 'optimization', 'euler']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate3dY: Specialized Y-Axis Rotation Matrix
+
+### Mathematical Foundation of Y-Axis Rotation
+
+The `rotate3dY` function constructs a specialized 3×3 rotation matrix for rotations around the Y-axis. This optimized implementation provides computational efficiency for vertical axis rotations commonly used in navigation and camera systems.
+
+The Y-axis rotation matrix follows the standard mathematical form:
+
+$$
+R_y(\theta) = \begin{pmatrix}
+\cos\theta & 0 & \sin\theta \\
+0 & 1 & 0 \\
+-\sin\theta & 0 & \cos\theta
+\end{pmatrix}
+$$
+
+### Geometric Properties and Spatial Behavior
+
+Y-axis rotation preserves the Y-coordinate while transforming X and Z coordinates through circular motion in the XZ-plane:
+
+**Axis Preservation**: Vectors along the Y-axis $(0,1,0)$ remain unchanged under this transformation.
+
+**XZ-Plane Rotation**: The transformation rotates vectors within the XZ-plane, creating horizontal circular motion.
+
+**Navigation Systems**: Fundamental operation for yaw rotations in 3D navigation and camera control systems.
+
+### Vortex Pattern Formation
+
+This demonstration explores Y-axis rotation applied to create vortex-like patterns, showcasing the mathematical beauty of rotational flow fields in computational space.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(2)
+    const distance = pos.length()
+    const angle = distance.mul(4).add(iTime.mul(1.5))
+    const rotated = rotate3dY(angle).mul(pos)
+    const vortex = sin(rotated.x.mul(6)).mul(cos(rotated.z.mul(6)))
+    const intensity = vortex.mul(smoothstep(1.5, 0, distance))
+    const color = vec3(intensity.add(0.3), intensity.mul(0.7).add(0.2), intensity.mul(0.9).add(0.1))
+    return vec4(color, 1)
+}`}
+/>
