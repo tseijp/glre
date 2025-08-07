@@ -9,9 +9,24 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Cubic Mix Interpolation
 
-### Enhanced Blending for Visual Morphing
+### Mathematical Foundation
 
 The cubicMix function combines the power of cubic smoothing with linear interpolation, creating seamless transitions between colors, positions, and complex visual states. This technique eliminates harsh boundaries and produces organic morphing effects.
+
+**Cubic Mix Formula:**
+$$\text{cubicMix}(A, B, t) = A + (B - A) \cdot \text{cubic}(t)$$
+
+Where:
+
+- $A$ is the starting value (color, vector, or scalar)
+- $B$ is the ending value
+- $t \in [0,1]$ is the interpolation parameter
+- $\text{cubic}(t) = 3t^2 - 2t^3$ provides smooth easing
+
+This can be expanded as:
+$$\text{cubicMix}(A, B, t) = A + (B - A) \cdot (3t^2 - 2t^3) = A(1 - 3t^2 + 2t^3) + B(3t^2 - 2t^3)$$
+
+The cubic interpolation ensures smooth acceleration and deceleration, eliminating the linear artifacts of simple mixing functions.
 
 ### Color Transition Spectacle
 

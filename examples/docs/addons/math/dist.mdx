@@ -9,9 +9,25 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Distance Calculation Functions
 
-### Transform Points Into Art Through Mathematical Distance Relationships
+### Mathematical Foundation
 
 Distance calculation forms the foundation of countless visual phenomena in digital art. These functions measure how far apart points are in space, but each method creates dramatically different visual patterns.
+
+**Distance Function Types:**
+
+**Euclidean Distance (L²-norm):**
+$$d_{\text{euclidean}}(\mathbf{a}, \mathbf{b}) = \sqrt{\sum_{i=1}^{n}(a_i - b_i)^2}$$
+
+**Manhattan Distance (L¹-norm):**
+$$d_{\text{manhattan}}(\mathbf{a}, \mathbf{b}) = \sum_{i=1}^{n}|a_i - b_i|$$
+
+**Chebyshev Distance (L∞-norm):**
+$$d_{\text{chebyshev}}(\mathbf{a}, \mathbf{b}) = \max_{i=1}^{n}|a_i - b_i|$$
+
+**Minkowski Distance (Lᵖ-norm):**
+$$d_{\text{minkowski}}(\mathbf{a}, \mathbf{b}) = \left(\sum_{i=1}^{n}|a_i - b_i|^p\right)^{1/p}$$
+
+Where $p \geq 1$ is the order parameter. Special cases include Manhattan ($p=1$), Euclidean ($p=2$), and Chebyshev ($p \to \infty$).
 
 ## Distance Types Overview
 
@@ -106,31 +122,3 @@ Minkowski distance generalizes all other distance types using a parameter p. Whe
 **Mathematical Formula**: (|x₂-x₁|ᵖ + |y₂-y₁|ᵖ)^(1/p)
 
 **Visual Characteristics**: Morphing between geometric shapes, customizable roundness
-
-## Distance Field Art Techniques
-
-### Layering Multiple Distance Types
-
-Combine different distance calculations to create complex interference patterns. Each distance type contributes unique geometric characteristics.
-
-### Time-Based Animation
-
-Animate the center points using trigonometric functions to create flowing, organic motion paths that reveal the distance field structures.
-
-### Color Mapping Strategies
-
-Map distance values to colors using sine waves and phase shifts to create vibrant, pulsating visual effects that highlight the mathematical relationships.
-
-### Interference Pattern Generation
-
-Add or multiply distance fields together to create moiré patterns and complex geometric interactions that produce unexpected visual phenomena.
-
-## Creative Applications
-
-**Generative Pattern Design**: Use distance calculations as the foundation for procedural pattern generation in textile design and wallpaper creation.
-
-**Interactive Visualizations**: Implement distance-based effects that respond to user input, creating dynamic visual experiences.
-
-**Game Development**: Apply distance fields for collision detection, AI pathfinding visualization, and special effect systems.
-
-**Data Visualization**: Represent multi-dimensional data relationships using distance-based color coding and spatial arrangements.

@@ -9,6 +9,6 @@ export const gain = Fn(([x, k]: [X, X]): X => {
         type: 'auto',
         inputs: [
                 { name: 'x', type: 'auto' },
-                { name: 'k', type: 'auto' }
-        ]
+                { name: 'k', type: 'auto' },
+        ],
 })

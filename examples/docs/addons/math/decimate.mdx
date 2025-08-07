@@ -9,9 +9,24 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Decimate Precision Control
 
-### Digital Quantization for Artistic Effects
+### Mathematical Foundation
 
 The decimate function reduces the precision of continuous values by rounding them to specific increments, creating digital staircase effects. This technique transforms smooth gradients into distinct levels, perfect for retro aesthetics and controlled artistic expression.
+
+**Decimation Formula:**
+$$\text{decimate}(v, p) = \left\lfloor v \cdot p \right\rfloor \div p$$
+
+Where:
+
+- $v$ is the input value to be quantized
+- $p$ is the precision parameter (number of discrete levels)
+- $\lfloor \cdot \rfloor$ is the floor function (round down to nearest integer)
+
+This creates a stepped function with $p$ discrete levels over the input range. The effect can be visualized as:
+
+$$\text{decimate}(v, p) = \frac{1}{p} \sum_{k=0}^{p-1} k \cdot H\left(v - \frac{k}{p}\right) \cdot H\left(\frac{k+1}{p} - v\right)$$
+
+Where $H(x)$ is the Heaviside step function. This quantization creates uniform discrete steps that eliminate smooth transitions.
 
 ### Classic Pixelation Effect
 

@@ -9,11 +9,41 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Low-Discrepancy Sampling for Monte Carlo Rendering
 
+### Mathematical Foundation: Low-Discrepancy Sequence Generation
+
+The Hammersley sequence provides mathematically optimal point distributions that minimize discrepancy compared to truly random sampling, enabling superior Monte Carlo integration convergence.
+
+**Mathematical Definition:**
+
+$$
+\text{hammersley}(i, N) = \left(\frac{i}{N}, \Phi_2(i)\right)
+$$
+
+Where $\Phi_2(i)$ is the radical inverse function in base 2:
+
+$$
+\Phi_2(i) = \sum_{k=0}^{\infty} b_k(i) \cdot 2^{-(k+1)}
+$$
+
+**Hemisphere Cosine Sampling:**
+
+$$
+\begin{align}
+\phi &= 2\pi u_1 \\
+\cos\theta &= \sqrt{1 - u_2} \\
+\sin\theta &= \sqrt{u_2}
+\end{align}
+$$
+
+Resulting in 3D coordinates: $(\cos\phi \sin\theta, \sin\phi \sin\theta, \cos\theta)$
+
+**Properties:**
+- $(u_1, u_2)$: Hammersley sequence coordinates $\in [0,1]^2$
+- $N$: Total number of samples
+- Low-discrepancy property ensures even distribution
+- Cosine weighting matches Lambert's law for realistic lighting
+
 ### Revolutionary Sampling Mathematics
-
-Traditional random sampling creates clustered and uneven distributions that produce noise artifacts in rendering applications. Hammersley sequences solve this fundamental problem by generating mathematically optimal point distributions with minimal discrepancy.
-
-The hammersley function transforms simple integer indices into precisely spaced sample coordinates, ensuring uniform coverage across parameter spaces. This mathematical precision eliminates the clustering issues inherent in pseudorandom number generation, creating smooth gradients and artifact-free results.
 
 Combined with hemisphereCosSample, these functions enable sophisticated light transport calculations and surface material simulations that approach photorealistic quality through mathematically sound sampling strategies.
 

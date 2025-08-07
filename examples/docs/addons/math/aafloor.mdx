@@ -9,9 +9,24 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Anti-aliased Floor Function
 
-### Visual Smoothing Revolution
+### Anti-aliased Floor Mathematical Foundation
 
 Traditional floor functions create harsh pixel edges that destroy visual quality. The **aafloor** function eliminates these artifacts through derivative-based smoothing, creating seamless patterns that adapt to viewing distance and pixel density.
+
+The mathematical foundation analyzes pixel derivatives to determine anti-aliasing width:
+
+$$\text{afwidth} = 2.0 \cdot \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
+
+The anti-aliased floor operation:
+
+$$
+\text{aafloor}(x) = \begin{cases}
+x - \text{fract}(x) & \text{if } \text{fract}(x) < 1 - \text{afwidth} \\
+\text{map}(\text{fract}(x), 1-\text{afwidth}, 1, x-\text{fract}(x), x) & \text{otherwise}
+\end{cases}
+$$
+
+Where $\text{fract}(x) = x - \lfloor x \rfloor$ represents the fractional part.
 
 <FragmentEditor
         isFun

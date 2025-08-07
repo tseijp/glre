@@ -9,17 +9,17 @@ export const inside = Fn(([x, min, max]: [X, X, X]): Bool => {
         inputs: [
                 {
                         name: 'x',
-                        type: 'auto'
+                        type: 'auto',
                 },
                 {
-                        name: 'min', 
-                        type: 'auto'
+                        name: 'min',
+                        type: 'auto',
                 },
                 {
                         name: 'max',
-                        type: 'auto'
-                }
-        ]
+                        type: 'auto',
+                },
+        ],
 })
 
 export const insideFloat = Fn(([x, min, max]: [Float, Float, Float]): Bool => {
@@ -30,21 +30,23 @@ export const insideFloat = Fn(([x, min, max]: [Float, Float, Float]): Bool => {
         inputs: [
                 {
                         name: 'x',
-                        type: 'float'
+                        type: 'float',
                 },
                 {
                         name: 'min',
-                        type: 'float'
+                        type: 'float',
                 },
                 {
                         name: 'max',
-                        type: 'float'
-                }
-        ]
+                        type: 'float',
+                },
+        ],
 })
 
 export const insideVec2 = Fn(([v, min, max]: [Vec2, Vec2, Vec2]): Bool => {
-        return v.x.greaterThanEqual(min.x).and(v.x.lessThanEqual(max.x))
+        return v.x
+                .greaterThanEqual(min.x)
+                .and(v.x.lessThanEqual(max.x))
                 .and(v.y.greaterThanEqual(min.y).and(v.y.lessThanEqual(max.y)))
 }).setLayout({
         name: 'insideVec2',
@@ -52,21 +54,23 @@ export const insideVec2 = Fn(([v, min, max]: [Vec2, Vec2, Vec2]): Bool => {
         inputs: [
                 {
                         name: 'v',
-                        type: 'vec2'
+                        type: 'vec2',
                 },
                 {
                         name: 'min',
-                        type: 'vec2'
+                        type: 'vec2',
                 },
                 {
                         name: 'max',
-                        type: 'vec2'
-                }
-        ]
+                        type: 'vec2',
+                },
+        ],
 })
 
 export const insideVec3 = Fn(([v, min, max]: [Vec3, Vec3, Vec3]): Bool => {
-        return v.x.greaterThanEqual(min.x).and(v.x.lessThanEqual(max.x))
+        return v.x
+                .greaterThanEqual(min.x)
+                .and(v.x.lessThanEqual(max.x))
                 .and(v.y.greaterThanEqual(min.y).and(v.y.lessThanEqual(max.y)))
                 .and(v.z.greaterThanEqual(min.z).and(v.z.lessThanEqual(max.z)))
 }).setLayout({
@@ -75,17 +79,17 @@ export const insideVec3 = Fn(([v, min, max]: [Vec3, Vec3, Vec3]): Bool => {
         inputs: [
                 {
                         name: 'v',
-                        type: 'vec3'
+                        type: 'vec3',
                 },
                 {
                         name: 'min',
-                        type: 'vec3'
+                        type: 'vec3',
                 },
                 {
                         name: 'max',
-                        type: 'vec3'
-                }
-        ]
+                        type: 'vec3',
+                },
+        ],
 })
 
 export const insideAABB = Fn(([v, aabb]: [Vec2, Vec4]): Bool => {
@@ -96,11 +100,11 @@ export const insideAABB = Fn(([v, aabb]: [Vec2, Vec4]): Bool => {
         inputs: [
                 {
                         name: 'v',
-                        type: 'vec2'
+                        type: 'vec2',
                 },
                 {
                         name: 'aabb',
-                        type: 'vec4'
-                }
-        ]
+                        type: 'vec4',
+                },
+        ],
 })

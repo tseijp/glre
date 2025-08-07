@@ -9,6 +9,6 @@ export const gaussian = Fn(([d, s]: [X, X]): X => {
         type: 'float',
         inputs: [
                 { name: 'd', type: 'auto' },
-                { name: 's', type: 'auto' }
-        ]
+                { name: 's', type: 'auto' },
+        ],
 })

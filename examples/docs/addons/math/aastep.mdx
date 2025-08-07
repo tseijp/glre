@@ -83,7 +83,26 @@ const fragment = () => {
 
 ## Technical Implementation Details
 
-The `aastep` function automatically calculates pixel-level derivatives to determine optimal smoothing width. This ensures consistent visual quality across different screen resolutions and viewing distances.
+### Mathematical Foundation
+
+The `aastep` function automatically calculates pixel-level derivatives to determine optimal smoothing width:
+
+$$\text{afwidth} = 0.7 \cdot \left\|\frac{d}{dx}(\text{value}), \frac{d}{dy}(\text{value})\right\|$$
+
+The anti-aliased step function applies smoothstep interpolation:
+$$\text{aastep}(\text{threshold}, \text{value}) = \text{smoothstep}(\text{threshold} - \text{afwidth}, \text{threshold} + \text{afwidth}, \text{value})$$
+
+Where smoothstep is defined as:
+
+$$
+\text{smoothstep}(a, b, x) = \begin{cases}
+0 & \text{if } x \leq a \\
+3t^2 - 2t^3 & \text{if } a < x < b \\
+1 & \text{if } x \geq b
+\end{cases}
+$$
+
+With $t = \frac{x - a}{b - a}$. This creates smooth transitions that eliminate aliasing artifacts while maintaining sharp visual boundaries.
 
 ### Core Algorithm Structure
 
@@ -92,11 +111,3 @@ The `aastep` function automatically calculates pixel-level derivatives to determ
 | Derivative Analysis | Detects pixel boundaries          | `vec2(dFdx(value), dFdy(value))`                          |
 | Smoothing Width     | Calculates anti-alias range       | `length(derivative) * 0.7`                                |
 | Smooth Transition   | Applies intelligent interpolation | `smoothstep(threshold - width, threshold + width, value)` |
-
-### Performance Characteristics
-
-The function maintains constant performance regardless of geometric complexity, making it suitable for real-time graphics applications where consistent frame rates are essential.
-
-### Visual Quality Benefits
-
-Anti-aliased step functions eliminate visual artifacts that commonly appear in digital graphics, providing professional-quality results that rival traditional rendering techniques.

@@ -89,7 +89,24 @@ const fragment = () => {
 
 ## Implementation Architecture
 
-The `absi` function implements conditional logic through mathematical comparison operations rather than traditional branching structures, ensuring optimal execution across different processing architectures.
+### Mathematical Foundation
+
+The `absi` function implements conditional logic through mathematical comparison operations:
+
+$$
+\text{absi}(x) = \begin{cases}
+x \cdot (-1) & \text{if } x < 0 \\
+x & \text{otherwise}
+\end{cases}
+$$
+
+This can be expressed as a branchless operation:
+$$\text{absi}(x) = x \cdot \text{sign}(x) \cdot \text{sign}(x)$$
+
+Or using conditional selection:
+$$\text{absi}(x) = \text{select}(x, -x, x < 0)$$
+
+The function ensures optimal execution across different processing architectures by avoiding branching penalties.
 
 ### Computational Structure
 
@@ -98,11 +115,3 @@ The `absi` function implements conditional logic through mathematical comparison
 | Sign Detection       | Negative value identification | `x.lessThan(0)`                         |
 | Conditional Negation | Selective value inversion     | `x.mul(-1)`                             |
 | Value Selection      | Conditional result choice     | `select(negative, positive, condition)` |
-
-### Type System Integration
-
-The function operates with automatic type inference, maintaining input type characteristics while applying absolute value transformation. This approach ensures seamless integration with existing mathematical operations without requiring explicit type conversion.
-
-### Optimization Characteristics
-
-Conditional selection operations execute without branching penalties, making the function suitable for high-frequency mathematical computations where consistent execution timing is essential.

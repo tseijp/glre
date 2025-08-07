@@ -1,0 +1,75 @@
+---
+title: 'mmin'
+description: 'Multidimensional minima extraction revealing quantum collapse states through harmonic convergence mathematics'
+keywords: ['minimum', 'convergence', 'quantum', 'collapse', 'harmony', 'resonance', 'dimensional', 'attractor']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mmin: Quantum Dimensional Collapse Detector
+
+### Harmonic Convergence Through Mathematical Minimization Attractors
+
+The mmin function operates as a quantum collapse mechanism, extracting the most convergent dimensional component from multidimensional space. This mathematical minimization creates harmonic attractor states where dimensional forces converge toward lowest-energy configurations, revealing the fundamental stability principles governing multidimensional systems.
+
+Through component-wise minimization, mmin establishes harmonic resonance patterns that transform chaotic dimensional competition into ordered convergence fields. The function acts as a dimensional stabilizer, identifying which coordinate axis provides the most stable foundation for system equilibrium.
+
+Mathematical Definition:
+
+$$\text{mmin}(\mathbf{v}) = \min\{v_1, v_2, v_3, v_4\}$$
+
+For quantum state analysis in 4-dimensional space:
+
+$$\mathbf{v} \in \mathbb{C}^4 \Rightarrow \text{mmin}(\mathbf{v}) = v_i \text{ where } i = \arg\min_j |v_j|$$
+
+The convergence theorem establishes stability bounds:
+
+$$\forall \mathbf{v} \in \mathbb{R}^n: \text{mmin}(\mathbf{v}) \leq v_i \quad \forall i \in \{1,2,\ldots,n\}$$
+
+Harmonic attractor principle:
+
+$$\lim_{t \to \infty} \text{mmin}(\mathbf{v}(t)) = \text{stable equilibrium point}$$
+
+This creates mathematical landscapes where dimensional convergence determines emergent stability patterns. The resulting scalar field represents regions where specific coordinate dimensions achieve harmonic resonance, producing complex interference networks through quantum mechanical minimization principles.
+
+The visualization demonstrates how competing oscillatory forces achieve resonance through dimensional convergence, where local minima represent quantum ground states in the multidimensional harmonic system. This reveals the deep connection between mathematical minimization and physical stability in complex systems.
+
+<FragmentEditor
+	isFun
+	code={`
+const fragment = () => {
+	const time = iTime.mul(0.3)
+	const center = vec2(0.0)
+	const coord = uv.sub(center)
+	
+	const harmonic1 = coord.mul(2.8).add(time.mul(0.9))
+	const harmonic2 = coord.mul(3.5).add(time.mul(1.1))
+	const harmonic3 = coord.mul(1.7).add(time.mul(1.8))
+	const harmonic4 = coord.mul(4.2).add(time.mul(0.7))
+	
+	const oscillator1 = harmonic1.x.cos().mul(harmonic1.y.sin())
+	const oscillator2 = harmonic2.length().mul(5.0).sin().mul(0.8)
+	const oscillator3 = harmonic3.x.mul(harmonic3.y).mul(3.0).cos()
+	const oscillator4 = harmonic4.x.add(harmonic4.y).mul(1.9).sin().mul(1.2)
+	
+	const resonators = vec4(oscillator1, oscillator2, oscillator3, oscillator4)
+	const convergence = mmin(resonators)
+	
+	const stability = convergence.abs().pow(0.7)
+	
+	const attractor1 = coord.length().mul(6.0).sub(convergence.mul(8.0)).cos()
+	const attractor2 = coord.x.sub(coord.y).mul(4.0).add(stability.mul(12.0)).sin()
+	const attractor3 = convergence.mul(attractor1).mul(attractor2).abs().pow(1.5)
+	
+	const resonance = stability.mul(attractor3).add(convergence.abs().mul(2.0))
+	
+	const r = attractor1.abs().mul(convergence.abs()).pow(2.2)
+	const g = resonance.mul(stability).pow(0.9)
+	const b = attractor2.abs().mul(attractor3).pow(1.4)
+	
+	const harmonic = r.add(g).add(b).div(3.0).pow(1.6)
+	
+	return vec4(harmonic.mul(0.3), harmonic.mul(0.7), harmonic, 1)
+}`}
+/>

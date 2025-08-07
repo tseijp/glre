@@ -9,13 +9,34 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Inverse Cubic Phase Transformation
 
-### Unveiling Hidden Harmonic Structures Through Mathematical Inversion
+### Mathematical Foundation: Inverse Cubic Transformation
 
-The inverse cubic function represents a fascinating exploration into the mathematical territory where cubic interpolation meets trigonometric inversion. The function `f(v) = 0.5 - sin(asin(1.0 - 2.0*v) / 3.0)` creates a unique phase transformation that reveals complex harmonic structures hidden within simple input values.
+The inverse cubic function implements a sophisticated trigonometric inversion that creates unique phase transformations through nested trigonometric operations.
+
+**Mathematical Definition:**
+
+$$
+\text{invCubic}(v) = 0.5 - \sin\left(\frac{\arcsin(1 - 2v)}{3}\right)
+$$
+
+**Trigonometric Analysis:**
+- Input domain: $v \in [0, 1]$  
+- Transformation: $1 - 2v \in [-1, 1]$ maps to arcsine domain
+- Phase division: $\frac{\arcsin(1 - 2v)}{3}$ creates triadic resonance
+- Final sine operation produces smooth S-curve transformation
+
+**Mathematical Properties:**
+- Monotonic increasing function
+- Smooth derivatives throughout domain
+- Unique inflection characteristics creating harmonic resonance
+- Symmetric around midpoint with specialized curvature
+
+**Geometric Interpretation:**
+The nested trigonometric structure creates angular phase spaces where the division by 3 produces triadic harmonic relationships, revealing complex resonance patterns hidden within the input values.
 
 ### Trigonometric Phase Space Visualization
 
-The core mathematical beauty lies in the nested trigonometric operations, where the arcsine creates angular phase space and subsequent sine division by three produces triadic resonance patterns.
+The core mathematical beauty lies in this nested structure, where the arcsine creates angular phase space and subsequent sine division by three produces triadic resonance patterns.
 
 <FragmentEditor
         isFun

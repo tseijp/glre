@@ -9,9 +9,31 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Dynamic Contrast Amplifier
 
-### Intelligent Intensity Modulation
+### Mathematical Foundation: Asymmetric Power-Law Transformation
 
-The gain function provides sophisticated contrast control that goes beyond simple linear adjustments. By applying asymmetric transformations to values above and below the midpoint, it creates dramatic visual intensity shifts that enhance both subtle details and bold contrasts simultaneously.
+The gain function implements a sophisticated contrast control mechanism through asymmetric power-law transformations that treat values above and below the midpoint differently.
+
+**Mathematical Definition:**
+
+$$
+\text{gain}(x, k) = \begin{cases}
+\frac{1}{2} \cdot \left(2x\right)^k & \text{if } x < 0.5 \\
+1 - \frac{1}{2} \cdot \left(2(1-x)\right)^k & \text{if } x \geq 0.5
+\end{cases}
+$$
+
+**Parameter Analysis:**
+
+- $x \in [0, 1]$: Input value (normalized intensity)
+- $k > 0$: Gain parameter controlling contrast intensity
+- When $k = 1$: Linear transformation (identity)
+- When $k > 1$: Enhanced contrast with sharper transitions
+- When $0 < k < 1$: Reduced contrast with smoother gradients
+
+**Geometric Properties:**
+The function creates an S-shaped curve that passes through (0,0), (0.5,0.5), and (1,1), maintaining monotonicity while providing precise control over the contrast curve's steepness around the midpoint.
+
+### Intelligent Intensity Modulation
 
 This mathematical approach enables precise control over visual punch, creating effects that range from subtle artistic enhancement to extreme psychedelic transformations, all while maintaining mathematical elegance and computational simplicity.
 

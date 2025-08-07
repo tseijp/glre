@@ -9,9 +9,33 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Cubic Smooth Interpolation
 
-### Mathematical Magic for Natural Curves
+### Mathematical Foundation
 
 The cubic function transforms raw linear values into elegant smooth transitions using Hermite polynomial mathematics. This creates natural curves perfect for creating flowing artistic effects and eliminates the mechanical feel of linear interpolation.
+
+**Standard Cubic Interpolation:**
+$$\text{cubic}(v) = v^2(3 - 2v) = 3v^2 - 2v^3$$
+
+This is the classic smoothstep function, providing smooth acceleration from 0 and deceleration to 1.
+
+**Cubic with Slope Control:**
+$$\text{cubic}(v, s_0, s_1) = a_3v^3 + a_2v^2 + a_1v + a_0$$
+
+Where the coefficients are determined by the Hermite interpolation conditions:
+
+- $f(0) = 0$, $f(1) = 1$ (endpoint values)
+- $f'(0) = s_0$, $f'(1) = s_1$ (endpoint slopes)
+
+Solving the system yields:
+
+$$
+\begin{align}
+a_0 &= 0 \\
+a_1 &= s_0 \\
+a_2 &= 3 - 2s_0 - s_1 \\
+a_3 &= s_0 + s_1 - 2
+\end{align}
+$$
 
 ### Basic Smoothing Without Control
 

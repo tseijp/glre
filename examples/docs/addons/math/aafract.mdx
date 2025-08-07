@@ -15,11 +15,23 @@ Traditional fractional functions create harsh digital artifacts when creating re
 
 ### Mathematical Foundation
 
-The anti-aliased fractional function works by:
+The anti-aliased fractional function analyzes pixel derivatives to determine optimal smoothing:
 
-1. **Measuring pixel density** - Calculates how quickly values change across screen pixels using derivatives
-2. **Smart filtering** - Applies Nyquist filtering to prevent unwanted high-frequency artifacts
-3. **Adaptive smoothing** - Automatically adjusts smoothing intensity based on visual requirements
+$$\text{afwidth} = 2.0 \cdot \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
+
+The fractional computation with conditional smoothing:
+
+$$
+\text{aafract}(x) = \begin{cases}
+\frac{\text{fract}(x)}{1-\text{afwidth}} & \text{if } \text{fract}(x) < 1-\text{afwidth} \\
+\frac{1-\text{fract}(x)}{\text{afwidth}} & \text{otherwise}
+\end{cases}
+$$
+
+The result is processed through Nyquist filtering:
+$$\text{nyquist}(v, \text{afwidth}) = \text{smoothstep}(0, \text{afwidth}, v)$$
+
+Where $\text{fract}(x) = x - \lfloor x \rfloor$ represents the fractional part, enabling seamless pattern repetition without aliasing artifacts.
 
 <FragmentEditor
         isFun
@@ -103,28 +115,3 @@ const fragment = () => {
 | `x`       | `float` \| `vec2` | Input value for fractional computation | Any real number |
 
 **Return Value**: Same type as input, containing smoothly anti-aliased fractional part
-
-### Implementation Details
-
-The function automatically detects areas where aliasing would occur and applies intelligent filtering:
-
-- **High-frequency regions**: Maximum smoothing applied
-- **Low-frequency regions**: Minimal filtering to preserve sharp details
-- **Transition zones**: Gradual blending between filtered and unfiltered regions
-
-### Performance Characteristics
-
-- **GPU-optimized**: Leverages hardware derivative functions for maximum performance
-- **Scale-adaptive**: Computational cost remains constant regardless of pattern frequency
-- **Memory-efficient**: No texture lookups or additional memory allocation required
-
-### Creative Applications
-
-Transform your visual projects with professional-quality pattern generation:
-
-- **Architectural visualization**: Clean building textures and material patterns
-- **Game environments**: Seamless terrain and surface details
-- **Motion graphics**: Smooth animated backgrounds and transitions
-- **Data visualization**: Clear, readable grid systems and charts
-
-The `aafract` function bridges the gap between mathematical precision and visual appeal, ensuring your patterns look crisp and professional at any viewing condition.

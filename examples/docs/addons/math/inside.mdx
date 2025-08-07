@@ -22,11 +22,11 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 The inside function determines whether a point lies within specified boundaries through logical complement operations. Rather than using traditional range checking, inside employs De Morgan's laws to create elegant boundary detection through negated disjunction.
 
 **Mathematical Definition:**
-For any value **x** and boundary parameters **min**, **max**:
+For any value $x$ and boundary parameters $\text{min}, \text{max}$:
 
-```
-inside(x, min, max) = ¬(x < min ∨ x > max)
-```
+$$
+\text{inside}(x, \text{min}, \text{max}) = \neg(x < \text{min} \lor x > \text{max}) \equiv (\text{min} \leq x \leq \text{max})
+$$
 
 This formulation naturally extends to higher dimensions through component-wise logical operations, enabling efficient spatial queries for collision detection, procedural generation, and constraint satisfaction problems.
 
@@ -168,29 +168,9 @@ const fragment = () => {
 
 ### Mathematical Properties and Computational Applications
 
-| Property                | Mathematical Expression                                | Application Domain           |
-| ----------------------- | ------------------------------------------------------ | ---------------------------- |
-| **Inclusion Logic**     | `inside(x, a, b) ⟺ a ≤ x ≤ b`                          | Constraint satisfaction      |
-| **De Morgan's Law**     | `¬(x < a ∨ x > b) ≡ (x ≥ a ∧ x ≤ b)`                   | Boolean algebra optimization |
-| **Monotonicity**        | `a₁ ≤ a₂, b₁ ≤ b₂ ⟹ inside(x,a₁,b₁) ⟹ inside(x,a₂,b₂)` | Hierarchical containment     |
-| **Dimension Extension** | `inside(v, min, max) = ∧ᵢ inside(vᵢ, minᵢ, maxᵢ)`      | Multidimensional queries     |
-
-### Geometric Interpretation and Spatial Analysis
-
-In computational geometry, the inside function enables fundamental spatial reasoning operations. The function transforms continuous space into discrete containment relationships, enabling efficient algorithms for:
-
-**Collision Detection**: Axis-aligned bounding box (AABB) intersection testing
-**Procedural Generation**: Constraint-based spatial distribution systems
-**Visibility Culling**: Frustum containment queries for rendering optimization
-**Spatial Indexing**: Grid-based spatial data structure partitioning
-
-### Advanced Applications: Topological Space Theory
-
-The mathematical foundation of inside extends beyond simple range checking into topological space analysis. The function defines characteristic functions for spatial regions, enabling visualization of:
-
-**Interior Points**: Points where inside returns true with epsilon neighborhood
-**Boundary Points**: Transition zones between inside/outside states
-**Closure Operations**: Union of interior and boundary point sets
-**Complement Spaces**: Regions where inside returns false
-
-This topological perspective makes inside invaluable for advanced geometric algorithms and mathematical visualization of abstract spatial concepts.
+| Property                | Mathematical Expression                                                                                  | Application Domain           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Inclusion Logic**     | $\text{inside}(x, a, b) \Leftrightarrow a \leq x \leq b$                                                 | Constraint satisfaction      |
+| **De Morgan's Law**     | $\neg(x < a \lor x > b) \equiv (x \geq a \land x \leq b)$                                                | Boolean algebra optimization |
+| **Monotonicity**        | $a_1 \leq a_2, b_1 \leq b_2 \Rightarrow \text{inside}(x,a_1,b_1) \Rightarrow \text{inside}(x,a_2,b_2)$   | Hierarchical containment     |
+| **Dimension Extension** | $\text{inside}(\mathbf{v}, \mathbf{min}, \mathbf{max}) = \bigwedge_i \text{inside}(v_i, \min_i, \max_i)$ | Multidimensional queries     |

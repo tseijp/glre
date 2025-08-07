@@ -9,11 +9,34 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # 4D Gradient Vector Generation
 
+### Mathematical Foundation: 4D Gradient Vector Generation
+
+The grad4 function generates pseudo-random 4D gradient vectors using deterministic mathematical operations to ensure consistent spatial coherence in noise algorithms.
+
+**Mathematical Definition:**
+
+$$
+\begin{align}
+\mathbf{p}_{xyz} &= \lfloor \text{frac}(j \cdot \mathbf{ip}_{xyz}) \cdot 7 \rfloor \cdot ip_z - 1 \\
+p_w &= 1.5 - |\mathbf{p}_{xyz}| \cdot \mathbf{1}_{xyz} \\
+\mathbf{s} &= \text{lessThan}(\mathbf{p}, \mathbf{0}) \\
+\mathbf{p}_{xyz} &= \mathbf{p}_{xyz} + (\mathbf{s}_{xyz} \cdot 2 - 1) \cdot s_w
+\end{align}
+$$
+
+**Algorithm Components:**
+- $j$: Scalar seed value for deterministic generation
+- $\mathbf{ip} = (ip_x, ip_y, ip_z, ip_w)$: Parameter vector controlling distribution
+- $\mathbf{p}$: Resulting 4D gradient vector
+- $\mathbf{s}$: Sign correction vector for proper gradient distribution
+
+**Properties:**
+- Deterministic generation ensures spatial coherence
+- Vectors maintain unit-sphere distribution characteristics  
+- Consistent mathematical relationships between neighboring coordinates
+- Optimal for Perlin noise and procedural texture generation
+
 ### Mathematical Beauty in Four Dimensions
-
-Creating procedural patterns requires mathematical precision in generating gradient vectors. The grad4 function transforms simple input coordinates into precisely distributed 4D vectors that drive noise algorithms.
-
-Unlike traditional random number generators that produce uniform distributions, grad4 creates vectors with specific geometric properties essential for high-quality noise generation. The algorithm ensures consistent mathematical relationships between neighboring coordinates while maintaining unpredictable variation across the input space.
 
 This function forms the mathematical foundation for advanced procedural generation techniques, enabling the creation of organic textures, terrain features, and fluid simulations through controlled randomness.
 

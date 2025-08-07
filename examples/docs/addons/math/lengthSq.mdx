@@ -14,11 +14,11 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 The lengthSq function transcends traditional distance calculations by operating directly in energy space. Rather than computing Euclidean distance through expensive square root operations, lengthSq reveals the intrinsic energy density of vectors through dot product self-interaction.
 
 **Mathematical Definition:**
-For any vector **v** = (v₁, v₂, ..., vₙ), the squared length represents energy density:
+For any vector $\mathbf{v} = (v_1, v_2, \ldots, v_n)$, the squared length represents energy density:
 
-```
-lengthSq(v) = ||v||² = v · v = Σᵢ vᵢ²
-```
+$$
+\text{lengthSq}(\mathbf{v}) = \|\mathbf{v}\|^2 = \mathbf{v} \cdot \mathbf{v} = \sum_{i=1}^{n} v_i^2
+$$
 
 This operation maintains monotonic ordering properties while eliminating computational complexity, making it ideal for distance comparisons, energy field calculations, and quantum mechanical visualizations.
 
@@ -96,8 +96,8 @@ const fragment = () => {
         const blackHole1 = vec2(0.2, 0.1)
         const blackHole2 = vec2(-0.3, -0.2)
 
-        const mass1 = 0.8
-        const mass2 = 1.2
+        const mass1 = float(0.8)
+        const mass2 = float(1.2)
 
         const r1Sq = lengthSq(uv.sub(blackHole1)).max(0.001)
         const r2Sq = lengthSq(uv.sub(blackHole2)).max(0.001)
@@ -126,12 +126,12 @@ const fragment = () => {
 
 ### Mathematical Properties and Applications
 
-| Property                   | Mathematical Expression         | Computational Advantage           |
-| -------------------------- | ------------------------------- | --------------------------------- |
-| **Monotonicity**           | `a < b ⟺ a² < b²` for `a,b ≥ 0` | Distance comparisons without sqrt |
-| **Scaling Laws**           | `lengthSq(αv) = α² lengthSq(v)` | Energy scaling relationships      |
-| **Parallelogram Identity** | `\|\|a+b\|\|² + \|\|a-b\|\|² = 2(\|\|a\|\|² + \|\|b\|\|²)` | Physics conservation laws |
-| **Polarization**           | `4⟨a,b⟩ = \|\|a+b\|\|² - \|\|a-b\|\|²` | Quantum state analysis |
+| Property                   | Mathematical Expression                                                                              | Computational Advantage           |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **Monotonicity**           | $a < b \Leftrightarrow a^2 < b^2$ for $a,b \geq 0$                                                   | Distance comparisons without sqrt |
+| **Scaling Laws**           | $\text{lengthSq}(\alpha\mathbf{v}) = \alpha^2 \text{lengthSq}(\mathbf{v})$                           | Energy scaling relationships      |
+| **Parallelogram Identity** | $\|\mathbf{a}+\mathbf{b}\|^2 + \|\mathbf{a}-\mathbf{b}\|^2 = 2(\|\mathbf{a}\|^2 + \|\mathbf{b}\|^2)$ | Physics conservation laws         |
+| **Polarization**           | $4\langle\mathbf{a},\mathbf{b}\rangle = \|\mathbf{a}+\mathbf{b}\|^2 - \|\mathbf{a}-\mathbf{b}\|^2$   | Quantum state analysis            |
 
 ### Quantum Mechanical Interpretation
 

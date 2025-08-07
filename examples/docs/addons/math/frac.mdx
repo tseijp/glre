@@ -9,9 +9,32 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Fractional Universe Generator
 
-### Infinite Patterns Through Mathematical Precision
+### Mathematical Foundation
 
 The fractional function extracts the decimal portion of numbers, transforming continuous mathematical space into repeating, crystalline structures. This fundamental operation enables the creation of infinite tiling patterns, geometric repetitions, and mathematical harmonies that extend beyond the boundaries of conventional space.
+
+**Fractional Function Formula:**
+$$\text{frac}(x) = x - \lfloor x \rfloor$$
+
+Where:
+
+- $x$ is the input value
+- $\lfloor x \rfloor$ is the floor function (greatest integer less than or equal to $x$)
+- The result is always in the range $[0, 1)$
+
+This can also be expressed as:
+$$\text{frac}(x) = x \bmod 1$$
+
+The function creates a sawtooth wave pattern that repeats every unit interval:
+
+$$
+\text{frac}(x) = \begin{cases}
+x & \text{if } 0 \leq x < 1 \\
+x - 1 & \text{if } 1 \leq x < 2 \\
+x - 2 & \text{if } 2 \leq x < 3 \\
+\vdots
+\end{cases}
+$$
 
 By capturing only the fractional remainder, complex coordinate systems collapse into elegant, repeating units that form the foundation for procedural textures, architectural patterns, and natural crystalline formations.
 

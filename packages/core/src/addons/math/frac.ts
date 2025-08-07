@@ -5,7 +5,5 @@ export const frac = Fn(([x]: [X]): X => {
 }).setLayout({
         name: 'frac',
         type: 'auto',
-        inputs: [
-                { name: 'x', type: 'auto' }
-        ]
+        inputs: [{ name: 'x', type: 'auto' }],
 })

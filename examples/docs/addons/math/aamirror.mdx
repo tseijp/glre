@@ -15,12 +15,20 @@ The `aamirror` function creates a mirrored pattern that automatically applies an
 
 ### Mathematical Foundation
 
-The function implements a sophisticated mirroring algorithm that:
+The anti-aliased mirror function creates symmetric patterns through mathematical transformation and filtering:
 
-- Transforms input into symmetric patterns around 0.5 intervals
-- Applies automatic derivative-based anti-aliasing
-- Produces continuous, smooth transitions without aliasing artifacts
-- Maintains perfect symmetry across mirror boundaries
+$$v = \left| x - \lfloor x + 0.5 \rfloor \right| \cdot 2.0$$
+
+The anti-aliasing width calculation:
+$$\text{afwidth} = \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
+
+The result is processed through Nyquist filtering for smooth transitions:
+$$\text{aamirror}(x) = \text{nyquist}(v, \text{afwidth})$$
+
+Where the Nyquist filter applies:
+$$\text{nyquist}(v, w) = \text{smoothstep}(0, w, v)$$
+
+This creates perfect mirror symmetry with automatic anti-aliasing that adapts to screen pixel density.
 
 ### Core Implementation Logic
 
@@ -153,12 +161,3 @@ The function employs derivative-based anti-aliasing that:
 | **Memory Usage**       | Minimal - no texture lookups         |
 | **Scalability**        | Excellent - constant time complexity |
 | **Quality**            | High - automatic anti-aliasing       |
-
-### Integration Patterns
-
-The `aamirror` function integrates seamlessly with:
-
-- Texture coordinate manipulation
-- Animation and time-based effects
-- Multi-layer pattern composition
-- Geometric transformations and distortions

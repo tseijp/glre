@@ -9,9 +9,30 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Filtered Cosine Wave Generator
 
-### Intelligent Wave Filtering for Visual Elegance
+### Mathematical Foundation
 
 The filtered cosine function transforms raw mathematical waves into visually refined patterns. Instead of harsh, jagged oscillations at high frequencies, this function automatically detects frequency density and gracefully fades intense variations to create smooth, elegant wave forms.
+
+**Filtered Cosine Formula:**
+$$\text{fcos}(x) = \cos(x) \cdot \text{smoothstep}(2\pi, 0, \text{fwidth}(x))$$
+
+Where:
+
+- $\cos(x)$ is the standard cosine function
+- $\text{fwidth}(x) = |\frac{\partial x}{\partial s}| + |\frac{\partial x}{\partial t}|$ measures the rate of change across pixels
+- $\text{smoothstep}(a, b, x) = 3t^2 - 2t^3$ where $t = \text{clamp}\left(\frac{x-a}{b-a}, 0, 1\right)$
+
+The filtering multiplier becomes:
+
+$$
+\text{filter}(x) = \begin{cases}
+1 & \text{if } \text{fwidth}(x) \leq 0 \\
+\text{smoothstep}(2\pi, 0, \text{fwidth}(x)) & \text{if } 0 < \text{fwidth}(x) < 2\pi \\
+0 & \text{if } \text{fwidth}(x) \geq 2\pi
+\end{cases}
+$$
+
+This automatically fades high-frequency oscillations to prevent aliasing artifacts.
 
 This technique proves invaluable when creating procedural patterns, animated textures, and rhythmic visual effects where standard cosine functions would produce unwanted artifacts or visual noise.
 

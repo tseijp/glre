@@ -114,6 +114,27 @@ The threshold comparison uses the `step` function to create binary decisions bas
 
 ### Mathematical Foundation
 
-Adaptive thresholding implements local statistical analysis through spatial comparison operations. The algorithm evaluates each pixel against its neighborhood characteristics, producing results that maintain detail in varying illumination conditions.
+Adaptive thresholding implements local comparison operations through binary step functions:
+
+For the standard adaptive threshold with bias:
+$$\text{adaptiveThreshold}(v, b, k) = \text{step}(b + k, v)$$
+
+For the simple adaptive threshold:
+$$\text{adaptiveThresholdSimple}(v, b) = \text{step}(b - 0.05, v)$$
+
+Where the step function is defined as:
+
+$$
+\text{step}(edge, x) = \begin{cases}
+0 & \text{if } x < edge \\
+1 & \text{if } x \geq edge
+\end{cases}
+$$
+
+The parameters represent:
+
+- $v$ = input value to be thresholded
+- $b$ = blurred reference value (local neighborhood)
+- $k$ = bias adjustment for sensitivity control
 
 This approach eliminates global threshold limitations by creating dynamic boundaries that respond to content density and structural variations within the processed data.

@@ -9,9 +9,37 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Probability Field Generator
 
-### Mathematical Beauty in Natural Distribution
+### Mathematical Foundation: Normal Distribution Function
 
-The Gaussian function creates perfect bell curves that mirror natural phenomena found throughout the universe. From particle physics probability clouds to atmospheric light scattering, this mathematical foundation generates visually compelling effects that feel both organic and precisely controlled.
+The Gaussian function implements the fundamental normal distribution that appears throughout nature, from quantum mechanics to statistical analysis.
+
+**Mathematical Definition:**
+
+$$
+\text{gaussian}(d, s) = e^{-\frac{d^2}{2s^2}}
+$$
+
+For multidimensional vectors:
+
+$$
+\text{gaussian}(\mathbf{d}, s) = e^{-\frac{|\mathbf{d}|^2}{2s^2}} = e^{-\frac{d_1^2 + d_2^2 + \ldots + d_n^2}{2s^2}}
+$$
+
+**Parameter Analysis:**
+
+- $d$ or $\mathbf{d}$: Distance value (scalar or vector)
+- $s > 0$: Spread parameter controlling distribution width
+- When $s \rightarrow 0$: Distribution approaches Dirac delta function
+- When $s \rightarrow \infty$: Distribution approaches uniform distribution
+
+**Properties:**
+
+- Bell-shaped curve with maximum value of 1 at distance 0
+- Smooth falloff with infinite tail behavior
+- Rotational symmetry for multidimensional cases
+- Mathematical elegance enabling analytical solutions
+
+### Mathematical Beauty in Natural Distribution
 
 By manipulating the distance parameter and spread factor, infinite variations of smooth falloff patterns emerge, creating everything from subtle ambient glows to dramatic energy concentrations that pulse with mathematical precision.
 

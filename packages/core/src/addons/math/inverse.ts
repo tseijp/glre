@@ -1,4 +1,4 @@
-import { Fn, X, Float, Mat2, Mat3, Mat4, mat2, mat3, mat4, int, float } from '../../node'
+import { Fn, X, float } from '../../node'
 
 export const inverse = Fn(([m]: [X]): X => {
         return float(1).div(m)
@@ -8,7 +8,7 @@ export const inverse = Fn(([m]: [X]): X => {
         inputs: [
                 {
                         name: 'm',
-                        type: 'auto'
-                }
-        ]
+                        type: 'auto',
+                },
+        ],
 })

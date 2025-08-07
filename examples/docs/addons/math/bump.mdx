@@ -13,7 +13,21 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 The bump function generates smooth falloff curves that transition from maximum value at center to zero at boundaries. Built on polynomial mathematics, these functions create natural-looking gradients without harsh edges.
 
-The basic formula uses `1 - x²` which creates a smooth parabolic curve. Adding a threshold parameter `k` allows fine control over the falloff curve steepness.
+The bump functions are defined as follows:
+
+**Standard Bump Function:**
+$$\text{bump}(x, k) = \max\left(0, (1 - x^2) - k\right) = \text{saturate}\left((1 - x^2) - k\right)$$
+
+**Simple Bump Function:**
+$$\text{bumpSimple}(x) = \max(1 - x^2, 0)$$
+
+Where:
+
+- $x$ is the input distance value (typically normalized to [0,1])
+- $k$ is the threshold parameter controlling falloff steepness
+- $\text{saturate}(v) = \text{clamp}(v, 0, 1)$ ensures output stays in valid range
+
+The parabolic curve $1 - x^2$ creates smooth transitions, while the threshold $k$ shifts the cutoff point, allowing precise control over the falloff characteristics.
 
 ### Two Curve Styles
 

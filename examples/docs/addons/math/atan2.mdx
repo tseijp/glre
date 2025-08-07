@@ -13,7 +13,23 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 The atan2 function calculates the angle θ between a point (x, y) and the positive x-axis. Unlike the standard arctangent function, atan2 handles all four quadrants correctly and returns values in the range [0, 2π). This normalization makes it perfect for creating smooth angular animations and rotational effects.
 
-The function takes two parameters: y (vertical displacement) and x (horizontal displacement). The result represents the counter-clockwise angle from the positive x-axis to the point.
+$$\text{atan2}(y, x) = \left(\arctan\left(\frac{y}{x}\right) + \pi\right) \bmod 2\pi$$
+
+Where:
+
+- $y$ is the vertical displacement from the reference point
+- $x$ is the horizontal displacement from the reference point
+- The result $\theta \in [0, 2\pi)$ represents the counter-clockwise angle from the positive x-axis
+
+The function's quadrant-aware implementation ensures continuity across all angular positions:
+
+$$
+\theta = \begin{cases}
+\arctan\left(\frac{y}{x}\right) + \pi & \text{if } x \geq 0 \\
+\arctan\left(\frac{y}{x}\right) + 2\pi & \text{if } x < 0, y \geq 0 \\
+\arctan\left(\frac{y}{x}\right) + \pi & \text{if } x < 0, y < 0
+\end{cases}
+$$
 
 <FragmentEditor
         isFun
