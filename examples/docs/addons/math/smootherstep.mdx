@@ -38,8 +38,8 @@ $$\text{smootherstep}(a,b,v) = t_{sat}^3(t_{sat}(t_{sat} \cdot 6 - 15) + 10)$$
 This mathematical framework enables creation of temporal phase transitions that exhibit perfect mathematical harmony across derivative boundaries.
 
 <FragmentEditor
-	isFun
-	code={`
+        isFun
+        code={`
 const fragment = () => {
 	const time = iTime.mul(0.3)
 	const centerDistance = length(uv.sub(vec2(0.5)))
@@ -64,17 +64,3 @@ const fragment = () => {
 	return vec4(finalColor, 1)
 }`}
 />
-
-### Quintic Harmonic Resonance Engineering
-
-The demonstration above showcases `smootherstep`'s unique capability for creating harmonic phase transitions. Unlike linear or cubic interpolation, the quintic polynomial generates resonance patterns where each ring transition maintains perfect mathematical continuity.
-
-The visualization employs concentric rings where each transition point utilizes `smootherstep` to create seamless color phase shifts. The mathematical elegance emerges from the function's ability to eliminate visible discontinuities that plague simpler interpolation methods.
-
-**Key Mathematical Properties:**
-- **Zero-derivative boundaries**: Creates seamless loop connections
-- **Symmetric curvature**: Maintains visual balance across transitions  
-- **Quintic acceleration**: Generates natural-feeling motion dynamics
-- **Harmonic compatibility**: Enables complex wave interference patterns
-
-This implementation demonstrates how `smootherstep`'s mathematical foundation enables creation of visual phenomena impossible with standard interpolation functions, revealing the hidden mathematical beauty within quintic polynomial transformations.

@@ -41,8 +41,8 @@ This canonical embedding preserves the linear transformation while making it com
         code={`
 const fragment = () => {
         const transform3x3 = mat3(
-                cos(iTime.mul(0.3)), sin(iTime.mul(0.3)).negate(), 0,
-                sin(iTime.mul(0.3)), cos(iTime.mul(0.3)), 0,
+                cos(iTime), sin(iTime).negate(), 0,
+                sin(iTime), cos(iTime), 0,
                 0, 0, 1
         )
         

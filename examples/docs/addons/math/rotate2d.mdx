@@ -1,0 +1,75 @@
+---
+title: 'rotate2d'
+description: '2D rotation matrix generator for spatial transformations'
+keywords: ['rotation', 'transformation', 'matrix', 'geometry', 'linear algebra']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate2d: Two-Dimensional Rotation Matrix Generator
+
+### Mathematical Foundation of Planar Rotation Transformation
+
+The `rotate2d` function constructs a 2×2 rotation matrix that transforms vectors in the xy-plane by a specified angle. This fundamental operation forms the mathematical cornerstone of countless geometric transformations in computational graphics.
+
+Given an angle θ (theta), the rotation matrix R(θ) is defined mathematically as:
+
+$$
+R(\theta) = \begin{pmatrix}
+\cos\theta & -\sin\theta \\
+\sin\theta & \cos\theta
+\end{pmatrix}
+$$
+
+This orthogonal matrix preserves distances and angles while rotating coordinate systems. The determinant equals unity (det(R) = 1), confirming area preservation during transformation.
+
+### Geometric Properties and Mathematical Invariants
+
+The rotation matrix exhibits several critical mathematical properties that enable predictable spatial transformations:
+
+**Orthogonality**: The matrix is orthogonal, meaning $R^T R = I$, where $R^T$ denotes the transpose and $I$ represents the identity matrix.
+
+**Periodicity**: The transformation demonstrates periodic behavior with period 2π, satisfying $R(\theta + 2\pi) = R(\theta)$.
+
+**Composition**: Sequential rotations compose multiplicatively: $R(\alpha) \cdot R(\beta) = R(\alpha + \beta)$.
+
+### Crystalline Pattern Formation Through Iterated Rotation
+
+The following demonstration explores the emergent beauty of systematic rotation applied to simple geometric forms. By applying controlled angular increments to position vectors, complex crystalline patterns emerge from elementary mathematical operations.
+
+<FragmentEditor
+    isFun
+    code={`
+const fragment = () => {
+    const center = vec2(0.5)
+    const pos = uv.sub(center)
+    const angle = iTime.mul(0.3)
+    const rotated = rotate2d(angle).mul(pos)
+    const distance = rotated.length()
+    const pattern = sin(distance.mul(20)).mul(0.5).add(0.5)
+    const color = vec3(pattern, pattern.mul(0.7), pattern.mul(0.4))
+    return vec4(color, 1)
+}`}
+/>
+
+### Fibonacci Spiral Through Continuous Rotation
+
+This second example demonstrates the mathematical relationship between rotation and natural growth patterns. The rotation angle follows a time-based progression that reveals the underlying geometric structure of logarithmic spirals found throughout nature.
+
+<FragmentEditor
+    isFun
+    code={`
+const fragment = () => {
+    const center = vec2(0.5)
+    const pos = uv.sub(center).mul(4)
+    const radius = pos.length()
+    const baseAngle = atan2(pos.y, pos.x)
+    const spiralAngle = baseAngle.add(radius.mul(0.5)).add(iTime)
+    const rotated = rotate2d(spiralAngle).mul(vec2(radius.mul(0.1), 0))
+    const intensity = smoothstep(0.05, 0.0, rotated.length())
+    const hue = spiralAngle.div(6.28).fract()
+    const color = vec3(hue, intensity, intensity.mul(0.8))
+    return vec4(color, 1)
+}`}
+/>
