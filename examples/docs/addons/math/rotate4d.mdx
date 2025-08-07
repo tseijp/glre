@@ -1,0 +1,59 @@
+---
+title: 'rotate4d'
+description: '4D homogeneous coordinate rotation matrix using Rodrigues formula'
+keywords: ['rotation', '4D', 'homogeneous', 'matrix', 'projection', 'transformation']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate4d: Four-Dimensional Homogeneous Rotation Matrix
+
+### Homogeneous Coordinate System Implementation
+
+The `rotate4d` function constructs a 4×4 rotation matrix in homogeneous coordinates, extending 3D axis-angle rotation into the projective space framework commonly used in computer graphics pipelines. This transformation maintains the mathematical elegance of Rodrigues' formula while enabling seamless integration with perspective projection systems.
+
+The 4×4 homogeneous rotation matrix takes the form:
+
+$$
+R_{4D}(\mathbf{n}, \theta) = \begin{pmatrix}
+R_{3D}(\mathbf{n}, \theta) & \mathbf{0} \\
+\mathbf{0}^T & 1
+\end{pmatrix}
+$$
+
+Where $R_{3D}$ represents the 3×3 Rodrigues rotation matrix embedded within the larger homogeneous structure.
+
+### Mathematical Properties of Projective Transformations
+
+Homogeneous coordinates enable sophisticated geometric operations through projective geometry principles:
+
+**Affine Invariance**: The transformation preserves affine properties while maintaining compatibility with perspective projection.
+
+**Pipeline Integration**: Seamless composition with translation, scaling, and projection matrices in graphics pipelines.
+
+**Projective Completeness**: Enables representation of points at infinity and unified treatment of parallel projections.
+
+### Tesseract Wireframe Visualization
+
+This example attempts to visualize the rotation of a 4D hypercube (tesseract) through its 3D projection, demonstrating how homogeneous transformations enable exploration of geometric objects beyond our spatial intuition.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(4)
+    const axis = vec3(0.7, 0.7, 0).normalize()
+    const rotation = rotate4d(axis, iTime.mul(0.3))
+    const corners = vec4(pos, 1)
+    const rotated = rotation.mul(corners)
+    const projected = rotated.xyz.div(rotated.w.add(2))
+    const grid = projected.x.mul(4).sin().abs().mul(projected.y.mul(4).sin().abs())
+    const edges = smoothstep(0.9, 1.0, grid)
+    const vertices = smoothstep(0.02, 0.0, projected.length().mod(0.5))
+    const structure = edges.add(vertices)
+    const color = vec3(structure.mul(0.8), structure.mul(0.9), structure)
+    return vec4(color, 1)
+}`}
+/>

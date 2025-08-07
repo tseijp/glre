@@ -1,0 +1,56 @@
+---
+title: 'pack'
+description: 'Float-to-RGBA encoding for high-precision data storage'
+keywords: [pack, encoding, precision, depth, storage]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pack: High-Precision Float Encoding
+
+### Float-to-RGBA Data Storage System
+
+The `pack` function converts a single floating-point value into RGBA color channels, enabling high-precision data storage in textures and framebuffers. This technique is essential for depth mapping, displacement storage, and any scenario requiring more precision than standard 8-bit channels provide.
+
+The encoding process splits a float into 4 components using bit manipulation:
+
+$$
+\text{pack}(v) = \text{PackUpscale} \cdot \begin{bmatrix}
+\text{fract}(v \cdot 16777216) \\
+\text{fract}(v \cdot 65536) \\
+\text{fract}(v \cdot 256) \\
+v
+\end{bmatrix} - \text{ShiftAdjustment}
+$$
+
+Where:
+
+- Each component captures different precision levels (from finest to coarsest)
+- PackUpscale = 256/255 normalizes to [0,1] range
+- ShiftAdjustment prevents overlap between components
+
+This encoding pairs with the `unpack` function for perfect reconstruction, commonly used in shadow mapping and height field storage where 8-bit precision is insufficient.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.2)
+        const pos = uv.sub(0.5).mul(4)
+
+        const originalValue = pos.length().add(t.sin().mul(0.3)).fract()
+        const compressed = pack(originalValue)
+        const reconstructed = unpack(compressed)
+
+        const errorVisualization = originalValue.sub(reconstructed).abs().mul(1000)
+        const compressionRatio = compressed.length().div(1)
+
+        const r = reconstructed.mul(compressionRatio.pow(0.5))
+        const g = errorVisualization.add(reconstructed.mul(0.7))
+        const b = compressed.x.add(compressed.y).mul(0.8)
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>

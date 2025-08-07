@@ -1,0 +1,140 @@
+---
+title: 'adaptiveThreshold'
+description: 'Dynamic threshold operations for intelligent image processing and visual effect creation'
+keywords: [adaptive threshold, image filtering, dynamic boundaries, visual processing, threshold detection]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Adaptive Threshold Filtering
+
+## Dynamic Boundary Detection
+
+Adaptive threshold filtering creates intelligent boundaries that respond to local image characteristics rather than global parameters. This technique analyzes surrounding pixel values and adjusts threshold levels dynamically, producing superior visual results compared to fixed threshold approaches.
+
+The system examines both the current value and a blurred reference, calculating optimal separation points that adapt to varying content density and lighting conditions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution)
+        const time = iTime.mul(0.2)
+
+        // Create complex noise pattern
+        const noise = uv.x.mul(15).add(time).sin().mul(uv.y.mul(12).sub(time.mul(0.7)).cos())
+        const blurred = uv.x.mul(3).add(time.mul(0.5)).sin().mul(uv.y.mul(2.5).sub(time.mul(0.3)).cos())
+
+        // Apply adaptive thresholding with bias
+        const threshold = adaptiveThreshold(noise, blurred, float(0.2))
+
+        const color = vec3(threshold.mul(0.8), threshold.mul(0.6), threshold.mul(0.9))
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Content-Aware Edge Enhancement
+
+Advanced edge detection leverages adaptive thresholding to identify meaningful boundaries while suppressing noise artifacts. The algorithm compares fine detail against smooth background variations, highlighting significant transitions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(3)
+        const time = iTime.mul(0.4)
+
+        // Generate detailed texture pattern
+        const detail = uv.x.mul(20).add(time).sin().add(uv.y.mul(18).sub(time.mul(1.2)).cos())
+        const background = uv.x.mul(2).add(time.mul(0.3)).sin().add(uv.y.mul(1.8).sub(time.mul(0.7)).cos())
+
+        // Simple adaptive threshold without bias
+        const edges = adaptiveThresholdSimple(detail, background)
+
+        // Create rainbow edge coloring
+        const colorShift = uv.x.add(uv.y).add(time.mul(2))
+        const red = edges.mul(colorShift.sin().mul(0.5).add(0.7))
+        const green = edges.mul(colorShift.mul(1.3).cos().mul(0.5).add(0.6))
+        const blue = edges.mul(colorShift.mul(0.7).sin().mul(0.5).add(0.8))
+
+        const color = vec3(red, green, blue)
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Morphological Pattern Analysis
+
+Sophisticated pattern recognition combines multiple adaptive threshold operations to create complex morphological effects. Different bias values reveal various structural levels within the same data source.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(4)
+        const time = iTime.mul(0.6)
+
+        // Multi-scale pattern generation
+        const pattern = uv.x.mul(8).add(time).sin().mul(uv.y.mul(6).sub(time.mul(0.8)).cos())
+        const smooth1 = uv.x.mul(2).add(time.mul(0.4)).sin().mul(uv.y.mul(1.5).sub(time.mul(0.5)).cos())
+        const smooth2 = uv.x.mul(4).add(time.mul(0.7)).sin().mul(uv.y.mul(3).sub(time.mul(0.9)).cos())
+
+        // Multiple threshold layers with different sensitivities
+        const layer1 = adaptiveThreshold(pattern, smooth1, float(0.3))
+        const layer2 = adaptiveThreshold(pattern, smooth2, float(-0.1))
+        const layer3 = adaptiveThresholdSimple(pattern, smooth1.add(smooth2).div(2))
+
+        // Combine layers with mathematical operations
+        const combined = layer1.mul(0.4).add(layer2.mul(0.5)).add(layer3.mul(0.3))
+
+        const timeColor = time.mul(3).sin().mul(0.3).add(0.7)
+        const color = vec3(combined.mul(timeColor), combined.mul(time.mul(2.3).sin().mul(0.3).add(0.6)), combined.mul(time.mul(1.7).cos().mul(0.3).add(0.8)))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Technical Implementation Framework
+
+The adaptive threshold system operates through comparative analysis between target values and reference patterns. This approach enables context-sensitive decision making that adapts to local content characteristics.
+
+### Core Algorithm Structure
+
+| Function Variant          | Parameters             | Threshold Calculation           | Application Domain               |
+| ------------------------- | ---------------------- | ------------------------------- | -------------------------------- |
+| `adaptiveThreshold`       | value, reference, bias | `step(reference + bias, value)` | Configurable sensitivity control |
+| `adaptiveThresholdSimple` | value, reference       | `step(reference - 0.05, value)` | Standard edge detection          |
+
+### Processing Architecture
+
+The threshold comparison uses the `step` function to create binary decisions based on computed boundaries. Reference values provide local context, while bias parameters enable fine-tuning for specific visual requirements.
+
+### Mathematical Foundation
+
+Adaptive thresholding implements local comparison operations through binary step functions:
+
+For the standard adaptive threshold with bias:
+$$\text{adaptiveThreshold}(v, b, k) = \text{step}(b + k, v)$$
+
+For the simple adaptive threshold:
+$$\text{adaptiveThresholdSimple}(v, b) = \text{step}(b - 0.05, v)$$
+
+Where the step function is defined as:
+
+$$
+\text{step}(edge, x) = \begin{cases}
+0 & \text{if } x < edge \\
+1 & \text{if } x \geq edge
+\end{cases}
+$$
+
+The parameters represent:
+
+- $v$ = input value to be thresholded
+- $b$ = blurred reference value (local neighborhood)
+- $k$ = bias adjustment for sensitivity control
+
+This approach eliminates global threshold limitations by creating dynamic boundaries that respond to content density and structural variations within the processed data.

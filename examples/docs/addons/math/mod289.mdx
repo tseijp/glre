@@ -1,0 +1,98 @@
+---
+title: 'mod289'
+description: 'Modular arithmetic operations with 289-base periodicity for advanced mathematical pattern synthesis'
+keywords: [modular-arithmetic, periodicity, mathematical-patterns, procedural-noise, number-theory]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mod289: Modular 289 Function
+
+### Modular Arithmetic for Noise Generation
+
+The mod289 function performs modulo 289 operation, commonly used in procedural noise algorithms. The value 289 (17²) is chosen for its mathematical properties that help create good pseudo-random distributions in noise functions.
+
+## Theoretical Foundation
+
+### Modular Arithmetic Essence
+
+The mod289 operation implements the mathematical relationship:
+
+$$
+\text{mod289}(x) = x - \lfloor \frac{x}{289} \rfloor \times 289
+$$
+
+where $289 = 17^2$ represents a prime square modulus that creates specific periodicity characteristics unavailable through other modular bases.
+
+### Prime Square Modular Systems
+
+The choice of $17^2$ as the modular base creates unique mathematical properties:
+
+$$
+\mathbb{Z}/289\mathbb{Z} \cong \mathbb{Z}/17^2\mathbb{Z}
+$$
+
+This isomorphism enables the creation of nested periodic structures where the primary period (17) and secondary period (289) interact to generate complex interference patterns.
+
+## Ultimate Mathematical Visualization
+
+### Modular Pattern Generation
+
+This example demonstrates how mod289 can be used to create repeating patterns with period 289, useful for procedural texture generation and noise algorithms:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(12)
+        const t = iTime.mul(0.8)
+
+        // Generate dual-scale modular coordinates with phase evolution
+        const baseX = mod289(p.x.mul(7).add(t.mul(11)))
+        const baseY = mod289(p.y.mul(11).add(t.mul(7)))
+        const metaX = mod289(p.x.mul(17).add(t.mul(3)))
+        const metaY = mod289(p.y.mul(17).add(t.mul(5)))
+
+        // Create 17-fold crystallographic symmetry matrices
+        const angle17 = atan2(baseY.sub(144.5), baseX.sub(144.5)).mul(17)
+        const radius17 = baseX.sub(144.5).pow(2).add(baseY.sub(144.5).pow(2)).sqrt()
+
+        // Generate primary crystal lattice with 289-periodic boundaries
+        const latticeU = mod289(radius17.mul(17).add(angle17.mul(3)))
+        const latticeV = mod289(angle17.mul(17).sub(radius17.mul(5)))
+
+        // Create fractal substructure using nested modular operations
+        const fractalA = mod289(latticeU.div(17).floor().mul(17).add(t.mul(23)))
+        const fractalB = mod289(latticeV.div(17).floor().mul(17).add(t.mul(19)))
+
+        // Apply crystalline interference with dual symmetry
+        const resonanceField = latticeU.div(289).sin().mul(latticeV.div(289).cos())
+        const fractalField = fractalA.div(289).cos().mul(fractalB.div(289).sin())
+
+        // Generate phase transition dynamics
+        const phaseOrder = resonanceField.add(fractalField).abs()
+        const transition = mod289(phaseOrder.mul(289).add(t.mul(17))).div(289)
+
+        // Create catastrophic symmetry breaking
+        const symmetryBreak = transition.sub(0.5).abs().mul(2)
+        const orderParameter = symmetryBreak.smoothstep(0.3, 0.7)
+
+        // Apply modular chromatic decomposition
+        const primeR = mod289(fractalA.mul(7).add(metaX)).div(289)
+        const primeG = mod289(fractalB.mul(11).add(metaY)).div(289)
+        const primeB = mod289(latticeU.add(latticeV).mul(13)).div(289)
+
+        // Combine crystal phases with order parameter
+        const crystal = vec3(primeR, primeG, primeB)
+        const amorphous = vec3(primeG, primeB, primeR).mul(0.7)
+        const finalPhase = crystal.mix(amorphous, orderParameter)
+
+        // Apply crystalline intensity with 17-symmetry enhancement
+        const intensity = phaseOrder.mul(orderParameter.add(0.3))
+        const enhancement = mod289(angle17.div(17).floor().mul(17)).div(289)
+
+        return vec4(finalPhase.mul(intensity.add(enhancement.mul(0.4))), 1)
+
+}`}
+/>

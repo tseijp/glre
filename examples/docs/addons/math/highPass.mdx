@@ -1,0 +1,119 @@
+---
+title: 'highPass'
+description: 'Mathematical high-pass filter that creates dramatic intensity thresholds with dynamic remapping'
+keywords: [highPass, threshold, filter, signal processing, intensity, mathematical]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# highPass: Threshold-Based Signal Filtering
+
+### Mathematical Signal Processing with Dynamic Threshold Control
+
+The highPass function implements a mathematical high-pass filter that transforms input signals by eliminating values below a specified threshold while remapping remaining values to maintain full range utilization.
+
+**Mathematical Definition:**
+
+```
+highPass(v, b) = max(v - b, 0) / (1 - b)
+where:
+- v: input signal value [0, 1]
+- b: threshold barrier [0, 1]
+- output: filtered signal [0, 1]
+```
+
+**Domain Analysis:**
+
+- When v ≤ b: output = 0 (complete elimination)
+- When v > b: output = (v - b) / (1 - b) (linear remapping)
+- The division by (1 - b) ensures output spans [0, 1] range
+
+**Geometric Properties:**
+The function creates a piecewise linear transformation with a sharp discontinuity at the threshold point, effectively creating a "cliff" in the signal response.
+
+### Multi-Layer Threshold Filtering
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.3)
+
+        // Generate multi-frequency plasma field
+        const plasma1 = uv.x.mul(10).add(t).sin().mul(uv.y.mul(7).add(t.mul(1.3)).sin())
+        const plasma2 = uv.x.mul(13).add(uv.y.mul(8)).add(t.mul(2)).sin()
+        const plasma3 = uv.distance(vec2(0.5)).mul(25).sub(t.mul(4)).sin()
+
+        const combined = plasma1.mul(0.4).add(plasma2.mul(0.35)).add(plasma3.mul(0.25))
+        const normalized = combined.mul(0.5).add(0.5)
+
+        // Multi-threshold cascade effect
+        const threshold1 = float(0.3)
+        const threshold2 = float(0.6)
+        const threshold3 = float(0.85)
+
+        const filter1 = highPass(normalized, threshold1)
+        const filter2 = highPass(filter1, threshold2.div(float(1).sub(threshold1)))
+        const filter3 = highPass(filter2, threshold3.div(float(1).sub(threshold2)))
+
+        // Create layered color response
+        const base = vec3(float(0.1), float(0.0), float(0.2))
+        const layer1 = vec3(float(0.8), float(0.2), float(0.4)).mul(filter1)
+        const layer2 = vec3(float(0.4), float(0.9), float(0.3)).mul(filter2)
+        const layer3 = vec3(float(1.0), float(0.8), float(0.1)).mul(filter3)
+
+        const color = base.add(layer1).add(layer2).add(layer3)
+
+        return vec4(color, float(1))
+
+}`}
+/>
+
+### Cascading Filter Effects
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(3)
+        let signal = float(0)
+        let amplitude = float(1)
+        let frequency = float(1)
+
+        // Generate fractal noise
+        for (let i = 0; i < 5; i++) {
+                const noise = coord.x.mul(frequency).add(iTime).sin().mul(
+                        coord.y.mul(frequency).add(iTime.mul(0.7)).cos()
+                )
+                signal = signal.add(noise.mul(amplitude))
+                amplitude = amplitude.mul(0.6)
+                frequency = frequency.mul(2.1)
+        }
+
+        signal = signal.mul(0.5).add(0.5)
+
+        // Cascading threshold effects
+        const baseThreshold = 0.2
+        const step1 = highPass(signal, baseThreshold)
+        const step2 = highPass(step1, 0.4)
+        const step3 = highPass(step2, 0.7)
+
+        // Multi-dimensional color mapping
+        const redChannel = signal.mul(2).saturate()
+        const greenChannel = step1.mul(3).saturate()
+        const blueChannel = step2.mul(4).saturate()
+        const whiteBoost = step3.mul(2)
+
+        const color = vec3(
+                redChannel.add(whiteBoost.mul(0.3)),
+                greenChannel.add(whiteBoost.mul(0.8)),
+                blueChannel.add(whiteBoost)
+        )
+
+        return vec4(color, float(1))
+
+}`}
+/>
+
+The highPass function creates sharp threshold effects by eliminating values below a cutoff point and remapping the remaining range. This is useful for creating dramatic contrast effects, isolating bright areas, or creating stepped intensity levels in visual effects.

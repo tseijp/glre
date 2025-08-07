@@ -1,0 +1,81 @@
+---
+title: 'scale2d'
+description: '2D scaling transformation matrix generator with geometric synthesis capabilities'
+keywords: ['scale2d', 'matrix', 'transformation', 'geometry', 'linear algebra']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# scale2d: Geometric Transformation Matrix Engine
+
+### Parametric Scaling Matrix Construction for Spatial Deformation
+
+The scale2d function generates 2×2 transformation matrices for coordinate space scaling operations. This function provides three distinct parametric forms: uniform scalar scaling $S(s)$, vector-based anisotropic scaling $S(\mathbf{v})$, and explicit component scaling $S(x,y)$.
+
+The mathematical foundation operates through matrix representation:
+
+$$
+S(s) = \begin{bmatrix}
+s & 0 \\
+0 & s
+\end{bmatrix}
+$$
+
+$$
+S(x,y) = \begin{bmatrix}
+x & 0 \\
+0 & y
+\end{bmatrix}
+$$
+
+For anisotropic transformations, the scaling matrix enables differential compression and expansion along orthogonal axes. The determinant $\det(S) = xy$ represents the area scaling factor, while eigenvalues $(x,y)$ determine principal scaling directions.
+
+### Scaling Matrix Visualization
+
+Direct visualization of how scale2d matrix elements affect coordinate transformations, showing the mathematical relationship between matrix components and geometric deformation.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = uv.sub(0.5).mul(6)
+    const time = iTime.mul(0.8)
+
+    // Create scaling matrix with time-varying elements
+    const sx = time.sin().mul(0.8).add(1.5)
+    const sy = time.mul(0.7).cos().mul(0.6).add(1.3)
+
+    // Original coordinate grid
+    const originalX = center.x
+    const originalY = center.y
+
+    // Transform coordinates using scale2d matrix
+    // [sx  0 ] [x]   [sx*x]
+    // [0  sy ] [y] = [sy*y]
+    const transformedX = originalX.mul(sx)
+    const transformedY = originalY.mul(sy)
+
+    // Create pattern showing transformation
+    const originalPattern = originalX.mul(2).sin().mul(originalY.mul(2).cos())
+    const transformedPattern = transformedX.mul(2).sin().mul(transformedY.mul(2).cos())
+
+    // Blend between original and transformed
+    const blend = time.mul(2).sin().mul(0.5).add(0.5)
+    const pattern = originalPattern.mix(transformedPattern, blend)
+
+    // Color encodes matrix properties
+    const determinant = sx.mul(sy)
+    const trace = sx.add(sy)
+    const eigenRatio = sx.div(sy)
+
+    const intensity = smoothstep(-0.3, 0.3, pattern)
+
+    return vec4(vec3(
+        intensity.mul(determinant.div(4)),
+        intensity.mul(trace.div(5)),
+        intensity.mul(eigenRatio.div(3))
+    ), 1)
+
+}`}
+/>

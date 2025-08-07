@@ -1,0 +1,67 @@
+---
+title: 'saturateMediump'
+description: 'Medium precision saturation for mobile-optimized color space clamping and numerical stability'
+keywords: [glre, saturate, mediump, precision, mobile, numerical, stability, clamping]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Medium Precision Boundary Control
+
+### Mathematical Foundation: Precision-Aware Value Clamping
+
+The saturateMediump function implements numerical stability for medium precision floating-point environments by constraining values within the representable range of 16-bit floats commonly used in mobile graphics architectures.
+
+**Mathematical Definition:**
+
+$$
+\text{saturateMediump}(x) = \min(x, 65504.0)
+$$
+
+**Precision Analysis:**
+
+- $x \in \mathbb{R}$: Input value (unrestricted domain)
+- $65504.0$: Maximum representable value in IEEE 754 half-precision format
+- Prevents numerical overflow in constrained precision environments
+- Maintains computational stability across diverse hardware architectures
+
+**Hardware Optimization:**
+The function serves as a mathematical bridge between full-precision calculations and hardware-constrained rendering pipelines, ensuring visual consistency across platforms while optimizing for mobile GPU architectures.
+
+### Mobile Hardware Compatibility
+
+Shows how saturateMediump maintains visual consistency across different precision architectures by demonstrating computational patterns that remain stable within medium precision constraints.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(4)
+        const t = iTime.mul(0.6)
+
+        // Complex calculations that might overflow on mobile
+        const complex1 = p.x.mul(3).add(t).sin().abs().pow(8).mul(10000)
+        const complex2 = p.y.mul(2).sub(t.mul(1.3)).cos().exp().mul(5000)
+        const complex3 = p.length().add(t.mul(2).sin()).pow(6).mul(8000)
+
+        // Apply saturateMediump for mobile stability
+        const stable1 = saturateMediump(complex1).div(65504)
+        const stable2 = saturateMediump(complex2).div(65504)
+        const stable3 = saturateMediump(complex3).div(65504)
+
+        // Create stable interference pattern
+        const interference = stable1.mul(stable2).add(stable2.mul(stable3))
+        const pattern = saturateMediump(interference.mul(3)).div(3)
+
+        // Visualize precision-safe computation
+        const safety = smoothstep(0.8, 1.0, pattern)
+
+        return vec4(vec3(
+                pattern.mul(0.8).add(safety.mul(0.2)),
+                pattern.mul(0.9),
+                pattern.mul(0.7).add(safety.mul(0.4))
+        ), 1)
+
+}`}
+/>

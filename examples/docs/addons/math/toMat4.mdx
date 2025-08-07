@@ -1,0 +1,68 @@
+---
+title: 'toMat4'
+description: 'Matrix dimensional expansion: Embed 3×3 transformation into 4×4 homogeneous coordinates'
+keywords: [matrix, transformation, dimensional, expansion, embedding, homogeneous]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# toMat4: Homogeneous Matrix Embedding
+
+### Euclidean to Homogeneous Coordinate System Expansion
+
+The `toMat4` function embeds a 3×3 transformation matrix into 4×4 homogeneous coordinates by augmenting it with identity elements for translation and perspective. This operation enables 3D linear transformations to participate in full homogeneous coordinate pipelines while preserving their mathematical properties.
+
+For a 3×3 matrix $M$:
+
+$$
+M = \begin{pmatrix}
+m_{00} & m_{01} & m_{02} \\
+m_{10} & m_{11} & m_{12} \\
+m_{20} & m_{21} & m_{22}
+\end{pmatrix}
+$$
+
+The function expands it to homogeneous form:
+
+$$
+\text{toMat4}(M) = \begin{pmatrix}
+m_{00} & m_{01} & m_{02} & 0 \\
+m_{10} & m_{11} & m_{12} & 0 \\
+m_{20} & m_{21} & m_{22} & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+This canonical embedding preserves the linear transformation while making it compatible with homogeneous coordinate operations. The augmented matrix maintains the property that $w = 1$ after transformation, ensuring proper projective geometry.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const transform3x3 = mat3(
+                iTime.cos(), iTime.sin().negate(), 0,
+                iTime.sin(), iTime.cos(), 0,
+                0, 0, 1
+        )
+
+        const transform4x4 = toMat4(transform3x3)
+
+        const originalPos = vec4(uv.mul(2).sub(1), 0, 1)
+        const rotatedPos = transform4x4.mul(originalPos)
+
+        const pattern = rotatedPos.x.mul(8).sin().mul(rotatedPos.y.mul(8).sin())
+        const intensity = pattern.mul(0.5).add(0.5)
+
+        const color = vec3(
+                intensity,
+                intensity.mul(0.7),
+                intensity.mul(0.4)
+        ).mul(float(0.5).mix(1, intensity))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+This demonstration shows how `toMat4` enables 3×3 transformations to operate within homogeneous coordinate systems. The embedded matrix maintains linear properties while participating in perspective-correct transformations, creating surface perturbations that respect the underlying mathematical structure of homogeneous coordinates.

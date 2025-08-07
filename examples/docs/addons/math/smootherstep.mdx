@@ -1,0 +1,66 @@
+---
+title: 'smootherstep'
+description: 'Quintic polynomial-based super-smooth interpolation beyond smoothstep'
+keywords: [interpolation, polynomial, easing, animation, mathematical visualization]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# smootherstep: The Quintic Gateway to Mathematical Perfection
+
+### Ultra-Smooth Interpolation Beyond Smoothstep
+
+The `smootherstep` function provides even smoother transitions than the standard `smoothstep` function by using quintic polynomial curves. It implements the mathematical formula:
+
+$$f(t) = 6t^5 - 15t^4 + 10t^3$$
+
+where the normalized parameter $t$ undergoes quintic transformation after saturation. The derivative analysis reveals its superior continuity:
+
+$$f'(0) = f'(1) = 0$$
+$$f''(0) = f''(1) = 0$$
+
+This dual-zero boundary condition creates seamless transitions impossible with cubic smoothstep, making it essential for sophisticated mathematical visualizations where derivative continuity matters.
+
+### Mathematical Architecture and Temporal Flow Dynamics
+
+The function operates through three mathematical stages:
+
+**Stage 1: Normalization Transform**
+$$t_{norm} = \frac{v - a}{b - a}$$
+
+**Stage 2: Saturation Boundary Enforcement**  
+$$t_{sat} = \text{clamp}(t_{norm}, 0, 1)$$
+
+**Stage 3: Quintic Polynomial Application**
+$$\text{smootherstep}(a,b,v) = t_{sat}^3(t_{sat}(t_{sat} \cdot 6 - 15) + 10)$$
+
+This mathematical framework enables creation of temporal phase transitions that exhibit perfect mathematical harmony across derivative boundaries.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+	const time = iTime.mul(0.3)
+	const centerDistance = uv.sub(vec2(0.5)).length()
+	
+	const ringCount = float(8)
+	const ringPhase = centerDistance.mul(ringCount).add(time)
+	const ringBase = ringPhase.floor()
+	const ringFraction = ringPhase.fract()
+	
+	const smootherTransition = smootherstep(float(0.2), float(0.8), ringFraction)
+	const harmonicIndex = ringBase.mod(3).div(3)
+	const colorPhase = harmonicIndex.add(smootherTransition.mul(0.333))
+	
+	const primaryHue = colorPhase.mul(6.28318).sin().mul(0.5).add(0.5)
+	const secondaryHue = colorPhase.add(0.333).mul(6.28318).sin().mul(0.5).add(0.5)  
+	const tertiaryHue = colorPhase.add(0.667).mul(6.28318).sin().mul(0.5).add(0.5)
+	
+	const intensity = smootherTransition.mul(smootherTransition.oneMinus()).mul(4)
+	const radialFalloff = centerDistance.mul(2).oneMinus().saturate()
+	
+	const finalColor = vec3(primaryHue, secondaryHue, tertiaryHue).mul(intensity).mul(radialFalloff)
+	return vec4(finalColor, 1)
+}`}
+/>

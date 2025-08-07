@@ -1,0 +1,76 @@
+---
+title: 'permute'
+description: 'Procedural noise permutation with modular arithmetic crystalline transformations'
+keywords: [permute, noise, procedural, mod289, crystalline, arithmetic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# permute: Procedural Noise Permutation Function
+
+### Modular Arithmetic for Noise Generation
+
+The permute function is a building block for procedural noise algorithms. It transforms input values using a polynomial formula followed by modular arithmetic, creating pseudo-random distributions useful for noise generation.
+
+The mathematical definition follows the transformation:
+
+$$f(v) = \text{mod}_{289}((34v + 1) \cdot v)$$
+
+Where $\text{mod}_{289}$ represents modular arithmetic with base 289 (17²), chosen for its prime factorization properties that ensure optimal distribution characteristics in higher-dimensional noise functions.
+
+The polynomial $(34v + 1) \cdot v = 34v^2 + v$ creates a quadratic transformation that amplifies input variations while maintaining mathematical stability through modular confinement. The coefficient 34 was selected through empirical analysis to maximize the period length and minimize correlation artifacts in multi-dimensional applications.
+
+### Key Properties for Noise Generation
+
+The permute function has several important characteristics for procedural generation:
+
+**Non-linearity Amplification**: The quadratic nature of the transformation ensures that small input changes produce large output variations, essential for noise generation.
+
+**Modular Confinement**: The mod289 operation constrains outputs to the interval [0, 289), creating a finite but large state space that prevents numerical overflow.
+
+**Period Maximization**: The specific polynomial coefficients maximize the permutation cycle length, ensuring extended sequences before repetition occurs.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const baseCoord = uv.mul(20).add(iTime.mul(0.1))
+
+        const layer1 = permute(baseCoord.x.add(baseCoord.y.mul(0.5)))
+        const layer2 = permute(layer1.add(baseCoord.y.mul(1.5)))
+        const layer3 = permute(layer2.add(baseCoord.x.mul(2.0)))
+
+        const crystallinePattern = layer3.div(289).mul(3.14159).sin()
+        const metamorphicField = permute(crystallinePattern.mul(50).add(layer1.div(100)))
+
+        const finalColor = metamorphicField.div(289)
+        const enhanced = finalColor.pow(0.7).mul(1.2)
+
+        return vec4(vec3(enhanced), 1)
+
+}`}
+/>
+
+### Usage in Procedural Systems
+
+The permute function is commonly used in noise algorithms like Perlin noise and Simplex noise. It converts coordinate inputs into pseudo-random values that serve as the basis for natural-looking textures and patterns.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coords = uv.mul(12).add(iTime.mul(0.2))
+
+        const xPerm = permute(coords.x.mul(7.3).add(13.7))
+        const yPerm = permute(coords.y.mul(5.1).add(xPerm.div(50)))
+        const zPerm = permute(xPerm.add(yPerm).mul(0.01).add(coords.x.mul(coords.y)))
+
+        const r = xPerm.div(289).pow(2)
+        const g = yPerm.div(289).mul(zPerm.div(289))
+        const b = zPerm.div(289).sqrt()
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>

@@ -18,6 +18,7 @@ import {
 } from './parse'
 import { getBluiltin, getConversions, getEventFun, getOperator, initNodeContext, safeEventCall } from './utils'
 import { is } from '../../utils/helpers'
+import { mod } from '..'
 import type { Constants as C, NodeContext, Y } from '../types'
 
 export * from './utils'
@@ -62,12 +63,15 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
+                if (x === 'mod') return code(mod(y, z), c)
                 if (x.endsWith('Assign')) return `${code(y, c)} ${getOperator(x)} ${code(z, c)};`
                 return `(${code(y, c)} ${getOperator(x)} ${code(z, c)})`
         }
         if (type === 'function') {
                 if (x === 'negate') return `(-${code(y, c)})`
+                if (x === 'reciprocal') return `(1.0 / ${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
+                if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 return `${x}(${parseArray(children.slice(1), c)})`

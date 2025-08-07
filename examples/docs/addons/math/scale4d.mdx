@@ -1,0 +1,98 @@
+---
+title: 'scale4d'
+description: 'Hyperdimensional Metamorphosis Engine: 4D Scaling Transformations Through Projective Geometry'
+keywords: [scale4d, 4d transformation, homogeneous coordinates, projective geometry, hypercube, dimensional scaling]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# scale4d: Hyperdimensional Metamorphosis Engine
+
+### Constructing 4D Space-Time Geometries Through Homogeneous Coordinate Systems
+
+The `scale4d` function family generates 4×4 transformation matrices that encode scaling relationships across four-dimensional homogeneous coordinate systems. These matrices represent linear transformations in projective space, enabling sophisticated geometric manipulations including perspective projections and hyperdimensional scaling.
+
+Mathematical Foundation:
+
+$$
+S_4(s) = \begin{pmatrix}
+s & 0 & 0 & 0 \\
+0 & s & 0 & 0 \\
+0 & 0 & s & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+For anisotropic scaling with independent axis factors:
+
+$$
+S_4(x,y,z,w) = \begin{pmatrix}
+x & 0 & 0 & 0 \\
+0 & y & 0 & 0 \\
+0 & 0 & z & 0 \\
+0 & 0 & 0 & w
+\end{pmatrix}
+$$
+
+The fourth dimension serves dual purposes: in standard 3D graphics, $w=1$ maintains homogeneous coordinates for affine transformations, while $w \neq 1$ enables projective transformations and hyperdimensional scaling operations.
+
+### Relativistic Space-Time Compression
+
+Demonstrates how scale4d transformations model relativistic effects by treating the fourth dimension as temporal, creating visual representations of Lorentz transformations and space-time curvature.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const spacetime = uv.sub(0.5).mul(4)
+        const cosmicTime = iTime.mul(0.3)
+
+        // Relativistic scaling factors (Lorentz-like transformation)
+        const velocity = cosmicTime.sin().mul(0.8)
+        const gamma = float(1).sub(velocity.mul(velocity)).sqrt().reciprocal()
+
+        // Space-time coordinates [x, y, z, t]
+        const spatialZ = spacetime.length().add(cosmicTime).cos()
+        const timeCoord = spacetime.x.add(spacetime.y).add(cosmicTime.mul(2)).sin()
+
+        // Apply relativistic scaling transformation using scale4d
+        const lorentzMatrix = scale4dXYZW(gamma, float(1), float(1), gamma)
+        const spacetimePoint = vec4(spacetime.x, spacetime.y, spatialZ, timeCoord)
+
+        // Transform space-time coordinates using scale4d matrix
+        const transformedSpace = vec4(
+                lorentzMatrix[0][0].mul(spacetimePoint.x),
+                lorentzMatrix[1][1].mul(spacetimePoint.y),
+                lorentzMatrix[2][2].mul(spacetimePoint.z),
+                lorentzMatrix[3][3].mul(spacetimePoint.w)
+        )
+
+        // Calculate proper time and spatial intervals
+        const properTime = transformedSpace.w.mul(transformedSpace.w).sub(
+                transformedSpace.x.mul(transformedSpace.x).add(
+                transformedSpace.y.mul(transformedSpace.y)).add(
+                transformedSpace.z.mul(transformedSpace.z))).abs().sqrt()
+
+        // Visualize curvature through metric tensor effects
+        const curvature = properTime.mul(6).add(cosmicTime.mul(4)).sin()
+        const distortion = smoothstep(-0.3, 0.3, curvature)
+
+        // Geodesic field visualization
+        const geodesic = atan2(transformedSpace.y, transformedSpace.x).add(
+                properTime.mul(2)).sin()
+
+        const field = distortion.mul(smoothstep(-0.5, 0.5, geodesic))
+
+        // Color represents space-time compression effects
+        const compression = gamma.div(2)
+        const dilation = properTime.mul(0.5).add(0.5)
+
+        return vec4(vec3(
+                field.mul(compression),
+                field.mul(dilation),
+                field.mul(velocity.abs().add(0.2))
+        ), 1)
+
+}`}
+/>

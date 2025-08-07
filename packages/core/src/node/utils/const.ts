@@ -232,6 +232,7 @@ export const FUNCTIONS = [
         'floor',
         'fract',
         'fwidth',
+        'inverse',
         'inverseSqrt',
         'log',
         'log2',
@@ -241,7 +242,6 @@ export const FUNCTIONS = [
         'radians',
         'reciprocal',
         'round',
-        'saturate',
         'sign',
         'sin',
         'sinh',
@@ -249,6 +249,7 @@ export const FUNCTIONS = [
         'tan',
         'tanh',
         'trunc',
+        'saturate',
         // 1. Functions where first argument determines return type
         'atan2',
         'clamp',

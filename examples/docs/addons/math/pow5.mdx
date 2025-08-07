@@ -1,0 +1,87 @@
+---
+title: 'pow5'
+description: 'Quintic power function that creates asymmetric acceleration patterns through fifth-order polynomial transformation'
+keywords: [quintic, power, asymmetric, acceleration, polynomial]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pow5: Quintic Acceleration Dynamics Engine
+
+### Mathematical Foundation of Fifth-Order Transformation
+
+The `pow5` function implements the quintic transformation $f(x) = x^5$, representing the most complex single-term polynomial exhibiting both extreme acceleration and sign preservation. Unlike even powers that create symmetric behavior, the fifth power maintains directional asymmetry while amplifying magnitude through exponential expansion.
+
+$$
+\text{pow5}(x) = x^5 = x^2 \cdot x^2 \cdot x
+$$
+
+The quintic function demonstrates critical mathematical properties: preservation of sign ($\text{sign}(x^5) = \text{sign}(x)$), steep acceleration for $|x| > 1$ with growth rate $5x^4$, and strong compression toward zero for $|x| < 1$. The inflection point occurs at the origin where the function transitions from concave to convex behavior.
+
+### Fifth Power Function Applications
+
+The pow5 function simply raises input values to the fifth power ($x^5$). This creates strong non-linear amplification - values near zero become much smaller, while values above 1 become much larger. Unlike even powers, pow5 preserves the sign of negative inputs.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const gridScale = 4.0
+        const pos = uv.sub(0.5).mul(gridScale)
+
+        const baseFreq = iTime.mul(0.4)
+        const resonanceA = pos.x.add(baseFreq).sin()
+        const resonanceB = pos.y.add(baseFreq.mul(1.414)).cos()
+
+        const quinticField = pow5(resonanceA.add(resonanceB).mul(0.3))
+        const asymmetricCore = pow5(pos.x.mul(pos.y).add(baseFreq.mul(0.7)).sin().mul(0.4))
+
+        const crystalMatrix = quinticField.add(asymmetricCore.mul(0.8))
+        const structuralIntensity = crystalMatrix.abs().pow(0.3)
+
+        const polarization = crystalMatrix.sign().mul(0.5).add(0.5)
+
+        const r = structuralIntensity.mul(polarization)
+        const g = structuralIntensity.mul(polarization.oneMinus().mul(0.7).add(0.3))
+        const b = structuralIntensity.mul(crystalMatrix.abs().pow(0.8))
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>
+
+### Sign-Preserving Non-Linear Effects
+
+This demo shows how pow5 preserves the sign of negative values while amplifying magnitude. Positive and negative regions create different visual patterns due to the asymmetric nature of the fifth power function.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = uv.sub(0.5)
+        const distance = center.length()
+        const angle = center.y.atan2(center.x)
+
+        const temporalPhase = iTime.mul(0.6)
+        const radialPulse = distance.mul(5.0).sub(temporalPhase).sin()
+
+        const fluxFieldBase = pow5(radialPulse.mul(0.6))
+        const angularModulation = pow5(angle.mul(2.0).add(temporalPhase.mul(0.5)).sin().mul(0.7))
+
+        const asymmetricFlux = fluxFieldBase.add(angularModulation)
+        const directionality = asymmetricFlux.sign()
+
+        const positiveFlow = asymmetricFlux.max(0.0)
+        const negativeFlow = asymmetricFlux.negate().max(0.0)
+
+        const flowIntensity = asymmetricFlux.abs().pow(0.4)
+
+        const r = positiveFlow.mul(flowIntensity).mul(0.8).add(0.1)
+        const g = flowIntensity.mul(0.5).add(negativeFlow.mul(0.3))
+        const b = negativeFlow.mul(flowIntensity).mul(0.9).add(0.05)
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>

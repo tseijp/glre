@@ -1,0 +1,58 @@
+---
+title: 'aafloor'
+description: 'Smooth floor function that prevents harsh edges and aliasing artifacts in visual patterns'
+keywords: [antialiasing, floor, smooth, edges, patterns, mathematical-functions]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-aliased Floor Function
+
+### Anti-aliased Floor Mathematical Foundation
+
+Traditional floor functions create harsh pixel edges that destroy visual quality. The **aafloor** function eliminates these artifacts through derivative-based smoothing, creating seamless patterns that adapt to viewing distance and pixel density.
+
+The mathematical foundation analyzes pixel derivatives to determine anti-aliasing width:
+
+$$\text{afwidth} = 2.0 \cdot \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
+
+The anti-aliased floor operation:
+
+$$
+\text{aafloor}(x) = \begin{cases}
+x - \text{fract}(x) & \text{if } \text{fract}(x) < 1 - \text{afwidth} \\
+\text{map}(\text{fract}(x), 1-\text{afwidth}, 1, x-\text{fract}(x), x) & \text{otherwise}
+\end{cases}
+$$
+
+Where $\text{fract}(x) = x - \lfloor x \rfloor$ represents the fractional part.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(20)
+        const pattern = aafloor(coord.x).add(aafloor(coord.y)).mod(2)
+        const color = vec3(0.2, 0.3, 0.8).mix(vec3(0.9, 0.7, 0.1), pattern)
+        return vec4(color, 1)
+}`}
+/>
+
+### Smooth Pattern Generation
+
+Anti-aliased floor is particularly useful for creating smooth repeating patterns. Unlike regular floor functions that create harsh edges, aafloor produces smooth transitions that look better when creating grids, tiles, or geometric patterns.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const spiral = uv.y.sub(0.5).atan2(uv.x.sub(0.5))
+        const radius = uv.sub(0.5).length().mul(8)
+        const floorSpiral = aafloor(spiral.mul(3).add(iTime))
+        const floorRadius = aafloor(radius.add(iTime.mul(2)))
+        const pattern = floorSpiral.mul(floorRadius).mod(4).div(4)
+        const color = pattern.mul(vec3(0.8, 0.4, 0.9))
+        return vec4(color, 1)
+}`}
+/>

@@ -1,0 +1,91 @@
+---
+title: 'aastep'
+description: 'Smooth pixel-perfect transitions between colors and shapes using anti-aliased step function'
+keywords: [anti-aliasing, step function, edge smoothing, pixel perfect graphics, visual effects]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-aliased Step Function
+
+## Pixel Perfect Edge Rendering
+
+The `aastep` function creates crisp yet smooth transitions between different values. Unlike the harsh binary nature of the standard `step` function, `aastep` analyzes pixel boundaries and applies intelligent smoothing for professional-quality graphics.
+
+This technique eliminates jagged edges while preserving sharp visual boundaries, making it essential for creating clean geometric patterns and professional visual effects.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution)
+        const center = uv.sub(0.5)
+        const distance = center.length()
+
+        // Create a crisp circle with anti-aliased edges
+        const circle = aastep(0.3, distance)
+
+        const color = vec3(circle)
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Animated Shape Morphing
+
+Dynamic shape transitions become fluid and professional when using anti-aliased step functions for morphing between different geometric forms.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(4)
+        const time = iTime.mul(0.5)
+
+        // Create morphing geometric shapes
+        const shape1 = uv.x.abs().add(uv.y.abs()).sub(1.5)
+        const shape2 = uv.length().sub(1.2)
+        const morphedShape = shape1.mix(shape2, time.sin().mul(0.5).add(0.5))
+
+        const threshold = time.mul(2).sin().mul(0.3).add(0.1)
+        const pattern = aastep(threshold, morphedShape)
+
+        const color = vec3(pattern.mul(time.add(uv.x).sin().mul(0.5).add(0.5)),
+                          pattern.mul(time.add(uv.y).cos().mul(0.5).add(0.5)),
+                          pattern.mul(0.8))
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Technical Implementation Details
+
+### Mathematical Foundation
+
+The `aastep` function automatically calculates pixel-level derivatives to determine optimal smoothing width:
+
+$$\text{afwidth} = 0.7 \cdot \left\|\frac{d}{dx}(\text{value}), \frac{d}{dy}(\text{value})\right\|$$
+
+The anti-aliased step function applies smoothstep interpolation:
+$$\text{aastep}(\text{threshold}, \text{value}) = \text{smoothstep}(\text{threshold} - \text{afwidth}, \text{threshold} + \text{afwidth}, \text{value})$$
+
+Where smoothstep is defined as:
+
+$$
+\text{smoothstep}(a, b, x) = \begin{cases}
+0 & \text{if } x \leq a \\
+3t^2 - 2t^3 & \text{if } a < x < b \\
+1 & \text{if } x \geq b
+\end{cases}
+$$
+
+With $t = \frac{x - a}{b - a}$. This creates smooth transitions that eliminate aliasing artifacts while maintaining sharp visual boundaries.
+
+### Core Algorithm Structure
+
+| Component           | Purpose                           | Implementation                                            |
+| ------------------- | --------------------------------- | --------------------------------------------------------- |
+| Derivative Analysis | Detects pixel boundaries          | `vec2(dFdx(value), dFdy(value))`                          |
+| Smoothing Width     | Calculates anti-alias range       | `derivative.length() * 0.7`                                |
+| Smooth Transition   | Applies intelligent interpolation | `smoothstep(threshold - width, threshold + width, value)` |

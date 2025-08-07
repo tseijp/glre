@@ -1,0 +1,60 @@
+---
+title: 'unpack'
+description: 'RGBA-to-float decoding for high-precision data reconstruction'
+keywords: [unpack, decoding, precision, reconstruction, depth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# unpack: High-Precision Float Decoding
+
+### RGBA-to-Float Data Reconstruction
+
+The `unpack` function family reconstructs floating-point values from encoded color channels, reversing the `pack` operation. This decoding system supports multiple precision levels (8, 16, 32, 64, 128, 256-bit) and is essential for reading high-precision data from textures and depth buffers.
+
+The decoding process reverses the bit manipulation from `pack`:
+
+$$
+\text{unpack}(v) = v \cdot \begin{bmatrix}
+\frac{255}{256 \cdot 16777216} \\
+\frac{255}{256 \cdot 65536} \\
+\frac{255}{256 \cdot 256} \\
+\frac{255}{256}
+\end{bmatrix}
+$$
+
+For variable precision variants (unpack8, unpack16, etc.):
+
+$$
+\text{unpack}_b(v) = \frac{v \cdot [b, b^2, b^3]}{b^3}
+$$
+
+Where $b$ represents the precision base (8, 16, 32, 64, 128, 256).
+
+These functions enable reading encoded depth values, height maps, and other high-precision data from standard RGBA textures.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.3)
+        const pos = uv.sub(0.5).mul(2)
+
+        const originalDepth = pos.length().add(t.sin().mul(0.2)).fract()
+        const packedDepth = pack(originalDepth)
+        const unpackedDepth = unpack(packedDepth)
+
+        const precision8 = unpack8(vec3(packedDepth.xyz)).mul(2).fract()
+        const precision16 = unpack16(vec3(packedDepth.xyz)).mul(3).fract()
+
+        const error = originalDepth.sub(unpackedDepth).abs().mul(100)
+
+        const r = unpackedDepth.add(precision8.mul(0.3))
+        const g = precision16.add(error)
+        const b = originalDepth.mul(0.8)
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>

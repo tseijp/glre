@@ -1,0 +1,60 @@
+---
+title: 'parabola'
+description: 'Metamorphic curvature transformation engine for parabolic field generation'
+keywords: [parabola, curvature, transformation, field, mathematical]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# parabola: Parabolic Curvature Metamorphosis Engine
+
+### Parabolic Curve Generation
+
+The `parabola` function creates smooth parabolic curves based on the formula $4x(1-x)$ raised to a power. This generates bell-shaped curves that peak at the center (x=0.5) and fall off towards the edges, useful for creating smooth gradients and falloffs.
+
+The fundamental transformation follows the curvature metamorphosis equation:
+
+$$
+f(x, k) = [4x(1-x)]^k
+$$
+
+Where $x \in [0,1]$ defines the field domain and $k > 0$ controls curvature intensity. The base expression $4x(1-x)$ generates the canonical parabolic arch peaking at $x = 0.5$, while the exponential parameter $k$ enables adaptive curvature modulation:
+
+$$
+\lim_{k \to 0^+} f(x,k) = 1 \quad \text{(uniform field)}
+$$
+
+$$
+\lim_{k \to \infty} f(x,k) = \begin{cases}
+1 & \text{if } x = 0.5 \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+This mathematical foundation enables seamless transitions between uniform distributions and highly focused field concentrations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5, 0.5)
+        const fieldPos = uv.sub(center).abs()
+
+        const radialDistance = fieldPos.length().clamp(0, 0.5).mul(2)
+        const temporalModulation = iTime.mul(0.4).sin().mul(0.5).add(1.5)
+
+        const parabolicField = parabola(radialDistance, temporalModulation)
+        const intensityMapping = parabola(parabolicField, iTime.mul(0.3).cos().abs().mul(3).add(1))
+
+        const focusedEnergy = intensityMapping.pow(2.2)
+        const energyDistribution = focusedEnergy.mul(fieldPos.x.add(fieldPos.y).mul(1.5))
+
+        const r = focusedEnergy.mul(energyDistribution.pow(0.7))
+        const g = energyDistribution.mul(parabolicField.pow(1.8))
+        const b = parabolicField.mul(radialDistance.oneMinus().pow(0.9))
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>

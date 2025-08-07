@@ -1,0 +1,71 @@
+---
+title: 'aamirror'
+description: 'Create smooth mirrored patterns with automatic anti-aliasing for high-quality visual effects'
+keywords: [mirror, pattern, anti-aliasing, smooth, wave, periodic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-Aliased Mirror Function
+
+## Function Overview
+
+The `aamirror` function creates a mirrored pattern that automatically applies anti-aliasing to eliminate visual artifacts. This function transforms input values into smooth, symmetric waves that repeat with perfect mirroring.
+
+### Mathematical Foundation
+
+The anti-aliased mirror function creates symmetric patterns through mathematical transformation and filtering:
+
+$$v = \left| x - \lfloor x + 0.5 \rfloor \right| \cdot 2.0$$
+
+The anti-aliasing width calculation:
+$$\text{afwidth} = \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
+
+The result is processed through Nyquist filtering for smooth transitions:
+$$\text{aamirror}(x) = \text{nyquist}(v, \text{afwidth})$$
+
+Where the Nyquist filter applies:
+$$\text{nyquist}(v, w) = \text{smoothstep}(0, w, v)$$
+
+This creates perfect mirror symmetry with automatic anti-aliasing that adapts to screen pixel density.
+
+### Core Implementation Logic
+
+| Component               | Purpose                     | Mathematical Expression              |
+| ----------------------- | --------------------------- | ------------------------------------ |
+| **Mirror Transform**    | Creates symmetric pattern   | `abs(x - floor(x + 0.5)) * 2.0`      |
+| **Anti-aliasing Width** | Calculates smoothing factor | `vec2(dFdx(x), dFdy(x)).length()`     |
+| **Nyquist Filter**      | Prevents aliasing artifacts | `mix(0.5, pattern, smoothstep(...))` |
+
+## Basic Mirror Pattern
+
+Create fundamental mirrored waves that repeat seamlessly across space.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const x = uv.x.mul(8.0)
+        const mirror = aamirror(x)
+        const color = vec3(mirror)
+        return vec4(color, 1)
+}`}
+/>
+
+## Distorted Mirror Field
+
+Apply spatial distortions to mirror patterns for organic, fluid effects.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const distortion = uv.y.mul(8.0).sin().mul(0.3)
+        const x = uv.x.mul(6.0).add(distortion)
+        const mirror = aamirror(x)
+        const intensity = mirror.pow(2.0)
+        const color = vec3(intensity.mul(0.9).add(0.1))
+        return vec4(color, 1)
+}`}
+/>

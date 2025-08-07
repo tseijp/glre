@@ -1,0 +1,59 @@
+---
+title: 'cubic'
+description: 'Smooth cubic curve transitions that eliminate harsh linear edges'
+keywords: ['cubic', 'smooth', 'interpolation', 'easing', 'curve', 'transition', 'hermite']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Cubic Smooth Interpolation
+
+### Mathematical Foundation
+
+The cubic function transforms raw linear values into elegant smooth transitions using Hermite polynomial mathematics. This creates natural curves perfect for creating flowing artistic effects and eliminates the mechanical feel of linear interpolation.
+
+**Standard Cubic Interpolation:**
+$$\text{cubic}(v) = v^2(3 - 2v) = 3v^2 - 2v^3$$
+
+This is the classic smoothstep function, providing smooth acceleration from 0 and deceleration to 1.
+
+**Cubic with Slope Control:**
+$$\text{cubic}(v, s_0, s_1) = a_3v^3 + a_2v^2 + a_1v + a_0$$
+
+Where the coefficients are determined by the Hermite interpolation conditions:
+
+- $f(0) = 0$, $f(1) = 1$ (endpoint values)
+- $f'(0) = s_0$, $f'(1) = s_1$ (endpoint slopes)
+
+Solving the system yields:
+
+$$
+\begin{align}
+a_0 &= 0 \\
+a_1 &= s_0 \\
+a_2 &= 3 - 2s_0 - s_1 \\
+a_3 &= s_0 + s_1 - 2
+\end{align}
+$$
+
+### Spatial Distortion Effects
+
+Cubic interpolation can be applied to spatial coordinates to create warping and distortion effects. This is useful for creating ripple effects, lens distortion, or organic shape deformation.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(2).sub(1)
+        const radius = p.x.mul(p.x).add(p.y.mul(p.y)).sqrt()
+        const angle = p.y.atan2(p.x)
+        const distortion = cubic(radius.saturate())
+        const warpedRadius = radius.add(distortion.mul(0.3).mul(iTime.sin()))
+        const warpedAngle = angle.add(distortion.mul(2))
+        const newX = warpedRadius.mul(warpedAngle.cos())
+        const newY = warpedRadius.mul(warpedAngle.sin())
+        const color = newX.mul(newY).abs().mul(3)
+        return vec4(color.mul(0.7), color.mul(0.9), color.mul(0.6).add(0.3), 1)
+}`}
+/>

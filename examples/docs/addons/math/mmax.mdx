@@ -1,0 +1,54 @@
+---
+title: 'mmax'
+description: 'Multidimensional maximum extraction creating dimensional dominance visualization through mathematical supremacy analysis'
+keywords: ['maximum', 'multidimensional', 'supremacy', 'dominance', 'optimization', 'vector', 'component']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mmax: Multi-Value Maximum Function
+
+### Component-wise Maximum Extraction
+
+The mmax function finds the largest value among multiple inputs or vector components. It's a utility function that works with 2-4 individual values or extracts the maximum component from vec2, vec3, or vec4 vectors.
+
+Mathematical Definition:
+
+$$\text{mmax}(\mathbf{v}) = \max\{v_1, v_2, v_3, v_4\}$$
+
+For 4-dimensional vector space analysis:
+
+$$\mathbf{v} \in \mathbb{R}^4 \Rightarrow \text{mmax}(\mathbf{v}) = v_i \text{ where } i = \arg\max_j v_j$$
+
+The supremacy function establishes order relationships:
+
+$$\forall \mathbf{v} \in \mathbb{R}^n: \text{mmax}(\mathbf{v}) \geq v_i \quad \forall i \in \{1,2,\ldots,n\}$$
+
+This function is useful for extracting the dominant component from color values, finding peak intensities in multi-channel data, or determining which axis has the largest influence in vector calculations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const t = iTime.mul(0.4)
+    const p = uv.sub(0.5)
+
+        const f1 = p.mul(3.2).add(t.mul(0.8))
+        const f2 = p.mul(2.1).add(t.mul(1.3))
+        const f3 = p.length().mul(4.7).add(t.mul(0.6))
+        const f4 = p.x.add(p.y).mul(1.9).add(t.mul(2.1))
+
+        const waves = vec4(f1.x.sin().mul(f1.y.cos()),
+                          f2.x.cos().mul(f2.y.sin().mul(1.4)),
+                          f3.mul(7.0).sin().mul(0.7),
+                          f4.mul(2.3).cos().mul(1.1))
+
+        const supremacy = mmax(waves)
+        const dominance = supremacy.abs().pow(1.8)
+        const resonance = p.length().mul(8.0).add(supremacy.mul(4.0)).sin().mul(dominance)
+
+        return vec4(resonance.mul(vec3(1.0, 0.7, 0.4)), 1)
+
+}`}
+/>

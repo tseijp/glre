@@ -1,6 +1,10 @@
-const { themes } = require('prism-react-renderer')
+import { themes } from 'prism-react-renderer'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import type { Config } from '@docusaurus/types'
+import type * as Preset from '@docusaurus/preset-classic'
 
-const config = {
+const config: Config = {
         title: 'glre',
         tagline: 'GLSL Reactive Engine',
         url: 'https://glre.tsei.jp/',
@@ -10,13 +14,11 @@ const config = {
         favicon: 'img/favicon.ico',
         organizationName: 'tseijp',
         projectName: 'glre',
+        future: { v4: true },
         i18n: {
                 defaultLocale: 'en',
                 locales: ['en', 'ja'],
-                localeConfigs: {
-                        en: { label: 'English' },
-                        ja: { label: '日本語' },
-                },
+                localeConfigs: { en: { label: 'English' }, ja: { label: '日本語' } },
         },
         markdown: { mermaid: true },
         themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-live-codeblock'], // @TODO
@@ -51,6 +53,17 @@ const config = {
                                 editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
                         },
                 ],
+                [
+                        '@docusaurus/plugin-content-docs',
+                        {
+                                id: 'addons',
+                                path: 'addons/',
+                                routeBasePath: 'addons',
+                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
+                                remarkPlugins: [remarkMath],
+                                rehypePlugins: [rehypeKatex],
+                        },
+                ],
                 // @TODO FIX primitives
                 // [
                 //         '@docusaurus/plugin-content-docs',
@@ -63,75 +76,31 @@ const config = {
                 // ],
         ],
         themeConfig: {
-                colorMode: {
-                        defaultMode: 'dark',
-                        disableSwitch: false,
-                        respectPrefersColorScheme: false,
-                },
-                metadata: [
-                        {
-                                name: 'glsl',
-                                content: 'cooking, blog',
-                        },
-                ],
                 navbar: {
                         title: 'glre',
-                        logo: { alt: '', src: 'img/favicon.ico' },
+                        logo: { alt: ' ', src: 'img/favicon.ico' },
                         items: [
-                                {
-                                        position: 'left',
-                                        to: '/docs',
-                                        label: 'Docs',
-                                },
+                                { position: 'left', to: '/docs', label: 'Docs' },
                                 { position: 'left', to: '/api', label: 'API' },
-                                {
-                                        position: 'left',
-                                        to: '/guide',
-                                        label: 'Guide',
-                                },
+                                { position: 'left', to: '/addons', label: 'Addons' },
+                                { position: 'left', to: '/guide', label: 'Guide' },
                                 // @TODO FIX primitives
-                                // {
-                                //         position: 'left',
-                                //         to: '/primitives',
-                                //         label: 'Primitives',
-                                // },
+                                // { position: 'left', to: '/primitives', label: 'Primitives' },
                                 { position: 'right', type: 'localeDropdown' },
-                                {
-                                        position: 'right',
-                                        label: 'GitHub',
-                                        href: 'https://github.com/tseijp/glre',
-                                },
+                                { position: 'right', label: 'GitHub', href: 'https://github.com/tseijp/glre' },
                         ],
                 },
                 footer: {
                         style: 'dark',
                         links: [
-                                {
-                                        title: 'Docs',
-                                        items: [
-                                                {
-                                                        label: 'Tutorial',
-                                                        to: '/docs/',
-                                                },
-                                        ],
-                                },
+                                { title: 'Docs', items: [{ label: 'Tutorial', to: '/docs/' }] },
                                 {
                                         title: 'Community',
-                                        items: [
-                                                {
-                                                        label: 'Twitter',
-                                                        href: 'https://twitter.com/tseijp',
-                                                },
-                                        ],
+                                        items: [{ label: 'Twitter', href: 'https://twitter.com/tseijp' }],
                                 },
                                 {
                                         title: 'More',
-                                        items: [
-                                                {
-                                                        label: 'GitHub',
-                                                        href: 'https://github.com/tseijp/tseijp',
-                                                },
-                                        ],
+                                        items: [{ label: 'GitHub', href: 'https://github.com/tseijp/tseijp' }],
                                 },
                         ],
                         copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
@@ -146,7 +115,16 @@ const config = {
                                 playgroundPosition: 'right', // "top" | "bottom"
                         },
                 },
-        },
+        } satisfies Preset.ThemeConfig,
+        // https://docusaurus.io/docs/next/markdown-features/math-equations#configuration
+        stylesheets: [
+                {
+                        href: 'https://cdn.jsdelivr.net/npm/katex@0.13.24/dist/katex.min.css',
+                        type: 'text/css',
+                        integrity: 'sha384-odtC+0UGzzFL/6PNoE8rX/SPcQDXBJ+uRepguP4QkPCm2LBxH3FA3y+fKSiJ+AmM',
+                        crossorigin: 'anonymous',
+                },
+        ] satisfies Preset.ThemeConfig['stylesheets'],
 }
 
-module.exports = config
+export default config

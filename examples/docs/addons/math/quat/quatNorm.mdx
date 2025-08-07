@@ -1,0 +1,56 @@
+---
+title: 'quatNorm'
+description: 'Quaternion normalization for unit length rotation preservation'
+keywords: ['quaternion', 'normalization', 'unit quaternion', 'rotation', 'magnitude']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatNorm: Quaternion Normalization Operations
+
+### Unit Quaternion Enforcement for Pure Rotations
+
+The quatNorm function implements quaternion normalization, converting arbitrary quaternions to unit quaternions with magnitude 1. This operation preserves rotational direction while eliminating scaling components, ensuring that quaternions represent pure rotations without distortion.
+
+**Mathematical Definition:**
+
+For quaternion $q = (x, y, z, w)$ with magnitude $|q| = \sqrt{x^2 + y^2 + z^2 + w^2}$:
+
+$$
+\text{quatNorm}(q) = \frac{q}{|q|} = \frac{(x, y, z, w)}{\sqrt{x^2 + y^2 + z^2 + w^2}}
+$$
+
+**Properties:**
+
+- Preserves rotation axis and angle relationships
+- Eliminates scaling artifacts from quaternion operations
+- Essential for maintaining rotational validity after arithmetic
+- Required for proper interpolation and composition
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coords = uv.sub(0.5).mul(6)
+        const gridPos = coords.floor()
+        const local = coords.fract().sub(0.5)
+
+        const hash = gridPos.x.mul(73.1).add(gridPos.y.mul(157.3)).sin().mul(43758.5).fract()
+        const scale = hash.mul(2).add(0.5)
+
+        const angle = iTime.mul(0.4).add(hash.mul(6.28))
+        const unnormalized = vec4(angle.sin().mul(scale), angle.mul(1.2).cos().mul(scale), angle.mul(0.7).sin(), angle.cos().mul(scale.mul(0.8)))
+
+        const normalized = quatNorm(unnormalized)
+        const transform = quat2mat3(normalized)
+        const rotated = transform.mul(vec3(local, hash.sub(0.5)))
+
+        const pattern = rotated.x.mul(4).sin().mul(rotated.y.mul(4).cos())
+        const field = pattern.mul(rotated.z.add(1))
+        const color = vec3(field.abs(), field.abs().mul(0.8), field.abs().mul(0.6))
+
+        return vec4(color, 1)
+
+}`}
+/>

@@ -1,0 +1,53 @@
+---
+title: 'pow3'
+description: 'Cubic power function that transforms linear input through dimensional expansion into three-dimensional resonance patterns'
+keywords: [cubic, power, nonlinear, transformation, dimensional]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pow3: Cubic Dimensional Transformation Engine
+
+### Mathematical Foundation of Cubic Amplification
+
+The `pow3` function represents the fundamental cubic transformation $f(x) = x^3$, where linear input undergoes dimensional expansion through triple self-multiplication. This operation exhibits unique mathematical properties including sign preservation, accelerating growth rates, and the critical inflection behavior at unity.
+
+$$
+\text{pow3}(x) = x \cdot x \cdot x = x^3
+$$
+
+The cubic function demonstrates asymmetric scaling behavior: for $|x| < 1$, values compress toward zero with characteristic cubic decay $x^3 < x$, while for $|x| > 1$, explosive growth occurs following $x^3 > x$. The unity point $x = 1$ represents the transformation invariant where $1^3 = 1$.
+
+### Crystalline Harmonic Interference Visualization
+
+This implementation generates three-dimensional acoustic crystals through cubic amplitude modulation. Each point undergoes cubic transformation, creating resonance chambers that interfere constructively and destructively across the visual field. The cubic scaling produces natural harmonic overtones visible as geometric crystal formations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const baseFreq = iTime.mul(0.3)
+        const pos = uv.sub(0.5).mul(8.0)
+
+        const resonanceX = pos.x.add(baseFreq).sin()
+        const resonanceY = pos.y.add(baseFreq.mul(1.618)).cos()
+        const resonanceZ = pos.x.mul(pos.y).add(baseFreq.mul(2.414)).sin()
+
+        const cubicAmplifier = pow3(resonanceX.add(resonanceY).mul(0.4))
+        const harmonicCore = pow3(resonanceZ.mul(0.6))
+
+        const interference = cubicAmplifier.add(harmonicCore)
+        const crystalStructure = interference.abs().fract()
+
+        const intensity = crystalStructure.pow(0.5)
+        const hue = pos.length().mul(0.1).add(iTime.mul(0.1)).fract()
+
+        const red = hue.mul(6.28).sin().mul(0.5).add(0.5).mul(intensity)
+        const green = hue.mul(6.28).add(2.09).sin().mul(0.5).add(0.5).mul(intensity)
+        const blue = hue.mul(6.28).add(4.19).sin().mul(0.5).add(0.5).mul(intensity)
+
+        return vec4(red, green, blue, 1)
+
+}`}
+/>

@@ -1,0 +1,58 @@
+---
+title: 'quatNeg'
+description: 'Quaternion negation for orientation reversal and double cover mapping'
+keywords: ['quaternion', 'negation', 'orientation', 'double cover', 'rotation equivalence']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatNeg: Quaternion Negation Operations
+
+### Double Cover Mapping and Orientation Reversal
+
+The quatNeg function implements quaternion negation, creating rotational equivalence through the double cover property of quaternions. For any quaternion $q = (x, y, z, w)$, its negation $-q = (-x, -y, -z, -w)$ represents the same geometric rotation, demonstrating that each 3D rotation has exactly two quaternion representations.
+
+**Mathematical Definition:**
+
+For quaternion $q = (x, y, z, w)$:
+
+$$
+\text{quatNeg}(q) = (-x, -y, -z, -w)
+$$
+
+**Double Cover Property:**
+
+- Both $q$ and $-q$ represent identical rotations in 3D space
+- Negation preserves rotation magnitude and axis direction
+- Creates opposite signs while maintaining rotational equivalence
+- Essential for interpolation normalization and angle minimization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cellPos = uv.mul(8)
+        const cell = cellPos.floor()
+        const local = cellPos.fract().sub(0.5)
+
+        const hash = cell.x.mul(127.1).add(cell.y.mul(311.7)).sin().mul(43758.5).fract()
+        const angle = hash.mul(6.28).add(iTime.mul(0.5))
+
+        const q = vec4(angle.sin().mul(0.7), angle.mul(1.3).sin().mul(0.5), angle.mul(0.8).sin(), angle.cos()).normalize()
+        const negQ = quatNeg(q)
+
+        const useOriginal = hash.greaterThan(0.5)
+        const selected = q.select(negQ, useOriginal)
+
+        const rotMatrix = quat2mat3(selected)
+        const rotated = rotMatrix.mul(vec3(local, hash.sub(0.5)))
+
+        const pattern = rotated.x.mul(rotated.y).mul(8).sin()
+        const intensity = pattern.abs()
+        const color = vec3(intensity, intensity.mul(0.7), intensity.mul(0.4))
+
+        return vec4(color, 1)
+
+}`}
+/>

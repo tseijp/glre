@@ -1,0 +1,63 @@
+---
+title: 'lengthSq'
+description: 'Explore the mathematical foundation of distance without square root complexity using quantum field visualization and energy density distributions'
+keywords: ['distance', 'magnitude', 'energy', 'quantum field', 'mathematical beauty', 'performance']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# lengthSq: Squared Vector Length Function
+
+### Fast Distance Calculation Without Square Root
+
+The lengthSq function calculates the squared length of a vector using dot product. This avoids the expensive square root operation while preserving distance ordering, making it useful for distance comparisons and performance-critical calculations.
+
+**Mathematical Definition:**
+For any vector $\mathbf{v} = (v_1, v_2, \ldots, v_n)$, the squared length represents energy density:
+
+$$
+\text{lengthSq}(\mathbf{v}) = \|\mathbf{v}\|^2 = \mathbf{v} \cdot \mathbf{v} = \sum_{i=1}^{n} v_i^2
+$$
+
+This operation maintains monotonic ordering properties while eliminating computational complexity, making it ideal for distance comparisons, energy field calculations, and quantum mechanical visualizations.
+
+### Distance Field Visualization
+
+This example demonstrates how lengthSq can be used to create distance-based effects from multiple points without the computational cost of square root operations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center1 = vec2(0.3, 0.5)
+        const center2 = vec2(-0.2, -0.1)
+        const center3 = vec2(0.1, -0.4)
+
+        const field1 = lengthSq(uv.sub(center1)).mul(8.0)
+        const field2 = lengthSq(uv.sub(center2)).mul(12.0)
+        const field3 = lengthSq(uv.sub(center3)).mul(6.0)
+
+        const quantumField = field1.add(field2).add(field3)
+        const energyLevels = quantumField.sin().mul(0.5).add(0.5)
+
+        const resonance = iTime.mul(0.5).sin().mul(0.2).add(0.8)
+        const finalField = energyLevels.pow(resonance)
+
+        const redChannel = finalField.mul(2.0).mod(1.0)
+        const greenChannel = finalField.mul(3.0).mod(1.0)
+        const blueChannel = finalField.mul(5.0).mod(1.0)
+
+        return vec4(redChannel, greenChannel, blueChannel, 1)
+
+}`}
+/>
+
+### Mathematical Properties and Applications
+
+| Property                   | Mathematical Expression                                                                              | Computational Advantage           |
+| -------------------------- | ---------------------------------------------------------------------------------------------------- | --------------------------------- |
+| **Monotonicity**           | $a < b \Leftrightarrow a^2 < b^2$ for $a,b \geq 0$                                                   | Distance comparisons without sqrt |
+| **Scaling Laws**           | $\text{lengthSq}(\alpha\mathbf{v}) = \alpha^2 \text{lengthSq}(\mathbf{v})$                           | Energy scaling relationships      |
+| **Parallelogram Identity** | $\|\mathbf{a}+\mathbf{b}\|^2 + \|\mathbf{a}-\mathbf{b}\|^2 = 2(\|\mathbf{a}\|^2 + \|\mathbf{b}\|^2)$ | Physics conservation laws         |
+| **Polarization**           | $4\langle\mathbf{a},\mathbf{b}\rangle = \|\mathbf{a}+\mathbf{b}\|^2 - \|\mathbf{a}-\mathbf{b}\|^2$   | Quantum state analysis            |

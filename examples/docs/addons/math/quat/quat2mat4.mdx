@@ -1,0 +1,66 @@
+---
+title: 'quat2mat4'
+description: 'Convert quaternion rotation to 4x4 transformation matrix for homogeneous coordinate systems'
+keywords: ['quaternion', 'matrix', 'transformation', 'homogeneous', '4D mathematics']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quat2mat4: Quaternion to Homogeneous Matrix Conversion
+
+### Homogeneous Coordinate System Integration
+
+The quat2mat4 function extends 3D quaternion rotations into 4×4 homogeneous transformation matrices. This conversion enables seamless integration of rotation operations with translation, scaling, and projection transformations within unified homogeneous coordinate frameworks.
+
+The mathematical transformation:
+
+$$
+M_{4×4} = \text{toMat4}(\text{quat2mat3}(q))
+$$
+
+Where the 3×3 rotation matrix is embedded within the homogeneous coordinate structure:
+
+$$
+M = \begin{bmatrix}
+R_{3×3} & \mathbf{0} \\
+\mathbf{0}^T & 1
+\end{bmatrix}
+$$
+
+This representation preserves all rotational properties while enabling matrix composition with translation and scaling operations.
+
+### Temporal Quaternion Field Dynamics
+
+This visualization demonstrates how quaternion-to-matrix conversion enables complex spatial transformations through time-varying rotation fields. The homogeneous matrix form allows for efficient composition with other geometric transformations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const grid = uv.mul(3).fract().sub(0.5)
+        const cellId = uv.mul(3).floor()
+        const hash = cellId.x.add(cellId.y.mul(31.7)).fract().mul(43758.5)
+
+        const phase = iTime.add(hash.mul(6.28))
+        const q = vec4(
+                phase.sin(),
+                phase.mul(1.618).cos(),
+                phase.mul(0.707).sin(),
+                phase.mul(2.414).cos()
+        ).normalize()
+
+        const matrix = quat2mat4(q)
+        const point = vec4(grid, 0, 1)
+        const transformed = matrix.mul(point)
+
+        const distance = transformed.xy.length()
+        const rings = distance.mul(12).sub(iTime.mul(3)).sin().abs()
+        const color = rings.mul(vec3(0.5, 0.8, 1.0))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+The quat2mat4 function bridges quaternion mathematics with homogeneous coordinate systems, enabling sophisticated 3D transformations while maintaining computational efficiency and numerical stability inherent to quaternion representations.

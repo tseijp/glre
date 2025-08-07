@@ -1,0 +1,57 @@
+---
+title: 'rotate4dX'
+description: 'Optimized 4D homogeneous X-axis rotation matrix'
+keywords: ['rotation', '4D', 'X-axis', 'homogeneous', 'projection', 'quaternion']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate4dX: Specialized Four-Dimensional X-Axis Rotation
+
+### Homogeneous X-Axis Transformation Theory
+
+The `rotate4dX` function generates a specialized 4×4 homogeneous rotation matrix for rotations around the X-axis. This transformation preserves the X-coordinate and W-coordinate while rotating vectors in the YZ-plane within the projective coordinate framework.
+
+The 4×4 X-axis rotation matrix follows the canonical form:
+
+$$
+R_{4D,x}(\theta) = \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+0 & \cos\theta & -\sin\theta & 0 \\
+0 & \sin\theta & \cos\theta & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+### Projective Geometry and Dimensional Folding
+
+X-axis rotation in homogeneous coordinates exhibits unique mathematical properties that bridge 3D rotation with projective transformations:
+
+**Projective Invariance**: The transformation maintains projective ratios while enabling seamless pipeline integration.
+
+**Dimensional Embedding**: 3D rotation is embedded within 4D space, enabling composition with translation and scaling operations.
+
+**Perspective Compatibility**: Direct integration with perspective projection matrices for camera transformations.
+
+### Magnetic Field Line Topology
+
+This example demonstrates magnetic field line behavior under rotational perturbations, visualizing how electromagnetic field topology evolves through continuous X-axis rotations in four-dimensional parameter space.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(5)
+    const fieldAngle = pos.length().mul(0.8).add(iTime.mul(0.4))
+    const rotation = rotate4dX(fieldAngle)
+    const fieldVector = rotation.mul(vec4(pos, 1))
+    const fieldLines = fieldVector.y.mul(2).sin().mul(fieldVector.z.mul(2).cos())
+    const magnetic = fieldLines.abs().pow(0.7)
+    const topology = smoothstep(0.3, 0.8, magnetic)
+    const flux = fieldVector.y.mul(fieldVector.z).mul(0.01).add(0.5)
+    const color = vec3(topology.mul(flux), topology.mul(0.6), topology.mul(0.9))
+    return vec4(color, 1)
+}`}
+/>

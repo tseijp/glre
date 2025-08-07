@@ -1,0 +1,91 @@
+---
+title: 'gain'
+description: 'Advanced gain control for extreme contrast manipulation, color intensity amplification, and psychedelic visual transformations'
+keywords: [glre, gain, contrast, amplifier, color, intensity, psychedelic, transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Dynamic Contrast Amplifier
+
+### Mathematical Foundation: Asymmetric Power-Law Transformation
+
+The gain function implements a sophisticated contrast control mechanism through asymmetric power-law transformations that treat values above and below the midpoint differently.
+
+**Mathematical Definition:**
+
+$$
+\text{gain}(x, k) = \begin{cases}
+\frac{1}{2} \cdot \left(2x\right)^k & \text{if } x < 0.5 \\
+1 - \frac{1}{2} \cdot \left(2(1-x)\right)^k & \text{if } x \geq 0.5
+\end{cases}
+$$
+
+**Parameter Analysis:**
+
+- $x \in [0, 1]$: Input value (normalized intensity)
+- $k > 0$: Gain parameter controlling contrast intensity
+- When $k = 1$: Linear transformation (identity)
+- When $k > 1$: Enhanced contrast with sharper transitions
+- When $0 < k < 1$: Reduced contrast with smoother gradients
+
+**Geometric Properties:**
+The function creates an S-shaped curve that passes through (0,0), (0.5,0.5), and (1,1), maintaining monotonicity while providing precise control over the contrast curve's steepness around the midpoint.
+
+### Multi-Layer Contrast Enhancement
+
+Multiple gain applications with different parameters can create complex contrast effects. Each layer enhances different aspects of the input pattern, useful for creating high-contrast artistic effects or emphasizing specific features.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(4)
+        const basePattern = coord.x.mul(PI).sin().mul(coord.y.mul(PI).cos())
+        const normalized = basePattern.add(1).div(2)
+
+        const time = iTime.mul(0.4)
+        const gain1 = time.sin().add(1).mul(3).add(0.5)
+        const gain2 = time.mul(1.3).cos().add(1).mul(2).add(1)
+        const gain3 = time.mul(0.7).sin().add(1).mul(4).add(0.8)
+
+        const layer1 = gain(normalized, gain1)
+        const layer2 = gain(layer1, gain2)
+        const layer3 = gain(layer2, gain3)
+
+        const final = layer3.mul(0.8).add(layer2.mul(0.15)).add(layer1.mul(0.05))
+
+        return vec4(final.mul(0.9), final.mul(1.1), final.mul(0.7), 1)
+
+}`}
+/>
+
+### Dynamic Contrast Animation
+
+Gain can be animated over time to create dynamic contrast effects. By changing the gain parameter continuously, you can create pulsing, breathing, or throbbing visual effects that emphasize different parts of the image at different times.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const quantumTime = iTime.mul(0.8)
+        const field1 = uv.x.mul(12).add(quantumTime).sin().mul(uv.y.mul(8).add(quantumTime.mul(1.2)).cos())
+        const field2 = uv.x.mul(6).sub(quantumTime.mul(0.8)).cos().mul(uv.y.mul(10).add(quantumTime.mul(0.6)).sin())
+
+        const interference = field1.add(field2).div(2)
+        const probability = interference.add(1).div(2)
+
+        const energy1 = quantumTime.mul(2.1).sin().add(1).mul(5).add(1)
+        const energy2 = quantumTime.mul(1.7).cos().add(1).mul(3).add(2)
+
+        const quantum1 = gain(probability, energy1)
+        const quantum2 = gain(probability.oneMinus(), energy2)
+
+        const superposition = quantum1.add(quantum2).div(2)
+        const collapse = superposition.pow(quantumTime.mul(3).sin().add(1).mul(2).add(1))
+
+        return vec4(collapse.mul(0.4), collapse.mul(1.2), collapse.mul(0.8), 1)
+
+}`}
+/>

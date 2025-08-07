@@ -1,0 +1,84 @@
+---
+title: 'const'
+description: 'Essential mathematical constants for creative visual programming. Access fundamental values like PI, PHI, and EPSILON directly in your graphics code.'
+keywords: [constants, math, pi, phi, golden ratio, epsilon, tau, creative coding]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Mathematical Constants for Creative Coding
+
+### Mathematical Foundation
+
+Mathematical constants form the foundation of algorithmic visual art. These universal values appear repeatedly in natural patterns, geometric relationships, and visual effects. GLRE provides immediate access to essential constants without manual calculation.
+
+The fundamental mathematical constants are defined as:
+
+$$\pi = 3.14159265358979323846... = \lim_{n \to \infty} \frac{4}{1} - \frac{4}{3} + \frac{4}{5} - \frac{4}{7} + \cdots$$
+
+$$\tau = 2\pi = 6.28318530717958647692... \quad \text{(full circle in radians)}$$
+
+$$\phi = \frac{1 + \sqrt{5}}{2} = 1.61803398874989484820... \quad \text{(golden ratio)}$$
+
+$$\varepsilon = 10^{-7} = 0.0000001 \quad \text{(machine epsilon for comparisons)}$$
+
+Additional derived constants include:
+
+- Golden angle: $\theta_g = 2\pi - \frac{2\pi}{\phi} \approx 2.39996$ radians
+- Half-pi: $\frac{\pi}{2} = 1.5707963...$
+- Square root of two: $\sqrt{2} = 1.41421356...$
+
+## Core Constants Library
+
+| Constant  | Value      | Application                     |
+| --------- | ---------- | ------------------------------- |
+| `PI`      | 3.14159... | Circle geometry, wave functions |
+| `TAU`     | 6.28318... | Full circle rotations           |
+| `PHI`     | 1.61803... | Golden ratio proportions        |
+| `EPSILON` | 0.0000001  | Floating point comparisons      |
+
+## Circle and Wave Mathematics
+
+`PI` and `TAU` constants enable precise circular motion and wave calculations. `TAU` represents a complete circle rotation, eliminating the need for `2 * PI` calculations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const angle = iTime.mul(TAU) // Complete rotation per time unit
+        const wave = angle.mul(4).sin() // Four waves per rotation
+
+        const radius = wave.mul(0.3).add(0.5)
+        const x = angle.cos().mul(radius)
+        const y = angle.sin().mul(radius)
+
+        const color = vec3(x.add(0.5), y.add(0.5), wave.add(1).mul(0.5))
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Golden Ratio Aesthetics
+
+`PHI` and `GOLDEN_RATIO` constants create naturally pleasing proportions. The golden angle creates spiral patterns found in nature.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const pos = uv.sub(center)
+        const radius = pos.length()
+
+        const angle = pos.y.atan2(pos.x).add(iTime.mul(0.2))
+        const spiral = angle.div(GOLDEN_ANGLE).fract()
+
+        const color1 = vec3(spiral, radius.mul(2), 1)
+        const color2 = vec3(1, spiral.mul(PHI.fract()), radius)
+
+        const finalColor = color1.mix(color2, iTime.sin().mul(0.5).add(0.5))
+        return vec4(finalColor, 1)
+
+}`}
+/>

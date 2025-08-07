@@ -128,14 +128,15 @@ export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: 
                 const x = create('scope')
                 const paramVars: X[] = []
                 const paramDefs: NodeProps[] = []
-                if (layout?.inputs) {
-                        for (const input of layout.inputs) {
-                                paramDefs.push({ id: input.name, inferFrom: [conversion(input.type)] })
-                        }
-                } else {
-                        for (let i = 0; i < args.length; i++) {
-                                paramDefs.push({ id: `p${i}`, inferFrom: [args[i]] })
-                        }
+                for (let i = 0; i < args.length; i++) {
+                        const input = layout?.inputs?.[i]
+                        if (!input) paramDefs.push({ id: `p${i}`, inferFrom: [args[i]] })
+                        else
+                                paramDefs.push({
+                                        id: input.name,
+                                        inferFrom:
+                                                input.type === 'auto' ? [args[i]] : [conversion(input.type, args[i])],
+                                })
                 }
                 for (const props of paramDefs) paramVars.push(create('variable', props))
                 const y = create('define', { id, layout }, x, ...args)

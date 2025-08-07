@@ -1,0 +1,84 @@
+---
+title: 'decimate'
+description: 'Quantize values to specific precision levels for pixelated and digital effects'
+keywords: ['decimate', 'quantize', 'precision', 'pixelated', 'digital', 'reduce', 'posterize']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Decimate Precision Control
+
+### Mathematical Foundation
+
+The decimate function reduces the precision of continuous values by rounding them to specific increments, creating digital staircase effects. This technique transforms smooth gradients into distinct levels, perfect for retro aesthetics and controlled artistic expression.
+
+**Decimation Formula:**
+$$\text{decimate}(v, p) = \left\lfloor v \cdot p \right\rfloor \div p$$
+
+Where:
+
+- $v$ is the input value to be quantized
+- $p$ is the precision parameter (number of discrete levels)
+- $\lfloor \cdot \rfloor$ is the floor function (round down to nearest integer)
+
+This creates a stepped function with $p$ discrete levels over the input range. The effect can be visualized as:
+
+$$\text{decimate}(v, p) = \frac{1}{p} \sum_{k=0}^{p-1} k \cdot H\left(v - \frac{k}{p}\right) \cdot H\left(\frac{k+1}{p} - v\right)$$
+
+Where $H(x)$ is the Heaviside step function. This quantization creates uniform discrete steps that eliminate smooth transitions.
+
+### Color Posterization
+
+Quantizing color values to specific levels creates poster-like effects with distinct color bands instead of smooth transitions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rainbow = uv.x.mul(6.28).sin().mul(0.5).add(0.5)
+        const posterLevels = 8
+        const posterized = decimate(rainbow, posterLevels)
+        const r = posterized.add(iTime.mul(0.1)).sin().mul(0.5).add(0.5)
+        const g = posterized.add(2.09).sin().mul(0.5).add(0.5)
+        const b = posterized.add(4.19).sin().mul(0.5).add(0.5)
+        return vec4(r, g, b, 1)
+}`}
+/>
+
+### Stepped Wave Patterns
+
+Creating mathematical wave functions with discrete steps produces unique geometric patterns reminiscent of digital oscilloscopes.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(8).sub(4)
+        const wave = coord.x.mul(2).add(iTime.mul(2)).sin()
+        const steps = 12
+        const steppedWave = decimate(wave, steps)
+        const distance = coord.y.sub(steppedWave).abs()
+        const line = distance.mul(20).oneMinus().saturate()
+        return vec4(line.mul(0.8).add(0.1), line, line.mul(0.9).add(0.1), 1)
+}`}
+/>
+
+### Digital Noise Reduction
+
+Applying decimation to noise functions creates structured patterns with controlled randomness levels.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(16)
+        const noise1 = p.x.add(p.y.mul(17)).sin().mul(p.y.add(p.x.mul(13)).cos())
+        const noise2 = p.x.mul(p.y).sin().mul(p.x.sub(p.y).cos())
+        const combined = noise1.add(noise2).mul(0.5)
+        const precision = 6
+        const reduced = decimate(combined.mul(0.5).add(0.5), precision)
+        const final = reduced.mul(iTime.mul(0.4).sin().mul(0.3).add(0.7))
+        return vec4(final, final.mul(0.8).add(0.1), final.mul(0.9), 1)
+}`}
+/>

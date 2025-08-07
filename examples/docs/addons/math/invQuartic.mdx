@@ -1,0 +1,59 @@
+---
+title: 'invQuartic'
+description: 'Revolutionary inverse quartic transformation creating quantum-inspired field transitions with metamorphic energy distribution patterns'
+keywords:
+        [
+                invQuartic,
+                quantum field,
+                metamorphic transition,
+                energy distribution,
+                inverse quartic,
+                mathematical transformation,
+        ]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# invQuartic: Inverse Quartic Easing Function
+
+### Double Square Root Transformation
+
+The invQuartic function creates a smooth easing curve using nested square roots: $f(v) = \sqrt{1-\sqrt{1-v}}$. This produces a unique acceleration profile that starts slowly and accelerates quickly toward the end.
+
+$$
+f(v) = \sqrt{1-\sqrt{1-v}}
+$$
+
+Where the transformation domain spans $v \in [0,1]$ and produces a distinctive S-shaped curve with quantum-like transition characteristics.
+
+### Multi-Layer Easing Effects
+
+This example demonstrates how the invQuartic function can be applied to different coordinate systems to create layered visual effects with unique acceleration characteristics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(4)
+        const radius = coord.length()
+        const angle = coord.y.atan2(coord.x)
+
+        // Quantum field transition zones
+        const zone1 = invQuartic(radius.fract())
+        const zone2 = invQuartic(angle.add(iTime).mul(0.5).fract())
+        const zone3 = invQuartic(coord.x.add(coord.y).add(iTime.mul(0.3)).fract())
+
+        // Metamorphic energy distribution
+        const energy = zone1.mul(zone2).add(zone3.mul(0.7))
+        const field = invQuartic(energy)
+
+        // Triple-layer quantum visualization
+        const redChannel = field.pow(0.5)
+        const greenChannel = invQuartic(field.mul(1.2).fract())
+        const blueChannel = invQuartic(field.add(0.3).fract().sqrt())
+
+        return vec4(redChannel, greenChannel, blueChannel, 1)
+
+}`}
+/>

@@ -1,0 +1,95 @@
+---
+title: 'modi'
+description: 'Integer modulo operations for discrete mathematical visualizations and algorithmic pattern generation'
+keywords: [integer modulo, discrete mathematics, algorithmic patterns, mathematical visualization, periodicity]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# modi: Discrete Periodicity Mathematics
+
+## Integer Domain Periodicity
+
+The `modi` function creates discrete periodic structures by constraining integer values within specified boundaries. This operation establishes mathematical periodicity through remainder calculation, enabling precise control over discrete pattern generation.
+
+Unlike continuous modulo operations, `modi` maintains integer precision throughout the calculation process, making it essential for algorithmic pattern creation and discrete mathematical visualizations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(20)
+
+        // Create discrete cellular automata-like patterns
+        const cellX = uv.x.toInt()
+        const cellY = uv.y.toInt()
+
+        const pattern = modi(cellX.mul(cellY), int(7))
+        const intensity = pattern.toFloat().div(6)
+
+        const color = vec3(
+                intensity.mul(pattern.toFloat().sin()),
+                intensity.mul(pattern.toFloat().mul(2).cos()),
+                intensity.mul(pattern.toFloat().mul(3).sin())
+        )
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+## Prime Number Visualization
+
+Mathematical prime number theory visualization through modulo arithmetic creates complex interference patterns that reveal number-theoretic structures invisible to continuous mathematics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const uv = position.xy.div(iResolution).sub(0.5).mul(12)
+
+        // Prime modulo visualization
+        const x = uv.x.mul(3).toInt()
+        const y = uv.y.mul(3).toInt()
+
+        const mod3 = modi(x, int(3))
+        const mod5 = modi(y, int(5))
+
+        const r = mod3.toFloat().div(2)
+        const g = mod5.toFloat().div(4)
+        const b = r.mul(g)
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>
+
+## Mathematical Foundation
+
+### Discrete Modulo Arithmetic
+
+The `modi` function implements integer remainder calculation maintaining discrete mathematical properties:
+
+$$
+\text{modi}(x, y) = x - y \cdot \lfloor\frac{x}{y}\rfloor
+$$
+
+This ensures the result $r$ satisfies: $0 \leq r < |y|$ for positive divisors.
+
+For integer domain operations, the mathematical relationship can be expressed as:
+$$\text{modi}(x, y) \in \{0, 1, 2, \ldots, y-1\}$$
+
+### Periodicity Properties
+
+The modulo operation creates periodic boundary conditions where adding multiples of the divisor maintains the same remainder value. This periodicity enables construction of discrete tiling patterns and algorithmic visualizations.
+
+### Computational Architecture
+
+| Phase          | Mathematical Operation      | Implementation Logic     |
+| -------------- | --------------------------- | ------------------------ |
+| Division       | Integer division with floor | `x.div(y).floor()`       |
+| Multiplication | Quotient scaling            | `quotient.mul(y)`        |
+| Subtraction    | Remainder extraction        | `x.sub(scaled_quotient)` |
+
+The algorithm maintains integer precision throughout the computation, ensuring discrete mathematical correctness essential for algorithmic pattern generation and number-theoretic visualizations.

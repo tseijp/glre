@@ -1,0 +1,115 @@
+---
+title: 'hammersley'
+description: 'Generate mathematically optimal sample distributions using Hammersley sequences for advanced rendering techniques'
+keywords: [sampling, monte-carlo, hammersley, quasi-random, rendering, hemisphere]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Low-Discrepancy Sampling for Monte Carlo Rendering
+
+### Mathematical Foundation: Low-Discrepancy Sequence Generation
+
+The Hammersley sequence provides mathematically optimal point distributions that minimize discrepancy compared to truly random sampling, enabling superior Monte Carlo integration convergence.
+
+**Mathematical Definition:**
+
+$$
+\text{hammersley}(i, N) = \left(\frac{i}{N}, \Phi_2(i)\right)
+$$
+
+Where $\Phi_2(i)$ is the radical inverse function in base 2:
+
+$$
+\Phi_2(i) = \sum_{k=0}^{\infty} b_k(i) \cdot 2^{-(k+1)}
+$$
+
+**Hemisphere Cosine Sampling:**
+
+$$
+\begin{align}
+\phi &= 2\pi u_1 \\
+\cos\theta &= \sqrt{1 - u_2} \\
+\sin\theta &= \sqrt{u_2}
+\end{align}
+$$
+
+Resulting in 3D coordinates: $(\cos\phi \sin\theta, \sin\phi \sin\theta, \cos\theta)$
+
+**Properties:**
+- $(u_1, u_2)$: Hammersley sequence coordinates $\in [0,1]^2$
+- $N$: Total number of samples
+- Low-discrepancy property ensures even distribution
+- Cosine weighting matches Lambert's law for realistic lighting
+
+### Usage with Hemisphere Sampling
+
+The hammersley function is commonly paired with hemisphereCosSample for efficient Monte Carlo sampling in rendering applications, providing well-distributed sample points for lighting calculations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(64.0)
+        const index = coord.x.add(coord.y.mul(64.0)).floor().toInt()
+
+        const sample = hammersley(index, int(64))
+        const hemisphere = hemisphereCosSample(sample)
+
+        const color = hemisphere.abs()
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+### Animated Sample Distribution
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = uv.mul(32.0)
+        const timeShift = iTime.mul(16.0).floor()
+
+        const sampleIndex = pos.x.add(pos.y.mul(32.0)).add(timeShift).floor().toInt()
+        const totalSamples = int(1024)
+
+        const hammersleyPoint = hammersley(sampleIndex, totalSamples)
+        const hemisphereDirection = hemisphereCosSample(hammersleyPoint)
+
+        const colorIntensity = hemisphereDirection.z.pow(2.0)
+        const colorHue = hammersleyPoint.xy.mul(0.8).add(0.2)
+
+        return vec4(colorHue.mul(colorIntensity), colorIntensity, 1)
+
+}`}
+/>
+
+### Surface Lighting Simulation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const gridSize = 16.0
+        const cellPos = uv.mul(gridSize)
+        const cellIndex = cellPos.x.floor().add(cellPos.y.floor().mul(gridSize))
+
+        const sampleCount = int(256)
+        const hammersleySample = hammersley(cellIndex.floor().toInt(), sampleCount)
+
+        const lightDirection = hemisphereCosSample(hammersleySample)
+        const surfaceNormal = vec3(0, 0, 1)
+
+        const lambertian = lightDirection.dot(surfaceNormal).max(0.0)
+        const fresnel = float(1.0).sub(lambertian).pow(5.0).mul(0.04).add(0.96)
+
+        const finalColor = vec3(lambertian).mul(fresnel)
+        const brightness = iTime.add(cellIndex.mul(0.1)).sin().mul(0.2).add(0.8)
+
+        return vec4(finalColor.mul(brightness), 1)
+
+}`}
+/>

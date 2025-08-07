@@ -1,0 +1,52 @@
+---
+title: 'aafract'
+description: 'Compute smooth fractional parts with automatic anti-aliasing for crisp, artifact-free patterns'
+keywords: [fractional, fract, antialiasing, smooth, patterns, nyquist, filtering]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Anti-Aliased Fractional Part Function
+
+## Digital Pattern Revolution
+
+Traditional fractional functions create harsh digital artifacts when creating repeating patterns. The `aafract` function eliminates these jagged edges by intelligently applying anti-aliasing based on screen pixel density, producing silk-smooth visual patterns that adapt perfectly to any zoom level or viewing distance.
+
+### Mathematical Foundation
+
+The anti-aliased fractional function analyzes pixel derivatives to determine optimal smoothing:
+
+$$\text{afwidth} = 2.0 \cdot \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
+
+The fractional computation with conditional smoothing:
+
+$$
+\text{aafract}(x) = \begin{cases}
+\frac{\text{fract}(x)}{1-\text{afwidth}} & \text{if } \text{fract}(x) < 1-\text{afwidth} \\
+\frac{1-\text{fract}(x)}{\text{afwidth}} & \text{otherwise}
+\end{cases}
+$$
+
+The result is processed through Nyquist filtering:
+$$\text{nyquist}(v, \text{afwidth}) = \text{smoothstep}(0, \text{afwidth}, v)$$
+
+Where $\text{fract}(x) = x - \lfloor x \rfloor$ represents the fractional part, enabling seamless pattern repetition without aliasing artifacts.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pattern = aafract(uv.x.mul(20))
+        const color = pattern.toVec3()
+        return vec4(color, 1)
+}`}
+/>
+
+### Technical Specifications
+
+| Parameter | Type              | Description                            | Range           |
+| --------- | ----------------- | -------------------------------------- | --------------- |
+| `x`       | `float` \| `vec2` | Input value for fractional computation | Any real number |
+
+**Return Value**: Same type as input, containing smoothly anti-aliased fractional part

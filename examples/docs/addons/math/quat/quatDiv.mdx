@@ -1,0 +1,64 @@
+---
+title: 'quatDiv'
+description: 'Quaternion scalar division for proportional scaling and normalization operations'
+keywords: ['quaternion', 'division', 'scaling', 'normalization', '4D mathematics']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatDiv: Quaternion Scalar Division
+
+### Mathematical Foundation of Proportional Quaternion Scaling
+
+The quatDiv function performs uniform scaling of quaternions through scalar division, enabling precise control over rotational intensity and magnitude. This operation scales all four quaternion components proportionally, maintaining mathematical relationships while adjusting the overall magnitude.
+
+**Mathematical Definition:**
+For quaternion $q = (x, y, z, w)$ and scalar $s$:
+
+$$
+\frac{q}{s} = \left(\frac{x}{s}, \frac{y}{s}, \frac{z}{s}, \frac{w}{s}\right)
+$$
+
+**Properties:**
+
+- Preserves quaternion direction in 4D space
+- Enables magnitude adjustment without changing orientation
+- Essential for normalization preprocessing
+- Creates proportional scaling across all components
+
+This operation forms the foundation for quaternion normalization and magnitude-based transformations in 4D rotational mathematics.
+
+### Quantum Energy Decay Through Scalar Division
+
+This visualization demonstrates how scalar division creates energy decay fields in quaternion space. The division operation produces quantum-like energy dissipation patterns that reveal the mathematical structure of proportional scaling in 4D rotational systems.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cellPos = uv.mul(6)
+        const cell = cellPos.floor()
+        const local = cellPos.fract().sub(0.5)
+
+        const hash = cell.x.mul(127.1).add(cell.y.mul(311.7)).sin().mul(43758.5).fract()
+        const baseQuat = vec4(hash.mul(12.56).sin(), hash.mul(7.85).cos(), hash.mul(5.14).sin(), hash.mul(3.92).cos())
+
+        const timePhase = iTime.add(hash.mul(6.28))
+        const divisor = timePhase.sin().abs().mul(4).add(1)
+        const compressedQuat = quatDiv(baseQuat, divisor)
+
+        const fieldIntensity = compressedQuat.abs().dot(vec4(1, 1.618, 2.414, 3.141))
+        const spatialResonance = fieldIntensity.mul(local.length()).mul(15)
+        const compressionWave = spatialResonance.sin().mul(spatialResonance.mul(0.618).cos()).abs()
+
+        const decayRate = divisor.reciprocal()
+        const energyLevel = compressionWave.mul(decayRate)
+        const color = vec3(energyLevel.mul(1.2), energyLevel.pow(1.5), energyLevel.pow(0.7).mul(0.8))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+The quatDiv function enables sophisticated quaternion magnitude control, creating energy dissipation effects and proportional scaling transformations essential for advanced 4D rotational mathematics and quantum field visualizations.

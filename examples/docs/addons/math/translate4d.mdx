@@ -1,0 +1,59 @@
+---
+title: 'translate4d'
+description: '4D translation matrix generator for 3D space transformations'
+keywords: ['translate4d', '4d-transformation', 'translation-matrix', 'linear-algebra', 'matrix-operations']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# translate4d: 4D Translation Matrix Generator
+
+### Mathematical Foundation of Translation Transformations
+
+The `translate4d` function generates 4×4 translation matrices that represent spatial displacement in homogeneous coordinate systems. Translation matrices enable parallel displacement of geometric objects without rotation or scaling, fundamental to computer graphics and 3D transformations.
+
+For a translation vector $\mathbf{t} = (t_x, t_y, t_z)$, the translation matrix is defined as:
+
+$$
+T(\mathbf{t}) = \begin{bmatrix}
+1 & 0 & 0 & 0 \\
+0 & 1 & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+t_x & t_y & t_z & 1
+\end{bmatrix}
+$$
+
+When applied to a homogeneous position vector $\mathbf{p} = (x, y, z, 1)^T$, the transformation yields:
+
+$$T(\mathbf{t}) \cdot \mathbf{p} = (x + t_x, y + t_y, z + t_z, 1)^T$$
+
+This matrix preserves all geometric properties except position, making it essential for coordinate system transformations and spatial positioning operations.
+
+### Function Overloading and Parameter Flexibility
+
+The `translate4d` function supports two distinct parameter patterns:
+
+- `translate4d(vec3)` - accepts a 3D vector containing translation components
+- `translate4d(float, float, float)` - accepts individual scalar translation values
+
+Both variants generate identical translation matrices, providing interface flexibility for different coding contexts and data representations.
+
+### Dynamic Object Translation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const offset = vec3(iTime.sin().mul(0.3), iTime.mul(0.8).cos().mul(0.2), 0)
+        const translationMatrix = translate4d(offset)
+        const originalPos = uv.sub(center).mul(4)
+        const translatedPos = translationMatrix.mul(vec4(originalPos, 0, 1)).xy
+        const circle = smoothstep(0.6, 0.4, translatedPos.length())
+        const trail = smoothstep(0.1, 0.05, originalPos.y.sub(offset.y).abs())
+        const combined = circle.add(trail.mul(0.3))
+        const color = vec3(combined, combined.mul(0.8), combined.mul(0.6))
+        return vec4(color, 1)
+}`}
+/>

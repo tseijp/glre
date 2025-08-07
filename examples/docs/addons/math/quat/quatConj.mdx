@@ -1,0 +1,66 @@
+---
+title: 'quatConj'
+description: 'Quaternion conjugate operation for inverse rotations and mathematical reflection'
+keywords: ['quaternion', 'conjugate', 'inverse', 'reflection', 'rotation inversion']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatConj: Quaternion Conjugate Operation
+
+### Quaternion Conjugate Calculation
+
+The quatConj function computes the quaternion conjugate by negating the vector part while preserving the scalar component. For a unit quaternion, the conjugate represents the inverse rotation.
+
+**Mathematical Definition:**
+For quaternion $q = (x, y, z, w)$:
+
+$$
+q^* = (-x, -y, -z, w)
+$$
+
+**Key Properties:**
+
+- For unit quaternions: $q \cdot q^* = 1$ (identity quaternion)
+- The conjugate represents the inverse rotation: $q^{-1} = q^*$ when $|q| = 1$
+- Conjugation reverses rotation direction while preserving rotation axis
+
+This operation is used for transforming vectors back to original coordinate systems and implementing geometric reflection algorithms.
+
+### Symmetric Reflection Patterns
+
+This example demonstrates how quaternion conjugates create symmetric reflection patterns through mirror transformations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5, 0.5)
+        const radius = uv.sub(center).length()
+        const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+
+        const q = vec4(
+                angle.add(iTime).sin(),
+                angle.mul(2).cos(),
+                radius.mul(5).add(iTime.mul(0.7)).sin(),
+                radius.mul(3).sub(iTime.mul(0.5)).cos()
+        ).normalize()
+
+        const conjugate = quatConj(q)
+        const symmetryField = dot(q, conjugate)
+
+        const originalRotation = quat2mat3(q).mul(vec3(uv.sub(0.5), 0))
+        const mirrorRotation = quat2mat3(conjugate).mul(vec3(uv.sub(0.5), 0))
+
+        const pattern1 = originalRotation.xy.mul(8).sin().length()
+        const pattern2 = mirrorRotation.xy.mul(8).cos().length()
+        const symmetry = pattern1.add(pattern2).mul(symmetryField.abs())
+
+        const color = vec3(symmetry.mul(0.7), symmetry, symmetry.mul(0.5))
+        return vec4(color, 1)
+
+}`}
+/>
+
+The quatConj function provides quaternion conjugation operations for inverse rotations and reflection operations in 3D space.

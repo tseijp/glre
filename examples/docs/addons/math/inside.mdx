@@ -1,0 +1,82 @@
+---
+title: 'inside'
+description: 'Explore spatial containment algorithms with quantum tunneling effects, dimensional boundary visualization, and topological space analysis'
+keywords:
+        [
+                'boundary detection',
+                'spatial containment',
+                'topology',
+                'dimensional analysis',
+                'quantum tunneling',
+                'geometric constraints',
+        ]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# inside: Boundary Detection Function
+
+### Range Checking for Spatial Containment
+
+The inside function checks whether a value or vector lies within specified minimum and maximum bounds. It returns true if the point is inside the boundaries, false otherwise. Useful for collision detection and spatial constraints.
+
+**Mathematical Definition:**
+For any value $x$ and boundary parameters $\text{min}, \text{max}$:
+
+$$
+\text{inside}(x, \text{min}, \text{max}) = \neg(x < \text{min} \lor x > \text{max}) \equiv (\text{min} \leq x \leq \text{max})
+$$
+
+This formulation naturally extends to higher dimensions through component-wise logical operations, enabling efficient spatial queries for collision detection, procedural generation, and constraint satisfaction problems.
+
+### Nested Boundary Regions
+
+This example shows multiple overlapping boundary regions with different visual effects for each containment level.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const scale1 = 0.8
+        const scale2 = 0.5
+        const scale3 = 0.3
+
+        const region1 = insideVec2(uv, vec2(-scale1), vec2(scale1))
+        const region2 = insideVec2(uv, vec2(-scale2), vec2(scale2))
+        const region3 = insideVec2(uv, vec2(-scale3), vec2(scale3))
+
+        const time = iTime.mul(0.5)
+        const rotation = time.cos()
+        const rotatedUV = vec2(
+                uv.x.mul(rotation).sub(uv.y.mul(time.sin())),
+                uv.x.mul(time.sin()).add(uv.y.mul(rotation))
+        )
+
+        const dynamicRegion = insideVec2(rotatedUV, vec2(-0.2), vec2(0.2))
+
+        const layerIntensity = region1.toFloat().mul(0.3)
+                .add(region2.toFloat().mul(0.4))
+                .add(region3.toFloat().mul(0.5))
+                .add(dynamicRegion.toFloat().mul(0.8))
+
+        const interference = uv.length().mul(8.0).add(time.mul(2.0)).sin()
+        const modulated = layerIntensity.mul(interference.mul(0.3).add(0.7))
+
+        const red = modulated.mul(region1.toFloat().mul(0.7).add(0.3))
+        const green = modulated.mul(region2.toFloat().mul(0.6).add(0.4))
+        const blue = modulated.mul(region3.toFloat().mul(0.2).add(0.8))
+
+        return vec4(red, green, blue, 1)
+
+}`}
+/>
+
+### Mathematical Properties and Computational Applications
+
+| Property                | Mathematical Expression                                                                                  | Application Domain           |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| **Inclusion Logic**     | $\text{inside}(x, a, b) \Leftrightarrow a \leq x \leq b$                                                 | Constraint satisfaction      |
+| **De Morgan's Law**     | $\neg(x < a \lor x > b) \equiv (x \geq a \land x \leq b)$                                                | Boolean algebra optimization |
+| **Monotonicity**        | $a_1 \leq a_2, b_1 \leq b_2 \Rightarrow \text{inside}(x,a_1,b_1) \Rightarrow \text{inside}(x,a_2,b_2)$   | Hierarchical containment     |
+| **Dimension Extension** | $\text{inside}(\mathbf{v}, \mathbf{min}, \mathbf{max}) = \bigwedge_i \text{inside}(v_i, \min_i, \max_i)$ | Multidimensional queries     |

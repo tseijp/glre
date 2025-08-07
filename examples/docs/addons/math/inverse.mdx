@@ -1,0 +1,50 @@
+---
+title: 'inverse'
+description: 'Reciprocal transformation function for creating dynamic field distortions and mathematical visualization effects'
+keywords: [inverse, reciprocal, mathematical, transform, field-distortion, wave-dynamics]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Inverse: Mathematical Reciprocal Transform
+
+### Reciprocal Field Generator for Dynamic Visual Mathematics
+
+The `inverse` function computes the mathematical reciprocal transformation f(x) = 1/x, creating infinite field gradients and hyperbolic distributions. This function transforms linear space into non-linear domains where proximity to zero creates dramatic amplification effects.
+
+## Mathematical Foundation
+
+| Property                | Definition                               | Mathematical Expression                                  |
+| ----------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| **Basic Transform**     | Reciprocal operation                     | inverse(x) = 1/x                                         |
+| **Domain**              | All real numbers except zero             | x ≠ 0                                                    |
+| **Range**               | All real numbers except zero             | y ≠ 0                                                    |
+| **Asymptotic Behavior** | Vertical at zero, horizontal at infinity | Approaches infinity at zero, approaches zero at infinity |
+| **Symmetry**            | Hyperbolic reflection                    | f(-x) = -f(x)                                            |
+
+## Hyperbolic Wave Distortion
+
+This demonstration uses reciprocal transformation to create hyperbolic wave fields where oscillating patterns near zero generate infinite gradients and spectacular visual dynamics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(2)
+        const pos = uv.sub(0.5).mul(6)
+
+        const wave = pos.x.add(time.sin().mul(0.8)).sin().mul(0.3).add(0.5)
+        const hyperField = inverse(wave.add(0.1))
+
+        const distortion = pos.y.add(hyperField.mul(0.2))
+        const pattern = distortion.sin().mul(0.5).add(0.5)
+
+        const r = pattern.pow(3)
+        const g = hyperField.abs().mul(0.1).mod(1)
+        const b = time.cos().mul(0.5).add(0.5)
+
+        return vec4(r, g, b, 1)
+
+}`}
+/>

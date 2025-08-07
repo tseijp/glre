@@ -1,0 +1,133 @@
+---
+title: 'mmix'
+description: 'Multi-value mixing functions for creating smooth transitions between multiple points in mathematical spaces'
+keywords: [interpolation, mixing, blending, morphing, transitions, mathematical-functions]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mmix: Multi-Value Mixing Functions
+
+### Sequential Interpolation Between Multiple Values
+
+The mmix function family provides mixing between 2, 3, or 4 values in sequence. The 3-value version transitions from a to b (0-0.5) then b to c (0.5-1). The 4-value version uses three stages with breakpoints at 0.33 and 0.66.
+
+## Mathematical Framework
+
+The mmix system operates on three distinct interpolation paradigms:
+
+### Basic Mixing Operations
+
+Standard mmix functions provide direct access to the underlying mix operation:
+
+$$
+\text{mmix}(a, b, t) = (1-t) \cdot a + t \cdot b
+$$
+
+### Three-Point Progressive Mixing
+
+The mmix3 function implements a dual-phase interpolation system with a critical transition point at $t = 0.5$:
+
+$$
+\text{mmix3}(a, b, c, t) = \begin{cases}
+\text{mix}(a, b, 2t) & \text{if } t \leq 0.5 \\
+\text{mix}(b, c, 2(t-0.5)) & \text{if } t > 0.5
+\end{cases}
+$$
+
+### Four-Point Hierarchical Mixing
+
+The mmix4 function creates a three-phase transition system with critical points at $t = \frac{1}{3}$ and $t = \frac{2}{3}$:
+
+$$
+\text{mmix4}(a, b, c, d, t) = \begin{cases}
+\text{mix}(a, b, 3t) & \text{if } t \leq \frac{1}{3} \\
+\text{mix}(b, c, 3(t-\frac{1}{3})) & \text{if } \frac{1}{3} < t \leq \frac{2}{3} \\
+\text{mix}(c, d, 3(t-\frac{2}{3})) & \text{if } t > \frac{2}{3}
+\end{cases}
+$$
+
+### Four-Phase Mixing Example
+
+This demonstrates the 4-value mmix function transitioning between four different coordinate transformations:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(3)
+        const t = iTime.mul(0.2)
+
+        // Create four distinct spatial distortion fields
+        const phase1 = p.mul(t.cos())                    // Scaling oscillation
+        const phase2 = vec2(p.x.cos(), p.y.sin())      // Circular warping
+        const phase3 = p.add(vec2(t.cos(), t.sin()))   // Linear translation
+        const phase4 = p.mul(mat2(t.cos(), t.sin(), t.sin().negate(), t.cos()))  // Rotation
+
+        // Progressive phase parameter cycling through all states
+        const phaseTime = t.sin().mul(0.5).add(0.5)
+
+        // Apply four-point morphing to spatial coordinates
+        const morphedSpace = mmix4(phase1, phase2, phase3, phase4, phaseTime)
+
+        // Generate pattern based on morphed coordinates
+        const pattern = morphedSpace.x.mul(morphedSpace.y).abs().fract()
+        const rings = morphedSpace.length().mul(6).sin().abs()
+
+        // Combine pattern elements with phase-dependent coloring
+        const intensity = pattern.mul(rings)
+        const phaseColor = vec3(
+                phaseTime,
+                phaseTime.oneMinus(),
+                phaseTime.mul(2).sin().abs()
+        )
+
+        return vec4(phaseColor.mul(intensity), 1)
+
+}`}
+/>
+
+### Nested Mixing Operations
+
+This example shows how multiple mmix functions can be combined at different time scales for complex blending effects:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(2)
+
+        // Multi-scale time parameters
+        const fastTime = iTime.mul(2).fract()
+        const medTime = iTime.mul(0.5).fract()
+        const slowTime = iTime.mul(0.1).fract()
+
+        // Create nested flux fields
+        const fluxA = p.add(vec2(fastTime.cos(), fastTime.sin()).mul(0.3))
+        const fluxB = p.mul(mat2(medTime.cos(), medTime.sin(), medTime.sin().negate(), medTime.cos()))
+        const fluxC = p.sub(vec2(slowTime.sin(), slowTime.cos()).mul(0.5))
+
+        // Apply nested mmix3 operations for complex morphing
+        const primaryFlux = mmix3(fluxA, fluxB, fluxC, fastTime)
+        const secondaryFlux = mmix3(fluxB, fluxC, fluxA, medTime)
+
+        // Final meta-mixing between flux systems
+        const metaFlux = mmix3(primaryFlux, secondaryFlux, p, slowTime)
+
+        // Generate interference patterns from flux interactions
+        const interference = metaFlux.x.sin().mul(metaFlux.y.cos()).add(
+                metaFlux.length().mul(8).sin()
+        )
+
+        // Create spectral decomposition colors
+        const spectralR = interference.add(slowTime).fract()
+        const spectralG = interference.add(slowTime.mul(2.3)).fract()
+        const spectralB = interference.add(slowTime.mul(3.7)).fract()
+
+        const color = vec3(spectralR, spectralG, spectralB).mul(0.8).add(0.2)
+
+        return vec4(color, 1)
+
+}`}
+/>

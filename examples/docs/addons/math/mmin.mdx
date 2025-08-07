@@ -1,0 +1,56 @@
+---
+title: 'mmin'
+description: 'Multidimensional minima extraction revealing quantum collapse states through harmonic convergence mathematics'
+keywords: ['minimum', 'convergence', 'quantum', 'collapse', 'harmony', 'resonance', 'dimensional', 'attractor']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mmin: Multi-Value Minimum Function
+
+### Component-wise Minimum Extraction
+
+The mmin function finds the smallest value among multiple inputs or vector components. It's a utility function that works with 2-4 individual values or extracts the minimum component from vec2, vec3, or vec4 vectors.
+
+Mathematical Definition:
+
+$$\text{mmin}(\mathbf{v}) = \min\{v_1, v_2, v_3, v_4\}$$
+
+For quantum state analysis in 4-dimensional space:
+
+$$\mathbf{v} \in \mathbb{C}^4 \Rightarrow \text{mmin}(\mathbf{v}) = v_i \text{ where } i = \arg\min_j |v_j|$$
+
+The convergence theorem establishes stability bounds:
+
+$$\forall \mathbf{v} \in \mathbb{R}^n: \text{mmin}(\mathbf{v}) \leq v_i \quad \forall i \in \{1,2,\ldots,n\}$$
+
+Harmonic attractor principle:
+
+$$\lim_{t \to \infty} \text{mmin}(\mathbf{v}(t)) = \text{stable equilibrium point}$$
+
+This function is useful for finding the smallest component in color values, determining threshold values in multi-channel data, or creating effects based on the weakest influence among multiple factors.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+	const t = iTime.mul(0.3)
+	const p = uv.sub(0.5)
+	
+	const h1 = p.x.mul(2.8).add(t.mul(0.9))
+	const h2 = p.length().mul(3.5).add(t.mul(1.1))
+	const h3 = p.x.mul(p.y).mul(1.7).add(t.mul(1.8))
+	const h4 = p.x.add(p.y).mul(4.2).add(t.mul(0.7))
+	
+	const oscillators = vec4(h1.cos().mul(h1.sin()), 
+	                        h2.mul(5.0).sin().mul(0.8),
+	                        h3.mul(3.0).cos(),
+	                        h4.mul(1.9).sin().mul(1.2))
+	
+	const convergence = mmin(oscillators)
+	const field = p.length().mul(6.0).sub(convergence.mul(8.0)).cos().mul(convergence.abs())
+	
+	return vec4(field.mul(vec3(0.3, 0.7, 1.0)), 1)
+}`}
+/>
