@@ -77,29 +77,3 @@ const fragment = () => {
 
 }`}
 />
-
-## Temporal Reciprocal Dynamics
-
-Mathematical reciprocal functions create temporal dynamics where inverse relationships generate complex oscillatory behaviors and non-linear time evolution patterns.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const grid = uv.mul(8).fract().sub(0.5)
-        const time = iTime.mul(0.7)
-
-        const pulse = time.add(grid.x.mul(3)).sin().mul(0.4).add(0.7)
-        const reciprocalPulse = inverse(pulse)
-
-        const verticalField = grid.y.add(reciprocalPulse.mul(0.15))
-        const wave = verticalField.mul(4).sin().mul(0.5).add(0.5)
-
-        const energy = reciprocalPulse.abs().mul(0.2).clamp(0, 1)
-        const modulation = energy.sin().mul(0.3).add(0.7)
-
-        const color = wave.mul(modulation)
-        return vec4(color, color.mul(0.7).add(0.3), color.mul(1.2).clamp(0, 1), 1)
-
-}`}
-/>

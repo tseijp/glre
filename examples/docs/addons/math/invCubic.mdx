@@ -20,12 +20,14 @@ $$
 $$
 
 **Trigonometric Analysis:**
-- Input domain: $v \in [0, 1]$  
+
+- Input domain: $v \in [0, 1]$
 - Transformation: $1 - 2v \in [-1, 1]$ maps to arcsine domain
 - Phase division: $\frac{\arcsin(1 - 2v)}{3}$ creates triadic resonance
 - Final sine operation produces smooth S-curve transformation
 
 **Mathematical Properties:**
+
 - Monotonic increasing function
 - Smooth derivatives throughout domain
 - Unique inflection characteristics creating harmonic resonance
@@ -49,27 +51,6 @@ const fragment = () => {
         const resonance = phase.mul(interference).abs()
         const harmonics = resonance.pow(0.7).mul(1.2)
         return vec4(harmonics.mul(0.9), harmonics.mul(0.7).add(phase.mul(0.3)), harmonics.add(phase.mul(0.4)), 1)
-}`}
-/>
-
-### Temporal Phase Distortion Fields
-
-Combining the inverse cubic transformation with time creates non-linear temporal distortion, where different regions of space experience varying rates of temporal flow, mimicking relativistic effects.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec2(0.5)
-        const offset = uv.sub(center)
-        const dist = offset.length().mul(3)
-        const timeField = invCubic(dist.fract())
-        const warpedTime = iTime.add(timeField.mul(4))
-        const spiralAngle = offset.y.atan2(offset.x).add(warpedTime.mul(0.5))
-        const radiusWarp = dist.add(warpedTime.sin().mul(0.3))
-        const vortex = spiralAngle.mul(8).sin().div(radiusWarp.exp())
-        const intensity = vortex.abs().pow(0.6)
-        return vec4(intensity.mul(timeField), intensity.mul(0.8).add(timeField.mul(0.2)), intensity.add(timeField.mul(0.3)), 1)
 }`}
 />
 
@@ -114,26 +95,5 @@ const fragment = () => {
         const depth = architecture.abs().pow(0.5)
         const shadow = float(1).sub(depth.mul(0.7))
         return vec4(depth.mul(0.9).add(0.1), depth.mul(0.7).add(shadow.mul(0.3)), depth.mul(0.6).add(shadow.mul(0.4)), 1)
-}`}
-/>
-
-### Melodic Frequency Spectrum Analysis
-
-The mathematical structure of inverse cubic transformation mirrors harmonic series found in musical acoustics, creating visual representations of complex frequency relationships and overtone interactions.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const frequency = uv.x.mul(32)
-        const amplitude = uv.y.sub(0.5).abs().mul(2)
-        const fundamental = invCubic(frequency.fract())
-        const overtone1 = invCubic(frequency.mul(1.5).fract()).mul(0.7)
-        const overtone2 = invCubic(frequency.mul(2.25).fract()).mul(0.4)
-        const spectrum = fundamental.add(overtone1).add(overtone2)
-        const envelope = amplitude.sub(spectrum).abs().mul(5).oneMinus().clamp(0, 1)
-        const harmonic = envelope.pow(2).mul(spectrum)
-        const melody = harmonic.add(iTime.mul(frequency.div(16)).sin().mul(0.1))
-        return vec4(melody.mul(0.8), melody.mul(0.9).add(spectrum.mul(0.1)), melody.add(envelope.mul(0.2)), 1)
 }`}
 />

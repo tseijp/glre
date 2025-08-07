@@ -1,0 +1,70 @@
+---
+title: 'pow2'
+description: 'Quadratic energy amplification with exponential visual intensity transformation'
+keywords: [pow2, square, quadratic, energy, amplification, exponential]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pow2: Quadratic Energy Amplification Engine
+
+### Mathematical Foundation of Energy Concentration
+
+The pow2 function represents pure quadratic transformation through self-multiplication, embodying the mathematical principle of energy concentration through exponential growth. This fundamental operation transforms linear input distributions into concentrated energy fields, creating dramatic visual contrasts and exponential intensity variations.
+
+The mathematical definition follows the elementary transformation:
+
+$$f(x) = x^2$$
+
+Where the quadratic nature ensures that all input values undergo exponential amplification while preserving sign information through magnitude-based transformation. This creates distinctive visual patterns where small values approach zero while large values expand dramatically.
+
+The quadratic property exhibits several remarkable characteristics: **Energy Concentration** at extremes, **Zero Preservation** at origin points, and **Symmetrical Amplification** around unity values.
+
+### Exponential Contrast Field Generation
+
+The squaring operation creates natural contrast enhancement by amplifying deviations from unity while compressing values near zero. This mathematical behavior produces organic intensity distributions that cannot be achieved through linear transformations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(3)
+        const distance = coord.length()
+        
+        const linearField = distance.div(2)
+        const quadraticField = pow2(linearField)
+        
+        const intensityMap = pow2(sin(distance.mul(8).sub(iTime.mul(2))))
+        const concentratedEnergy = pow2(intensityMap.add(0.1))
+        
+        const finalPattern = quadraticField.mul(concentratedEnergy)
+        
+        return vec4(finalPattern.mul(1.2), finalPattern.mul(0.8).add(0.1), finalPattern.pow(0.6), 1)
+}`}
+/>
+
+### Metamorphic Texture Generation Through Quadratic Layering
+
+By applying pow2 in cascading layers, complex metamorphic textures emerge from simple input patterns. Each application concentrates energy further, creating hierarchical structures with organic complexity.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const basePattern = uv.mul(6).add(iTime.mul(0.1))
+        
+        const layer1 = pow2(sin(basePattern.x).add(cos(basePattern.y)))
+        const layer2 = pow2(layer1.mul(0.8).add(0.2))
+        const layer3 = pow2(layer2.sub(0.1).abs())
+        
+        const metamorphic = layer3.mul(pow2(basePattern.length().mod(1.0)))
+        const enhanced = pow2(metamorphic.add(0.05))
+        
+        const r = enhanced.mul(pow2(cos(iTime.mul(0.5))))
+        const g = pow2(enhanced.mul(0.7).add(0.1))
+        const b = enhanced.pow(0.5).mul(pow2(sin(iTime.mul(0.3))))
+        
+        return vec4(r, g, b, 1)
+}`}
+/>

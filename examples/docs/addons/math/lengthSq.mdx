@@ -85,45 +85,6 @@ const fragment = () => {
 }`}
 />
 
-### Gravitational Lensing: Spacetime Curvature Simulation
-
-Utilizing lengthSq for spacetime curvature calculations, this visualization demonstrates gravitational lensing effects where massive objects bend spacetime according to Einstein's field equations. The squared distance relationship directly correlates to gravitational potential energy.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const blackHole1 = vec2(0.2, 0.1)
-        const blackHole2 = vec2(-0.3, -0.2)
-
-        const mass1 = float(0.8)
-        const mass2 = float(1.2)
-
-        const r1Sq = lengthSq(uv.sub(blackHole1)).max(0.001)
-        const r2Sq = lengthSq(uv.sub(blackHole2)).max(0.001)
-
-        const potential1 = mass1.div(r1Sq)
-        const potential2 = mass2.div(r2Sq)
-        const totalPotential = potential1.add(potential2)
-
-        const lensing = totalPotential.mul(0.1)
-        const lensedUV = uv.add(lensing.mul(vec2(
-                uv.x.sub(blackHole1.x).div(r1Sq.sqrt()).add(uv.x.sub(blackHole2.x).div(r2Sq.sqrt())),
-                uv.y.sub(blackHole1.y).div(r1Sq.sqrt()).add(uv.y.sub(blackHole2.y).div(r2Sq.sqrt()))
-        )))
-
-        const spacetimeGrid = lensedUV.mul(10.0).sin()
-        const warpIntensity = totalPotential.mul(0.5).min(2.0)
-
-        const redShift = spacetimeGrid.x.mul(warpIntensity).mul(0.5).add(0.5)
-        const blueShift = spacetimeGrid.y.mul(warpIntensity).mul(0.5).add(0.5)
-        const eventHorizon = totalPotential.greaterThan(5.0).select(0.0, 1.0)
-
-        return vec4(redShift, 0.3, blueShift, 1).mul(eventHorizon)
-
-}`}
-/>
-
 ### Mathematical Properties and Applications
 
 | Property                   | Mathematical Expression                                                                              | Computational Advantage           |
