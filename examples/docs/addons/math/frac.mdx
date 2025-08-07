@@ -1,5 +1,5 @@
 ---
-title: 'Fractional Universe Generator'
+title: 'frac'
 description: 'Extract fractional components to create infinite tiling patterns, crystalline structures, and mathematical harmony in visual space'
 keywords: [glre, frac, fractional, modulo, tiling, crystalline, infinite, mathematical, patterns]
 date: 2025-08-06
@@ -56,17 +56,18 @@ const fragment = () => {
         const layer1 = frac(pos.mul(1))
         const layer2 = frac(pos.mul(3))
         const layer3 = frac(pos.mul(9))
-        
+
         const structure = layer1.x.mul(layer1.y).add(
                 layer2.x.mul(layer2.y).mul(0.5)
         ).add(
                 layer3.x.mul(layer3.y).mul(0.25)
         )
-        
+
         const depth = abs(sin(structure.mul(PI).add(iTime.mul(2))))
         const architectural = smoothstep(0.2, 0.8, depth)
-        
+
         return vec4(architectural.mul(1.3), architectural.mul(0.8), architectural.mul(0.4), 1)
+
 }`}
 />
 
@@ -81,15 +82,16 @@ const fragment = () => {
         const zoom = sin(iTime.mul(0.4)).mul(3).add(6)
         const grid = frac(uv.mul(zoom))
         const centerDistance = length(grid.sub(0.5)).mul(2)
-        
+
         const quantum = step(0.8, centerDistance).sub(step(0.95, centerDistance))
         const phaseShift = sin(grid.x.mul(PI).mul(8).add(iTime.mul(6))).mul(
                 sin(grid.y.mul(PI).mul(8).add(iTime.mul(4)))
         ).add(1).div(2)
-        
+
         const materialization = quantum.mul(phaseShift)
         const energy = pow(materialization, 2).mul(2)
-        
+
         return vec4(energy.mul(0.3), energy.mul(1.2), energy.mul(0.9), 1)
+
 }`}
 />

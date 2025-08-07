@@ -1,5 +1,5 @@
 ---
-title: 'highPass: Threshold-Based Signal Filtering'
+title: 'highPass'
 description: 'Mathematical high-pass filter that creates dramatic intensity thresholds with dynamic remapping'
 keywords: [highPass, threshold, filter, signal processing, intensity, mathematical]
 date: 2025-08-06
@@ -14,6 +14,7 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 The highPass function implements a mathematical high-pass filter that transforms input signals by eliminating values below a specified threshold while remapping remaining values to maintain full range utilization.
 
 **Mathematical Definition:**
+
 ```
 highPass(v, b) = max(v - b, 0) / (1 - b)
 where:
@@ -23,6 +24,7 @@ where:
 ```
 
 **Domain Analysis:**
+
 - When v ≤ b: output = 0 (complete elimination)
 - When v > b: output = (v - b) / (1 - b) (linear remapping)
 - The division by (1 - b) ensures output spans [0, 1] range
@@ -39,28 +41,29 @@ const fragment = () => {
         const center = vec2(0.5, 0.5)
         const radius = uv.sub(center).length()
         const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
-        
+
         // Create concentric threshold layers
         const layers = sin(radius.mul(50).add(iTime.mul(2))).mul(0.5).add(0.5)
         const angular = cos(angle.mul(8)).mul(0.5).add(0.5)
         const signal = layers.mul(angular)
-        
+
         // Apply dynamic threshold with time variation
         const threshold = sin(iTime.mul(0.5)).mul(0.3).add(0.4)
         const filtered = highPass(signal, threshold)
-        
+
         // Create color based on threshold crossing
         const intensity = filtered.mul(3)
         const hue = angle.div(6.28).add(iTime.mul(0.1))
         const saturation = smoothstep(0.01, 0.1, filtered)
-        
+
         const color = vec3(
                 sin(hue.mul(6.28)).mul(0.5).add(0.5),
                 sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5),
                 sin(hue.mul(6.28).add(4.18)).mul(0.5).add(0.5)
         ).mul(saturation).add(vec3(intensity.mul(0.2)))
-        
+
         return vec4(color, float(1))
+
 }`}
 />
 
@@ -71,33 +74,34 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const t = iTime.mul(0.3)
-        
+
         // Generate multi-frequency plasma field
         const plasma1 = sin(uv.x.mul(10).add(t)).mul(sin(uv.y.mul(7).add(t.mul(1.3))))
         const plasma2 = sin(uv.x.mul(13).add(uv.y.mul(8)).add(t.mul(2)))
         const plasma3 = sin(distance(uv, vec2(0.5)).mul(25).sub(t.mul(4)))
-        
+
         const combined = plasma1.mul(0.4).add(plasma2.mul(0.35)).add(plasma3.mul(0.25))
         const normalized = combined.mul(0.5).add(0.5)
-        
+
         // Multi-threshold cascade effect
         const threshold1 = float(0.3)
         const threshold2 = float(0.6)
         const threshold3 = float(0.85)
-        
+
         const filter1 = highPass(normalized, threshold1)
         const filter2 = highPass(filter1, threshold2.div(float(1).sub(threshold1)))
         const filter3 = highPass(filter2, threshold3.div(float(1).sub(threshold2)))
-        
+
         // Create layered color response
         const base = vec3(float(0.1), float(0.0), float(0.2))
         const layer1 = vec3(float(0.8), float(0.2), float(0.4)).mul(filter1)
         const layer2 = vec3(float(0.4), float(0.9), float(0.3)).mul(filter2)
         const layer3 = vec3(float(1.0), float(0.8), float(0.1)).mul(filter3)
-        
+
         const color = base.add(layer1).add(layer2).add(layer3)
-        
+
         return vec4(color, float(1))
+
 }`}
 />
 
@@ -111,7 +115,7 @@ const fragment = () => {
         let signal = float(0)
         let amplitude = float(1)
         let frequency = float(1)
-        
+
         // Generate fractal noise
         for (let i = 0; i < 5; i++) {
                 const noise = sin(coord.x.mul(frequency).add(iTime)).mul(
@@ -121,28 +125,29 @@ const fragment = () => {
                 amplitude = amplitude.mul(0.6)
                 frequency = frequency.mul(2.1)
         }
-        
+
         signal = signal.mul(0.5).add(0.5)
-        
+
         // Cascading threshold effects
         const baseThreshold = 0.2
         const step1 = highPass(signal, baseThreshold)
         const step2 = highPass(step1, 0.4)
         const step3 = highPass(step2, 0.7)
-        
+
         // Multi-dimensional color mapping
         const redChannel = signal.mul(2).clamp(0, 1)
         const greenChannel = step1.mul(3).clamp(0, 1)
         const blueChannel = step2.mul(4).clamp(0, 1)
         const whiteBoost = step3.mul(2)
-        
+
         const color = vec3(
                 redChannel.add(whiteBoost.mul(0.3)),
                 greenChannel.add(whiteBoost.mul(0.8)),
                 blueChannel.add(whiteBoost)
         )
-        
+
         return vec4(color, float(1))
+
 }`}
 />
 

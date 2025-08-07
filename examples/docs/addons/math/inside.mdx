@@ -1,7 +1,15 @@
 ---
-title: 'inside: Boundary Detection through Multidimensional Inclusion Testing'
+title: 'inside'
 description: 'Explore spatial containment algorithms with quantum tunneling effects, dimensional boundary visualization, and topological space analysis'
-keywords: ['boundary detection', 'spatial containment', 'topology', 'dimensional analysis', 'quantum tunneling', 'geometric constraints']
+keywords:
+        [
+                'boundary detection',
+                'spatial containment',
+                'topology',
+                'dimensional analysis',
+                'quantum tunneling',
+                'geometric constraints',
+        ]
 date: 2025-08-06
 ---
 
@@ -15,6 +23,7 @@ The inside function determines whether a point lies within specified boundaries 
 
 **Mathematical Definition:**
 For any value **x** and boundary parameters **min**, **max**:
+
 ```
 inside(x, min, max) = ¬(x < min ∨ x > max)
 ```
@@ -33,27 +42,28 @@ const fragment = () => {
         const wellSize = vec2(0.4, 0.3)
         const wellMin = wellCenter.sub(wellSize)
         const wellMax = wellCenter.add(wellSize)
-        
+
         const isInWell = insideVec2(uv, wellMin, wellMax)
         const distanceFromBoundary = vec2(
                 uv.x.sub(wellMin.x).min(wellMax.x.sub(uv.x)),
                 uv.y.sub(wellMin.y).min(wellMax.y.sub(uv.y))
         ).length()
-        
+
         const tunnelProbability = distanceFromBoundary.negate().mul(5.0).exp()
         const waveFunction = iTime.mul(3.0).add(distanceFromBoundary.mul(10.0)).sin()
-        
+
         const quantumState = waveFunction.mul(0.5).add(0.5).mul(isInWell.toFloat())
                 .add(tunnelProbability.mul(waveFunction.mul(0.3).add(0.1)).mul(isInWell.not().toFloat()))
-        
+
         const energy = quantumState.pow(0.5)
         const color = vec3(
                 energy.mul(0.8).add(0.2),
-                energy.mul(0.4).add(tunnelProbability.mul(0.6)), 
+                energy.mul(0.4).add(tunnelProbability.mul(0.6)),
                 energy.mul(0.2).add(0.8)
         )
-        
+
         return vec4(color, 1)
+
 }`}
 />
 
@@ -66,35 +76,36 @@ This example demonstrates hierarchical spatial partitioning through nested bound
         code={`
 const fragment = () => {
         const scale1 = 0.8
-        const scale2 = 0.5  
+        const scale2 = 0.5
         const scale3 = 0.3
-        
+
         const region1 = insideVec2(uv, vec2(-scale1), vec2(scale1))
         const region2 = insideVec2(uv, vec2(-scale2), vec2(scale2))
         const region3 = insideVec2(uv, vec2(-scale3), vec2(scale3))
-        
+
         const time = iTime.mul(0.5)
         const rotation = time.cos()
         const rotatedUV = vec2(
                 uv.x.mul(rotation).sub(uv.y.mul(time.sin())),
                 uv.x.mul(time.sin()).add(uv.y.mul(rotation))
         )
-        
+
         const dynamicRegion = insideVec2(rotatedUV, vec2(-0.2), vec2(0.2))
-        
+
         const layerIntensity = region1.toFloat().mul(0.3)
                 .add(region2.toFloat().mul(0.4))
                 .add(region3.toFloat().mul(0.5))
                 .add(dynamicRegion.toFloat().mul(0.8))
-        
+
         const interference = uv.length().mul(8.0).add(time.mul(2.0)).sin()
         const modulated = layerIntensity.mul(interference.mul(0.3).add(0.7))
-        
+
         const red = modulated.mul(region1.toFloat().mul(0.7).add(0.3))
         const green = modulated.mul(region2.toFloat().mul(0.6).add(0.4))
         const blue = modulated.mul(region3.toFloat().mul(0.2).add(0.8))
-        
+
         return vec4(red, green, blue, 1)
+
 }`}
 />
 
@@ -108,10 +119,10 @@ Utilizing inside for topological space analysis, this visualization demonstrates
 const fragment = () => {
         const numRegions = 6
         const angle = iTime.mul(0.3)
-        
+
         let totalField = float(0)
         let boundaryEffect = float(0)
-        
+
         for (let i = 0; i < numRegions; i++) {
                 const regionAngle = float(i).div(float(numRegions)).mul(6.28).add(angle)
                 const regionCenter = vec2(
@@ -119,56 +130,57 @@ const fragment = () => {
                         regionAngle.sin().mul(0.2)
                 )
                 const regionSize = vec2(0.15, 0.1)
-                
+
                 const regionMin = regionCenter.sub(regionSize)
                 const regionMax = regionCenter.add(regionSize)
-                
+
                 const isInside = insideVec2(uv, regionMin, regionMax)
                 const distToBoundary = vec2(
                         uv.x.sub(regionMin.x).min(regionMax.x.sub(uv.x)).min(
                         uv.y.sub(regionMin.y).min(regionMax.y.sub(uv.y))
                         )
                 ).length()
-                
+
                 const insideStrength = float(1).sub(distToBoundary.mul(2.0)).max(0.0)
                 const outsideStrength = distToBoundary.negate().mul(3.0).exp()
                 const fieldStrength = insideStrength.mul(isInside.toFloat())
                         .add(outsideStrength.mul(isInside.not().toFloat()))
-                
+
                 totalField = totalField.add(fieldStrength.mul(float(i + 1).div(float(numRegions))))
-                
+
                 const boundaryGradient = float(1).sub(distToBoundary.div(0.05))
                         .mul(distToBoundary.lessThan(0.05).toFloat())
                 boundaryEffect = boundaryEffect.add(boundaryGradient)
         }
-        
+
         const normalizedField = totalField.div(float(numRegions)).clamp(0, 1)
         const normalizedBoundary = boundaryEffect.div(float(numRegions)).clamp(0, 1)
-        
+
         const baseColor = vec3(normalizedField.mul(0.6), normalizedField.mul(0.8), normalizedField)
         const boundaryColor = vec3(1.0, 0.5, 0.2)
-        
+
         const finalColor = baseColor.add(boundaryColor.mul(normalizedBoundary))
-        
+
         return vec4(finalColor, 1)
+
 }`}
 />
 
 ### Mathematical Properties and Computational Applications
 
-| Property | Mathematical Expression | Application Domain |
-|----------|------------------------|-------------------|
-| **Inclusion Logic** | `inside(x, a, b) ⟺ a ≤ x ≤ b` | Constraint satisfaction |
-| **De Morgan's Law** | `¬(x < a ∨ x > b) ≡ (x ≥ a ∧ x ≤ b)` | Boolean algebra optimization |
-| **Monotonicity** | `a₁ ≤ a₂, b₁ ≤ b₂ ⟹ inside(x,a₁,b₁) ⟹ inside(x,a₂,b₂)` | Hierarchical containment |
-| **Dimension Extension** | `inside(v, min, max) = ∧ᵢ inside(vᵢ, minᵢ, maxᵢ)` | Multidimensional queries |
+| Property                | Mathematical Expression                                | Application Domain           |
+| ----------------------- | ------------------------------------------------------ | ---------------------------- |
+| **Inclusion Logic**     | `inside(x, a, b) ⟺ a ≤ x ≤ b`                          | Constraint satisfaction      |
+| **De Morgan's Law**     | `¬(x < a ∨ x > b) ≡ (x ≥ a ∧ x ≤ b)`                   | Boolean algebra optimization |
+| **Monotonicity**        | `a₁ ≤ a₂, b₁ ≤ b₂ ⟹ inside(x,a₁,b₁) ⟹ inside(x,a₂,b₂)` | Hierarchical containment     |
+| **Dimension Extension** | `inside(v, min, max) = ∧ᵢ inside(vᵢ, minᵢ, maxᵢ)`      | Multidimensional queries     |
 
 ### Geometric Interpretation and Spatial Analysis
 
 In computational geometry, the inside function enables fundamental spatial reasoning operations. The function transforms continuous space into discrete containment relationships, enabling efficient algorithms for:
 
 **Collision Detection**: Axis-aligned bounding box (AABB) intersection testing
-**Procedural Generation**: Constraint-based spatial distribution systems  
+**Procedural Generation**: Constraint-based spatial distribution systems
 **Visibility Culling**: Frustum containment queries for rendering optimization
 **Spatial Indexing**: Grid-based spatial data structure partitioning
 

@@ -1,5 +1,5 @@
 ---
-title: 'Inverse: Mathematical Reciprocal Transform'
+title: 'inverse'
 description: 'Reciprocal transformation function for creating dynamic field distortions and mathematical visualization effects'
 keywords: [inverse, reciprocal, mathematical, transform, field-distortion, wave-dynamics]
 date: 2025-08-06
@@ -15,13 +15,13 @@ The `inverse` function computes the mathematical reciprocal transformation f(x) 
 
 ## Mathematical Foundation
 
-| Property | Definition | Mathematical Expression |
-|----------|------------|-------------------------|
-| **Basic Transform** | Reciprocal operation | inverse(x) = 1/x |
-| **Domain** | All real numbers except zero | x ≠ 0 |
-| **Range** | All real numbers except zero | y ≠ 0 |
+| Property                | Definition                               | Mathematical Expression                                  |
+| ----------------------- | ---------------------------------------- | -------------------------------------------------------- |
+| **Basic Transform**     | Reciprocal operation                     | inverse(x) = 1/x                                         |
+| **Domain**              | All real numbers except zero             | x ≠ 0                                                    |
+| **Range**               | All real numbers except zero             | y ≠ 0                                                    |
 | **Asymptotic Behavior** | Vertical at zero, horizontal at infinity | Approaches infinity at zero, approaches zero at infinity |
-| **Symmetry** | Hyperbolic reflection | f(-x) = -f(x) |
+| **Symmetry**            | Hyperbolic reflection                    | f(-x) = -f(x)                                            |
 
 ## Hyperbolic Wave Distortion
 
@@ -33,18 +33,19 @@ This demonstration uses reciprocal transformation to create hyperbolic wave fiel
 const fragment = () => {
         const time = iTime.mul(2)
         const pos = uv.sub(0.5).mul(6)
-        
+
         const wave = pos.x.add(time.sin().mul(0.8)).sin().mul(0.3).add(0.5)
         const hyperField = inverse(wave.add(0.1))
-        
+
         const distortion = pos.y.add(hyperField.mul(0.2))
         const pattern = distortion.sin().mul(0.5).add(0.5)
-        
+
         const r = pattern.pow(3)
         const g = hyperField.abs().mul(0.1).mod(1)
         const b = time.cos().mul(0.5).add(0.5)
-        
+
         return vec4(r, g, b, 1)
+
 }`}
 />
 
@@ -58,21 +59,22 @@ Reciprocal transformation creates mathematical singularities where approaching z
 const fragment = () => {
         const center = vec2(0.5, 0.5)
         const radius = uv.sub(center).length()
-        
+
         const oscillation = iTime.mul(1.5).sin().mul(0.4).add(0.6)
         const fieldStrength = inverse(radius.add(oscillation.mul(0.1)))
-        
+
         const magnetic = fieldStrength.mul(0.05).sin()
         const electric = fieldStrength.mul(0.08).cos()
-        
+
         const interference = magnetic.add(electric).abs()
         const intensity = interference.pow(2).clamp(0, 1)
-        
+
         const hue = fieldStrength.mul(0.3).mod(1)
         const saturation = intensity.mul(0.8).add(0.2)
         const brightness = intensity.oneMinus().pow(0.5)
-        
+
         return vec4(hue.mul(brightness), saturation.mul(brightness), brightness, 1)
+
 }`}
 />
 
@@ -86,18 +88,19 @@ Mathematical reciprocal functions create temporal dynamics where inverse relatio
 const fragment = () => {
         const grid = uv.mul(8).fract().sub(0.5)
         const time = iTime.mul(0.7)
-        
+
         const pulse = time.add(grid.x.mul(3)).sin().mul(0.4).add(0.7)
         const reciprocalPulse = inverse(pulse)
-        
+
         const verticalField = grid.y.add(reciprocalPulse.mul(0.15))
         const wave = verticalField.mul(4).sin().mul(0.5).add(0.5)
-        
+
         const energy = reciprocalPulse.abs().mul(0.2).clamp(0, 1)
         const modulation = energy.sin().mul(0.3).add(0.7)
-        
+
         const color = wave.mul(modulation)
         return vec4(color, color.mul(0.7).add(0.3), color.mul(1.2).clamp(0, 1), 1)
+
 }`}
 />
 

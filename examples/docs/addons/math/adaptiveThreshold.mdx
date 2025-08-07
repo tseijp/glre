@@ -1,5 +1,5 @@
 ---
-title: 'Adaptive Threshold Filtering'
+title: 'adaptiveThreshold'
 description: 'Dynamic threshold operations for intelligent image processing and visual effect creation'
 keywords: [adaptive threshold, image filtering, dynamic boundaries, visual processing, threshold detection]
 date: 2025-08-06
@@ -21,16 +21,17 @@ The system examines both the current value and a blurred reference, calculating 
 const fragment = () => {
         const uv = position.xy.div(iResolution)
         const time = iTime.mul(0.2)
-        
+
         // Create complex noise pattern
         const noise = sin(uv.x.mul(15).add(time)).mul(cos(uv.y.mul(12).sub(time.mul(0.7))))
         const blurred = sin(uv.x.mul(3).add(time.mul(0.5))).mul(cos(uv.y.mul(2.5).sub(time.mul(0.3))))
-        
+
         // Apply adaptive thresholding with bias
         const threshold = adaptiveThreshold(noise, blurred, float(0.2))
-        
+
         const color = vec3(threshold.mul(0.8), threshold.mul(0.6), threshold.mul(0.9))
         return vec4(color, 1)
+
 }`}
 />
 
@@ -44,22 +45,23 @@ Advanced edge detection leverages adaptive thresholding to identify meaningful b
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(3)
         const time = iTime.mul(0.4)
-        
+
         // Generate detailed texture pattern
         const detail = sin(uv.x.mul(20).add(time)).add(cos(uv.y.mul(18).sub(time.mul(1.2))))
         const background = sin(uv.x.mul(2).add(time.mul(0.3))).add(cos(uv.y.mul(1.8).sub(time.mul(0.7))))
-        
+
         // Simple adaptive threshold without bias
         const edges = adaptiveThresholdSimple(detail, background)
-        
+
         // Create rainbow edge coloring
         const colorShift = uv.x.add(uv.y).add(time.mul(2))
         const red = edges.mul(sin(colorShift).mul(0.5).add(0.7))
         const green = edges.mul(cos(colorShift.mul(1.3)).mul(0.5).add(0.6))
         const blue = edges.mul(sin(colorShift.mul(0.7)).mul(0.5).add(0.8))
-        
+
         const color = vec3(red, green, blue)
         return vec4(color, 1)
+
 }`}
 />
 
@@ -73,24 +75,25 @@ Sophisticated pattern recognition combines multiple adaptive threshold operation
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(4)
         const time = iTime.mul(0.6)
-        
+
         // Multi-scale pattern generation
         const pattern = sin(uv.x.mul(8).add(time)).mul(cos(uv.y.mul(6).sub(time.mul(0.8))))
         const smooth1 = sin(uv.x.mul(2).add(time.mul(0.4))).mul(cos(uv.y.mul(1.5).sub(time.mul(0.5))))
         const smooth2 = sin(uv.x.mul(4).add(time.mul(0.7))).mul(cos(uv.y.mul(3).sub(time.mul(0.9))))
-        
+
         // Multiple threshold layers with different sensitivities
         const layer1 = adaptiveThreshold(pattern, smooth1, float(0.3))
         const layer2 = adaptiveThreshold(pattern, smooth2, float(-0.1))
         const layer3 = adaptiveThresholdSimple(pattern, smooth1.add(smooth2).div(2))
-        
+
         // Combine layers with mathematical operations
         const combined = layer1.mul(0.4).add(layer2.mul(0.5)).add(layer3.mul(0.3))
-        
+
         const timeColor = sin(time.mul(3)).mul(0.3).add(0.7)
         const color = vec3(combined.mul(timeColor), combined.mul(sin(time.mul(2.3)).mul(0.3).add(0.6)), combined.mul(cos(time.mul(1.7)).mul(0.3).add(0.8)))
-        
+
         return vec4(color, 1)
+
 }`}
 />
 

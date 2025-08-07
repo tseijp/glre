@@ -1,5 +1,5 @@
 ---
-title: 'Anti-Aliased Fractional Part Function'
+title: 'aafract'
 description: 'Compute smooth fractional parts with automatic anti-aliasing for crisp, artifact-free patterns'
 keywords: [fractional, fract, antialiasing, smooth, patterns, nyquist, filtering]
 date: 2025-08-06
@@ -61,9 +61,10 @@ const fragment = () => {
         const wave1 = aafract(coord.x.add(iTime.mul(0.5)))
         const wave2 = aafract(coord.y.sub(iTime.mul(0.3)))
         const interference = wave1.mul(wave2)
-        
+
         const color = vec3(interference, interference.mul(0.7), interference.mul(0.4))
         return vec4(color, 1)
+
 }`}
 />
 
@@ -77,20 +78,21 @@ Generate sophisticated tile and mosaic patterns with perfectly smooth edges that
 const fragment = () => {
         const tileSize = 12
         const coord = uv.mul(tileSize)
-        
+
         const tileX = aafract(coord.x)
         const tileY = aafract(coord.y)
-        
+
         const border = float(0.1)
         const edgeX = tileX.lessThan(border).or(tileX.greaterThan(float(1).sub(border)))
         const edgeY = tileY.lessThan(border).or(tileY.greaterThan(float(1).sub(border)))
         const isEdge = edgeX.or(edgeY)
-        
+
         const tile = tileX.mul(tileY)
         const color = vec3(tile.mul(0.8).add(0.2))
         const finalColor = select(vec3(0.2, 0.2, 0.8), color, isEdge)
-        
+
         return vec4(finalColor, 1)
+
 }`}
 />
 

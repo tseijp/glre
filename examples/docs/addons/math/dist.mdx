@@ -1,5 +1,5 @@
 ---
-title: 'Distance Calculation Functions'
+title: 'dist'
 description: 'Create mesmerizing visual effects using mathematical distance calculations between points in space'
 keywords: [distance, euclidean, manhattan, chebychev, minkowski, math, visual-effects, generative-art]
 date: 2025-08-06
@@ -15,22 +15,22 @@ Distance calculation forms the foundation of countless visual phenomena in digit
 
 ## Distance Types Overview
 
-| Distance Type | Visual Character | Best Use Cases |
-|--------------|-----------------|----------------|
-| **Euclidean** | Smooth circles and spheres | Natural organic shapes |
-| **Manhattan** | Diamond patterns and grid-like structures | Urban geometric designs |  
-| **Chebychev** | Square patterns with sharp corners | Pixelated retro aesthetics |
-| **Minkowski** | Morphing between circle and square | Hybrid geometric forms |
+| Distance Type | Visual Character                          | Best Use Cases             |
+| ------------- | ----------------------------------------- | -------------------------- |
+| **Euclidean** | Smooth circles and spheres                | Natural organic shapes     |
+| **Manhattan** | Diamond patterns and grid-like structures | Urban geometric designs    |
+| **Chebychev** | Square patterns with sharp corners        | Pixelated retro aesthetics |
+| **Minkowski** | Morphing between circle and square        | Hybrid geometric forms     |
 
 ## Function Reference Table
 
-| Function Name | Input Types | Output | Description |
-|--------------|-------------|--------|-------------|
-| `distEuclidean(a, b)` | vec2/vec3/vec4 | float | Standard straight-line distance |
-| `distManhattan(a, b)` | vec2/vec3/vec4 | float | Sum of axis-aligned distances |
-| `distChebychev(a, b)` | vec2/vec3/vec4 | float | Maximum axis distance |
-| `distMinkowski(a, b)` | vec2/vec3/vec4 | float | Customizable p-norm distance |
-| `dist(a, b)` | vec2/vec3/vec4 | float | Generic distance (defaults to Euclidean) |
+| Function Name         | Input Types    | Output | Description                              |
+| --------------------- | -------------- | ------ | ---------------------------------------- |
+| `distEuclidean(a, b)` | vec2/vec3/vec4 | float  | Standard straight-line distance          |
+| `distManhattan(a, b)` | vec2/vec3/vec4 | float  | Sum of axis-aligned distances            |
+| `distChebychev(a, b)` | vec2/vec3/vec4 | float  | Maximum axis distance                    |
+| `distMinkowski(a, b)` | vec2/vec3/vec4 | float  | Customizable p-norm distance             |
+| `dist(a, b)`          | vec2/vec3/vec4 | float  | Generic distance (defaults to Euclidean) |
 
 ## Psychedelic Distance Field Visualization
 
@@ -43,32 +43,33 @@ const fragment = () => {
         const center = vec2(0.5, 0.5)
         const uv = position.xy.div(iResolution)
         const time = iTime.mul(0.3)
-        
+
         // Create multiple moving points
         const p1 = center.add(vec2(cos(time), sin(time)).mul(0.2))
         const p2 = center.add(vec2(cos(time.mul(1.3).add(2.1)), sin(time.mul(1.7).add(4.2))).mul(0.15))
         const p3 = center.add(vec2(cos(time.mul(2.1).add(1.4)), sin(time.mul(0.8).add(5.7))).mul(0.25))
-        
+
         // Different distance calculations create different patterns
         const dEuclidean = distEuclidean(uv, p1).mul(8)
         const dManhattan = distManhattan(uv, p2).mul(12)
         const dChebychev = distChebychev(uv, p3).mul(10)
-        
+
         // Combine distances with trigonometric functions for trippy effects
         const wave1 = sin(dEuclidean.add(time.mul(2))).mul(0.5).add(0.5)
         const wave2 = cos(dManhattan.sub(time.mul(1.5))).mul(0.5).add(0.5)
         const wave3 = sin(dChebychev.mul(1.2).add(time.mul(0.8))).mul(0.5).add(0.5)
-        
+
         // Create pulsating rainbow colors
         const r = wave1.mul(cos(time.add(0))).mul(0.5).add(0.5)
         const g = wave2.mul(cos(time.add(2.1))).mul(0.5).add(0.5)
         const b = wave3.mul(cos(time.add(4.2))).mul(0.5).add(0.5)
-        
+
         // Add interference patterns
         const interference = sin(dEuclidean.add(dManhattan).add(dChebychev).mul(3).sub(time.mul(4)))
         const intensity = interference.mul(0.3).add(0.7)
-        
+
         return vec4(r.mul(intensity), g.mul(intensity), b.mul(intensity), 1)
+
 }`}
 />
 

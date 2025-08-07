@@ -1,5 +1,5 @@
 ---
-title: 'lengthSq: Quantum Distance Fields through Squared Magnitude Operations'
+title: 'lengthSq'
 description: 'Explore the mathematical foundation of distance without square root complexity using quantum field visualization and energy density distributions'
 keywords: ['distance', 'magnitude', 'energy', 'quantum field', 'mathematical beauty', 'performance']
 date: 2025-08-06
@@ -15,6 +15,7 @@ The lengthSq function transcends traditional distance calculations by operating 
 
 **Mathematical Definition:**
 For any vector **v** = (v₁, v₂, ..., vₙ), the squared length represents energy density:
+
 ```
 lengthSq(v) = ||v||² = v · v = Σᵢ vᵢ²
 ```
@@ -32,22 +33,23 @@ const fragment = () => {
         const center1 = vec2(0.3, 0.5)
         const center2 = vec2(-0.2, -0.1)
         const center3 = vec2(0.1, -0.4)
-        
+
         const field1 = lengthSq(uv.sub(center1)).mul(8.0)
         const field2 = lengthSq(uv.sub(center2)).mul(12.0)
         const field3 = lengthSq(uv.sub(center3)).mul(6.0)
-        
+
         const quantumField = field1.add(field2).add(field3)
         const energyLevels = quantumField.sin().mul(0.5).add(0.5)
-        
+
         const resonance = iTime.mul(0.5).sin().mul(0.2).add(0.8)
         const finalField = energyLevels.pow(resonance)
-        
+
         const redChannel = finalField.mul(2.0).mod(1.0)
-        const greenChannel = finalField.mul(3.0).mod(1.0) 
+        const greenChannel = finalField.mul(3.0).mod(1.0)
         const blueChannel = finalField.mul(5.0).mod(1.0)
-        
+
         return vec4(redChannel, greenChannel, blueChannel, 1)
+
 }`}
 />
 
@@ -62,23 +64,24 @@ const fragment = () => {
         const latticeScale = 4.0
         const latticeUV = uv.mul(latticeScale)
         const cellCenter = latticeUV.fract().sub(0.5)
-        
+
         const energyDensity = lengthSq(cellCenter).mul(20.0)
         const temporalModulation = iTime.mul(2.0).cos().mul(0.3).add(0.7)
-        
+
         const crystalField = energyDensity.mul(temporalModulation)
         const harmonic1 = crystalField.mul(1.0).sin()
         const harmonic2 = crystalField.mul(1.618).sin()
         const harmonic3 = crystalField.mul(2.414).sin()
-        
+
         const interference = harmonic1.add(harmonic2).add(harmonic3).div(3.0)
         const normalized = interference.mul(0.5).add(0.5)
-        
+
         const crystallineR = normalized.pow(0.5)
         const crystallineG = normalized.pow(1.5)
         const crystallineB = normalized.pow(3.0)
-        
+
         return vec4(crystallineR, crystallineG, crystallineB, 1)
+
 }`}
 />
 
@@ -92,48 +95,50 @@ Utilizing lengthSq for spacetime curvature calculations, this visualization demo
 const fragment = () => {
         const blackHole1 = vec2(0.2, 0.1)
         const blackHole2 = vec2(-0.3, -0.2)
-        
+
         const mass1 = 0.8
         const mass2 = 1.2
-        
+
         const r1Sq = lengthSq(uv.sub(blackHole1)).max(0.001)
         const r2Sq = lengthSq(uv.sub(blackHole2)).max(0.001)
-        
+
         const potential1 = mass1.div(r1Sq)
         const potential2 = mass2.div(r2Sq)
         const totalPotential = potential1.add(potential2)
-        
+
         const lensing = totalPotential.mul(0.1)
         const lensedUV = uv.add(lensing.mul(vec2(
                 uv.x.sub(blackHole1.x).div(r1Sq.sqrt()).add(uv.x.sub(blackHole2.x).div(r2Sq.sqrt())),
                 uv.y.sub(blackHole1.y).div(r1Sq.sqrt()).add(uv.y.sub(blackHole2.y).div(r2Sq.sqrt()))
         )))
-        
+
         const spacetimeGrid = lensedUV.mul(10.0).sin()
         const warpIntensity = totalPotential.mul(0.5).min(2.0)
-        
+
         const redShift = spacetimeGrid.x.mul(warpIntensity).mul(0.5).add(0.5)
         const blueShift = spacetimeGrid.y.mul(warpIntensity).mul(0.5).add(0.5)
         const eventHorizon = totalPotential.greaterThan(5.0).select(0.0, 1.0)
-        
+
         return vec4(redShift, 0.3, blueShift, 1).mul(eventHorizon)
+
 }`}
 />
 
 ### Mathematical Properties and Applications
 
-| Property | Mathematical Expression | Computational Advantage |
-|----------|------------------------|--------------------------|
-| **Monotonicity** | `a < b ⟺ a² < b²` for `a,b ≥ 0` | Distance comparisons without sqrt |
-| **Scaling Laws** | `lengthSq(αv) = α² lengthSq(v)` | Energy scaling relationships |
-| **Parallelogram Identity** | `||a+b||² + ||a-b||² = 2(||a||² + ||b||²)` | Physics conservation laws |
-| **Polarization** | `4⟨a,b⟩ = ||a+b||² - ||a-b||²` | Quantum state analysis |
+| Property                   | Mathematical Expression         | Computational Advantage           |
+| -------------------------- | ------------------------------- | --------------------------------- | --- | --- | --- | --- | --- | --- | ------ | ---------------------- | --- | --- | --- | --- | --- | --- | --- | ------------------------- |
+| **Monotonicity**           | `a < b ⟺ a² < b²` for `a,b ≥ 0` | Distance comparisons without sqrt |
+| **Scaling Laws**           | `lengthSq(αv) = α² lengthSq(v)` | Energy scaling relationships      |
+| **Parallelogram Identity** | `                               |                                   | a+b |     | ² + |     | a-b |     | ² = 2( |                        | a   |     | ² + |     | b   |     | ²)` | Physics conservation laws |
+| **Polarization**           | `4⟨a,b⟩ =                       |                                   | a+b |     | ² - |     | a-b |     | ²`     | Quantum state analysis |
 
 ### Quantum Mechanical Interpretation
 
 In quantum field theory, the lengthSq operation directly relates to probability amplitude densities and energy eigenvalues. The function enables visualization of quantum phenomena without computational artifacts introduced by square root operations.
 
 **Physical Significance:**
+
 - **Energy Density**: `ρ(r) = ||ψ(r)||²` where ψ is the wavefunction
 - **Momentum Space**: `⟨p²⟩ = ||p||²` kinetic energy calculations
 - **Field Interactions**: Coupling strength proportional to distance squared

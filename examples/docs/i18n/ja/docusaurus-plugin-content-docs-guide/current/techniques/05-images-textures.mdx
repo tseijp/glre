@@ -105,28 +105,28 @@ const gl = createGL({
                         const pixelSize = vec2(1.0).div(resolution)
                         const halfSize = size.div(float(2))
                         const totalSamples = int(size.mul(size))
-                        
+
                         // サイズパラメータに基づく動的サンプリング
                         Loop(totalSamples, ({ i }) => {
                                 const x = mod(float(i), size).sub(halfSize)
                                 const y = floor(float(i).div(size)).sub(halfSize)
-                                
+
                                 // 中心からの距離によるウェイト計算
                                 const dist = length(vec2(x, y))
                                 const weight = exp(dist.mul(dist).mul(float(-0.5)))
-                                
+
                                 // サンプリングオフセット
                                 const offset = vec2(x, y).mul(pixelSize).mul(blurRadius)
                                 const sampleUV = uv.add(offset)
-                                
+
                                 // UV座標をクランプしてアーティファクトを防ぐ
                                 const clampedUV = clamp(sampleUV, vec2(0), vec2(1))
                                 const sampleColor = texture(uniform('mainTexture'), clampedUV)
-                                
+
                                 blurColor.assign(blurColor.add(sampleColor.mul(weight)))
                                 totalWeight.assign(totalWeight.add(weight))
                         })
-                        
+
                         // 総ウェイトで正規化
                         return blurColor.div(totalWeight)
                 })
@@ -134,7 +134,7 @@ const gl = createGL({
                 // 設定可能なパラメータ
                 const blurRadius = float(2.0)
                 const kernelSize = float(5)
-                
+
                 // ぼかしフィルタを適用
                 const blurColor = blurFilter(uv, blurRadius, kernelSize)
                 return blurColor

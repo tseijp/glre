@@ -1,0 +1,104 @@
+---
+title: 'invQuartic: Quantum Transition Field Generator'
+description: 'Revolutionary inverse quartic transformation creating quantum-inspired field transitions with metamorphic energy distribution patterns'
+keywords: [invQuartic, quantum field, metamorphic transition, energy distribution, inverse quartic, mathematical transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# invQuartic: Quantum Transition Field Generator
+
+### Mathematical Foundation of Metamorphic Field Theory
+
+The `invQuartic` function represents a revolutionary approach to field transformation through inverse quartic mathematics. This function performs the transformation $f(v) = \sqrt{1-\sqrt{1-v}}$, creating a unique double-root transition that mimics quantum energy state transitions in theoretical physics.
+
+The mathematical essence lies in its nested radical structure, where each square root operation creates a successive energy dampening effect, resulting in a non-linear transition curve that exhibits metamorphic properties fundamentally different from traditional interpolation functions.
+
+$$
+f(v) = \sqrt{1-\sqrt{1-v}}
+$$
+
+Where the transformation domain spans $v \in [0,1]$ and produces a distinctive S-shaped curve with quantum-like transition characteristics.
+
+### Quantum Field Visualization: Metamorphic Energy Distribution
+
+The following demonstration reveals the function's capability to generate metamorphic energy fields that transition through quantum-inspired states. Unlike conventional mathematical functions, `invQuartic` creates field distributions that exhibit phase transition behavior reminiscent of quantum mechanical systems.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(4)
+        const radius = coord.length()
+        const angle = coord.atan2()
+        
+        // Quantum field transition zones
+        const zone1 = radius.fract().invQuartic()
+        const zone2 = angle.add(iTime).mul(0.5).fract().invQuartic()
+        const zone3 = coord.x.add(coord.y).add(iTime.mul(0.3)).fract().invQuartic()
+        
+        // Metamorphic energy distribution
+        const energy = zone1.mul(zone2).add(zone3.mul(0.7))
+        const field = energy.invQuartic()
+        
+        // Triple-layer quantum visualization
+        const redChannel = field.pow(0.5)
+        const greenChannel = field.mul(1.2).fract().invQuartic()
+        const blueChannel = field.add(0.3).fract().sqrt().invQuartic()
+        
+        return vec4(redChannel, greenChannel, blueChannel, 1)
+}`}
+/>
+
+### Theoretical Framework: Double-Root Transition Dynamics
+
+The nested square root structure of `invQuartic` creates a unique mathematical property where the transformation exhibits dual-phase behavior. The first square root operation initiates the transition, while the outer square root creates a secondary dampening effect, resulting in a curve that approaches unity asymptotically while maintaining smooth transition characteristics throughout its domain.
+
+This mathematical behavior manifests visually as energy fields that transition through distinct phases, creating patterns that exhibit both local coherence and global metamorphosis - a property that distinguishes it from conventional mathematical transformations.
+
+### Advanced Application: Metamorphic Texture Generation
+
+The function's unique transition characteristics make it particularly suited for generating textures that require smooth yet distinctive phase transitions. The following example demonstrates how `invQuartic` can create metamorphic texture patterns that evolve through quantum-like energy states.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = uv.mul(8)
+        const grid = pos.fract()
+        const cell = pos.floor()
+        
+        // Metamorphic cell energy calculation
+        const cellHash = cell.x.add(cell.y.mul(127.1)).add(cell.x.mul(311.7)).fract().mul(43758.5453).fract()
+        const cellEnergy = cellHash.invQuartic()
+        
+        // Dynamic transition field
+        const transition = grid.sub(0.5).length().mul(2).clamp(0, 1)
+        const morphField = transition.invQuartic().mul(cellEnergy)
+        
+        // Time-based metamorphosis
+        const timePhase = iTime.mul(0.4).add(cellHash.mul(6.28)).sin().mul(0.5).add(0.5)
+        const finalField = morphField.add(timePhase.invQuartic().mul(0.3))
+        
+        // Quantum color mapping
+        const colorPhase = finalField.invQuartic()
+        const red = colorPhase.pow(1.5)
+        const green = colorPhase.mul(1.8).fract().invQuartic().mul(0.8)
+        const blue = colorPhase.add(0.4).fract().invQuartic().mul(1.2)
+        
+        return vec4(red, green, blue, 1)
+}`}
+/>
+
+### Metamorphic Pattern Analysis
+
+The `invQuartic` function's distinctive mathematical signature creates patterns that undergo continuous metamorphosis while maintaining structural coherence. This property stems from the function's unique ability to compress the input domain non-linearly while preserving smooth transitions, resulting in visual patterns that exhibit both quantum-like discreteness and classical continuity.
+
+The function's behavior can be understood through its derivative analysis, which reveals acceleration and deceleration phases that create the distinctive energy distribution patterns observed in the visual demonstrations above.
+
+### Quantum-Inspired Field Applications
+
+Beyond traditional graphics applications, the `invQuartic` function's mathematical properties make it suitable for simulating quantum field behaviors in visual systems. Its nested radical structure creates energy distribution patterns that mirror theoretical quantum field fluctuations, making it valuable for scientific visualization and artistic exploration of quantum mechanical concepts.
+
+The function's ability to create smooth transitions between distinct energy states while maintaining mathematical elegance positions it as a fundamental tool for next-generation field visualization systems.
