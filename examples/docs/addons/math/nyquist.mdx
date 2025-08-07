@@ -1,0 +1,107 @@
+---
+title: 'nyquist'
+description: 'Nyquist frequency domain filtering for signal reconstruction and adaptive aliasing prevention'
+keywords: [nyquist, filter, frequency, signal, processing, aliasing, smoothstep, mix]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# nyquist: Frequency Domain Signal Reconstruction
+
+### Mathematical Signal Processing through Adaptive Bandwidth Control
+
+The Nyquist function implements a frequency domain filter that prevents aliasing artifacts through adaptive bandwidth limiting. Named after Harry Nyquist's pioneering work in signal reconstruction, this function creates smooth transitions between original and filtered signals based on spectral width analysis.
+
+The mathematical foundation operates on the Nyquist-Shannon sampling theorem, where signals must be filtered below half the sampling rate to prevent aliasing distortion:
+
+$$
+f_{nyquist}(x, width) = \text{mix}(0.5, x, \text{smoothstep}(0.75, 0.25, width))
+$$
+
+The filter establishes critical frequency bounds:
+- **Lower cutoff**: $f_c - \Delta f = 0.5 - 0.25 = 0.25$ 
+- **Upper cutoff**: $f_c + \Delta f = 0.5 + 0.25 = 0.75$
+- **Center frequency**: $f_c = 0.5$ (Nyquist critical point)
+- **Transition band**: $\Delta f = 0.25$ (adaptive width control)
+
+### Crystalline Interference Pattern Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(2.0)
+        const coord = uv.mul(8.0)
+        
+        const wave1 = coord.x.add(time).sin()
+        const wave2 = coord.y.add(time.mul(1.618)).cos()
+        const interference = wave1.mul(wave2)
+        
+        const spectralWidth = coord.length().mul(0.1).add(0.05)
+        const filteredSignal = nyquist(interference, spectralWidth)
+        
+        const intensity = filteredSignal.add(0.5).pow(2.0)
+        const crystalline = vec3(
+                intensity.mul(0.8).add(0.2),
+                intensity.mul(0.6).add(0.3), 
+                intensity.mul(0.9).add(0.1)
+        )
+        
+        return vec4(crystalline, 1.0)
+}`}
+/>
+
+### Temporal Frequency Modulation Matrix
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(0.8)
+        const pos = uv.sub(0.5).mul(6.0)
+        
+        const carrier = pos.length().mul(4.0).sub(time).sin()
+        const modulator = pos.x.mul(pos.y).mul(0.5).add(time.mul(0.3)).cos()
+        const amplitude = carrier.mul(modulator)
+        
+        const dynamicWidth = pos.length().mul(0.08).add(
+                time.mul(0.2).sin().mul(0.02).add(0.03)
+        )
+        
+        const processed = nyquist(amplitude, dynamicWidth)
+        const matrix = processed.mul(0.7).add(0.3)
+        
+        return vec4(matrix, matrix.mul(0.8), matrix.mul(1.2), 1.0)
+}`}
+/>
+
+### Quantum Bandwidth Oscillation Field
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(1.2)
+        const field = uv.sub(0.5).mul(10.0)
+        
+        const quantum1 = field.length().mul(3.0).add(time).sin().pow(3.0)
+        const quantum2 = field.x.mul(field.y).mul(2.0).sub(time.mul(1.4)).cos()
+        const entanglement = quantum1.add(quantum2).mul(0.5)
+        
+        const oscillatingWidth = field.length().mul(0.06).add(
+                time.mul(0.15).sin().mul(time.mul(0.25).cos()).mul(0.01).add(0.04)
+        )
+        
+        const filtered = nyquist(entanglement, oscillatingWidth)
+        const energy = filtered.abs().pow(1.5)
+        
+        const spectrum = vec3(
+                energy.mul(1.0),
+                energy.mul(0.7).add(0.1),
+                energy.mul(0.4).add(0.2)
+        )
+        
+        return vec4(spectrum, 1.0)
+}`}
+/>

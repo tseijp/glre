@@ -48,44 +48,6 @@ $$
 \end{cases}
 $$
 
-## Visual Demonstrations
-
-### Morphing Color Crystals
-
-This demonstration creates crystalline structures that morph through multiple color states using mmix3, revealing the mathematical beauty of progressive interpolation:
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const p = uv.sub(0.5).mul(4)
-        const angle = atan2(p.y, p.x)
-        const radius = p.length()
-        
-        // Create crystalline structure
-        const crystalFaces = 8
-        const faceAngle = angle.mul(crystalFaces).fract().sub(0.5).abs().mul(2)
-        const crystalShape = radius.sub(faceAngle.mul(0.3)).smoothstep(1.2, 0.8)
-        
-        // Create time-based morphing parameter
-        const morphTime = iTime.mul(0.3).sin().mul(0.5).add(0.5)
-        
-        // Define three distinct color states
-        const colorA = vec3(0.9, 0.1, 0.3)  // Deep crimson
-        const colorB = vec3(0.1, 0.7, 0.9)  // Cyan blue  
-        const colorC = vec3(0.8, 0.9, 0.1)  // Electric lime
-        
-        // Progressive color morphing using mmix3
-        const morphedColor = mmix3(colorA, colorB, colorC, morphTime)
-        
-        // Add spectral highlights based on crystal geometry
-        const highlight = faceAngle.pow(3).mul(crystalShape)
-        const finalColor = morphedColor.add(highlight.mul(0.4))
-        
-        return vec4(finalColor.mul(crystalShape), 1)
-}`}
-/>
-
 ### Dimensional Phase Transitions
 
 This example demonstrates mmix4 creating smooth transitions between four distinct mathematical phases, each representing a different dimensional interpretation of space:

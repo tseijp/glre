@@ -32,28 +32,6 @@ const fragment = () => {
 }`}
 />
 
-## Gradient Boundary Detection
-
-Advanced boundary detection uses the `aastep` function to create smooth color transitions that respond intelligently to pixel density and screen resolution.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const uv = position.xy.div(iResolution)
-        const waves = sin(uv.x.mul(20)).add(sin(uv.y.mul(15)))
-
-        // Multiple anti-aliased thresholds create layered effects
-        const layer1 = aastep(-0.5, waves)
-        const layer2 = aastep(0.0, waves)
-        const layer3 = aastep(0.5, waves)
-
-        const color = vec3(layer1.mul(0.2), layer2.mul(0.6), layer3.mul(0.9))
-        return vec4(color, 1)
-
-}`}
-/>
-
 ## Animated Shape Morphing
 
 Dynamic shape transitions become fluid and professional when using anti-aliased step functions for morphing between different geometric forms.

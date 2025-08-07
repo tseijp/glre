@@ -53,41 +53,6 @@ const fragment = () => {
 }`}
 />
 
-## Animated Mirror Waves
-
-Generate dynamic mirror patterns that evolve over time while maintaining smooth transitions.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const freq = 6.0
-        const speed = 2.0
-        const x = uv.x.mul(freq).add(iTime.mul(speed))
-        const mirror = aamirror(x)
-        const wave = mirror.mul(0.8).add(0.2)
-        const color = vec3(wave)
-        return vec4(color, 1)
-}`}
-/>
-
-## Multi-Directional Mirror Grid
-
-Combine horizontal and vertical mirroring to create complex geometric patterns.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const scale = 4.0
-        const mirrorX = aamirror(uv.x.mul(scale))
-        const mirrorY = aamirror(uv.y.mul(scale))
-        const pattern = mirrorX.mul(mirrorY)
-        const color = vec3(pattern)
-        return vec4(color, 1)
-}`}
-/>
-
 ## Distorted Mirror Field
 
 Apply spatial distortions to mirror patterns for organic, fluid effects.
@@ -101,43 +66,6 @@ const fragment = () => {
         const mirror = aamirror(x)
         const intensity = mirror.pow(2.0)
         const color = vec3(intensity.mul(0.9).add(0.1))
-        return vec4(color, 1)
-}`}
-/>
-
-## Layered Mirror Harmonics
-
-Stack multiple mirror frequencies to generate rich, harmonic textures.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = uv.mul(3.0)
-        const layer1 = aamirror(pos.x)
-        const layer2 = aamirror(pos.x.mul(2.0)).mul(0.5)
-        const layer3 = aamirror(pos.x.mul(4.0)).mul(0.25)
-        const combined = layer1.add(layer2).add(layer3).div(1.75)
-        const color = vec3(combined)
-        return vec4(color, 1)
-}`}
-/>
-
-## Mirror-Based Interference
-
-Create interference patterns by combining phase-shifted mirror functions.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const freq = 5.0
-        const phase1 = uv.x.mul(freq)
-        const phase2 = uv.y.mul(freq).add(float(3.14159).div(4.0))
-        const mirror1 = aamirror(phase1)
-        const mirror2 = aamirror(phase2)
-        const interference = mirror1.mul(mirror2)
-        const color = vec3(interference)
         return vec4(color, 1)
 }`}
 />
