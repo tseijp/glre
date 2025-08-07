@@ -1,8 +1,7 @@
 import { Fn, X } from '../../node'
-import { saturate } from './saturate'
 
 export const bump = Fn(([x, k]: [X, X]): X => {
-        return saturate(x.mul(x).sub(1).negate().sub(k))
+        return x.mul(x).sub(1).negate().sub(k).saturate()
 }).setLayout({
         name: 'bump',
         type: 'auto',

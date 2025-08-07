@@ -3,7 +3,7 @@ import { Fn, Vec2, Vec3, Vec4, Float, X, abs, distance, max, pow } from '../../n
 const DIST_MINKOWSKI_P = 2.0
 
 // Euclidean distance - using built-in distance function
-export const distEuclidean = Fn(([a, b]: [Vec2 | Vec3 | Vec4, X]): Float => {
+export const distEuclidean = Fn(([a, b]: [Vec2 | Vec3 | Vec4, Vec2 | Vec3 | Vec4]): Float => {
         return distance(a, b)
 }).setLayout({
         name: 'distEuclidean',
@@ -136,7 +136,7 @@ export const distMinkowski4 = Fn(([a, b]: [Vec4, Vec4]): Float => {
 })
 
 // Generic distance function (defaults to Euclidean)
-export const dist = Fn(([a, b]: [X, X]): Float => {
+export const dist = Fn(([a, b]: [Vec2 | Vec3 | Vec4, Vec2 | Vec3 | Vec4]): Float => {
         return distEuclidean(a, b)
 }).setLayout({
         name: 'dist',

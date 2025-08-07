@@ -1,7 +1,7 @@
-import { Fn, X, float } from '../../node'
+import { Fn, X, Float, float } from '../../node'
 
 export const powFast = Fn(([a, b]: [X, X]): X => {
-        return a.div(float(1).sub(b).mul(a).add(b))
+        return a.div((float(1) as any).sub(b).mul(a).add(b))
 }).setLayout({
         name: 'powFast',
         type: 'auto',
