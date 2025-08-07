@@ -28,18 +28,9 @@ export const insideFloat = Fn(([x, min, max]: [Float, Float, Float]): Bool => {
         name: 'insideFloat',
         type: 'bool',
         inputs: [
-                {
-                        name: 'x',
-                        type: 'float',
-                },
-                {
-                        name: 'min',
-                        type: 'float',
-                },
-                {
-                        name: 'max',
-                        type: 'float',
-                },
+                { name: 'x', type: 'float' },
+                { name: 'min', type: 'float' },
+                { name: 'max', type: 'float' },
         ],
 })
 
@@ -52,10 +43,7 @@ export const insideVec2 = Fn(([v, min, max]: [Vec2, Vec2, Vec2]): Bool => {
         name: 'insideVec2',
         type: 'bool',
         inputs: [
-                {
-                        name: 'v',
-                        type: 'vec2',
-                },
+                { name: 'v', type: 'vec2' },
                 {
                         name: 'min',
                         type: 'vec2',

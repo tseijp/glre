@@ -1,9 +1,9 @@
 import { Fn, X } from '../../node'
 
-export const saturate = Fn(([x]: [X]): X => {
-        return x.clamp(0, 1)
+export const pow3 = Fn(([x]: [X]): X => {
+        return x.mul(x).mul(x)
 }).setLayout({
-        name: 'saturate',
+        name: 'pow3',
         type: 'auto',
         inputs: [{ name: 'x', type: 'auto' }],
 })

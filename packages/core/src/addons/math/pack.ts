@@ -11,10 +11,5 @@ export const pack = Fn(([v]: [Float]): Vec4 => {
 }).setLayout({
         name: 'pack',
         type: 'vec4',
-        inputs: [
-                {
-                        name: 'v',
-                        type: 'float',
-                },
-        ],
+        inputs: [{ name: 'v', type: 'float' }],
 })

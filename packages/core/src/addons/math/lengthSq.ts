@@ -6,10 +6,5 @@ export const lengthSq = Fn(([v]: [X]): X => {
 }).setLayout({
         name: 'lengthSq',
         type: 'auto',
-        inputs: [
-                {
-                        name: 'v',
-                        type: 'auto',
-                },
-        ],
+        inputs: [{ name: 'v', type: 'auto' }],
 })

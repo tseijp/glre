@@ -5,10 +5,5 @@ export const inverse = Fn(([m]: [X]): X => {
 }).setLayout({
         name: 'reciprocal',
         type: 'auto',
-        inputs: [
-                {
-                        name: 'm',
-                        type: 'auto',
-                },
-        ],
+        inputs: [{ name: 'm', type: 'auto' }],
 })

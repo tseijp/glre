@@ -43,28 +43,3 @@ const fragment = () => {
         return vec4(finalPattern.mul(1.2), finalPattern.mul(0.8).add(0.1), finalPattern.pow(0.6), 1)
 }`}
 />
-
-### Metamorphic Texture Generation Through Quadratic Layering
-
-By applying pow2 in cascading layers, complex metamorphic textures emerge from simple input patterns. Each application concentrates energy further, creating hierarchical structures with organic complexity.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const basePattern = uv.mul(6).add(iTime.mul(0.1))
-        
-        const layer1 = pow2(sin(basePattern.x).add(cos(basePattern.y)))
-        const layer2 = pow2(layer1.mul(0.8).add(0.2))
-        const layer3 = pow2(layer2.sub(0.1).abs())
-        
-        const metamorphic = layer3.mul(pow2(basePattern.length().mod(1.0)))
-        const enhanced = pow2(metamorphic.add(0.05))
-        
-        const r = enhanced.mul(pow2(cos(iTime.mul(0.5))))
-        const g = pow2(enhanced.mul(0.7).add(0.1))
-        const b = enhanced.pow(0.5).mul(pow2(sin(iTime.mul(0.3))))
-        
-        return vec4(r, g, b, 1)
-}`}
-/>

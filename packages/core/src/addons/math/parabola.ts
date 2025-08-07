@@ -6,13 +6,7 @@ export const parabola = Fn(([x, k]: [Float, Float]): Float => {
         name: 'parabola',
         type: 'float',
         inputs: [
-                {
-                        name: 'x',
-                        type: 'float',
-                },
-                {
-                        name: 'k',
-                        type: 'float',
-                },
+                { name: 'x', type: 'float' },
+                { name: 'k', type: 'float' },
         ],
 })
