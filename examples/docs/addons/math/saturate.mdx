@@ -1,0 +1,65 @@
+---
+title: 'saturate'
+description: 'Universal value clamping for normalized range constraints and color space optimization'
+keywords: [glre, saturate, clamp, normalize, color, range, constraint, optimization]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Universal Range Normalization
+
+### Mathematical Foundation: Interval Projection to Unit Domain
+
+The saturate function implements fundamental range normalization by projecting arbitrary real values onto the closed unit interval [0,1], serving as a cornerstone for color space operations and normalized mathematical transformations.
+
+**Mathematical Definition:**
+
+$$
+\text{saturate}(x) = \text{clamp}(x, 0, 1) = \begin{cases}
+0 & \text{if } x < 0 \\
+x & \text{if } 0 \leq x \leq 1 \\
+1 & \text{if } x > 1
+\end{cases}
+$$
+
+**Topological Properties:**
+
+- $x \in \mathbb{R}$: Input from unrestricted real domain
+- Output domain: $[0, 1]$ (closed unit interval)
+- Continuous function with piecewise linear structure
+- Preserves monotonicity within the unit interval
+- Acts as identity transformation on normalized inputs
+
+**Geometric Interpretation:**
+The function creates a plateau projection where all values are compressed into the fundamental unit of normalized space, forming the mathematical foundation for color representation and probability distributions.
+
+### Probability Field Crystallization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(6)
+        const time = iTime.mul(0.4)
+        
+        const field1 = sin(coord.x.mul(2).add(time)).mul(0.8).add(0.4)
+        const field2 = cos(coord.y.mul(1.5).sub(time.mul(0.8))).mul(0.6).add(0.3)
+        const field3 = sin(coord.x.add(coord.y).mul(1.2).add(time.mul(1.3))).mul(0.7).add(0.2)
+        
+        const prob1 = saturate(field1)
+        const prob2 = saturate(field2)
+        const prob3 = saturate(field3)
+        
+        const interference = prob1.mul(prob2).add(prob2.mul(prob3)).add(prob3.mul(prob1))
+        const crystallized = saturate(interference.mul(1.5))
+        
+        const phase = atan2(coord.y, coord.x)
+        const radius = length(coord)
+        const orbital = sin(phase.mul(3).add(radius.add(time.mul(2))))
+        
+        const final = crystallized.mul(saturate(orbital.add(0.5)))
+        
+        return vec4(final.mul(0.6), final.mul(1.2), final.mul(0.9), 1)
+}`}
+/>

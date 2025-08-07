@@ -26,8 +26,8 @@ $$f''(v) = 120v^3 - 180v^2 + 60v = 60v(2v^2 - 3v + 1) = 60v(v-1)(2v-1)$$
 The second derivative achieves zero at $v = 0, \frac{1}{2}, 1$, creating a symmetric inflection structure that produces the smoothest possible transition curve. This mathematical property enables quintic to replicate natural phenomena where continuous acceleration changes are essential, such as fluid surface behavior and organic growth patterns.
 
 <FragmentEditor
-	isFun
-	code={`
+        isFun
+        code={`
 const fragment = () => {
 	const center = vec2(0.5)
 	const pos = uv.sub(center)
@@ -61,9 +61,3 @@ const fragment = () => {
 	return vec4(color, 1)
 }`}
 />
-
-This implementation exploits quintic's unique continuity properties to simulate molecular-level fluid dynamics. The function creates multiple overlapping density fields that interact through quintic transformations, generating organic surface tension effects. Each quintic application maintains perfect C² continuity, enabling seamless transitions between different fluid states without visible artifacts or discontinuities.
-
-The visualization demonstrates how quintic's mathematical smoothness translates directly into natural-looking fluid behavior. By combining multiple quintic-modified wave functions with radial field transformations, the system generates complex interference patterns that exhibit the characteristic smoothness of real fluid surfaces under surface tension forces.
-
-The mathematical foundation enables sophisticated multi-scale interactions where quintic's zero-derivative properties at boundaries create seamless blending between different density regions, producing the characteristic bulging and flowing behavior observed in actual fluid systems governed by molecular forces.

@@ -1,0 +1,132 @@
+---
+title: 'scale3d'
+description: 'Hyperbolic Metamorphosis: Scaling Architecture of Dimensional Reality'
+keywords: [scale3d, transformation, matrix, scaling, 3d, linear algebra, projective geometry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# scale3d: Hyperbolic Metamorphosis Engine
+
+### Constructing Dimensional Reality Through Multiplicative Topology
+
+The `scale3d` function generates a 3×3 transformation matrix that encodes scale relationships across three-dimensional space. This matrix represents a linear transformation that preserves the origin while multiplying coordinate values by specified scaling factors.
+
+Mathematical Definition:
+
+$$
+S(\mathbf{s}) = \begin{pmatrix}
+s_x & 0 & 0 \\
+0 & s_y & 0 \\
+0 & 0 & s_z
+\end{pmatrix}
+$$
+
+For uniform scaling with factor $s$:
+
+$$
+S(s) = s \cdot I_3 = \begin{pmatrix}
+s & 0 & 0 \\
+0 & s & 0 \\
+0 & 0 & s
+\end{pmatrix}
+$$
+
+Where $I_3$ represents the 3×3 identity matrix. The transformation applies as: $\mathbf{p'} = S(\mathbf{s}) \cdot \mathbf{p}$, where $\mathbf{p}$ is the original position vector.
+
+### Metamorphic Crystal Lattice Architecture
+
+This demonstration shows how scale3d matrix transformations affect 3D coordinate systems by projecting scaled 3D points onto 2D space, revealing the mathematical structure of scaling operations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(6).sub(3)
+        const time = iTime.mul(0.4)
+        
+        // Dynamic uniform scaling factor
+        const scaleFactor = sin(time).mul(0.4).add(1.2)
+        
+        // Apply scale3d transformation to 3D coordinates
+        const scaleMatrix = scale3d(scaleFactor)
+        const z = cos(length(p).add(time))
+        const point3d = vec3(p, z)
+        
+        // Transform using scale3d matrix
+        const scaled = vec3(
+                scaleMatrix[0][0].mul(point3d.x),
+                scaleMatrix[1][1].mul(point3d.y),
+                scaleMatrix[2][2].mul(point3d.z)
+        )
+        
+        // Project back to 2D and create pattern
+        const projected = scaled.xy.div(scaled.z.add(2))
+        const grid = max(
+                smoothstep(0.05, 0.1, abs(projected.x.mod(0.5).sub(0.25))),
+                smoothstep(0.05, 0.1, abs(projected.y.mod(0.5).sub(0.25)))
+        )
+        
+        // Visualize scaling effect
+        const depth = scaled.z.mul(0.3).add(0.7)
+        const expansion = scaleFactor.div(2)
+        
+        const color = vec3(
+                grid.mul(expansion),
+                grid.mul(depth),
+                grid.mul(float(2).sub(expansion))
+        )
+        
+        return vec4(color, 1)
+}`}
+/>
+
+### Volumetric Resonance Chambers
+
+Shows how scale3d transformations affect wave frequencies in 3D space, demonstrating the relationship between geometric scaling and wave propagation characteristics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(5).sub(2.5)
+        const time = iTime.mul(0.5)
+        
+        // Scale factor affects wave frequencies
+        const waveScale = sin(time.mul(0.8)).mul(0.4).add(1.1)
+        const scaleMatrix = scale3d(waveScale)
+        
+        // 3D wave coordinates
+        const z = cos(length(p).mul(2).add(time))
+        const wavePoint = vec3(p, z)
+        
+        // Apply scaling to wave coordinates
+        const scaledWave = vec3(
+                scaleMatrix[0][0].mul(wavePoint.x),
+                scaleMatrix[1][1].mul(wavePoint.y),
+                scaleMatrix[2][2].mul(wavePoint.z)
+        )
+        
+        // Multiple wave frequencies affected by scaling
+        const wave1 = sin(scaledWave.x.mul(4).add(time.mul(2)))
+        const wave2 = cos(scaledWave.y.mul(3).add(time.mul(1.5)))
+        const wave3 = sin(scaledWave.z.mul(5).add(time.mul(2.5)))
+        
+        // Wave interference patterns
+        const interference = wave1.mul(wave2).add(wave2.mul(wave3)).add(wave1.mul(wave3))
+        const resonance = smoothstep(-0.6, 0.6, interference)
+        
+        // Visualize scaling effect on wave amplitude
+        const amplitude = abs(scaledWave.x).add(abs(scaledWave.y)).add(abs(scaledWave.z)).div(6)
+        const frequency = waveScale.mul(0.5)
+        
+        const color = vec3(
+                resonance.mul(amplitude.add(0.3)),
+                resonance.mul(frequency),
+                resonance.mul(float(2).sub(amplitude).mul(0.7))
+        )
+        
+        return vec4(color, 1)
+}`}
+/>

@@ -29,22 +29,22 @@ powFast creates surreal reality melting effects where the rational function natu
 const fragment = () => {
         const reality = uv.sub(0.5).mul(4)
         const time_warp = iTime.mul(0.6)
-        
+    
         const melt_factor = powFast(reality.x.abs().add(0.1), reality.y.add(time_warp).sin().mul(0.4).add(0.6))
         const liquid_space = reality.y.add(melt_factor.mul(3).sub(1.5))
-        
+    
         const flowing = powFast(liquid_space.abs().add(0.05), reality.x.add(time_warp.mul(0.7)).cos().mul(0.3).add(0.7))
         const dripping = flowing.mul(liquid_space.sign()).add(reality.x.mul(0.4))
-        
+    
         const surreal_bands = dripping.mul(5).fract()
         const psychedelic = powFast(surreal_bands.add(0.1), melt_factor.mul(0.6).add(0.2))
-        
+    
         const melted_hues = saturate(vec3(
                 psychedelic.add(melt_factor.mul(0.8)),
                 psychedelic.mul(0.7).add(flowing.mul(0.6)),
                 psychedelic.mul(0.5).add(dripping.abs().mul(0.7))
         ))
-        
+    
         return vec4(melted_hues, 1)
 }`}
 />
