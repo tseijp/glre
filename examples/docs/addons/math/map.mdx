@@ -55,27 +55,3 @@ const fragment = () => {
         return vec4(chromaMatrix, 1)
 }`}
 />
-
-### Geometric Coordinate System Transmutation
-
-Range mapping enables geometric structures to undergo coordinate system transmutation through mathematical field transformations. Complex geometric relationships emerge from systematic mapping operations between dimensional coordinate spaces.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime.mul(0.5)
-        const baseCoord = uv.sub(0.5).mul(2)
-        const transformedX = mapRange(baseCoord.x, -1, 1, -2, 2)
-        const transformedY = mapRange(baseCoord.y, -1, 1, -1.5, 1.5)
-        const newSpace = vec2(transformedX, transformedY)
-        const distanceField1 = length(newSpace.sub(vec2(cos(time), sin(time)).mul(0.6)))
-        const distanceField2 = length(newSpace.sub(vec2(cos(time.add(PI)), sin(time.add(PI))).mul(0.4)))
-        const morphFactor = sin(time.mul(1.2)).mul(0.5).add(0.5)
-        const combinedDistance = lerp(distanceField1, distanceField2, morphFactor)
-        const geometricIntensity = mapRange(combinedDistance, 0, 1.2, 1.5, 0)
-        const fieldPattern = sin(combinedDistance.mul(12).sub(time.mul(4))).mul(0.3).add(0.7)
-        const finalGeometry = max(geometricIntensity, 0).mul(fieldPattern)
-        return vec4(finalGeometry.mul(0.3), finalGeometry.mul(0.7), finalGeometry.mul(1.1), 1)
-}`}
-/>

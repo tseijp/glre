@@ -20,7 +20,8 @@ f_{nyquist}(x, width) = \text{mix}(0.5, x, \text{smoothstep}(0.75, 0.25, width))
 $$
 
 The filter establishes critical frequency bounds:
-- **Lower cutoff**: $f_c - \Delta f = 0.5 - 0.25 = 0.25$ 
+
+- **Lower cutoff**: $f_c - \Delta f = 0.5 - 0.25 = 0.25$
 - **Upper cutoff**: $f_c + \Delta f = 0.5 + 0.25 = 0.75$
 - **Center frequency**: $f_c = 0.5$ (Nyquist critical point)
 - **Transition band**: $\Delta f = 0.25$ (adaptive width control)
@@ -44,35 +45,11 @@ const fragment = () => {
         const intensity = filteredSignal.add(0.5).pow(2.0)
         const crystalline = vec3(
                 intensity.mul(0.8).add(0.2),
-                intensity.mul(0.6).add(0.3), 
+                intensity.mul(0.6).add(0.3),
                 intensity.mul(0.9).add(0.1)
         )
         
         return vec4(crystalline, 1.0)
-}`}
-/>
-
-### Temporal Frequency Modulation Matrix
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime.mul(0.8)
-        const pos = uv.sub(0.5).mul(6.0)
-        
-        const carrier = pos.length().mul(4.0).sub(time).sin()
-        const modulator = pos.x.mul(pos.y).mul(0.5).add(time.mul(0.3)).cos()
-        const amplitude = carrier.mul(modulator)
-        
-        const dynamicWidth = pos.length().mul(0.08).add(
-                time.mul(0.2).sin().mul(0.02).add(0.03)
-        )
-        
-        const processed = nyquist(amplitude, dynamicWidth)
-        const matrix = processed.mul(0.7).add(0.3)
-        
-        return vec4(matrix, matrix.mul(0.8), matrix.mul(1.2), 1.0)
 }`}
 />
 

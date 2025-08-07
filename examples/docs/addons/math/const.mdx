@@ -83,29 +83,6 @@ const fragment = () => {
 }`}
 />
 
-## Precision Control
-
-`EPSILON` provides safe floating-point comparisons and smooth transitions in mathematical operations.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const grid = uv.mul(8)
-        const lines = sin(grid.x).mul(sin(grid.y))
-
-        // Smooth line rendering using epsilon
-        const lineWidth = EPSILON.mul(100)
-        const intensity = smoothstep(lineWidth.negate(), lineWidth, abs(lines))
-
-        const pulsate = sin(iTime.mul(2)).mul(0.5).add(0.5)
-        const color = vec3(intensity).mul(pulsate)
-
-        return vec4(color, 1)
-
-}`}
-/>
-
 ## Advanced Pattern Generation
 
 Combine multiple constants to create complex mathematical patterns and animations with natural timing relationships.
