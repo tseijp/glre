@@ -1,0 +1,59 @@
+---
+title: 'quatSub'
+description: 'Quaternion subtraction for component-wise difference calculation'
+keywords: ['quaternion', 'subtraction', 'difference', 'vector arithmetic', 'component-wise']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatSub: Quaternion Subtraction Operations
+
+### Component-wise Difference for Quaternion Analysis
+
+The quatSub function implements component-wise quaternion subtraction, computing the algebraic difference between two quaternions. This operation provides essential arithmetic for quaternion error analysis, deviation measurement, and relative orientation calculations in 4-dimensional quaternion space.
+
+**Mathematical Definition:**
+
+For quaternions $q_a = (x_a, y_a, z_a, w_a)$ and $q_b = (x_b, y_b, z_b, w_b)$:
+
+$$
+\text{quatSub}(q_a, q_b) = (x_a - x_b, y_a - y_b, z_a - z_b, w_a - w_b)
+$$
+
+**Properties:**
+
+- Component-wise arithmetic operation without geometric meaning
+- Non-commutative: $q_a - q_b \neq q_b - q_a$
+- Preserves quaternion structure but may not preserve rotation validity
+- Useful for error analysis and deviation measurement
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coords = uv.sub(0.5).mul(8)
+        const gridPos = coords.floor()
+        const local = coords.fract().sub(0.5)
+
+        const hash1 = gridPos.x.mul(127.1).add(gridPos.y.mul(311.7)).sin().mul(43758.5).fract()
+        const hash2 = gridPos.x.mul(269.5).add(gridPos.y.mul(183.3)).sin().mul(43758.5).fract()
+
+        const t = iTime.mul(0.3)
+        const q1 = vec4(t.add(hash1.mul(6.28)).sin(), t.add(hash1.mul(4.15)).cos(), t.mul(0.7).sin(), t.cos()).normalize()
+        const q2 = vec4(t.add(hash2.mul(3.14)).cos(), t.add(hash2.mul(5.67)).sin(), t.mul(0.9).cos(), t.mul(0.8).sin()).normalize()
+
+        const difference = quatSub(q1, q2)
+        const deviation = difference.length()
+
+        const transform = quat2mat3(q1)
+        const rotated = transform.mul(vec3(local, hash1.sub(0.5)))
+
+        const field = rotated.x.mul(rotated.y).mul(8).sin()
+        const intensity = field.abs().mul(deviation.mul(2))
+        const color = vec3(intensity, intensity.mul(0.7).add(deviation.mul(0.3)), intensity.mul(0.5).add(deviation))
+
+        return vec4(color, 1)
+
+}`}
+/>

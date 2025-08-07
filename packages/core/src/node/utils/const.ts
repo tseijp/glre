@@ -249,6 +249,7 @@ export const FUNCTIONS = [
         'tan',
         'tanh',
         'trunc',
+        'saturate',
         // 1. Functions where first argument determines return type
         'atan2',
         'clamp',

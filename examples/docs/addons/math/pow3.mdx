@@ -29,24 +29,25 @@ This implementation generates three-dimensional acoustic crystals through cubic 
 const fragment = () => {
         const baseFreq = iTime.mul(0.3)
         const pos = uv.sub(0.5).mul(8.0)
-        
+
         const resonanceX = pos.x.add(baseFreq).sin()
         const resonanceY = pos.y.add(baseFreq.mul(1.618)).cos()
         const resonanceZ = pos.x.mul(pos.y).add(baseFreq.mul(2.414)).sin()
-        
+
         const cubicAmplifier = pow3(resonanceX.add(resonanceY).mul(0.4))
         const harmonicCore = pow3(resonanceZ.mul(0.6))
-        
+
         const interference = cubicAmplifier.add(harmonicCore)
         const crystalStructure = interference.abs().fract()
-        
+
         const intensity = crystalStructure.pow(0.5)
         const hue = pos.length().mul(0.1).add(iTime.mul(0.1)).fract()
-        
+
         const red = hue.mul(6.28).sin().mul(0.5).add(0.5).mul(intensity)
-        const green = hue.mul(6.28).add(2.09).sin().mul(0.5).add(0.5).mul(intensity)  
+        const green = hue.mul(6.28).add(2.09).sin().mul(0.5).add(0.5).mul(intensity)
         const blue = hue.mul(6.28).add(4.19).sin().mul(0.5).add(0.5).mul(intensity)
-        
+
         return vec4(red, green, blue, 1)
+
 }`}
 />

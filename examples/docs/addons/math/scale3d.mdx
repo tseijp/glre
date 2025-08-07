@@ -45,41 +45,42 @@ Shows how scale3d transformations affect wave frequencies in 3D space, demonstra
 const fragment = () => {
         const p = uv.mul(5).sub(2.5)
         const time = iTime.mul(0.5)
-        
+
         // Scale factor affects wave frequencies
-        const waveScale = sin(time.mul(0.8)).mul(0.4).add(1.1)
+        const waveScale = time.mul(0.8).sin().mul(0.4).add(1.1)
         const scaleMatrix = scale3d(waveScale)
-        
+
         // 3D wave coordinates
-        const z = cos(length(p).mul(2).add(time))
+        const z = p.length().mul(2).add(time).cos()
         const wavePoint = vec3(p, z)
-        
+
         // Apply scaling to wave coordinates
         const scaledWave = vec3(
                 scaleMatrix[0][0].mul(wavePoint.x),
                 scaleMatrix[1][1].mul(wavePoint.y),
                 scaleMatrix[2][2].mul(wavePoint.z)
         )
-        
+
         // Multiple wave frequencies affected by scaling
         const wave1 = sin(scaledWave.x.mul(4).add(time.mul(2)))
         const wave2 = cos(scaledWave.y.mul(3).add(time.mul(1.5)))
         const wave3 = sin(scaledWave.z.mul(5).add(time.mul(2.5)))
-        
+
         // Wave interference patterns
         const interference = wave1.mul(wave2).add(wave2.mul(wave3)).add(wave1.mul(wave3))
         const resonance = smoothstep(-0.6, 0.6, interference)
-        
+
         // Visualize scaling effect on wave amplitude
         const amplitude = abs(scaledWave.x).add(abs(scaledWave.y)).add(abs(scaledWave.z)).div(6)
         const frequency = waveScale.mul(0.5)
-        
+
         const color = vec3(
                 resonance.mul(amplitude.add(0.3)),
                 resonance.mul(frequency),
                 resonance.mul(float(2).sub(amplitude).mul(0.7))
         )
-        
+
         return vec4(color, 1)
+
 }`}
 />

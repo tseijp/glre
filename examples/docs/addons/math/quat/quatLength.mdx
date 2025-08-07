@@ -1,0 +1,65 @@
+---
+title: 'quatLength'
+description: 'Quaternion magnitude calculation for normalization and distance measurements'
+keywords: ['quaternion', 'length', 'magnitude', 'norm', 'distance calculation']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatLength: Quaternion Magnitude Calculation
+
+### Euclidean Norm Computation
+
+The quatLength function calculates the Euclidean magnitude of a quaternion in 4D space. This operation computes the square root of the sum of squared components, providing the absolute length measurement needed for normalization and distance calculations.
+
+**Mathematical Definition:**
+For quaternion $q = (x, y, z, w)$:
+
+$$
+||q|| = \sqrt{x^2 + y^2 + z^2 + w^2}
+$$
+
+**Properties:**
+
+- Always returns non-negative values
+- Essential for quaternion normalization: $\hat{q} = \frac{q}{||q||}$
+- Preserves rotational magnitude information
+- Used in distance calculations between quaternions
+
+This function provides fundamental magnitude measurement for quaternion mathematics and normalization operations.
+
+### Magnitude-based Spatial Deformation
+
+This example demonstrates how quaternion magnitude creates non-uniform spatial deformation fields. The length measurement drives geometric distortion patterns that vary based on quaternion magnitude distribution.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5, 0.5)
+        const radius = uv.sub(center).length()
+        const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+
+        const timePhase = iTime.mul(0.3)
+        const q1 = vec4(sin(angle.mul(3).add(timePhase)), cos(angle.mul(2)), sin(radius.mul(8)), cos(timePhase))
+        const q2 = vec4(cos(angle.add(timePhase.mul(1.3))), sin(radius.mul(5)), cos(angle.mul(4)), sin(radius.mul(6)))
+
+        const len1 = quatLength(q1)
+        const len2 = quatLength(q2)
+
+        const magnitudeDifference = len1.sub(len2).abs()
+        const deformationFactor = magnitudeDifference.mul(radius.mul(15))
+
+        const warpedCoords = uv.sub(0.5).mul(float(1).add(deformationFactor.mul(0.1)))
+        const distortedPattern = sin(warpedCoords.x.mul(warpedCoords.y).mul(20)).abs()
+
+        const intensityMap = distortedPattern.mul(magnitudeDifference).mul(2)
+        const color = vec3(intensityMap.mul(0.8), intensityMap, intensityMap.mul(0.5))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+The quatLength function enables precise quaternion magnitude calculations for normalization operations and magnitude-based geometric transformations in 4D space.

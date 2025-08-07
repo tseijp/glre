@@ -41,40 +41,41 @@ Direct visualization of how scale2d matrix elements affect coordinate transforma
 const fragment = () => {
     const center = uv.sub(0.5).mul(6)
     const time = iTime.mul(0.8)
-    
+
     // Create scaling matrix with time-varying elements
-    const sx = sin(time).mul(0.8).add(1.5)
-    const sy = cos(time.mul(0.7)).mul(0.6).add(1.3)
-    
+    const sx = time.sin().mul(0.8).add(1.5)
+    const sy = time.mul(0.7).cos().mul(0.6).add(1.3)
+
     // Original coordinate grid
     const originalX = center.x
     const originalY = center.y
-    
+
     // Transform coordinates using scale2d matrix
     // [sx  0 ] [x]   [sx*x]
     // [0  sy ] [y] = [sy*y]
     const transformedX = originalX.mul(sx)
     const transformedY = originalY.mul(sy)
-    
+
     // Create pattern showing transformation
-    const originalPattern = sin(originalX.mul(2)).mul(cos(originalY.mul(2)))
-    const transformedPattern = sin(transformedX.mul(2)).mul(cos(transformedY.mul(2)))
-    
+    const originalPattern = originalX.mul(2).sin().mul(originalY.mul(2).cos())
+    const transformedPattern = transformedX.mul(2).sin().mul(transformedY.mul(2).cos())
+
     // Blend between original and transformed
-    const blend = sin(time.mul(2)).mul(0.5).add(0.5)
-    const pattern = mix(originalPattern, transformedPattern, blend)
-    
+    const blend = time.mul(2).sin().mul(0.5).add(0.5)
+    const pattern = originalPattern.mix(transformedPattern, blend)
+
     // Color encodes matrix properties
     const determinant = sx.mul(sy)
     const trace = sx.add(sy)
     const eigenRatio = sx.div(sy)
-    
+
     const intensity = smoothstep(-0.3, 0.3, pattern)
-    
+
     return vec4(vec3(
         intensity.mul(determinant.div(4)),
         intensity.mul(trace.div(5)),
         intensity.mul(eigenRatio.div(3))
     ), 1)
+
 }`}
 />

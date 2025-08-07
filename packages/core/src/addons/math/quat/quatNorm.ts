@@ -1,4 +1,4 @@
-import { Fn, Vec4 } from '../../node'
+import { Fn, Vec4 } from '../../../node'
 import { quatDiv } from './quatDiv'
 import { quatLength } from './quatLength'
 
@@ -10,7 +10,7 @@ export const quatNorm = Fn(([q]: [Vec4]): Vec4 => {
         inputs: [
                 {
                         name: 'q',
-                        type: 'vec4'
-                }
-        ]
+                        type: 'vec4',
+                },
+        ],
 })

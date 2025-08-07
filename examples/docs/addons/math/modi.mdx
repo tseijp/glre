@@ -20,44 +20,22 @@ Unlike continuous modulo operations, `modi` maintains integer precision througho
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(20)
-        
+
         // Create discrete cellular automata-like patterns
         const cellX = uv.x.toInt()
         const cellY = uv.y.toInt()
-        
+
         const pattern = modi(cellX.mul(cellY), int(7))
         const intensity = pattern.toFloat().div(6)
-        
+
         const color = vec3(
-                intensity.mul(sin(pattern.toFloat())),
-                intensity.mul(cos(pattern.toFloat().mul(2))),
-                intensity.mul(sin(pattern.toFloat().mul(3)))
+                intensity.mul(pattern.toFloat().sin()),
+                intensity.mul(pattern.toFloat().mul(2).cos()),
+                intensity.mul(pattern.toFloat().mul(3).sin())
         )
-        
+
         return vec4(color, 1)
-}`}
-/>
 
-## Crystalline Lattice Formations
-
-Integer modulo operations enable construction of crystalline lattice structures where discrete boundaries create precise geometric formations resembling molecular crystal arrangements.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const uv = position.xy.div(iResolution).sub(0.5).mul(8)
-        
-        // Simple discrete cellular pattern
-        const x = uv.x.mul(4).toInt()
-        const y = uv.y.mul(4).toInt()
-        
-        const pattern = modi(x.add(y), int(5))
-        const intensity = pattern.toFloat().div(4)
-        
-        const color = vec3(intensity).mul(vec3(0.8, 0.6, 0.9))
-        
-        return vec4(color, 1)
 }`}
 />
 
@@ -70,19 +48,20 @@ Mathematical prime number theory visualization through modulo arithmetic creates
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(12)
-        
-        // Prime modulo visualization  
+
+        // Prime modulo visualization
         const x = uv.x.mul(3).toInt()
         const y = uv.y.mul(3).toInt()
-        
+
         const mod3 = modi(x, int(3))
         const mod5 = modi(y, int(5))
-        
+
         const r = mod3.toFloat().div(2)
-        const g = mod5.toFloat().div(4)  
+        const g = mod5.toFloat().div(4)
         const b = r.mul(g)
-        
+
         return vec4(r, g, b, 1)
+
 }`}
 />
 

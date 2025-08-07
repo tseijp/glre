@@ -1,0 +1,52 @@
+---
+title: 'quat2mat3'
+description: 'Transform quaternion orientation into 3D rotation matrix representation for spatial transformations'
+keywords: ['quaternion', 'matrix', 'rotation', 'spatial transformation', '3D mathematics']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quat2mat3: Quaternion to Matrix Transformation
+
+### Mathematical Foundation of Spatial Orientation
+
+Quaternions represent rotations in 4D space using unit vectors on the complex hypersphere. This function converts the quaternion representation $q = x\mathbf{i} + y\mathbf{j} + z\mathbf{k} + w$ into its equivalent 3×3 rotation matrix form.
+
+The transformation follows the mathematical relationship:
+
+$$
+R = \begin{bmatrix}
+1-2(q_y^2+q_z^2) & 2(q_xq_y-q_zq_w) & 2(q_xq_z+q_yq_w) \\
+2(q_xq_y+q_zq_w) & 1-2(q_x^2+q_z^2) & 2(q_yq_z-q_xq_w) \\
+2(q_xq_z-q_yq_w) & 2(q_yq_z+q_xq_w) & 1-2(q_x^2+q_y^2)
+\end{bmatrix}
+$$
+
+This conversion preserves orthogonality and determinant properties essential for rigid body transformations.
+
+### Hypersphere Navigation Through Quaternion Space
+
+The quaternion-to-matrix transformation reveals the geometric relationship between 4D unit sphere coordinates and 3D rotational manifolds. Each point on the quaternion hypersphere maps to a unique rotation in 3D space.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const angle = atan2(uv.y, uv.x)
+        const radius = length(uv)
+        const q = vec4(
+                sin(angle.add(iTime)),
+                cos(angle.mul(2)),
+                sin(radius.mul(3).add(iTime.mul(0.7))),
+                cos(radius.mul(2).sub(iTime.mul(0.3)))
+        ).normalize()
+        const matrix = quat2mat3(q)
+        const basePattern = vec3(0, 0, 1)
+        const rotated = matrix.mul(basePattern)
+        const color = rotated.mul(0.5).add(0.5)
+        return vec4(color, 1)
+}`}
+/>
+
+The mathematical beauty lies in how quaternion multiplication preserves rotation composition, while the matrix form enables direct geometric transformations in Euclidean space.

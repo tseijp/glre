@@ -15,11 +15,11 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# inside: Boundary Detection through Multidimensional Inclusion Testing
+# inside: Boundary Detection Function
 
-### Mathematical Foundation: Spatial Inclusion Logic
+### Range Checking for Spatial Containment
 
-The inside function determines whether a point lies within specified boundaries through logical complement operations. Rather than using traditional range checking, inside employs De Morgan's laws to create elegant boundary detection through negated disjunction.
+The inside function checks whether a value or vector lies within specified minimum and maximum bounds. It returns true if the point is inside the boundaries, false otherwise. Useful for collision detection and spatial constraints.
 
 **Mathematical Definition:**
 For any value $x$ and boundary parameters $\text{min}, \text{max}$:
@@ -30,46 +30,9 @@ $$
 
 This formulation naturally extends to higher dimensions through component-wise logical operations, enabling efficient spatial queries for collision detection, procedural generation, and constraint satisfaction problems.
 
-### Quantum Tunneling Visualization: Probability Containment Fields
+### Nested Boundary Regions
 
-This demonstration explores quantum mechanical probability distributions where particles exhibit tunneling effects at boundary interfaces. The inside function creates discrete probability states that visualize quantum confinement within potential wells.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const wellCenter = vec2(0.0, 0.0)
-        const wellSize = vec2(0.4, 0.3)
-        const wellMin = wellCenter.sub(wellSize)
-        const wellMax = wellCenter.add(wellSize)
-
-        const isInWell = insideVec2(uv, wellMin, wellMax)
-        const distanceFromBoundary = vec2(
-                uv.x.sub(wellMin.x).min(wellMax.x.sub(uv.x)),
-                uv.y.sub(wellMin.y).min(wellMax.y.sub(uv.y))
-        ).length()
-
-        const tunnelProbability = distanceFromBoundary.negate().mul(5.0).exp()
-        const waveFunction = iTime.mul(3.0).add(distanceFromBoundary.mul(10.0)).sin()
-
-        const quantumState = waveFunction.mul(0.5).add(0.5).mul(isInWell.toFloat())
-                .add(tunnelProbability.mul(waveFunction.mul(0.3).add(0.1)).mul(isInWell.not().toFloat()))
-
-        const energy = quantumState.pow(0.5)
-        const color = vec3(
-                energy.mul(0.8).add(0.2),
-                energy.mul(0.4).add(tunnelProbability.mul(0.6)),
-                energy.mul(0.2).add(0.8)
-        )
-
-        return vec4(color, 1)
-
-}`}
-/>
-
-### Dimensional Cascade: Nested Boundary Hierarchies
-
-This example demonstrates hierarchical spatial partitioning through nested boundary systems. Multiple containment regions create cascading dimensional effects that mirror fractal geometry and recursive spatial subdivision.
+This example shows multiple overlapping boundary regions with different visual effects for each containment level.
 
 <FragmentEditor
         isFun
@@ -105,63 +68,6 @@ const fragment = () => {
         const blue = modulated.mul(region3.toFloat().mul(0.2).add(0.8))
 
         return vec4(red, green, blue, 1)
-
-}`}
-/>
-
-### Topological Field Analysis: Boundary Transition Dynamics
-
-Utilizing inside for topological space analysis, this visualization demonstrates how spatial boundaries create field discontinuities and transition zones. The function enables exploration of mathematical concepts like interior points, boundary points, and closure operations.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const numRegions = 6
-        const angle = iTime.mul(0.3)
-
-        let totalField = float(0)
-        let boundaryEffect = float(0)
-
-        for (let i = 0; i < numRegions; i++) {
-                const regionAngle = float(i).div(float(numRegions)).mul(6.28).add(angle)
-                const regionCenter = vec2(
-                        regionAngle.cos().mul(0.3),
-                        regionAngle.sin().mul(0.2)
-                )
-                const regionSize = vec2(0.15, 0.1)
-
-                const regionMin = regionCenter.sub(regionSize)
-                const regionMax = regionCenter.add(regionSize)
-
-                const isInside = insideVec2(uv, regionMin, regionMax)
-                const distToBoundary = vec2(
-                        uv.x.sub(regionMin.x).min(regionMax.x.sub(uv.x)).min(
-                        uv.y.sub(regionMin.y).min(regionMax.y.sub(uv.y))
-                        )
-                ).length()
-
-                const insideStrength = float(1).sub(distToBoundary.mul(2.0)).max(0.0)
-                const outsideStrength = distToBoundary.negate().mul(3.0).exp()
-                const fieldStrength = insideStrength.mul(isInside.toFloat())
-                        .add(outsideStrength.mul(isInside.not().toFloat()))
-
-                totalField = totalField.add(fieldStrength.mul(float(i + 1).div(float(numRegions))))
-
-                const boundaryGradient = float(1).sub(distToBoundary.div(0.05))
-                        .mul(distToBoundary.lessThan(0.05).toFloat())
-                boundaryEffect = boundaryEffect.add(boundaryGradient)
-        }
-
-        const normalizedField = totalField.div(float(numRegions)).clamp(0, 1)
-        const normalizedBoundary = boundaryEffect.div(float(numRegions)).clamp(0, 1)
-
-        const baseColor = vec3(normalizedField.mul(0.6), normalizedField.mul(0.8), normalizedField)
-        const boundaryColor = vec3(1.0, 0.5, 0.2)
-
-        const finalColor = baseColor.add(boundaryColor.mul(normalizedBoundary))
-
-        return vec4(finalColor, 1)
 
 }`}
 />

@@ -34,38 +34,13 @@ Homogeneous coordinates enable sophisticated geometric operations through projec
 
 **Projective Completeness**: Enables representation of points at infinity and unified treatment of parallel projections.
 
-### Hyperdimensional Shadow Projection
-
-This demonstration explores the mathematical concept of dimensional projection, visualizing how 4D rotations cast shadows into lower-dimensional spaces, creating intricate patterns that reveal the hidden geometry of higher dimensions.
-
-<FragmentEditor
-    isFun
-    code={`
-const fragment = () => {
-    const center = vec3(0.5, 0.5, 0)
-    const pos = vec3(uv, sin(iTime.mul(0.1)).mul(0.3)).sub(center).mul(3)
-    const axis1 = vec3(1, 1, 1).normalize()
-    const axis2 = vec3(1, -1, 0).normalize()
-    const rotation1 = rotate4d(axis1, iTime.mul(0.4))
-    const rotation2 = rotate4d(axis2, iTime.mul(0.6))
-    const composed = rotation1.mul(rotation2)
-    const transformed = composed.mul(vec4(pos, 1))
-    const projection = transformed.xyz.div(transformed.w.add(1))
-    const distance = projection.length()
-    const shadow = smoothstep(1.5, 0.5, distance)
-    const depth = projection.z.mul(0.5).add(0.5)
-    const color = vec3(shadow.mul(depth), shadow, shadow.mul(0.6))
-    return vec4(color, 1)
-}`}
-/>
-
 ### Tesseract Wireframe Visualization
 
 This example attempts to visualize the rotation of a 4D hypercube (tesseract) through its 3D projection, demonstrating how homogeneous transformations enable exploration of geometric objects beyond our spatial intuition.
 
 <FragmentEditor
-    isFun
-    code={`
+        isFun
+        code={`
 const fragment = () => {
     const center = vec3(0.5, 0.5, 0)
     const pos = vec3(uv, 0).sub(center).mul(4)
@@ -74,7 +49,7 @@ const fragment = () => {
     const corners = vec4(pos, 1)
     const rotated = rotation.mul(corners)
     const projected = rotated.xyz.div(rotated.w.add(2))
-    const grid = abs(sin(projected.x.mul(4))).mul(abs(sin(projected.y.mul(4))))
+    const grid = projected.x.mul(4).sin().abs().mul(projected.y.mul(4).sin().abs())
     const edges = smoothstep(0.9, 1.0, grid)
     const vertices = smoothstep(0.02, 0.0, projected.length().mod(0.5))
     const structure = edges.add(vertices)

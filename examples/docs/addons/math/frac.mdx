@@ -68,7 +68,7 @@ const fragment = () => {
                 layer3.x.mul(layer3.y).mul(0.25)
         )
 
-        const depth = abs(sin(structure.mul(PI).add(iTime.mul(2))))
+        const depth = structure.mul(PI).add(iTime.mul(2)).sin().abs()
         const architectural = smoothstep(0.2, 0.8, depth)
 
         return vec4(architectural.mul(1.3), architectural.mul(0.8), architectural.mul(0.4), 1)

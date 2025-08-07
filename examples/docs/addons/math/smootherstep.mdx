@@ -58,7 +58,7 @@ const fragment = () => {
 	const tertiaryHue = colorPhase.add(0.667).mul(6.28318).sin().mul(0.5).add(0.5)
 	
 	const intensity = smootherTransition.mul(smootherTransition.oneMinus()).mul(4)
-	const radialFalloff = centerDistance.mul(2).oneMinus().clamp(0, 1)
+	const radialFalloff = centerDistance.mul(2).oneMinus().saturate()
 	
 	const finalColor = vec3(primaryHue, secondaryHue, tertiaryHue).mul(intensity).mul(radialFalloff)
 	return vec4(finalColor, 1)

@@ -43,9 +43,9 @@ Resulting in 3D coordinates: $(\cos\phi \sin\theta, \sin\phi \sin\theta, \cos\th
 - Low-discrepancy property ensures even distribution
 - Cosine weighting matches Lambert's law for realistic lighting
 
-### Revolutionary Sampling Mathematics
+### Usage with Hemisphere Sampling
 
-Combined with hemisphereCosSample, these functions enable sophisticated light transport calculations and surface material simulations that approach photorealistic quality through mathematically sound sampling strategies.
+The hammersley function is commonly paired with hemisphereCosSample for efficient Monte Carlo sampling in rendering applications, providing well-distributed sample points for lighting calculations.
 
 <FragmentEditor
         isFun
@@ -64,7 +64,7 @@ const fragment = () => {
 }`}
 />
 
-### Temporal Sampling Evolution
+### Animated Sample Distribution
 
 <FragmentEditor
         isFun
@@ -87,7 +87,7 @@ const fragment = () => {
 }`}
 />
 
-### Stratified Light Distribution
+### Surface Lighting Simulation
 
 <FragmentEditor
         isFun

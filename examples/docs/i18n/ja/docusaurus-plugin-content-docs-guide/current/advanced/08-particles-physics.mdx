@@ -2,7 +2,6 @@
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-
 動的なパーティクルシステムと物理シミュレーションを使った表現を学びましょう。
 
 ## パーティクルシステムの基礎
@@ -509,19 +508,19 @@ fn main(@builtin(global_invocation_id) id: vec3u) {
     if (index >= arrayLength(&particles)) {
         return;
     }
-    
+
     var particle = particles[index];
-    
+
     // 物理計算
     particle.velocity += particle.acceleration * uniforms.deltaTime;
     particle.position += particle.velocity * uniforms.deltaTime;
-    
+
     // ライフタイム
     particle.life -= uniforms.deltaTime;
-    
+
     // 重力
     particle.acceleration.y = -9.8;
-    
+
     particles[index] = particle;
 }
 `

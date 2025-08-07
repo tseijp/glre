@@ -7,11 +7,11 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# pow7: Septenary Transcendence Engine
+# pow7: Seventh Power Function
 
-### Mathematical Foundation of Seventh-Order Metamorphosis
+### Extreme Non-Linear Amplification
 
-The `pow7` function represents the septenary transformation $f(x) = x^7$, embodying the most extreme single-term polynomial transformation while maintaining sign coherence. This seventh-order function exhibits supernatural acceleration characteristics, compressing small values toward absolute zero while amplifying large values into transcendental magnitudes.
+The pow7 function raises input values to the seventh power ($x^7$). This creates very strong non-linear amplification - values near zero become extremely small, while values above 1 become extremely large. Like other odd powers, pow7 preserves the sign of negative inputs.
 
 $$
 \text{pow7}(x) = x^7 = x^2 \cdot x^2 \cdot x^2 \cdot x
@@ -19,9 +19,9 @@ $$
 
 The septenary function demonstrates critical mathematical transcendence: ultra-steep acceleration with derivative $7x^6$, extreme compression for $|x| < 1$ approaching zero faster than any lower power, and preservation of directional orientation through odd-power symmetry. The transformation creates natural heptagonal resonance patterns due to its fundamental relationship with seven-fold geometry.
 
-### Heptagonal Resonance Crystallization Field
+### High-Contrast Visual Effects
 
-This implementation generates crystalline formations through septenary resonance interference, exploiting the mystical properties of seven-fold symmetry. The extreme non-linearity of pow7 creates unique crystalline architectures where minute variations produce dramatically different structural outcomes.
+The extreme non-linearity of pow7 creates sharp contrast effects where small input variations produce dramatically different outputs, useful for creating high-contrast patterns and dramatic visual transitions.
 
 <FragmentEditor
         isFun
@@ -30,22 +30,23 @@ const fragment = () => {
         const center = uv.sub(0.5)
         const radius = center.length()
         const angle = center.y.atan2(center.x)
-        
+
         const heptaPhase = angle.mul(3.5).add(iTime.mul(0.5))
         const radialPulse = radius.mul(7.0).sub(iTime.mul(2.0))
-        
+
         const septenaryCore = pow7(heptaPhase.sin().mul(0.4))
         const radialTransform = pow7(radialPulse.sin().mul(0.35))
-        
+
         const mysticalResonance = septenaryCore.add(radialTransform.mul(0.7))
         const crystallineIntensity = abs(mysticalResonance).pow(0.2)
-        
+
         const heptaSymmetry = angle.mul(7.0).cos().mul(0.5).add(0.5)
-        
+
         const r = crystallineIntensity.mul(heptaSymmetry)
         const g = crystallineIntensity.mul(abs(septenaryCore).add(0.3))
         const b = crystallineIntensity.mul(abs(radialTransform).mul(0.8).add(0.2))
-        
+
         return vec4(r, g, b, 1)
+
 }`}
 />

@@ -59,7 +59,7 @@ const fragment = () => {
         const steps = 12
         const steppedWave = decimate(wave, steps)
         const distance = coord.y.sub(steppedWave).abs()
-        const line = distance.mul(20).oneMinus().clamp(0, 1)
+        const line = distance.mul(20).oneMinus().saturate()
         return vec4(line.mul(0.8).add(0.1), line, line.mul(0.9).add(0.1), 1)
 }`}
 />

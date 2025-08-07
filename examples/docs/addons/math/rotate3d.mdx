@@ -48,14 +48,14 @@ This example demonstrates compound rotations mimicking celestial mechanics, wher
         code={`
 const fragment = () => {
     const center = vec3(0.5, 0.5, 0)
-    const pos = vec3(uv, sin(iTime.mul(0.3))).sub(center).mul(2)
+    const pos = vec3(uv, iTime.mul(0.3).sin()).sub(center).mul(2)
     const axis1 = vec3(0, 0, 1)
     const axis2 = vec3(1, 0, 0)
     const rotation1 = rotate3d(axis1, iTime)
     const rotation2 = rotate3d(axis2, iTime.mul(0.3))
     const transformed = rotation2.mul(rotation1).mul(pos)
     const distance = transformed.length()
-    const rings = smoothstep(0.1, 0.0, abs(sin(distance.mul(15))))
+    const rings = smoothstep(0.1, 0.0, distance.mul(15).sin().abs())
     const color = vec3(rings.mul(0.9), rings.mul(0.7), rings)
     return vec4(color, 1)
 }`}

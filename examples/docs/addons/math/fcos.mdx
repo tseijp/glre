@@ -57,7 +57,7 @@ Multiple filtered cosine waves can interact to create sophisticated interference
         code={`
 const fragment = () => {
         const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
-        const radius = length(uv.sub(0.5)).mul(20)
+        const radius = uv.sub(0.5).length().mul(20)
         const ripple = fcos(radius.sub(iTime.mul(3)).mul(TWO_PI))
         const spiral = fcos(angle.mul(8).add(iTime).mul(TWO_PI))
         const pattern = ripple.mul(spiral).add(1).div(2)

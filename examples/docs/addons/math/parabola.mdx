@@ -40,20 +40,21 @@ This mathematical foundation enables seamless transitions between uniform distri
 const fragment = () => {
         const center = vec2(0.5, 0.5)
         const fieldPos = uv.sub(center).abs()
-        
+
         const radialDistance = length(fieldPos).clamp(0, 0.5).mul(2)
         const temporalModulation = iTime.mul(0.4).sin().mul(0.5).add(1.5)
-        
+
         const parabolicField = parabola(radialDistance, temporalModulation)
         const intensityMapping = parabola(parabolicField, iTime.mul(0.3).cos().abs().mul(3).add(1))
-        
+
         const focusedEnergy = intensityMapping.pow(2.2)
         const energyDistribution = focusedEnergy.mul(fieldPos.x.add(fieldPos.y).mul(1.5))
-        
+
         const r = focusedEnergy.mul(energyDistribution.pow(0.7))
         const g = energyDistribution.mul(parabolicField.pow(1.8))
         const b = parabolicField.mul(radialDistance.oneMinus().pow(0.9))
-        
+
         return vec4(r, g, b, 1)
+
 }`}
 />

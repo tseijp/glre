@@ -388,6 +388,7 @@ interface _X<T extends C> {
         radians(): X<T>
         reciprocal(): X<T>
         round(): X<T>
+        saturate(): X<T>
         sign(): X<T>
         sin(): X<T>
         sinh(): X<T>

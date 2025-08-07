@@ -45,22 +45,23 @@ const fragment = () => {
                 sin(iTime), cos(iTime), 0,
                 0, 0, 1
         )
-        
+
         const transform4x4 = toMat4(transform3x3)
-        
+
         const originalPos = vec4(uv.mul(2).sub(1), 0, 1)
         const rotatedPos = transform4x4.mul(originalPos)
-        
-        const pattern = sin(rotatedPos.x.mul(8)).mul(sin(rotatedPos.y.mul(8)))
+
+        const pattern = rotatedPos.x.mul(8).sin().mul(rotatedPos.y.mul(8).sin())
         const intensity = pattern.mul(0.5).add(0.5)
-        
+
         const color = vec3(
                 intensity,
                 intensity.mul(0.7),
                 intensity.mul(0.4)
-        ).mul(mix(0.5, 1, intensity))
-        
+        ).mul(float(0.5).mix(1, intensity))
+
         return vec4(color, 1)
+
 }`}
 />
 

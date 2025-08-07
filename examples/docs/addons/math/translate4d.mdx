@@ -46,7 +46,7 @@ Both variants generate identical translation matrices, providing interface flexi
         code={`
 const fragment = () => {
         const center = vec2(0.5)
-        const offset = vec3(sin(iTime).mul(0.3), cos(iTime.mul(0.8)).mul(0.2), 0)
+        const offset = vec3(iTime.sin().mul(0.3), iTime.mul(0.8).cos().mul(0.2), 0)
         const translationMatrix = translate4d(offset)
         const originalPos = uv.sub(center).mul(4)
         const translatedPos = translationMatrix.mul(vec4(originalPos, 0, 1)).xy

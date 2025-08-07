@@ -69,23 +69,3 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-## Technical Implementation Details
-
-### Anti-Aliasing Strategy
-
-The function employs derivative-based anti-aliasing that:
-
-- Calculates spatial frequency using screen-space derivatives
-- Applies Nyquist filtering to prevent aliasing artifacts
-- Maintains visual quality across different zoom levels
-- Automatically adjusts smoothing based on viewing distance
-
-### Performance Characteristics
-
-| Aspect                 | Specification                        |
-| ---------------------- | ------------------------------------ |
-| **Computational Cost** | Low - uses built-in derivatives      |
-| **Memory Usage**       | Minimal - no texture lookups         |
-| **Scalability**        | Excellent - constant time complexity |
-| **Quality**            | High - automatic anti-aliasing       |

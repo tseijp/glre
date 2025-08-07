@@ -50,7 +50,7 @@ const fragment = () => {
 	const density3 = quintic(smoothstep(0.1, 0.3, fluidPos.sub(vec2(0.15, -0.05)).length()))
 	
 	const surfaceTension = density1.add(density2).add(density3)
-	const molecularField = quintic(surfaceTension.clamp(0, 1))
+	const molecularField = quintic(surfaceTension.saturate())
 	
 	const color = vec3(
 		molecularField.mul(0.2).add(quintic(wave1).mul(0.4)),

@@ -56,7 +56,7 @@ const fragment = () => {
         const angle = atan2(pos.y, pos.x)
         const radius = length(pos)
 
-        const polarPattern = sin(angle.mul(8)).mul(cos(radius.mul(20)))
+        const polarPattern = angle.mul(8).sin().mul(radius.mul(20).cos())
         return vec4(vec3(polarPattern.mul(0.5).add(0.5)), 1)
 
 }`}
@@ -76,7 +76,7 @@ const fragment = () => {
         const radius = length(pos)
 
         const spiralAngle = angle.add(radius.mul(20))
-        const spiral = sin(spiralAngle).mul(0.5).add(0.5)
+        const spiral = spiralAngle.sin().mul(0.5).add(0.5)
         const fadeOut = smoothstep(0.5, 0.0, radius)
 
         return vec4(vec3(spiral.mul(fadeOut)), 1)
@@ -98,75 +98,14 @@ const fragment = () => {
         const radius = length(pos)
 
         // Create 12 hour segments like a clock
-        const hour = floor(angle.div(6.28318530718).mul(12))
+        const hour = angle.div(6.28318530718).mul(12).floor()
         const hourColor = hour.div(12)
 
         // Add radial lines
-        const radialLines = step(0.95, cos(angle.mul(12)).abs())
+        const radialLines = step(0.95, angle.mul(12).cos().abs())
         const circularMask = smoothstep(0.45, 0.4, radius)
 
         return vec4(vec3(hourColor.add(radialLines).mul(circularMask)), 1)
-
-}`}
-/>
-
-### Angular Gradient Effects
-
-The normalized output of atan2 creates smooth angular gradients that rotate around a center point. These gradients serve as the foundation for creating rotational color wheels and angular lighting effects.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec2(0.5)
-        const pos = uv.sub(center)
-        const angle = atan2(pos.y, pos.x)
-        const radius = length(pos)
-
-        // Create HSV color wheel effect
-        const hue = angle.div(6.28318530718)
-        const saturation = smoothstep(0.1, 0.4, radius)
-        const brightness = smoothstep(0.5, 0.2, radius)
-
-        // Simple HSV to RGB approximation
-        const c = hue.mul(6)
-        const x = float(1).sub(c.sub(floor(c)).mul(2).sub(1).abs())
-        const r = select(float(1), x, float(0), c.lessThan(1).or(c.greaterThan(5)))
-        const g = select(x, float(1), float(0), c.lessThan(2).and(c.greaterThan(1)).or(c.lessThan(4).and(c.greaterThan(3))))
-        const b = select(float(0), x, float(1), c.greaterThan(2).and(c.lessThan(5)))
-
-        const color = vec3(r, g, b).mul(saturation).add(1.sub(saturation)).mul(brightness)
-        return vec4(color, 1)
-
-}`}
-/>
-
-### Directional Flow Fields
-
-Atan2 enables the creation of directional flow fields by calculating angles between different points. This technique produces dynamic, flowing patterns that suggest movement and direction throughout the visual space.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center1 = vec2(0.3, 0.3)
-        const center2 = vec2(0.7, 0.7)
-
-        const toCenter1 = center1.sub(uv)
-        const toCenter2 = center2.sub(uv)
-
-        const angle1 = atan2(toCenter1.y, toCenter1.x)
-        const angle2 = atan2(toCenter2.y, toCenter2.x)
-
-        const dist1 = length(toCenter1)
-        const dist2 = length(toCenter2)
-
-        // Create flow field between two attractors
-        const weight = dist2.div(dist1.add(dist2))
-        const flowAngle = mix(angle1, angle2, weight)
-
-        const flowStrength = sin(flowAngle.mul(4)).mul(cos(flowAngle.mul(3)))
-        return vec4(vec3(flowStrength.mul(0.5).add(0.5)), 1)
 
 }`}
 />

@@ -37,7 +37,7 @@ const fragment = () => {
 	const angle = pos.y.atan2(pos.x)
 	
 	const warpFactor = quartic(t.mul(2).sub(1).abs())
-	const spiralR = r.add(warpFactor.mul(sin(angle.mul(8).add(iTime.mul(2)))).mul(0.3))
+	const spiralR = r.add(warpFactor.mul(angle.mul(8).add(iTime.mul(2)).sin()).mul(0.3))
 	const spiralAngle = angle.add(quartic(r.mul(0.5)).mul(t).mul(6.28))
 	
 	const warpedPos = vec2(spiralAngle.cos(), spiralAngle.sin()).mul(spiralR)

@@ -47,19 +47,19 @@ Demonstrates how scale4d transformations model relativistic effects by treating 
 const fragment = () => {
         const spacetime = uv.sub(0.5).mul(4)
         const cosmicTime = iTime.mul(0.3)
-        
+
         // Relativistic scaling factors (Lorentz-like transformation)
-        const velocity = sin(cosmicTime).mul(0.8)
-        const gamma = float(1).div(sqrt(float(1).sub(velocity.mul(velocity))))
-        
+        const velocity = cosmicTime.sin().mul(0.8)
+        const gamma = float(1).sub(velocity.mul(velocity)).sqrt().reciprocal()
+
         // Space-time coordinates [x, y, z, t]
-        const spatialZ = cos(length(spacetime).add(cosmicTime))
-        const timeCoord = sin(spacetime.x.add(spacetime.y).add(cosmicTime.mul(2)))
-        
+        const spatialZ = spacetime.length().add(cosmicTime).cos()
+        const timeCoord = spacetime.x.add(spacetime.y).add(cosmicTime.mul(2)).sin()
+
         // Apply relativistic scaling transformation using scale4d
         const lorentzMatrix = scale4dXYZW(gamma, float(1), float(1), gamma)
         const spacetimePoint = vec4(spacetime.x, spacetime.y, spatialZ, timeCoord)
-        
+
         // Transform space-time coordinates using scale4d matrix
         const transformedSpace = vec4(
                 lorentzMatrix[0][0].mul(spacetimePoint.x),
@@ -67,31 +67,32 @@ const fragment = () => {
                 lorentzMatrix[2][2].mul(spacetimePoint.z),
                 lorentzMatrix[3][3].mul(spacetimePoint.w)
         )
-        
+
         // Calculate proper time and spatial intervals
-        const properTime = sqrt(abs(transformedSpace.w.mul(transformedSpace.w).sub(
+        const properTime = transformedSpace.w.mul(transformedSpace.w).sub(
                 transformedSpace.x.mul(transformedSpace.x).add(
                 transformedSpace.y.mul(transformedSpace.y)).add(
-                transformedSpace.z.mul(transformedSpace.z)))))
-        
+                transformedSpace.z.mul(transformedSpace.z))).abs().sqrt()
+
         // Visualize curvature through metric tensor effects
-        const curvature = sin(properTime.mul(6).add(cosmicTime.mul(4)))
+        const curvature = properTime.mul(6).add(cosmicTime.mul(4)).sin()
         const distortion = smoothstep(-0.3, 0.3, curvature)
-        
+
         // Geodesic field visualization
         const geodesic = atan2(transformedSpace.y, transformedSpace.x).add(
                 properTime.mul(2)).sin()
-        
+
         const field = distortion.mul(smoothstep(-0.5, 0.5, geodesic))
-        
+
         // Color represents space-time compression effects
         const compression = gamma.div(2)
         const dilation = properTime.mul(0.5).add(0.5)
-        
+
         return vec4(vec3(
                 field.mul(compression),
                 field.mul(dilation),
                 field.mul(velocity.abs().add(0.2))
         ), 1)
+
 }`}
 />

@@ -40,20 +40,21 @@ These functions enable reading encoded depth values, height maps, and other high
 const fragment = () => {
         const t = iTime.mul(0.3)
         const pos = uv.sub(0.5).mul(2)
-        
+
         const originalDepth = pos.length().add(t.sin().mul(0.2)).fract()
         const packedDepth = pack(originalDepth)
         const unpackedDepth = unpack(packedDepth)
-        
+
         const precision8 = unpack8(vec3(packedDepth.xyz)).mul(2).fract()
         const precision16 = unpack16(vec3(packedDepth.xyz)).mul(3).fract()
-        
+
         const error = originalDepth.sub(unpackedDepth).abs().mul(100)
-        
+
         const r = unpackedDepth.add(precision8.mul(0.3))
         const g = precision16.add(error)
         const b = originalDepth.mul(0.8)
-        
+
         return vec4(r, g, b, 1)
+
 }`}
 />

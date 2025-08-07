@@ -1,0 +1,67 @@
+---
+title: 'quatMul'
+description: 'Quaternion multiplication for rotation composition and scalar scaling'
+keywords: ['quaternion', 'multiplication', 'rotation composition', 'Hamilton product', 'scaling']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatMul: Quaternion Multiplication Operations
+
+### Hamilton Product for Rotation Composition
+
+The quatMul function implements the Hamilton product between two quaternions, enabling rotation composition. This operation combines two rotations into a single equivalent rotation, following the non-commutative algebra of quaternion multiplication.
+
+**Mathematical Definition:**
+For quaternions $q_1 = (x_1, y_1, z_1, w_1)$ and $q_2 = (x_2, y_2, z_2, w_2)$:
+
+$$
+q_1 \otimes q_2 = \begin{pmatrix}
+q_2.xyz \cdot w_1 + q_1.xyz \cdot w_2 + q_1.xyz \times q_2.xyz \\
+w_1 \cdot w_2 - q_1.xyz \cdot q_2.xyz
+\end{pmatrix}
+$$
+
+**Properties:**
+
+- Non-commutative: $q_1 \otimes q_2 \neq q_2 \otimes q_1$
+- Associative: $(q_1 \otimes q_2) \otimes q_3 = q_1 \otimes (q_2 \otimes q_3)$
+- Rotation composition: Applying $q_1$ then $q_2$ equals applying $q_2 \otimes q_1$
+
+The quatMulScalar function provides scalar multiplication for quaternion scaling operations.
+
+### Rotation Chain Composition
+
+This example demonstrates sequential quaternion multiplication creating complex rotation sequences. Each multiplication step adds another rotation layer to the transformation chain.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cellPos = uv.mul(4)
+        const cell = cellPos.floor()
+        const local = cellPos.fract().sub(0.5)
+
+        const hash = cell.x.mul(127.1).add(cell.y.mul(311.7)).sin().mul(43758.5).fract()
+        const timeOffset = hash.mul(6.28)
+
+        const baseQ = quatIdentity()
+        const rotX = vec4(timeOffset.add(iTime).mul(0.5).sin(), 0, 0, timeOffset.add(iTime).mul(0.5).cos())
+        const rotY = vec4(0, timeOffset.add(iTime.mul(0.7)).sin(), 0, timeOffset.add(iTime.mul(0.7)).cos())
+        const rotZ = vec4(0, 0, timeOffset.add(iTime.mul(0.3)).sin(), timeOffset.add(iTime.mul(0.3)).cos())
+
+        const step1 = quatMul(baseQ, rotX.normalize())
+        const step2 = quatMul(step1, rotY.normalize())
+        const final = quatMul(step2, rotZ.normalize())
+
+        const transform = quat2mat3(final).mul(vec3(local, hash))
+        const field = transform.length().mul(6).sin().abs()
+        const color = vec3(field, field.mul(0.8), field.mul(0.5))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+The quatMul function provides essential quaternion algebra operations for building complex rotation systems through composition and enabling precise rotational mathematics in 3D applications.

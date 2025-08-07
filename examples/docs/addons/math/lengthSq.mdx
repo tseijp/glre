@@ -7,11 +7,11 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# lengthSq: Quantum Distance Fields through Squared Magnitude Operations
+# lengthSq: Squared Vector Length Function
 
-### Mathematical Foundation: Energy Density without Computational Overhead
+### Fast Distance Calculation Without Square Root
 
-The lengthSq function transcends traditional distance calculations by operating directly in energy space. Rather than computing Euclidean distance through expensive square root operations, lengthSq reveals the intrinsic energy density of vectors through dot product self-interaction.
+The lengthSq function calculates the squared length of a vector using dot product. This avoids the expensive square root operation while preserving distance ordering, making it useful for distance comparisons and performance-critical calculations.
 
 **Mathematical Definition:**
 For any vector $\mathbf{v} = (v_1, v_2, \ldots, v_n)$, the squared length represents energy density:
@@ -22,9 +22,9 @@ $$
 
 This operation maintains monotonic ordering properties while eliminating computational complexity, making it ideal for distance comparisons, energy field calculations, and quantum mechanical visualizations.
 
-### Energy Field Visualization: Quantum Dot Interactions
+### Distance Field Visualization
 
-The following demonstration explores quantum energy fields where particles exhibit different energy states based on their distance-squared from interaction centers. This creates natural stratification of energy levels without the computational overhead of square root operations.
+This example demonstrates how lengthSq can be used to create distance-based effects from multiple points without the computational cost of square root operations.
 
 <FragmentEditor
         isFun
@@ -53,38 +53,6 @@ const fragment = () => {
 }`}
 />
 
-### Crystallographic Symmetry: Energy Lattice Formations
-
-This example demonstrates how lengthSq naturally generates crystallographic patterns through energy minimization principles. Multiple energy wells create interference patterns that mirror real-world crystal formation processes.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const latticeScale = 4.0
-        const latticeUV = uv.mul(latticeScale)
-        const cellCenter = latticeUV.fract().sub(0.5)
-
-        const energyDensity = lengthSq(cellCenter).mul(20.0)
-        const temporalModulation = iTime.mul(2.0).cos().mul(0.3).add(0.7)
-
-        const crystalField = energyDensity.mul(temporalModulation)
-        const harmonic1 = crystalField.mul(1.0).sin()
-        const harmonic2 = crystalField.mul(1.618).sin()
-        const harmonic3 = crystalField.mul(2.414).sin()
-
-        const interference = harmonic1.add(harmonic2).add(harmonic3).div(3.0)
-        const normalized = interference.mul(0.5).add(0.5)
-
-        const crystallineR = normalized.pow(0.5)
-        const crystallineG = normalized.pow(1.5)
-        const crystallineB = normalized.pow(3.0)
-
-        return vec4(crystallineR, crystallineG, crystallineB, 1)
-
-}`}
-/>
-
 ### Mathematical Properties and Applications
 
 | Property                   | Mathematical Expression                                                                              | Computational Advantage           |
@@ -93,15 +61,3 @@ const fragment = () => {
 | **Scaling Laws**           | $\text{lengthSq}(\alpha\mathbf{v}) = \alpha^2 \text{lengthSq}(\mathbf{v})$                           | Energy scaling relationships      |
 | **Parallelogram Identity** | $\|\mathbf{a}+\mathbf{b}\|^2 + \|\mathbf{a}-\mathbf{b}\|^2 = 2(\|\mathbf{a}\|^2 + \|\mathbf{b}\|^2)$ | Physics conservation laws         |
 | **Polarization**           | $4\langle\mathbf{a},\mathbf{b}\rangle = \|\mathbf{a}+\mathbf{b}\|^2 - \|\mathbf{a}-\mathbf{b}\|^2$   | Quantum state analysis            |
-
-### Quantum Mechanical Interpretation
-
-In quantum field theory, the lengthSq operation directly relates to probability amplitude densities and energy eigenvalues. The function enables visualization of quantum phenomena without computational artifacts introduced by square root operations.
-
-**Physical Significance:**
-
-- **Energy Density**: `ρ(r) = ||ψ(r)||²` where ψ is the wavefunction
-- **Momentum Space**: `⟨p²⟩ = ||p||²` kinetic energy calculations
-- **Field Interactions**: Coupling strength proportional to distance squared
-
-This mathematical foundation makes lengthSq invaluable for simulating physical systems where energy relationships dominate over geometric distance measurements.

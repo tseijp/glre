@@ -32,42 +32,7 @@ where:
 **Geometric Properties:**
 The function creates a piecewise linear transformation with a sharp discontinuity at the threshold point, effectively creating a "cliff" in the signal response.
 
-### Crystalline Threshold Metamorphosis
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec2(0.5, 0.5)
-        const radius = uv.sub(center).length()
-        const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
-
-        // Create concentric threshold layers
-        const layers = sin(radius.mul(50).add(iTime.mul(2))).mul(0.5).add(0.5)
-        const angular = cos(angle.mul(8)).mul(0.5).add(0.5)
-        const signal = layers.mul(angular)
-
-        // Apply dynamic threshold with time variation
-        const threshold = sin(iTime.mul(0.5)).mul(0.3).add(0.4)
-        const filtered = highPass(signal, threshold)
-
-        // Create color based on threshold crossing
-        const intensity = filtered.mul(3)
-        const hue = angle.div(6.28).add(iTime.mul(0.1))
-        const saturation = smoothstep(0.01, 0.1, filtered)
-
-        const color = vec3(
-                sin(hue.mul(6.28)).mul(0.5).add(0.5),
-                sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5),
-                sin(hue.mul(6.28).add(4.18)).mul(0.5).add(0.5)
-        ).mul(saturation).add(vec3(intensity.mul(0.2)))
-
-        return vec4(color, float(1))
-
-}`}
-/>
-
-### Plasma Threshold Dynamics
+### Multi-Layer Threshold Filtering
 
 <FragmentEditor
         isFun
@@ -76,9 +41,9 @@ const fragment = () => {
         const t = iTime.mul(0.3)
 
         // Generate multi-frequency plasma field
-        const plasma1 = sin(uv.x.mul(10).add(t)).mul(sin(uv.y.mul(7).add(t.mul(1.3))))
-        const plasma2 = sin(uv.x.mul(13).add(uv.y.mul(8)).add(t.mul(2)))
-        const plasma3 = sin(distance(uv, vec2(0.5)).mul(25).sub(t.mul(4)))
+        const plasma1 = uv.x.mul(10).add(t).sin().mul(uv.y.mul(7).add(t.mul(1.3)).sin())
+        const plasma2 = uv.x.mul(13).add(uv.y.mul(8)).add(t.mul(2)).sin()
+        const plasma3 = uv.distance(vec2(0.5)).mul(25).sub(t.mul(4)).sin()
 
         const combined = plasma1.mul(0.4).add(plasma2.mul(0.35)).add(plasma3.mul(0.25))
         const normalized = combined.mul(0.5).add(0.5)
@@ -105,7 +70,7 @@ const fragment = () => {
 }`}
 />
 
-### Fractal Threshold Cascade
+### Cascading Filter Effects
 
 <FragmentEditor
         isFun
@@ -118,8 +83,8 @@ const fragment = () => {
 
         // Generate fractal noise
         for (let i = 0; i < 5; i++) {
-                const noise = sin(coord.x.mul(frequency).add(iTime)).mul(
-                        cos(coord.y.mul(frequency).add(iTime.mul(0.7)))
+                const noise = coord.x.mul(frequency).add(iTime).sin().mul(
+                        coord.y.mul(frequency).add(iTime.mul(0.7)).cos()
                 )
                 signal = signal.add(noise.mul(amplitude))
                 amplitude = amplitude.mul(0.6)
@@ -135,9 +100,9 @@ const fragment = () => {
         const step3 = highPass(step2, 0.7)
 
         // Multi-dimensional color mapping
-        const redChannel = signal.mul(2).clamp(0, 1)
-        const greenChannel = step1.mul(3).clamp(0, 1)
-        const blueChannel = step2.mul(4).clamp(0, 1)
+        const redChannel = signal.mul(2).saturate()
+        const greenChannel = step1.mul(3).saturate()
+        const blueChannel = step2.mul(4).saturate()
         const whiteBoost = step3.mul(2)
 
         const color = vec3(
@@ -151,4 +116,4 @@ const fragment = () => {
 }`}
 />
 
-The highPass function reveals the mathematical beauty of threshold-based transformations, creating sharp transitions that separate signal components while preserving intensity relationships through proportional remapping. Each demonstration explores different aspects of this fundamental filtering operation, from concentric threshold layers to cascading filter chains that create complex visual hierarchies.
+The highPass function creates sharp threshold effects by eliminating values below a cutoff point and remapping the remaining range. This is useful for creating dramatic contrast effects, isolating bright areas, or creating stepped intensity levels in visual effects.

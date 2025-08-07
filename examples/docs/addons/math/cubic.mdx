@@ -48,31 +48,12 @@ const fragment = () => {
         const p = uv.mul(2).sub(1)
         const radius = p.x.mul(p.x).add(p.y.mul(p.y)).sqrt()
         const angle = p.y.atan2(p.x)
-        const distortion = cubic(radius.clamp(0, 1))
+        const distortion = cubic(radius.saturate())
         const warpedRadius = radius.add(distortion.mul(0.3).mul(iTime.sin()))
         const warpedAngle = angle.add(distortion.mul(2))
         const newX = warpedRadius.mul(warpedAngle.cos())
         const newY = warpedRadius.mul(warpedAngle.sin())
         const color = newX.mul(newY).abs().mul(3)
         return vec4(color.mul(0.7), color.mul(0.9), color.mul(0.6).add(0.3), 1)
-}`}
-/>
-
-### Layered Cubic Patterns
-
-Multiple cubic functions can be layered with different frequencies to create complex textures. Each layer adds detail at a different scale, useful for creating organic surfaces or noise-like patterns.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coord = uv.mul(4)
-        const layer1 = cubic(coord.x.fract()).mul(cubic(coord.y.fract()))
-        const layer2 = cubic(coord.x.mul(2.3).fract()).mul(cubic(coord.y.mul(1.7).fract())).mul(0.6)
-        const layer3 = cubic(coord.x.mul(3.9).fract()).mul(cubic(coord.y.mul(2.8).fract())).mul(0.3)
-        const combined = layer1.add(layer2).add(layer3)
-        const timeOffset = iTime.mul(0.2).add(combined)
-        const finalValue = cubic(timeOffset.fract())
-        return vec4(finalValue.mul(0.8), finalValue.mul(0.9).add(0.1), finalValue, 1)
 }`}
 />

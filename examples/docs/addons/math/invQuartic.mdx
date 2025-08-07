@@ -15,13 +15,11 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# invQuartic: Quantum Transition Field Generator
+# invQuartic: Inverse Quartic Easing Function
 
-### Mathematical Foundation of Metamorphic Field Theory
+### Double Square Root Transformation
 
-The `invQuartic` function represents a revolutionary approach to field transformation through inverse quartic mathematics. This function performs the transformation $f(v) = \sqrt{1-\sqrt{1-v}}$, creating a unique double-root transition that mimics quantum energy state transitions in theoretical physics.
-
-The mathematical essence lies in its nested radical structure, where each square root operation creates a successive energy dampening effect, resulting in a non-linear transition curve that exhibits metamorphic properties fundamentally different from traditional interpolation functions.
+The invQuartic function creates a smooth easing curve using nested square roots: $f(v) = \sqrt{1-\sqrt{1-v}}$. This produces a unique acceleration profile that starts slowly and accelerates quickly toward the end.
 
 $$
 f(v) = \sqrt{1-\sqrt{1-v}}
@@ -29,9 +27,9 @@ $$
 
 Where the transformation domain spans $v \in [0,1]$ and produces a distinctive S-shaped curve with quantum-like transition characteristics.
 
-### Quantum Field Visualization: Metamorphic Energy Distribution
+### Multi-Layer Easing Effects
 
-The following demonstration reveals the function's capability to generate metamorphic energy fields that transition through quantum-inspired states. Unlike conventional mathematical functions, `invQuartic` creates field distributions that exhibit phase transition behavior reminiscent of quantum mechanical systems.
+This example demonstrates how the invQuartic function can be applied to different coordinate systems to create layered visual effects with unique acceleration characteristics.
 
 <FragmentEditor
         isFun
@@ -56,47 +54,6 @@ const fragment = () => {
         const blueChannel = invQuartic(field.add(0.3).fract().sqrt())
 
         return vec4(redChannel, greenChannel, blueChannel, 1)
-
-}`}
-/>
-
-### Theoretical Framework: Double-Root Transition Dynamics
-
-The nested square root structure of `invQuartic` creates a unique mathematical property where the transformation exhibits dual-phase behavior. The first square root operation initiates the transition, while the outer square root creates a secondary dampening effect, resulting in a curve that approaches unity asymptotically while maintaining smooth transition characteristics throughout its domain.
-
-This mathematical behavior manifests visually as energy fields that transition through distinct phases, creating patterns that exhibit both local coherence and global metamorphosis - a property that distinguishes it from conventional mathematical transformations.
-
-### Advanced Application: Metamorphic Texture Generation
-
-The function's unique transition characteristics make it particularly suited for generating textures that require smooth yet distinctive phase transitions. The following example demonstrates how `invQuartic` can create metamorphic texture patterns that evolve through quantum-like energy states.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = uv.mul(8)
-        const grid = pos.fract()
-        const cell = pos.floor()
-
-        // Metamorphic cell energy calculation
-        const cellHash = cell.x.add(cell.y.mul(127.1)).add(cell.x.mul(311.7)).fract().mul(43758.5453).fract()
-        const cellEnergy = invQuartic(cellHash)
-
-        // Dynamic transition field
-        const transition = grid.sub(0.5).length().mul(2).clamp(0, 1)
-        const morphField = invQuartic(transition).mul(cellEnergy)
-
-        // Time-based metamorphosis
-        const timePhase = iTime.mul(0.4).add(cellHash.mul(6.28)).sin().mul(0.5).add(0.5)
-        const finalField = morphField.add(invQuartic(timePhase).mul(0.3))
-
-        // Quantum color mapping
-        const colorPhase = invQuartic(finalField)
-        const red = colorPhase.pow(1.5)
-        const green = invQuartic(colorPhase.mul(1.8).fract()).mul(0.8)
-        const blue = invQuartic(colorPhase.add(0.4).fract()).mul(1.2)
-
-        return vec4(red, green, blue, 1)
 
 }`}
 />

@@ -46,11 +46,11 @@ const fragment = () => {
                 0, 0, 1, 0,
                 0.5, 0.3, 0.2, 1
         )
-        
+
         const rotationOnly = toMat3(baseMatrix)
         const direction = vec3(uv, 0.5).normalize()
         const transformed = rotationOnly.mul(direction)
-        
+
         const intensity = abs(transformed.z)
         const colorPhase = atan2(transformed.y, transformed.x)
         const color = vec3(
@@ -58,8 +58,9 @@ const fragment = () => {
                 sin(colorPhase.add(iTime).add(2.0)).mul(0.5).add(0.5),
                 intensity
         ).mul(intensity)
-        
+
         return vec4(color, 1)
+
 }`}
 />
 

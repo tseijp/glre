@@ -9,9 +9,9 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Dimensional Metamorphosis Engine
 
-### Linear Interpolation as Temporal Bridge Architecture
+### Basic Linear Interpolation
 
-Linear interpolation transforms mathematical space by creating seamless bridges between distinct dimensional states. This fundamental operation enables temporal metamorphosis, where mathematical entities undergo continuous transformation through precisely calculated intermediate states.
+Linear interpolation (lerp) blends between two values using a parameter t. It's simply an alias for GLSL's `mix()` function, providing smooth transitions between any two values - numbers, vectors, or colors.
 
 The mathematical foundation:
 $$lerp(a, b, t) = a \cdot (1-t) + b \cdot t = a + t \cdot (b-a)$$
@@ -22,40 +22,20 @@ Where $t \in [0,1]$ controls the morphological transition between state $a$ and 
         isFun
         code={`
 const fragment = () => {
-        const morphTime = sin(iTime.mul(0.8)).mul(0.5).add(0.5)
+        const morphTime = iTime.mul(0.8).sin().mul(0.5).add(0.5)
         const origin = vec2(0.3, 0.7)
         const destination = vec2(0.7, 0.3)
         const currentPos = lerp(origin, destination, morphTime)
-        const distanceField = length(uv.sub(currentPos))
+        const distanceField = uv.sub(currentPos).length()
         const morphingCircle = smoothstep(0.15, 0.1, distanceField)
-        const energyField = pow(smoothstep(0.4, 0.0, distanceField), 2).mul(0.3)
+        const energyField = smoothstep(0.4, 0.0, distanceField).pow(2).mul(0.3)
         return vec4(morphingCircle.add(energyField).mul(0.8), morphingCircle.mul(1.2), morphingCircle.add(energyField), 1)
 }`}
 />
 
-### Chromatic Phase Transition Dynamics
+### Complex Multi-Layer Blending
 
-Linear interpolation creates smooth chromatic transitions that exist beyond conventional color space boundaries. By interpolating between mathematical color states, new chromatic dimensions emerge through calculated phase transitions.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const phaseControl = sin(uv.x.mul(PI).add(iTime.mul(2))).mul(0.5).add(0.5)
-        const colorA = vec3(0.1, 0.9, 0.3)
-        const colorB = vec3(0.9, 0.2, 0.8)
-        const colorC = vec3(0.2, 0.6, 1.0)
-        const transition1 = lerp(colorA, colorB, phaseControl)
-        const transition2 = lerp(colorB, colorC, phaseControl)
-        const finalTransition = lerp(transition1, transition2, sin(uv.y.mul(PI).add(iTime.mul(1.5))).mul(0.5).add(0.5))
-        const intensity = pow(sin(length(uv.sub(0.5)).mul(8).sub(iTime.mul(3))).add(1).div(2), 3)
-        return vec4(finalTransition.mul(intensity.add(0.5)), 1)
-}`}
-/>
-
-### Multidimensional Probability Cloud
-
-Linear interpolation creates probability fields where mathematical states exist simultaneously across multiple dimensional layers. Each interpolation generates quantum-like superposition states that manifest as visual probability distributions.
+Multiple lerp operations can be combined to create complex blending patterns. This is useful for creating smooth transitions between multiple states or creating layered animation effects.
 
 <FragmentEditor
         isFun
@@ -63,15 +43,15 @@ Linear interpolation creates probability fields where mathematical states exist 
 const fragment = () => {
         const timePhase = iTime.mul(0.4)
         const coord = uv.sub(0.5).mul(4)
-        const stateA = sin(coord.x.mul(3).add(timePhase)).mul(sin(coord.y.mul(2).add(timePhase.mul(1.3))))
-        const stateB = cos(coord.x.mul(2.5).add(timePhase.mul(0.7))).mul(cos(coord.y.mul(3.2).add(timePhase.mul(1.8))))
-        const stateC = sin(length(coord).mul(4).add(timePhase.mul(2))).mul(0.8)
-        const probability1 = sin(coord.x.add(coord.y).add(timePhase)).mul(0.5).add(0.5)
-        const probability2 = cos(coord.x.sub(coord.y).add(timePhase.mul(1.2))).mul(0.5).add(0.5)
+        const stateA = coord.x.mul(3).add(timePhase).sin().mul(coord.y.mul(2).add(timePhase.mul(1.3)).sin())
+        const stateB = coord.x.mul(2.5).add(timePhase.mul(0.7)).cos().mul(coord.y.mul(3.2).add(timePhase.mul(1.8)).cos())
+        const stateC = coord.length().mul(4).add(timePhase.mul(2)).sin().mul(0.8)
+        const probability1 = coord.x.add(coord.y).add(timePhase).sin().mul(0.5).add(0.5)
+        const probability2 = coord.x.sub(coord.y).add(timePhase.mul(1.2)).cos().mul(0.5).add(0.5)
         const superposition1 = lerp(stateA, stateB, probability1)
         const superposition2 = lerp(stateB, stateC, probability2)
-        const finalSuperposition = lerp(superposition1, superposition2, sin(timePhase.mul(0.8)).mul(0.5).add(0.5))
-        const cloudDensity = pow(abs(finalSuperposition), 0.7)
+        const finalSuperposition = lerp(superposition1, superposition2, timePhase.mul(0.8).sin().mul(0.5).add(0.5))
+        const cloudDensity = finalSuperposition.abs().pow(0.7)
         const energyDistribution = cloudDensity.mul(1.5)
         return vec4(energyDistribution.mul(0.6), energyDistribution.mul(0.9), energyDistribution.mul(1.3), 1)
 }`}

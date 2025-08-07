@@ -39,28 +39,29 @@ Shows how saturateMediump maintains visual consistency across different precisio
 const fragment = () => {
         const p = uv.sub(0.5).mul(4)
         const t = iTime.mul(0.6)
-        
+
         // Complex calculations that might overflow on mobile
-        const complex1 = pow(abs(sin(p.x.mul(3).add(t))), 8).mul(10000)
-        const complex2 = exp(cos(p.y.mul(2).sub(t.mul(1.3)))).mul(5000)
-        const complex3 = pow(length(p).add(sin(t.mul(2))), 6).mul(8000)
-        
+        const complex1 = p.x.mul(3).add(t).sin().abs().pow(8).mul(10000)
+        const complex2 = p.y.mul(2).sub(t.mul(1.3)).cos().exp().mul(5000)
+        const complex3 = p.length().add(t.mul(2).sin()).pow(6).mul(8000)
+
         // Apply saturateMediump for mobile stability
         const stable1 = saturateMediump(complex1).div(65504)
         const stable2 = saturateMediump(complex2).div(65504)
         const stable3 = saturateMediump(complex3).div(65504)
-        
+
         // Create stable interference pattern
         const interference = stable1.mul(stable2).add(stable2.mul(stable3))
         const pattern = saturateMediump(interference.mul(3)).div(3)
-        
+
         // Visualize precision-safe computation
         const safety = smoothstep(0.8, 1.0, pattern)
-        
+
         return vec4(vec3(
                 pattern.mul(0.8).add(safety.mul(0.2)),
                 pattern.mul(0.9),
                 pattern.mul(0.7).add(safety.mul(0.4))
         ), 1)
+
 }`}
 />

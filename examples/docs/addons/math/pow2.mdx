@@ -31,15 +31,16 @@ The squaring operation creates natural contrast enhancement by amplifying deviat
 const fragment = () => {
         const coord = uv.sub(0.5).mul(3)
         const distance = coord.length()
-        
+
         const linearField = distance.div(2)
         const quadraticField = pow2(linearField)
-        
-        const intensityMap = pow2(sin(distance.mul(8).sub(iTime.mul(2))))
+
+        const intensityMap = pow2(distance.mul(8).sub(iTime.mul(2)).sin())
         const concentratedEnergy = pow2(intensityMap.add(0.1))
-        
+
         const finalPattern = quadraticField.mul(concentratedEnergy)
-        
+
         return vec4(finalPattern.mul(1.2), finalPattern.mul(0.8).add(0.1), finalPattern.pow(0.6), 1)
+
 }`}
 />

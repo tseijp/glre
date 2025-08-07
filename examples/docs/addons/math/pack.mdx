@@ -25,6 +25,7 @@ v
 $$
 
 Where:
+
 - Each component captures different precision levels (from finest to coarsest)
 - PackUpscale = 256/255 normalizes to [0,1] range
 - ShiftAdjustment prevents overlap between components
@@ -37,18 +38,19 @@ This encoding pairs with the `unpack` function for perfect reconstruction, commo
 const fragment = () => {
         const t = iTime.mul(0.2)
         const pos = uv.sub(0.5).mul(4)
-        
+
         const originalValue = pos.length().add(t.sin().mul(0.3)).fract()
         const compressed = pack(originalValue)
         const reconstructed = unpack(compressed)
-        
+
         const errorVisualization = originalValue.sub(reconstructed).abs().mul(1000)
         const compressionRatio = compressed.length().div(1)
-        
+
         const r = reconstructed.mul(compressionRatio.pow(0.5))
         const g = errorVisualization.add(reconstructed.mul(0.7))
         const b = compressed.x.add(compressed.y).mul(0.8)
-        
+
         return vec4(r, g, b, 1)
+
 }`}
 />

@@ -38,27 +38,7 @@ $$
 - Consistent mathematical relationships between neighboring coordinates
 - Optimal for Perlin noise and procedural texture generation
 
-### Mathematical Beauty in Four Dimensions
-
-This function forms the mathematical foundation for advanced procedural generation techniques, enabling the creation of organic textures, terrain features, and fluid simulations through controlled randomness.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = uv.mul(8.0)
-        const j = pos.x.add(pos.y.mul(47.0))
-        const ip = vec4(0.1, 0.2, 7.0, 1.0)
-
-        const grad = grad4(j, ip)
-        const colorPattern = grad.xyz.abs()
-
-        return vec4(colorPattern, 1)
-
-}`}
-/>
-
-### Noise Field Symphony
+### Multiple Gradient Fields
 
 <FragmentEditor
         isFun
@@ -77,7 +57,7 @@ const fragment = () => {
         const combined = field1.xyz.add(field2.xyz.mul(0.6)).add(field3.xyz.mul(0.4))
         const normalized = combined.normalize().mul(0.5).add(0.5)
 
-        const pulse = sin(combined.length().mul(10.0).add(oscillation.mul(2.0))).mul(0.3).add(0.7)
+        const pulse = combined.length().mul(10.0).add(oscillation.mul(2.0)).sin().mul(0.3).add(0.7)
 
         return vec4(normalized.mul(pulse), 1)
 

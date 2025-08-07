@@ -1,0 +1,64 @@
+---
+title: 'quatInverse'
+description: 'Quaternion inverse calculation for exact rotational reversal operations'
+keywords: ['quaternion', 'inverse', 'rotation reversal', 'mathematical inversion']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatInverse: Quaternion Inverse Calculation
+
+### Mathematical Inverse Operation
+
+The quatInverse function calculates the true mathematical inverse of a quaternion using the formula $q^{-1} = \frac{q^*}{||q||^2}$. This operation produces the exact rotational inverse, undoing the original rotation when composed.
+
+**Mathematical Definition:**
+For quaternion $q$:
+
+$$
+q^{-1} = \frac{q^*}{||q||^2} = \frac{\text{quatConj}(q)}{\text{quatLengthSq}(q)}
+$$
+
+**Properties:**
+
+- For any quaternion: $q \cdot q^{-1} = q^{-1} \cdot q = (0,0,0,1)$ (identity)
+- Reverses the rotation represented by the quaternion
+- Handles non-unit quaternions correctly through magnitude normalization
+
+This function is essential for undoing rotations and solving rotational equations.
+
+### Rotational Error Analysis
+
+This example demonstrates quaternion inverse accuracy by applying a rotation followed by its inverse and measuring the restoration error.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cellPos = uv.mul(6)
+        const cell = cellPos.floor()
+        const local = cellPos.fract().sub(0.5)
+
+        const hash = sin(cell.x.mul(127.1).add(cell.y.mul(311.7))).mul(43758.5).fract()
+        const baseQ = vec4(sin(hash.mul(6.28)), cos(hash.mul(3.14)), sin(hash.mul(9.42)), cos(hash.mul(1.57)))
+
+        const scaledQ = baseQ.mul(hash.mul(2).add(1))
+        const invQ = quatInverse(scaledQ)
+
+        const testVector = vec3(local.x, local.y, hash)
+        const rotated = quat2mat3(scaledQ).mul(testVector)
+        const recovered = quat2mat3(invQ).mul(rotated)
+
+        const errorMagnitude = recovered.sub(testVector).length()
+        const precision = errorMagnitude.add(0.1).reciprocal()
+
+        const visualField = precision.mul(0.1).sin().abs()
+        const color = vec3(visualField, visualField.mul(0.7), visualField.mul(0.3))
+
+        return vec4(color, 1)
+
+}`}
+/>
+
+The quatInverse function provides accurate quaternion inversion for precise rotational calculations and error correction in rotation sequences.

@@ -35,56 +35,24 @@ const fragment = () => {
         const cellPos = uv.mul(8)
         const cell = cellPos.floor()
         const local = cellPos.fract().sub(0.5)
-        
-        const hash = sin(cell.x.mul(127.1).add(cell.y.mul(311.7))).mul(43758.5).fract()
+
+        const hash = cell.x.mul(127.1).add(cell.y.mul(311.7)).sin().mul(43758.5).fract()
         const angle = hash.mul(6.28).add(iTime.mul(0.5))
-        
-        const q = vec4(sin(angle).mul(0.7), sin(angle.mul(1.3)).mul(0.5), sin(angle.mul(0.8)), cos(angle)).normalize()
+
+        const q = vec4(angle.sin().mul(0.7), angle.mul(1.3).sin().mul(0.5), angle.mul(0.8).sin(), angle.cos()).normalize()
         const negQ = quatNeg(q)
-        
+
         const useOriginal = hash.greaterThan(0.5)
         const selected = q.select(negQ, useOriginal)
-        
+
         const rotMatrix = quat2mat3(selected)
         const rotated = rotMatrix.mul(vec3(local, hash.sub(0.5)))
-        
+
         const pattern = rotated.x.mul(rotated.y).mul(8).sin()
         const intensity = pattern.abs()
         const color = vec3(intensity, intensity.mul(0.7), intensity.mul(0.4))
-        
+
         return vec4(color, 1)
+
 }`}
 />
-
-### Interpolation Path Selection
-
-This example demonstrates how quatNeg enables optimal interpolation paths by selecting shorter angular distances between quaternions. The negation creates alternative representations for angle minimization in rotational transitions.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const t = iTime.mul(0.3)
-        const coords = uv.sub(0.5).mul(4)
-        
-        const q1 = vec4(sin(t), 0, 0, cos(t)).normalize()
-        const q2 = vec4(0, sin(t.mul(0.7)), cos(t.mul(0.7)), sin(t.mul(0.4))).normalize()
-        
-        const dot = q1.xyz.dot(q2.xyz).add(q1.w.mul(q2.w))
-        const q2Adjusted = quatNeg(q2).select(q2, dot.lessThan(0))
-        
-        const interpolation = coords.x.mul(0.5).add(0.5).saturate()
-        const blended = q1.mul(float(1).sub(interpolation)).add(q2Adjusted.mul(interpolation)).normalize()
-        
-        const transform = quat2mat3(blended)
-        const rotated = transform.mul(vec3(coords.x, coords.y, sin(t).mul(0.5)))
-        
-        const field = rotated.length().mul(3).cos()
-        const ripple = field.mul(field)
-        const color = vec3(ripple.mul(0.9), ripple.mul(0.6), ripple)
-        
-        return vec4(color, 1)
-}`}
-/>
-
-The quatNeg function provides essential quaternion algebra for handling rotational equivalence, enabling proper interpolation paths and demonstrating the mathematical elegance of quaternion double cover properties.

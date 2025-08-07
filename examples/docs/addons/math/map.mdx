@@ -26,11 +26,11 @@ Where the first transforms values from range $[a, b]$ to $[0, 1]$, while the sec
         code={`
 const fragment = () => {
         const normalized = map(uv, 0.2, 0.8)
-        const waveAmplitude = mapRange(sin(iTime.mul(2)), -1, 1, 0.05, 0.25)
+        const waveAmplitude = mapRange(iTime.mul(2).sin(), -1, 1, 0.05, 0.25)
         const fieldDistance = normalized.sub(0.5).length()
-        const oscillation = sin(fieldDistance.mul(15).sub(iTime.mul(3))).mul(waveAmplitude)
+        const oscillation = fieldDistance.mul(15).sub(iTime.mul(3)).sin().mul(waveAmplitude)
         const transformedField = mapRange(fieldDistance.add(oscillation), 0, 0.7, 1, 0)
-        const energyDistribution = pow(max(transformedField, 0), 2.5)
+        const energyDistribution = transformedField.max(0).pow(2.5)
         return vec4(energyDistribution.mul(0.4), energyDistribution.mul(1.2), energyDistribution.mul(0.8), 1)
 }`}
 />
@@ -46,10 +46,10 @@ const fragment = () => {
         const timePhase = iTime.mul(0.8)
         const polarRadius = length(uv.sub(0.5)).mul(2)
         const polarAngle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
-        const redMapping = mapRange(sin(polarRadius.mul(4).add(timePhase)), -1, 1, 0.1, 0.9)
-        const greenMapping = mapRange(cos(polarAngle.mul(3).add(timePhase.mul(1.3))), -1, 1, 0.2, 1.0)
-        const blueMapping = mapRange(sin(polarRadius.mul(6).sub(polarAngle.mul(2).add(timePhase.mul(0.7)))), -1, 1, 0.3, 0.8)
-        const intensityField = mapRange(cos(polarRadius.mul(8).sub(timePhase.mul(2))), -1, 1, 0.6, 1.4)
+        const redMapping = mapRange(polarRadius.mul(4).add(timePhase).sin(), -1, 1, 0.1, 0.9)
+        const greenMapping = mapRange(polarAngle.mul(3).add(timePhase.mul(1.3)).cos(), -1, 1, 0.2, 1.0)
+        const blueMapping = mapRange(polarRadius.mul(6).sub(polarAngle.mul(2).add(timePhase.mul(0.7))).sin(), -1, 1, 0.3, 0.8)
+        const intensityField = mapRange(polarRadius.mul(8).sub(timePhase.mul(2)).cos(), -1, 1, 0.6, 1.4)
         const chromaMatrix = vec3(redMapping, greenMapping, blueMapping).mul(intensityField)
         return vec4(chromaMatrix, 1)
 }`}

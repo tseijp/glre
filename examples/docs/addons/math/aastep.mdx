@@ -46,13 +46,13 @@ const fragment = () => {
         // Create morphing geometric shapes
         const shape1 = abs(uv.x).add(abs(uv.y)).sub(1.5)
         const shape2 = uv.length().sub(1.2)
-        const morphedShape = mix(shape1, shape2, sin(time).mul(0.5).add(0.5))
+        const morphedShape = mix(shape1, shape2, time.sin().mul(0.5).add(0.5))
 
-        const threshold = sin(time.mul(2)).mul(0.3).add(0.1)
+        const threshold = time.mul(2).sin().mul(0.3).add(0.1)
         const pattern = aastep(threshold, morphedShape)
 
-        const color = vec3(pattern.mul(sin(time.add(uv.x)).mul(0.5).add(0.5)),
-                          pattern.mul(cos(time.add(uv.y)).mul(0.5).add(0.5)),
+        const color = vec3(pattern.mul(time.add(uv.x).sin().mul(0.5).add(0.5)),
+                          pattern.mul(time.add(uv.y).cos().mul(0.5).add(0.5)),
                           pattern.mul(0.8))
         return vec4(color, 1)
 

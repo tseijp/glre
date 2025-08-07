@@ -52,31 +52,3 @@ const fragment = () => {
         return vec4(energyDistribution.add(resonanceField).mul(0.9), energyDistribution.mul(1.3), energyDistribution.add(resonanceField).mul(0.7), 1)
 }`}
 />
-
-### Crystalline Lattice Morphogenesis
-
-Cellular partitioning enables crystalline lattice structures to undergo morphogenesis through mathematical field transformations. Complex crystalline patterns emerge from systematic cellular operations between dimensional coordinate systems, creating evolutionary crystal architectures.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const timePhase = iTime.mul(0.6)
-        const baseGrid = uv.sub(0.5).mul(8)
-        const primaryCell = sin(timePhase.mul(0.4)).mul(0.3).add(0.8)
-        const secondaryCell = cos(timePhase.mul(0.7)).mul(0.2).add(0.6)
-        const primaryDomain = mod2(baseGrid, primaryCell)
-        const secondaryDomain = mod2(baseGrid.add(vec2(0.3, 0.2)), secondaryCell)
-        const primaryCells = primaryDomain.xy
-        const primaryLocal = primaryDomain.zw
-        const secondaryCells = secondaryDomain.xy
-        const secondaryLocal = secondaryDomain.zw
-        const cellularEnergy1 = sin(primaryCells.x.mul(1.3).add(primaryCells.y.mul(0.8)).add(timePhase))
-        const cellularEnergy2 = cos(secondaryCells.x.mul(0.9).add(secondaryCells.y.mul(1.7)).add(timePhase.mul(1.4)))
-        const crystalField1 = pow(max(abs(primaryLocal.x), abs(primaryLocal.y)).sub(0.2), 2).mul(cellularEnergy1.add(1).div(2))
-        const crystalField2 = length(secondaryLocal).sub(0.15).mul(cellularEnergy2.add(1).div(2))
-        const latticeInterference = sin(crystalField1.mul(8).sub(crystalField2.mul(12).add(timePhase.mul(3))))
-        const crystallineIntensity = pow(max(latticeInterference.add(1).div(2), 0.1), 1.5)
-        return vec4(crystallineIntensity.mul(0.4), crystallineIntensity.mul(1.1), crystallineIntensity.mul(0.8), 1)
-}`}
-/>

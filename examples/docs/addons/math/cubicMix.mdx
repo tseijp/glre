@@ -45,44 +45,6 @@ const fragment = () => {
 }`}
 />
 
-### Morphing Shape Boundaries
-
-Blending between different geometric forms using cubic interpolation creates fluid shape transformations that appear naturally organic.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec2(0.5)
-        const pos = uv.sub(center)
-        const dist = pos.length()
-        const circle = dist.sub(0.3).abs().mul(20).oneMinus().clamp(0, 1)
-        const square = pos.x.abs().max(pos.y.abs()).sub(0.25).abs().mul(30).oneMinus().clamp(0, 1)
-        const t = iTime.mul(0.3).sin().mul(0.5).add(0.5)
-        const morphed = cubicMix(circle, square, t)
-        const intensity = morphed.mul(0.8).add(0.2)
-        return vec4(intensity.mul(0.7), intensity, intensity.mul(0.9), 1)
-}`}
-/>
-
-### Animated Vector Field
-
-Using cubic mixing to blend directional vectors creates smooth flowing motion patterns reminiscent of fluid dynamics.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coord = uv.mul(4).sub(2)
-        const field1 = vec2(coord.y.sin(), coord.x.cos())
-        const field2 = vec2(coord.x.mul(coord.y), coord.x.sub(coord.y))
-        const t = iTime.mul(0.5).sin().mul(0.5).add(0.5)
-        const blendedField = cubicMix(field1, field2, t)
-        const streamline = blendedField.length().mul(2).sin().mul(0.5).add(0.5)
-        return vec4(streamline.mul(0.9), streamline.mul(0.6).add(0.3), streamline.mul(0.8), 1)
-}`}
-/>
-
 ### Complex Pattern Fusion
 
 Combining different mathematical patterns with cubic interpolation generates intricate textures that evolve smoothly over time.

@@ -48,32 +48,3 @@ const fragment = () => {
 
 }`}
 />
-
-## Singularity Field Mathematics
-
-Reciprocal transformation creates mathematical singularities where approaching zero generates infinite gradients. These singularities form the basis for field distortion and energy concentration effects.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec2(0.5, 0.5)
-        const radius = uv.sub(center).length()
-
-        const oscillation = iTime.mul(1.5).sin().mul(0.4).add(0.6)
-        const fieldStrength = inverse(radius.add(oscillation.mul(0.1)))
-
-        const magnetic = fieldStrength.mul(0.05).sin()
-        const electric = fieldStrength.mul(0.08).cos()
-
-        const interference = magnetic.add(electric).abs()
-        const intensity = interference.pow(2).clamp(0, 1)
-
-        const hue = fieldStrength.mul(0.3).mod(1)
-        const saturation = intensity.mul(0.8).add(0.2)
-        const brightness = intensity.oneMinus().pow(0.5)
-
-        return vec4(hue.mul(brightness), saturation.mul(brightness), brightness, 1)
-
-}`}
-/>

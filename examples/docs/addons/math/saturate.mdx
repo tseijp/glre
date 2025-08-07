@@ -31,10 +31,14 @@ $$
 - Preserves monotonicity within the unit interval
 - Acts as identity transformation on normalized inputs
 
-**Geometric Interpretation:**
-The function creates a plateau projection where all values are compressed into the fundamental unit of normalized space, forming the mathematical foundation for color representation and probability distributions.
+**Common Uses:**
 
-### Probability Field Crystallization
+- Ensuring color values stay in valid [0,1] range
+- Preventing negative values in calculations
+- Normalizing arbitrary ranges to unit interval
+- Creating hard cutoffs at 0 and 1
+
+### Basic Range Clamping Usage
 
 <FragmentEditor
         isFun
@@ -42,24 +46,25 @@ The function creates a plateau projection where all values are compressed into t
 const fragment = () => {
         const coord = uv.sub(0.5).mul(6)
         const time = iTime.mul(0.4)
-        
-        const field1 = sin(coord.x.mul(2).add(time)).mul(0.8).add(0.4)
-        const field2 = cos(coord.y.mul(1.5).sub(time.mul(0.8))).mul(0.6).add(0.3)
-        const field3 = sin(coord.x.add(coord.y).mul(1.2).add(time.mul(1.3))).mul(0.7).add(0.2)
-        
+
+        const field1 = coord.x.mul(2).add(time).sin().mul(0.8).add(0.4)
+        const field2 = coord.y.mul(1.5).sub(time.mul(0.8)).cos().mul(0.6).add(0.3)
+        const field3 = coord.x.add(coord.y).mul(1.2).add(time.mul(1.3)).sin().mul(0.7).add(0.2)
+
         const prob1 = saturate(field1)
         const prob2 = saturate(field2)
         const prob3 = saturate(field3)
-        
+
         const interference = prob1.mul(prob2).add(prob2.mul(prob3)).add(prob3.mul(prob1))
         const crystallized = saturate(interference.mul(1.5))
-        
+
         const phase = atan2(coord.y, coord.x)
         const radius = length(coord)
-        const orbital = sin(phase.mul(3).add(radius.add(time.mul(2))))
-        
+        const orbital = phase.mul(3).add(radius.add(time.mul(2))).sin()
+
         const final = crystallized.mul(saturate(orbital.add(0.5)))
-        
+
         return vec4(final.mul(0.6), final.mul(1.2), final.mul(0.9), 1)
+
 }`}
 />

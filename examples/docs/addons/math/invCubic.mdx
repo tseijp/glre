@@ -7,11 +7,11 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# Inverse Cubic Phase Transformation
+# invCubic: Inverse Cubic Curve Function
 
-### Mathematical Foundation: Inverse Cubic Transformation
+### Trigonometric-Based Curve Transformation  
 
-The inverse cubic function implements a sophisticated trigonometric inversion that creates unique phase transformations through nested trigonometric operations.
+The invCubic function creates a smooth S-curve using nested trigonometric operations. It provides an alternative to standard cubic easing with different acceleration characteristics.
 
 **Mathematical Definition:**
 
@@ -36,9 +36,9 @@ $$
 **Geometric Interpretation:**
 The nested trigonometric structure creates angular phase spaces where the division by 3 produces triadic harmonic relationships, revealing complex resonance patterns hidden within the input values.
 
-### Trigonometric Phase Space Visualization
+### Radial Curve Application
 
-The core mathematical beauty lies in this nested structure, where the arcsine creates angular phase space and subsequent sine division by three produces triadic resonance patterns.
+This example applies the invCubic transformation to radial distances, creating smooth falloff effects with the unique acceleration curve.
 
 <FragmentEditor
         isFun
@@ -46,7 +46,7 @@ The core mathematical beauty lies in this nested structure, where the arcsine cr
 const fragment = () => {
         const r = uv.distance(vec2(0.5))
         const theta = uv.sub(vec2(0.5)).y.atan2(uv.sub(vec2(0.5)).x)
-        const phase = invCubic(r.mul(2).clamp(0, 1))
+        const phase = invCubic(r.mul(2).saturate())
         const interference = theta.mul(6).add(phase.mul(20)).sin()
         const resonance = phase.mul(interference).abs()
         const harmonics = resonance.pow(0.7).mul(1.2)
@@ -54,9 +54,9 @@ const fragment = () => {
 }`}
 />
 
-### Quantum Interference Crystallization
+### Grid-Based Pattern Effects
 
-The inverse cubic function's unique mathematical properties create quantum-like interference patterns when applied to crystalline lattice structures, producing crystallographic beauty through numerical precision.
+This example shows how invCubic can be applied to grid patterns to create smooth cell-based effects with unique easing characteristics.
 
 <FragmentEditor
         isFun
@@ -70,30 +70,7 @@ const fragment = () => {
         const wave1 = lattice.x.add(iTime.mul(2)).sin().mul(quantum)
         const wave2 = lattice.y.add(iTime.mul(1.7)).sin().mul(quantum)
         const interference = wave1.mul(wave2).add(quantum.mul(0.5))
-        const crystal = interference.abs().pow(1.8).clamp(0, 1)
+        const crystal = interference.abs().pow(1.8).saturate()
         return vec4(crystal.mul(0.6).add(quantum.mul(0.4)), crystal, crystal.mul(0.8).add(quantum.mul(0.2)), 1)
-}`}
-/>
-
-### Hyperdimensional Projection Mapping
-
-By interpreting the inverse cubic transformation as a projection from higher dimensions, we can visualize impossible geometries that exist only in mathematical space, creating surreal architectural forms.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coord = uv.mul(2).sub(1)
-        const x = coord.x
-        const y = coord.y
-        const r = coord.length()
-        const proj4d = invCubic(r.mod(0.8).div(0.8))
-        const rotX = x.mul(proj4d.cos()).sub(y.mul(proj4d.sin()))
-        const rotY = x.mul(proj4d.sin()).add(y.mul(proj4d.cos()))
-        const hyperbolic = rotX.mul(rotX).sub(rotY.mul(rotY))
-        const architecture = hyperbolic.add(iTime.mul(0.3)).sin().mul(proj4d)
-        const depth = architecture.abs().pow(0.5)
-        const shadow = float(1).sub(depth.mul(0.7))
-        return vec4(depth.mul(0.9).add(0.1), depth.mul(0.7).add(shadow.mul(0.3)), depth.mul(0.6).add(shadow.mul(0.4)), 1)
 }`}
 />

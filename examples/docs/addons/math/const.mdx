@@ -47,11 +47,11 @@ Additional derived constants include:
         code={`
 const fragment = () => {
         const angle = iTime.mul(TAU) // Complete rotation per time unit
-        const wave = sin(angle.mul(4)) // Four waves per rotation
+        const wave = angle.mul(4).sin() // Four waves per rotation
 
         const radius = wave.mul(0.3).add(0.5)
-        const x = cos(angle).mul(radius)
-        const y = sin(angle).mul(radius)
+        const x = angle.cos().mul(radius)
+        const y = angle.sin().mul(radius)
 
         const color = vec3(x.add(0.5), y.add(0.5), wave.add(1).mul(0.5))
         return vec4(color, 1)
@@ -77,36 +77,8 @@ const fragment = () => {
         const color1 = vec3(spiral, radius.mul(2), 1)
         const color2 = vec3(1, spiral.mul(PHI.fract()), radius)
 
-        const finalColor = color1.mix(color2, sin(iTime).mul(0.5).add(0.5))
+        const finalColor = color1.mix(color2, iTime.sin().mul(0.5).add(0.5))
         return vec4(finalColor, 1)
-
-}`}
-/>
-
-## Advanced Pattern Generation
-
-Combine multiple constants to create complex mathematical patterns and animations with natural timing relationships.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec2(0.5)
-        const polar = uv.sub(center)
-        const radius = length(polar).mul(8)
-        const angle = atan2(polar.y, polar.x)
-
-        // Multiple mathematical relationships
-        const spiral1 = angle.add(radius.mul(PHI)).div(TAU)
-        const spiral2 = angle.sub(radius.div(GOLDEN_ANGLE)).div(PI)
-
-        const time = iTime.mul(0.5)
-        const pattern = sin(spiral1.mul(TAU).add(time)).mul(cos(spiral2.mul(PI).add(time)))
-
-        const rings = floor(radius).mod(3).div(2)
-        const color = vec3(pattern.add(1).mul(0.5), rings, sin(time).add(1).mul(0.5))
-
-        return vec4(color, 1)
 
 }`}
 />
