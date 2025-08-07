@@ -1,0 +1,157 @@
+---
+title: 'mod289'
+description: 'Modular arithmetic operations with 289-base periodicity for advanced mathematical pattern synthesis'
+keywords: [modular-arithmetic, periodicity, mathematical-patterns, procedural-noise, number-theory]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mod289: Mathematical Periodicity Architecture
+
+### Modular Crystalline Systems Through Prime Square Operations
+
+The mod289 function implements modular arithmetic with base 289, establishing periodic boundary conditions essential for advanced mathematical pattern synthesis. This specific constant represents $17^2$, encoding fundamental properties of prime square modular systems that enable unique crystalline and wave interference phenomena.
+
+## Theoretical Foundation
+
+### Modular Arithmetic Essence
+
+The mod289 operation implements the mathematical relationship:
+
+$$
+\text{mod289}(x) = x - \lfloor \frac{x}{289} \rfloor \times 289
+$$
+
+where $289 = 17^2$ represents a prime square modulus that creates specific periodicity characteristics unavailable through other modular bases.
+
+### Prime Square Modular Systems
+
+The choice of $17^2$ as the modular base creates unique mathematical properties:
+
+$$
+\mathbb{Z}/289\mathbb{Z} \cong \mathbb{Z}/17^2\mathbb{Z}
+$$
+
+This isomorphism enables the creation of nested periodic structures where the primary period (17) and secondary period (289) interact to generate complex interference patterns.
+
+## Visual Demonstrations
+
+### Modular Crystalline Lattice Formation
+
+This demonstration reveals how mod289 creates crystalline lattice structures based on the mathematical properties of prime square modular systems:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(20)
+        
+        // Generate base modular coordinates
+        const modX = mod289(p.x.add(iTime.mul(5)))
+        const modY = mod289(p.y.add(iTime.mul(3)))
+        
+        // Create primary lattice using 17-period (sqrt of 289)
+        const latticeA = modX.div(17).floor().add(modY.div(17).floor().mul(17))
+        
+        // Create secondary lattice using full 289-period  
+        const latticeB = modX.add(modY.mul(289)).mod(289)
+        
+        // Generate crystalline interference between lattice systems
+        const crystalField = latticeA.sin().mul(latticeB.cos())
+        const resonance = crystalField.abs().pow(0.3)
+        
+        // Apply modular symmetry coloring
+        const colorPhaseR = latticeA.mod(17).div(17)
+        const colorPhaseG = latticeB.mod(289).div(289) 
+        const colorPhaseB = latticeA.add(latticeB).mod(17).div(17)
+        
+        const color = vec3(colorPhaseR, colorPhaseG, colorPhaseB).mul(resonance)
+        
+        return vec4(color, 1)
+}`}
+/>
+
+### Number Theoretic Wave Interference
+
+This example demonstrates how the prime square nature of 289 creates quantum-like interference patterns through number theoretic principles:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(15)
+        const t = iTime.mul(2)
+        
+        // Generate multiple modular wave systems
+        const wave1 = mod289(p.x.mul(3).add(t)).div(289).mul(6.28)
+        const wave2 = mod289(p.y.mul(5).add(t.mul(1.3))).div(289).mul(6.28) 
+        const wave3 = mod289(p.x.add(p.y).mul(2).add(t.mul(0.7))).div(289).mul(6.28)
+        
+        // Create interference through modular sine combinations
+        const interference1 = wave1.sin().mul(wave2.cos())
+        const interference2 = wave2.sin().mul(wave3.cos())
+        const interference3 = wave3.sin().mul(wave1.cos())
+        
+        // Apply 17-fold symmetry (square root of 289)
+        const symmetryAngle = atan2(p.y, p.x).mul(17).mod(6.28)
+        const symmetryMask = symmetryAngle.cos().abs().pow(2)
+        
+        // Combine interferences with modular amplitude control
+        const amplitude = mod289(interference1.add(interference2).add(interference3).mul(100)).div(289)
+        const modularPattern = amplitude.mul(symmetryMask)
+        
+        // Generate spectral decomposition based on modular phases
+        const spectralR = mod289(wave1.mul(17)).div(289)
+        const spectralG = mod289(wave2.mul(17)).div(289)
+        const spectralB = mod289(wave3.mul(17)).div(289)
+        
+        const finalColor = vec3(spectralR, spectralG, spectralB).mul(modularPattern.add(0.1))
+        
+        return vec4(finalColor, 1)
+}`}
+/>
+
+### Temporal Phase-Space Catenary
+
+This advanced demonstration creates temporal phase-space distortions using the 289-periodic boundary to generate catenary-like spacetime curvatures:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(8)
+        
+        // Generate temporal phase coordinates
+        const phaseX = mod289(p.x.mul(13).add(iTime.mul(4)))
+        const phaseY = mod289(p.y.mul(11).add(iTime.mul(3)))
+        
+        // Create catenary curvature using modular arithmetic
+        const catenaryU = phaseX.div(289).sub(0.5).mul(4)
+        const catenaryV = phaseY.div(289).sub(0.5).mul(4)
+        
+        // Apply hyperbolic functions to create spacetime distortion
+        const distortionX = catenaryU.sinh().div(catenaryU.add(0.01))
+        const distortionY = catenaryV.cosh().sub(1).div(catenaryV.add(0.01))
+        
+        // Generate modular field interactions
+        const fieldInteraction = mod289(distortionX.mul(distortionY).mul(50).add(iTime.mul(10)))
+        const fieldPhase = fieldInteraction.div(289).mul(6.28)
+        
+        // Create temporal flux patterns
+        const flux = fieldPhase.sin().add(fieldPhase.mul(2).cos().mul(0.5))
+        
+        // Apply 17-symmetry temporal encoding
+        const temporalCode = mod289(flux.mul(17).add(iTime.mul(17))).div(289)
+        
+        // Generate phase-space colors through modular decomposition  
+        const phaseR = mod289(temporalCode.mul(51)).div(289)    // 289/17 * 3
+        const phaseG = mod289(temporalCode.mul(85)).div(289)    // 289/17 * 5  
+        const phaseB = mod289(temporalCode.mul(119)).div(289)   // 289/17 * 7
+        
+        const intensity = flux.abs().add(0.2)
+        const color = vec3(phaseR, phaseG, phaseB).mul(intensity)
+        
+        return vec4(color, 1)
+}`}
+/>
