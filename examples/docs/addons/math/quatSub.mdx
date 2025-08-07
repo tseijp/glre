@@ -1,0 +1,92 @@
+---
+title: 'quatSub'
+description: 'Quaternion subtraction for component-wise difference calculation'
+keywords: ['quaternion', 'subtraction', 'difference', 'vector arithmetic', 'component-wise']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quatSub: Quaternion Subtraction Operations
+
+### Component-wise Difference for Quaternion Analysis
+
+The quatSub function implements component-wise quaternion subtraction, computing the algebraic difference between two quaternions. This operation provides essential arithmetic for quaternion error analysis, deviation measurement, and relative orientation calculations in 4-dimensional quaternion space.
+
+**Mathematical Definition:**
+
+For quaternions $q_a = (x_a, y_a, z_a, w_a)$ and $q_b = (x_b, y_b, z_b, w_b)$:
+
+$$
+\text{quatSub}(q_a, q_b) = (x_a - x_b, y_a - y_b, z_a - z_b, w_a - w_b)
+$$
+
+**Properties:**
+- Component-wise arithmetic operation without geometric meaning
+- Non-commutative: $q_a - q_b \neq q_b - q_a$
+- Preserves quaternion structure but may not preserve rotation validity
+- Useful for error analysis and deviation measurement
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coords = uv.sub(0.5).mul(8)
+        const gridPos = coords.floor()
+        const local = coords.fract().sub(0.5)
+        
+        const hash1 = sin(gridPos.x.mul(127.1).add(gridPos.y.mul(311.7))).mul(43758.5).fract()
+        const hash2 = sin(gridPos.x.mul(269.5).add(gridPos.y.mul(183.3))).mul(43758.5).fract()
+        
+        const t = iTime.mul(0.3)
+        const q1 = vec4(sin(t.add(hash1.mul(6.28))), cos(t.add(hash1.mul(4.15))), sin(t.mul(0.7)), cos(t)).normalize()
+        const q2 = vec4(cos(t.add(hash2.mul(3.14))), sin(t.add(hash2.mul(5.67))), cos(t.mul(0.9)), sin(t.mul(0.8))).normalize()
+        
+        const difference = quatSub(q1, q2)
+        const deviation = difference.length()
+        
+        const transform = quat2mat3(q1)
+        const rotated = transform.mul(vec3(local, hash1.sub(0.5)))
+        
+        const field = rotated.x.mul(rotated.y).mul(8).sin()
+        const intensity = field.abs().mul(deviation.mul(2))
+        const color = vec3(intensity, intensity.mul(0.7).add(deviation.mul(0.3)), intensity.mul(0.5).add(deviation))
+        
+        return vec4(color, 1)
+}`}
+/>
+
+### Quaternion Error Measurement and Convergence
+
+This example demonstrates quaternion subtraction for measuring convergence towards target orientations. The difference magnitude indicates how far current quaternions deviate from reference quaternions, enabling visual feedback for rotational alignment processes.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.2)
+        const coords = uv.sub(0.5).mul(6)
+        
+        const targetQ = vec4(0, 0, sin(t.mul(0.1)), cos(t.mul(0.1))).normalize()
+        const noise = sin(coords.x.mul(3.7).add(coords.y.mul(2.1)).add(t.mul(2)))
+        const currentQ = vec4(sin(t.add(noise)).mul(0.3), cos(t.add(noise.mul(1.2))).mul(0.4), sin(t.mul(0.8)), cos(t)).normalize()
+        
+        const error = quatSub(currentQ, targetQ)
+        const errorMagnitude = error.length()
+        const convergence = float(1).sub(errorMagnitude.saturate())
+        
+        const blendedQ = currentQ.mul(convergence).add(targetQ.mul(float(1).sub(convergence))).normalize()
+        const transform = quat2mat3(blendedQ)
+        const rotated = transform.mul(vec3(coords, sin(t).mul(0.2)))
+        
+        const pattern = rotated.x.mul(rotated.y).mul(4).cos()
+        const alignment = pattern.mul(convergence)
+        const errorField = errorMagnitude.mul(3).sin().abs()
+        
+        const color = vec3(alignment.add(errorField.mul(0.3)), convergence, errorField.mul(0.7).add(alignment.mul(0.3)))
+        
+        return vec4(color, 1)
+}`}
+/>
+
+The quatSub function provides fundamental quaternion arithmetic for error analysis, deviation measurement, and comparative quaternion mathematics in rotational computation systems.

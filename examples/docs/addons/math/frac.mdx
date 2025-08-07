@@ -75,28 +75,3 @@ const fragment = () => {
 
 }`}
 />
-
-### Quantum Grid Materialization
-
-Fractional space division creates quantum-like grid systems where matter appears to materialize at precise mathematical coordinates. The fractional boundaries become portals where visual elements phase in and out of existence with mathematical predictability.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const zoom = sin(iTime.mul(0.4)).mul(3).add(6)
-        const grid = frac(uv.mul(zoom))
-        const centerDistance = length(grid.sub(0.5)).mul(2)
-
-        const quantum = step(0.8, centerDistance).sub(step(0.95, centerDistance))
-        const phaseShift = sin(grid.x.mul(PI).mul(8).add(iTime.mul(6))).mul(
-                sin(grid.y.mul(PI).mul(8).add(iTime.mul(4)))
-        ).add(1).div(2)
-
-        const materialization = quantum.mul(phaseShift)
-        const energy = pow(materialization, 2).mul(2)
-
-        return vec4(energy.mul(0.3), energy.mul(1.2), energy.mul(0.9), 1)
-
-}`}
-/>

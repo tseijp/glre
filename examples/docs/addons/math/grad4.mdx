@@ -25,14 +25,16 @@ p_w &= 1.5 - |\mathbf{p}_{xyz}| \cdot \mathbf{1}_{xyz} \\
 $$
 
 **Algorithm Components:**
+
 - $j$: Scalar seed value for deterministic generation
 - $\mathbf{ip} = (ip_x, ip_y, ip_z, ip_w)$: Parameter vector controlling distribution
 - $\mathbf{p}$: Resulting 4D gradient vector
 - $\mathbf{s}$: Sign correction vector for proper gradient distribution
 
 **Properties:**
+
 - Deterministic generation ensures spatial coherence
-- Vectors maintain unit-sphere distribution characteristics  
+- Vectors maintain unit-sphere distribution characteristics
 - Consistent mathematical relationships between neighboring coordinates
 - Optimal for Perlin noise and procedural texture generation
 
@@ -52,30 +54,6 @@ const fragment = () => {
         const colorPattern = grad.xyz.abs()
 
         return vec4(colorPattern, 1)
-
-}`}
-/>
-
-### Dimensional Cascade Visualization
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = uv.mul(12.0)
-        const time = iTime.mul(0.3)
-
-        const gradients = pos.x.add(pos.y.mul(31.0)).add(time)
-        const params = vec4(0.15, 0.25, 6.5, 0.8)
-
-        const g1 = grad4(gradients, params)
-        const g2 = grad4(gradients.add(100.0), params.mul(1.3))
-        const g3 = grad4(gradients.add(200.0), params.mul(0.7))
-
-        const blend = g1.xyz.mul(0.5).add(g2.xyz.mul(0.3)).add(g3.xyz.mul(0.2))
-        const intensity = blend.length().mul(2.0)
-
-        return vec4(blend.abs().mul(intensity), 1)
 
 }`}
 />

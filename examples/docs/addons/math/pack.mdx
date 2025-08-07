@@ -1,47 +1,54 @@
 ---
 title: 'pack'
-description: 'Crystalline numerical compression for float-to-vec4 data transcendence'
-keywords: [pack, encoding, precision, data, compression]
+description: 'Float-to-RGBA encoding for high-precision data storage'
+keywords: [pack, encoding, precision, depth, storage]
 date: 2025-08-06
 ---
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# pack: Quantum Numerical Crystallization Engine
+# pack: High-Precision Float Encoding
 
-### Transcendental Float-to-Vector4 Compression Architecture
+### Float-to-RGBA Data Storage System
 
-The `pack` function represents a quantum leap in numerical precision preservation, transforming singular floating-point values into four-dimensional crystalline structures. This mathematical metamorphosis enables sub-pixel precision storage within limited color channel architectures, achieving unprecedented data density through sophisticated bit-manipulation algorithms.
+The `pack` function converts a single floating-point value into RGBA color channels, enabling high-precision data storage in textures and framebuffers. This technique is essential for depth mapping, displacement storage, and any scenario requiring more precision than standard 8-bit channels provide.
 
-The fundamental mathematical transformation follows the crystalline compression equation:
+The encoding process splits a float into 4 components using bit manipulation:
 
 $$
-\mathbf{P}(v) = \mathbf{U} \cdot \left[\text{fract}(v \cdot \mathbf{F}) \oplus v, v\right]^\mathsf{T}
+\text{pack}(v) = \text{PackUpscale} \cdot \begin{bmatrix}
+\text{fract}(v \cdot 16777216) \\
+\text{fract}(v \cdot 65536) \\
+\text{fract}(v \cdot 256) \\
+v
+\end{bmatrix} - \text{ShiftAdjustment}
 $$
 
 Where:
+- Each component captures different precision levels (from finest to coarsest)
+- PackUpscale = 256/255 normalizes to [0,1] range
+- ShiftAdjustment prevents overlap between components
 
-- $\mathbf{F} = [16777216, 65536, 256]$ represents the hierarchical scaling factors
-- $\mathbf{U} = \frac{256}{255}$ denotes the upscaling normalization constant
-- $\oplus$ indicates the precision-preserving bit-shift operation
-
-This crystalline architecture enables perfect reconstruction of original precision through inverse transformation algorithms, making it essential for high-precision computational workflows requiring sub-pixel accuracy preservation.
+This encoding pairs with the `unpack` function for perfect reconstruction, commonly used in shadow mapping and height field storage where 8-bit precision is insufficient.
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        const t = iTime.mul(0.3)
-        const pos = uv.sub(0.5).mul(2)
-
-        const depth = pos.x.add(pos.y.mul(0.7)).add(t.sin().mul(0.2))
-        const packedDepth = pack(depth)
-
-        const r = packedDepth.x.mul(pos.length().pow(0.8))
-        const g = packedDepth.y.mul(pos.x.abs().pow(1.2))
-        const b = packedDepth.z.mul(pos.y.abs().pow(0.6))
-
+        const t = iTime.mul(0.2)
+        const pos = uv.sub(0.5).mul(4)
+        
+        const originalValue = pos.length().add(t.sin().mul(0.3)).fract()
+        const compressed = pack(originalValue)
+        const reconstructed = unpack(compressed)
+        
+        const errorVisualization = originalValue.sub(reconstructed).abs().mul(1000)
+        const compressionRatio = compressed.length().div(1)
+        
+        const r = reconstructed.mul(compressionRatio.pow(0.5))
+        const g = errorVisualization.add(reconstructed.mul(0.7))
+        const b = compressed.x.add(compressed.y).mul(0.8)
+        
         return vec4(r, g, b, 1)
-
 }`}
 />
