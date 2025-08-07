@@ -1,7 +1,15 @@
 ---
-title: 'invQuartic: Quantum Transition Field Generator'
+title: 'invQuartic'
 description: 'Revolutionary inverse quartic transformation creating quantum-inspired field transitions with metamorphic energy distribution patterns'
-keywords: [invQuartic, quantum field, metamorphic transition, energy distribution, inverse quartic, mathematical transformation]
+keywords:
+        [
+                invQuartic,
+                quantum field,
+                metamorphic transition,
+                energy distribution,
+                inverse quartic,
+                mathematical transformation,
+        ]
 date: 2025-08-06
 ---
 
@@ -31,23 +39,24 @@ The following demonstration reveals the function's capability to generate metamo
 const fragment = () => {
         const coord = uv.sub(0.5).mul(4)
         const radius = coord.length()
-        const angle = coord.atan2()
-        
+        const angle = atan2(coord.y, coord.x)
+
         // Quantum field transition zones
-        const zone1 = radius.fract().invQuartic()
-        const zone2 = angle.add(iTime).mul(0.5).fract().invQuartic()
-        const zone3 = coord.x.add(coord.y).add(iTime.mul(0.3)).fract().invQuartic()
-        
+        const zone1 = invQuartic(radius.fract())
+        const zone2 = invQuartic(angle.add(iTime).mul(0.5).fract())
+        const zone3 = invQuartic(coord.x.add(coord.y).add(iTime.mul(0.3)).fract())
+
         // Metamorphic energy distribution
         const energy = zone1.mul(zone2).add(zone3.mul(0.7))
-        const field = energy.invQuartic()
-        
+        const field = invQuartic(energy)
+
         // Triple-layer quantum visualization
         const redChannel = field.pow(0.5)
-        const greenChannel = field.mul(1.2).fract().invQuartic()
-        const blueChannel = field.add(0.3).fract().sqrt().invQuartic()
-        
+        const greenChannel = invQuartic(field.mul(1.2).fract())
+        const blueChannel = invQuartic(field.add(0.3).fract().sqrt())
+
         return vec4(redChannel, greenChannel, blueChannel, 1)
+
 }`}
 />
 
@@ -68,26 +77,27 @@ const fragment = () => {
         const pos = uv.mul(8)
         const grid = pos.fract()
         const cell = pos.floor()
-        
+
         // Metamorphic cell energy calculation
         const cellHash = cell.x.add(cell.y.mul(127.1)).add(cell.x.mul(311.7)).fract().mul(43758.5453).fract()
-        const cellEnergy = cellHash.invQuartic()
-        
+        const cellEnergy = invQuartic(cellHash)
+
         // Dynamic transition field
         const transition = grid.sub(0.5).length().mul(2).clamp(0, 1)
-        const morphField = transition.invQuartic().mul(cellEnergy)
-        
+        const morphField = invQuartic(transition).mul(cellEnergy)
+
         // Time-based metamorphosis
         const timePhase = iTime.mul(0.4).add(cellHash.mul(6.28)).sin().mul(0.5).add(0.5)
-        const finalField = morphField.add(timePhase.invQuartic().mul(0.3))
-        
+        const finalField = morphField.add(invQuartic(timePhase).mul(0.3))
+
         // Quantum color mapping
-        const colorPhase = finalField.invQuartic()
+        const colorPhase = invQuartic(finalField)
         const red = colorPhase.pow(1.5)
-        const green = colorPhase.mul(1.8).fract().invQuartic().mul(0.8)
-        const blue = colorPhase.add(0.4).fract().invQuartic().mul(1.2)
-        
+        const green = invQuartic(colorPhase.mul(1.8).fract()).mul(0.8)
+        const blue = invQuartic(colorPhase.add(0.4).fract()).mul(1.2)
+
         return vec4(red, green, blue, 1)
+
 }`}
 />
 

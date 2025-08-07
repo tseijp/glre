@@ -1,0 +1,118 @@
+---
+title: 'lerp'
+description: 'Linear interpolation bridges dimensional boundaries, creating seamless transformations between mathematical states through temporal metamorphosis'
+keywords: [glre, lerp, linear interpolation, transformation, temporal, metamorphosis, dimensional, blending]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Dimensional Metamorphosis Engine
+
+### Linear Interpolation as Temporal Bridge Architecture
+
+Linear interpolation transforms mathematical space by creating seamless bridges between distinct dimensional states. This fundamental operation enables temporal metamorphosis, where mathematical entities undergo continuous transformation through precisely calculated intermediate states.
+
+The mathematical foundation:
+$$lerp(a, b, t) = a \cdot (1-t) + b \cdot t = a + t \cdot (b-a)$$
+
+Where $t \in [0,1]$ controls the morphological transition between state $a$ and state $b$, creating infinite intermediate realities within the transformation continuum.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const morphTime = sin(iTime.mul(0.8)).mul(0.5).add(0.5)
+        const origin = vec2(0.3, 0.7)
+        const destination = vec2(0.7, 0.3)
+        const currentPos = lerp(origin, destination, morphTime)
+        
+        const distanceField = length(uv.sub(currentPos))
+        const morphingCircle = smoothstep(0.15, 0.1, distanceField)
+        const energyField = pow(smoothstep(0.4, 0.0, distanceField), 2).mul(0.3)
+        
+        return vec4(morphingCircle.add(energyField).mul(0.8), morphingCircle.mul(1.2), morphingCircle.add(energyField), 1)
+}`}
+/>
+
+### Chromatic Phase Transition Dynamics
+
+Linear interpolation creates smooth chromatic transitions that exist beyond conventional color space boundaries. By interpolating between mathematical color states, new chromatic dimensions emerge through calculated phase transitions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const phaseControl = sin(uv.x.mul(PI).add(iTime.mul(2))).mul(0.5).add(0.5)
+        const colorA = vec3(0.1, 0.9, 0.3)
+        const colorB = vec3(0.9, 0.2, 0.8)
+        const colorC = vec3(0.2, 0.6, 1.0)
+        
+        const transition1 = lerp(colorA, colorB, phaseControl)
+        const transition2 = lerp(colorB, colorC, phaseControl)
+        const finalTransition = lerp(transition1, transition2, sin(uv.y.mul(PI).add(iTime.mul(1.5))).mul(0.5).add(0.5))
+        
+        const intensity = pow(sin(length(uv.sub(0.5)).mul(8).sub(iTime.mul(3))).add(1).div(2), 3)
+        
+        return vec4(finalTransition.mul(intensity.add(0.5)), 1)
+}`}
+/>
+
+### Geometric Metamorphosis Field
+
+Linear interpolation enables geometric structures to undergo continuous metamorphosis through mathematical field transformations. Complex geometric relationships emerge from simple interpolation operations between coordinate systems.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const time = iTime.mul(0.6)
+        const centerA = vec2(0.2, 0.2)
+        const centerB = vec2(0.8, 0.8)
+        const radiusA = 0.3
+        const radiusB = 0.15
+        
+        const interpFactor = sin(time).mul(0.5).add(0.5)
+        const currentCenter = lerp(centerA, centerB, interpFactor)
+        const currentRadius = lerp(radiusA, radiusB, interpFactor)
+        
+        const fieldDistance = length(uv.sub(currentCenter))
+        const primaryShape = smoothstep(currentRadius.add(0.02), currentRadius.sub(0.02), fieldDistance)
+        
+        const secondaryField = sin(fieldDistance.mul(20).sub(time.mul(4))).mul(0.5).add(0.5)
+        const complexField = primaryShape.add(secondaryField.mul(0.3).mul(step(currentRadius.mul(1.5), fieldDistance)))
+        
+        const metamorphicIntensity = pow(complexField, 1.8)
+        
+        return vec4(metamorphicIntensity.mul(0.4), metamorphicIntensity.mul(1.1), metamorphicIntensity.mul(0.7), 1)
+}`}
+/>
+
+### Multidimensional Probability Cloud
+
+Linear interpolation creates probability fields where mathematical states exist simultaneously across multiple dimensional layers. Each interpolation generates quantum-like superposition states that manifest as visual probability distributions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const timePhase = iTime.mul(0.4)
+        const coord = uv.sub(0.5).mul(4)
+        
+        const stateA = sin(coord.x.mul(3).add(timePhase)).mul(sin(coord.y.mul(2).add(timePhase.mul(1.3))))
+        const stateB = cos(coord.x.mul(2.5).add(timePhase.mul(0.7))).mul(cos(coord.y.mul(3.2).add(timePhase.mul(1.8))))
+        const stateC = sin(length(coord).mul(4).add(timePhase.mul(2))).mul(0.8)
+        
+        const probability1 = sin(coord.x.add(coord.y).add(timePhase)).mul(0.5).add(0.5)
+        const probability2 = cos(coord.x.sub(coord.y).add(timePhase.mul(1.2))).mul(0.5).add(0.5)
+        
+        const superposition1 = lerp(stateA, stateB, probability1)
+        const superposition2 = lerp(stateB, stateC, probability2)
+        const finalSuperposition = lerp(superposition1, superposition2, sin(timePhase.mul(0.8)).mul(0.5).add(0.5))
+        
+        const cloudDensity = pow(abs(finalSuperposition), 0.7)
+        const energyDistribution = cloudDensity.mul(1.5)
+        
+        return vec4(energyDistribution.mul(0.6), energyDistribution.mul(0.9), energyDistribution.mul(1.3), 1)
+}`}
+/>
