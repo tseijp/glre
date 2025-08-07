@@ -39,11 +39,11 @@ const fragment = () => {
         const surreal_bands = dripping.mul(5).fract()
         const psychedelic = powFast(surreal_bands.add(0.1), melt_factor.mul(0.6).add(0.2))
 
-        const melted_hues = saturate(vec3(
+        const melted_hues = vec3(
                 psychedelic.add(melt_factor.mul(0.8)),
                 psychedelic.mul(0.7).add(flowing.mul(0.6)),
                 psychedelic.mul(0.5).add(dripping.abs().mul(0.7))
-        ))
+        ).saturate()
 
         return vec4(melted_hues, 1)
 
