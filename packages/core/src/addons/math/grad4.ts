@@ -1,9 +1,9 @@
 import { Fn, Float, Vec4, vec4, vec3, float } from '../../node'
 
 export const grad4 = Fn(([j, ip]: [Float, Vec4]): Vec4 => {
-        const ones = vec4(1.0, 1.0, 1.0, -1.0).toVar('ones')
-        const p = vec4(0.0, 0.0, 0.0, 0.0).toVar('p')
-        const s = vec4(0.0, 0.0, 0.0, 0.0).toVar('s')
+        const ones = vec4(1, 1, 1, -1).toVar('ones')
+        const p = vec4(0).toVar('p')
+        const s = vec4(0).toVar('s')
 
         p.xyz.assign(vec3(j, j, j).mul(ip.xyz).fract().mul(7.0).floor().mul(ip.z).sub(1.0))
         p.w.assign(float(1.5).sub(p.xyz.abs().dot(ones.xyz)))

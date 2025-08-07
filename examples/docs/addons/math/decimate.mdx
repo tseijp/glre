@@ -28,24 +28,6 @@ $$\text{decimate}(v, p) = \frac{1}{p} \sum_{k=0}^{p-1} k \cdot H\left(v - \frac{
 
 Where $H(x)$ is the Heaviside step function. This quantization creates uniform discrete steps that eliminate smooth transitions.
 
-### Classic Pixelation Effect
-
-Reducing spatial precision creates blocky pixelated regions that mimic low-resolution digital displays, generating nostalgic retro visual styles.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pixelSize = 32
-        const resolution = iResolution.x.min(iResolution.y)
-        const pixelated = decimate(uv.mul(resolution), pixelSize).div(resolution)
-        const gradient = pixelated.x.add(pixelated.y).mul(0.5)
-        const timeShift = iTime.mul(0.3).sin().mul(0.2).add(0.8)
-        const color = gradient.mul(timeShift)
-        return vec4(color.mul(0.9), color.mul(0.7).add(0.2), color, 1)
-}`}
-/>
-
 ### Color Posterization
 
 Quantizing color values to specific levels creates poster-like effects with distinct color bands instead of smooth transitions.

@@ -48,22 +48,6 @@ const fragment = () => {
 }`}
 />
 
-### Dynamic Frequency Response
-
-The filtering mechanism automatically adapts to screen resolution and zoom levels. As patterns become denser or viewing distance changes, the function intelligently reduces high-frequency noise while preserving essential wave characteristics.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime.mul(0.5)
-        const zoom = sin(time).mul(4).add(8)
-        const waves = fcos(uv.x.mul(zoom).mul(TWO_PI))
-        const colorShift = waves.add(1).div(2)
-        return vec4(colorShift, colorShift.mul(0.8), colorShift.mul(0.6), 1)
-}`}
-/>
-
 ### Complex Wave Interference Patterns
 
 Multiple filtered cosine waves can interact to create sophisticated interference patterns. The filtering prevents aliasing artifacts that would normally occur with rapidly oscillating wave combinations.

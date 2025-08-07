@@ -60,20 +60,6 @@ const fragment = () => {
         return vec4(light1.add(light2), 1)
 }`}
 />
-
-### Organic Texture Generation
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const noise = sin(uv.x.mul(20)).mul(sin(uv.y.mul(15))).add(1).mul(0.5)
-        const texture = bump(noise, 0.1)
-        const color = mix(vec3(0.2, 0.1, 0.05), vec3(0.9, 0.7, 0.4), texture)
-        return vec4(color, 1)
-}`}
-/>
-
 ### Control Parameters
 
 | Function        | Input          | Threshold         | Purpose                  |

@@ -5,7 +5,5 @@ export const invCubic = Fn(([v]: [X]): X => {
 }).setLayout({
         name: 'invCubic',
         type: 'auto',
-        inputs: [
-                { name: 'v', type: 'auto' }
-        ]
+        inputs: [{ name: 'v', type: 'auto' }],
 })

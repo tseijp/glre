@@ -79,30 +79,3 @@ const fragment = () => {
         return vec4(finalGeometry.mul(0.3), finalGeometry.mul(0.7), finalGeometry.mul(1.1), 1)
 }`}
 />
-
-### Multidimensional Scale Probability Engine
-
-Range mapping creates probability fields where mathematical scales exist simultaneously across multiple dimensional transformation layers. Each mapping operation generates quantum-like scale superposition states that manifest as visual probability distributions through coordinate metamorphosis.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const timePhase = iTime.mul(0.6)
-        const coord = uv.sub(0.5).mul(3)
-        const scaleA = mapRange(length(coord), 0, 1.5, 0, 8)
-        const scaleB = mapRange(atan2(coord.y, coord.x), -PI, PI, 2, 12)
-        const scaleC = mapRange(coord.x.add(coord.y), -3, 3, 6, 16)
-        const fieldA = sin(coord.x.mul(scaleA).add(timePhase)).mul(sin(coord.y.mul(scaleA.mul(0.7)).add(timePhase.mul(1.4))))
-        const fieldB = cos(length(coord).mul(scaleB).add(timePhase.mul(0.8))).mul(0.8)
-        const fieldC = sin(coord.x.sub(coord.y).mul(scaleC).add(timePhase.mul(2)))
-        const probabilityAlpha = mapRange(sin(coord.x.mul(2).add(timePhase)), -1, 1, 0, 1)
-        const probabilityBeta = mapRange(cos(coord.y.mul(3).add(timePhase.mul(1.3))), -1, 1, 0, 1)
-        const superposition1 = lerp(fieldA, fieldB, probabilityAlpha)
-        const superposition2 = lerp(fieldB, fieldC, probabilityBeta)
-        const metamorphosis = lerp(superposition1, superposition2, sin(timePhase.mul(0.9)).mul(0.5).add(0.5))
-        const densityMapping = mapRange(abs(metamorphosis), 0, 1, 0.2, 1.8)
-        const energyDistribution = pow(densityMapping, 1.3)
-        return vec4(energyDistribution.mul(0.5), energyDistribution.mul(0.9), energyDistribution.mul(1.4), 1)
-}`}
-/>

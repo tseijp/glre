@@ -1,0 +1,105 @@
+---
+title: 'mod2'
+description: 'Cellular space partitioning engine that creates infinite dimensional tessellations through mathematical domain repetition and spatial metamorphosis'
+keywords: [glre, mod2, cellular tiling, domain repetition, spatial tessellation, infinite space, dimensional partitioning, mathematical cells]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mod2: Infinite Cellular Space Architect
+
+### Mathematical Domain Repetition Through Dimensional Tessellation
+
+The mod2 function performs cellular space partitioning by creating infinite tessellations of mathematical domains. This operation divides continuous space into discrete cellular regions while maintaining spatial coherence through calculated domain repetition, enabling the construction of infinite architectural patterns from finite mathematical definitions.
+
+The mathematical foundation reveals cellular transformation:
+
+$$mod2(p, s) = \begin{cases}
+c = \lfloor \frac{p + \frac{s}{2}}{s} \rfloor \text{ (cell coordinates)} \\
+p' = ((p + \frac{s}{2}) \bmod s) - \frac{s}{2} \text{ (wrapped position)}
+\end{cases}$$
+
+Where $p$ represents the spatial coordinate, $s$ defines the cellular dimensions, $c$ identifies the discrete cell location, and $p'$ provides the relative position within each cell, creating mathematical correspondence between infinite space and finite cellular domains.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cellSize = sin(iTime.mul(0.3)).mul(0.15).add(0.25)
+        const spatialCoord = uv.sub(0.5).mul(6)
+        const domainData = mod2(spatialCoord, cellSize)
+        const cellCoords = domainData.xy
+        const localPos = domainData.zw
+        const cellIndex = cellCoords.x.add(cellCoords.y.mul(100))
+        const cellPhase = sin(cellIndex.mul(0.7)).mul(PI)
+        const morphingRadius = cos(cellPhase.add(iTime.mul(2))).mul(0.5).add(0.5).mul(0.4)
+        const cellularField = length(localPos).sub(morphingRadius)
+        const energyDistribution = smoothstep(0.02, -0.02, cellularField)
+        const resonanceField = pow(smoothstep(0.15, 0, abs(cellularField)), 2).mul(0.8)
+        return vec4(energyDistribution.add(resonanceField).mul(0.9), energyDistribution.mul(1.3), energyDistribution.add(resonanceField).mul(0.7), 1)
+}`}
+/>
+
+### Crystalline Lattice Morphogenesis
+
+Cellular partitioning enables crystalline lattice structures to undergo morphogenesis through mathematical field transformations. Complex crystalline patterns emerge from systematic cellular operations between dimensional coordinate systems, creating evolutionary crystal architectures.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const timePhase = iTime.mul(0.6)
+        const baseGrid = uv.sub(0.5).mul(8)
+        const primaryCell = sin(timePhase.mul(0.4)).mul(0.3).add(0.8)
+        const secondaryCell = cos(timePhase.mul(0.7)).mul(0.2).add(0.6)
+        const primaryDomain = mod2(baseGrid, primaryCell)
+        const secondaryDomain = mod2(baseGrid.add(vec2(0.3, 0.2)), secondaryCell)
+        const primaryCells = primaryDomain.xy
+        const primaryLocal = primaryDomain.zw
+        const secondaryCells = secondaryDomain.xy
+        const secondaryLocal = secondaryDomain.zw
+        const cellularEnergy1 = sin(primaryCells.x.mul(1.3).add(primaryCells.y.mul(0.8)).add(timePhase))
+        const cellularEnergy2 = cos(secondaryCells.x.mul(0.9).add(secondaryCells.y.mul(1.7)).add(timePhase.mul(1.4)))
+        const crystalField1 = pow(max(abs(primaryLocal.x), abs(primaryLocal.y)).sub(0.2), 2).mul(cellularEnergy1.add(1).div(2))
+        const crystalField2 = length(secondaryLocal).sub(0.15).mul(cellularEnergy2.add(1).div(2))
+        const latticeInterference = sin(crystalField1.mul(8).sub(crystalField2.mul(12).add(timePhase.mul(3))))
+        const crystallineIntensity = pow(max(latticeInterference.add(1).div(2), 0.1), 1.5)
+        return vec4(crystallineIntensity.mul(0.4), crystallineIntensity.mul(1.1), crystallineIntensity.mul(0.8), 1)
+}`}
+/>
+
+### Quantum Cellular Automaton Architecture
+
+The mod2 function creates quantum cellular automaton architectures where mathematical states exist simultaneously across multiple cellular dimensions. Each cellular partition generates quantum-like computational states that manifest as evolving mathematical organisms within infinite spatial matrices.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const evolutionTime = iTime.mul(0.4)
+        const spatialMatrix = uv.sub(0.5).mul(12)
+        const cellularScale = vec2(0.6, 0.8)
+        const domainPartition = mod2(spatialMatrix, cellularScale)
+        const cellIdentifier = domainPartition.xy
+        const internalCoords = domainPartition.zw
+        const cellularState = mod(cellIdentifier.x.mul(7).add(cellIdentifier.y.mul(11), 1), 4)
+        const quantumPhase = cellularState.mul(PI.div(2)).add(evolutionTime.mul(1.8))
+        const automatonRule = step(2, cellularState).mul(2).sub(1)
+        const morphingGeometry = mix(
+                length(internalCoords.mul(1.4)), 
+                max(abs(internalCoords.x), abs(internalCoords.y)).mul(1.2), 
+                sin(quantumPhase).mul(0.5).add(0.5)
+        )
+        const cellularActivation = smoothstep(0.25, 0.15, morphingGeometry).mul(automatonRule.add(1).div(2))
+        const quantumInterference = sin(morphingGeometry.mul(15).add(quantumPhase.mul(2))).mul(0.4).add(0.6)
+        const finalAutomaton = cellularActivation.mul(quantumInterference)
+        const evolutionIntensity = pow(finalAutomaton, 1.8)
+        const energySpectrum = mix(
+                vec3(evolutionIntensity.mul(1.2), evolutionIntensity.mul(0.5), evolutionIntensity.mul(0.8)),
+                vec3(evolutionIntensity.mul(0.3), evolutionIntensity.mul(1.4), evolutionIntensity.mul(1.1)),
+                sin(cellularState.add(evolutionTime)).mul(0.5).add(0.5)
+        )
+        return vec4(energySpectrum, 1)
+}`}
+/>

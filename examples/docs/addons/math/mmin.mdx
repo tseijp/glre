@@ -36,40 +36,25 @@ This creates mathematical landscapes where dimensional convergence determines em
 The visualization demonstrates how competing oscillatory forces achieve resonance through dimensional convergence, where local minima represent quantum ground states in the multidimensional harmonic system. This reveals the deep connection between mathematical minimization and physical stability in complex systems.
 
 <FragmentEditor
-	isFun
-	code={`
+        isFun
+        code={`
 const fragment = () => {
-	const time = iTime.mul(0.3)
-	const center = vec2(0.0)
-	const coord = uv.sub(center)
+	const t = iTime.mul(0.3)
+	const p = uv.sub(0.5)
 	
-	const harmonic1 = coord.mul(2.8).add(time.mul(0.9))
-	const harmonic2 = coord.mul(3.5).add(time.mul(1.1))
-	const harmonic3 = coord.mul(1.7).add(time.mul(1.8))
-	const harmonic4 = coord.mul(4.2).add(time.mul(0.7))
+	const h1 = p.x.mul(2.8).add(t.mul(0.9))
+	const h2 = p.length().mul(3.5).add(t.mul(1.1))
+	const h3 = p.x.mul(p.y).mul(1.7).add(t.mul(1.8))
+	const h4 = p.x.add(p.y).mul(4.2).add(t.mul(0.7))
 	
-	const oscillator1 = harmonic1.x.cos().mul(harmonic1.y.sin())
-	const oscillator2 = harmonic2.length().mul(5.0).sin().mul(0.8)
-	const oscillator3 = harmonic3.x.mul(harmonic3.y).mul(3.0).cos()
-	const oscillator4 = harmonic4.x.add(harmonic4.y).mul(1.9).sin().mul(1.2)
+	const oscillators = vec4(h1.cos().mul(h1.sin()), 
+	                        h2.mul(5.0).sin().mul(0.8),
+	                        h3.mul(3.0).cos(),
+	                        h4.mul(1.9).sin().mul(1.2))
 	
-	const resonators = vec4(oscillator1, oscillator2, oscillator3, oscillator4)
-	const convergence = mmin(resonators)
+	const convergence = mmin(oscillators)
+	const field = p.length().mul(6.0).sub(convergence.mul(8.0)).cos().mul(convergence.abs())
 	
-	const stability = convergence.abs().pow(0.7)
-	
-	const attractor1 = coord.length().mul(6.0).sub(convergence.mul(8.0)).cos()
-	const attractor2 = coord.x.sub(coord.y).mul(4.0).add(stability.mul(12.0)).sin()
-	const attractor3 = convergence.mul(attractor1).mul(attractor2).abs().pow(1.5)
-	
-	const resonance = stability.mul(attractor3).add(convergence.abs().mul(2.0))
-	
-	const r = attractor1.abs().mul(convergence.abs()).pow(2.2)
-	const g = resonance.mul(stability).pow(0.9)
-	const b = attractor2.abs().mul(attractor3).pow(1.4)
-	
-	const harmonic = r.add(g).add(b).div(3.0).pow(1.6)
-	
-	return vec4(harmonic.mul(0.3), harmonic.mul(0.7), harmonic, 1)
+	return vec4(field.mul(vec3(0.3, 0.7, 1.0)), 1)
 }`}
 />

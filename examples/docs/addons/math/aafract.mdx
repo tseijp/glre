@@ -43,24 +43,6 @@ const fragment = () => {
 }`}
 />
 
-### Organic Texture Generation
-
-Create complex organic-looking textures by layering multiple frequencies of anti-aliased fractional patterns.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coord = uv.mul(10)
-        const layer1 = aafract(coord.x.add(coord.y))
-        const layer2 = aafract(coord.x.mul(2.1).sub(coord.y.mul(1.7)))
-        const layer3 = aafract(coord.dot(vec2(0.707, 0.707)).mul(3.3))
-        const combined = layer1.mul(0.5).add(layer2.mul(0.3)).add(layer3.mul(0.2))
-        const color = combined.toVec3()
-        return vec4(color, 1)
-}`}
-/>
-
 ### Animated Wave Patterns
 
 Transform static patterns into flowing animated waves by adding time-based offsets.

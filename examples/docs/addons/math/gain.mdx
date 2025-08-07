@@ -48,34 +48,6 @@ const fragment = () => {
 }`}
 />
 
-### Chromatic Intensity Explosion
-
-Gain control applied independently to color channels creates spectacular chromatic explosions. Each color component responds differently to the gain curve, producing vibrant separations and unexpected color combinations that shift dynamically through the intensity spectrum.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime.mul(0.6)
-        const center = vec2(0.5)
-        const dist = length(uv.sub(center)).mul(3)
-
-        const redGain = sin(time).add(1).mul(2).add(1)
-        const greenGain = sin(time.add(PI.div(3))).add(1).mul(2).add(1)
-        const blueGain = sin(time.add(PI.mul(2).div(3))).add(1).mul(2).add(1)
-
-        const wave = sin(dist.sub(time.mul(2)).mul(PI))
-        const normWave = wave.add(1).div(2)
-
-        const red = gain(normWave, redGain)
-        const green = gain(normWave, greenGain)
-        const blue = gain(normWave, blueGain)
-
-        return vec4(red.mul(1.2), green.mul(1.1), blue.mul(1.3), 1)
-
-}`}
-/>
-
 ### Fractal Contrast Architecture
 
 Multiple gain layers with different intensity parameters create complex fractal contrast structures. Each layer enhances different aspects of the base pattern, building architectural depth through mathematical precision rather than geometric complexity.

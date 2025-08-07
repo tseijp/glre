@@ -53,31 +53,6 @@ const fragment = () => {
 }`}
 />
 
-### Geometric Metamorphosis Field
-
-Linear interpolation enables geometric structures to undergo continuous metamorphosis through mathematical field transformations. Complex geometric relationships emerge from simple interpolation operations between coordinate systems.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime.mul(0.6)
-        const centerA = vec2(0.2, 0.2)
-        const centerB = vec2(0.8, 0.8)
-        const radiusA = 0.3
-        const radiusB = 0.15
-        const interpFactor = sin(time).mul(0.5).add(0.5)
-        const currentCenter = lerp(centerA, centerB, interpFactor)
-        const currentRadius = lerp(radiusA, radiusB, interpFactor)
-        const fieldDistance = length(uv.sub(currentCenter))
-        const primaryShape = smoothstep(currentRadius.add(0.02), currentRadius.sub(0.02), fieldDistance)
-        const secondaryField = sin(fieldDistance.mul(20).sub(time.mul(4))).mul(0.5).add(0.5)
-        const complexField = primaryShape.add(secondaryField.mul(0.3).mul(step(currentRadius.mul(1.5), fieldDistance)))
-        const metamorphicIntensity = pow(complexField, 1.8)
-        return vec4(metamorphicIntensity.mul(0.4), metamorphicIntensity.mul(1.1), metamorphicIntensity.mul(0.7), 1)
-}`}
-/>
-
 ### Multidimensional Probability Cloud
 
 Linear interpolation creates probability fields where mathematical states exist simultaneously across multiple dimensional layers. Each interpolation generates quantum-like superposition states that manifest as visual probability distributions.

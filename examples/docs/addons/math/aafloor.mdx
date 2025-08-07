@@ -39,24 +39,6 @@ const fragment = () => {
 }`}
 />
 
-### Edge Detection Magic
-
-The function analyzes pixel derivatives to detect edge boundaries, applying selective smoothing only where aliasing would occur. This creates natural-looking transitions without sacrificing pattern sharpness.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const grid = uv.mul(12)
-        const floorX = aafloor(grid.x.add(iTime.mul(0.5)))
-        const floorY = aafloor(grid.y.add(iTime.mul(0.3)))
-        const checker = floorX.add(floorY).mod(2)
-        const pulse = sin(iTime.mul(2)).mul(0.5).add(0.5)
-        const color =  vec3(0.1, 0.8, pulse).mix(vec3(pulse, 0.2, 0.9), checker)
-        return vec4(color, 1)
-}`}
-/>
-
 ### Fractal Precision Architecture
 
 When creating complex mathematical visualizations, harsh floor boundaries destroy fractal details. Anti-aliased floor maintains mathematical precision while ensuring visual continuity across scale changes.
