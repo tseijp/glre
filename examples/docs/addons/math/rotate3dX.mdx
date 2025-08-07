@@ -1,0 +1,53 @@
+---
+title: 'rotate3dX'
+description: 'Optimized 3D rotation matrix for X-axis rotations'
+keywords: ['rotation', '3D', 'X-axis', 'matrix', 'optimization', 'euler']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotate3dX: Specialized X-Axis Rotation Matrix
+
+### Mathematical Foundation of X-Axis Rotation
+
+The `rotate3dX` function generates a specialized 3×3 rotation matrix for rotations around the X-axis. This optimized implementation provides computational efficiency for one of the most common rotation operations in 3D graphics.
+
+The X-axis rotation matrix follows the standard mathematical form:
+
+$$
+R_x(\theta) = \begin{pmatrix}
+1 & 0 & 0 \\
+0 & \cos\theta & -\sin\theta \\
+0 & \sin\theta & \cos\theta
+\end{pmatrix}
+$$
+
+### Geometric Properties and Computational Advantages
+
+X-axis rotation preserves the X-coordinate while transforming Y and Z coordinates through circular motion in the YZ-plane:
+
+**Axis Preservation**: Vectors along the X-axis $(1,0,0)$ remain unchanged under this transformation.
+
+**YZ-Plane Rotation**: The transformation rotates vectors within the YZ-plane, creating circular motion perpendicular to the X-axis.
+
+**Computational Efficiency**: Specialized implementation reduces calculation overhead compared to general axis-angle rotation.
+
+### Cylindrical Wave Propagation
+
+This demonstration showcases X-axis rotation applied to wave functions, creating cylindrical wave patterns that propagate through 3D space with temporal evolution.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const center = vec3(0.5, 0.5, 0)
+    const pos = vec3(uv, 0).sub(center).mul(2)
+    const angle = pos.x.mul(3).add(iTime.mul(2))
+    const rotated = rotate3dX(angle).mul(pos)
+    const wave = sin(rotated.y.mul(8)).mul(cos(rotated.z.mul(6)))
+    const intensity = wave.mul(0.5).add(0.5)
+    const color = vec3(intensity.mul(0.6), intensity.mul(0.9), intensity)
+    return vec4(color, 1)
+}`}
+/>

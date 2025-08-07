@@ -39,32 +39,13 @@ The rotation matrix preserves fundamental geometric properties while enabling in
 
 **Angle Preservation**: The transformation preserves angles between non-collinear vectors.
 
-### Dynamic Crystalline Structure Formation
-
-This demonstration explores three-dimensional rotation applied to position vectors, creating dynamic crystal-like formations through systematic axis rotations combined with temporal evolution.
-
-<FragmentEditor
-    isFun
-    code={`
-const fragment = () => {
-    const center = vec3(0.5, 0.5, 0)
-    const pos = vec3(uv, 0).sub(center).mul(3)
-    const axis = vec3(1, 1, 0).normalize()
-    const angle = iTime.mul(0.5)
-    const rotated = rotate3d(axis, angle).mul(pos)
-    const pattern = sin(rotated.length().mul(8)).mul(0.5).add(0.5)
-    const color = vec3(pattern.mul(0.8), pattern, pattern.mul(0.6))
-    return vec4(color, 1)
-}`}
-/>
-
 ### Planetary Motion Through Multi-Axis Rotation
 
 This example demonstrates compound rotations mimicking celestial mechanics, where multiple rotation axes create complex orbital patterns reminiscent of planetary systems and atomic structures.
 
 <FragmentEditor
-    isFun
-    code={`
+        isFun
+        code={`
 const fragment = () => {
     const center = vec3(0.5, 0.5, 0)
     const pos = vec3(uv, sin(iTime.mul(0.3))).sub(center).mul(2)
