@@ -45,7 +45,7 @@ const fragment = () => {
     const center = vec2(0.5)
     const pos = uv.sub(center).mul(4)
     const radius = pos.length()
-    const baseAngle = atan2(pos.y, pos.x)
+    const baseAngle = pos.y.atan2(pos.x)
     const spiralAngle = baseAngle.add(radius.mul(0.5)).add(iTime)
     const rotated = rotate2d(spiralAngle).mul(vec2(radius.mul(0.1), 0))
     const intensity = smoothstep(0.05, 0.0, rotated.length())

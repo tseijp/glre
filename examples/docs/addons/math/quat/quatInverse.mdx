@@ -40,8 +40,8 @@ const fragment = () => {
         const cell = cellPos.floor()
         const local = cellPos.fract().sub(0.5)
 
-        const hash = sin(cell.x.mul(127.1).add(cell.y.mul(311.7))).mul(43758.5).fract()
-        const baseQ = vec4(sin(hash.mul(6.28)), cos(hash.mul(3.14)), sin(hash.mul(9.42)), cos(hash.mul(1.57)))
+        const hash = cell.x.mul(127.1).add(cell.y.mul(311.7)).sin().mul(43758.5).fract()
+        const baseQ = vec4(hash.mul(6.28).sin(), hash.mul(3.14).cos(), hash.mul(9.42).sin(), hash.mul(1.57).cos())
 
         const scaledQ = baseQ.mul(hash.mul(2).add(1))
         const invQ = quatInverse(scaledQ)

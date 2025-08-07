@@ -37,7 +37,7 @@ $$
 const fragment = () => {
         const center = vec2(0.5)
         const pos = uv.sub(center)
-        const angle = atan2(pos.y, pos.x)
+        const angle = pos.y.atan2(pos.x)
         const normalizedAngle = angle.div(6.28318530718) // TAU
         return vec4(vec3(normalizedAngle), 1)
 }`}
@@ -53,8 +53,8 @@ Atan2 serves as the fundamental building block for polar coordinate systems. By 
 const fragment = () => {
         const center = vec2(0.5)
         const pos = uv.sub(center)
-        const angle = atan2(pos.y, pos.x)
-        const radius = length(pos)
+        const angle = pos.y.atan2(pos.x)
+        const radius = pos.length()
 
         const polarPattern = angle.mul(8).sin().mul(radius.mul(20).cos())
         return vec4(vec3(polarPattern.mul(0.5).add(0.5)), 1)
@@ -72,8 +72,8 @@ The atan2 function excels at creating spiral patterns by combining angular and r
 const fragment = () => {
         const center = vec2(0.5)
         const pos = uv.sub(center)
-        const angle = atan2(pos.y, pos.x)
-        const radius = length(pos)
+        const angle = pos.y.atan2(pos.x)
+        const radius = pos.length()
 
         const spiralAngle = angle.add(radius.mul(20))
         const spiral = spiralAngle.sin().mul(0.5).add(0.5)
@@ -94,8 +94,8 @@ Atan2 naturally creates clock-like visualizations by dividing the angular space 
 const fragment = () => {
         const center = vec2(0.5)
         const pos = uv.sub(center)
-        const angle = atan2(pos.y, pos.x)
-        const radius = length(pos)
+        const angle = pos.y.atan2(pos.x)
+        const radius = pos.length()
 
         // Create 12 hour segments like a clock
         const hour = angle.div(6.28318530718).mul(12).floor()

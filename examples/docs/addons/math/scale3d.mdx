@@ -62,16 +62,16 @@ const fragment = () => {
         )
 
         // Multiple wave frequencies affected by scaling
-        const wave1 = sin(scaledWave.x.mul(4).add(time.mul(2)))
-        const wave2 = cos(scaledWave.y.mul(3).add(time.mul(1.5)))
-        const wave3 = sin(scaledWave.z.mul(5).add(time.mul(2.5)))
+        const wave1 = scaledWave.x.mul(4).add(time.mul(2)).sin()
+        const wave2 = scaledWave.y.mul(3).add(time.mul(1.5)).cos()
+        const wave3 = scaledWave.z.mul(5).add(time.mul(2.5)).sin()
 
         // Wave interference patterns
         const interference = wave1.mul(wave2).add(wave2.mul(wave3)).add(wave1.mul(wave3))
         const resonance = smoothstep(-0.6, 0.6, interference)
 
         // Visualize scaling effect on wave amplitude
-        const amplitude = abs(scaledWave.x).add(abs(scaledWave.y)).add(abs(scaledWave.z)).div(6)
+        const amplitude = scaledWave.x.abs().add(scaledWave.y.abs()).add(scaledWave.z.abs()).div(6)
         const frequency = waveScale.mul(0.5)
 
         const color = vec3(

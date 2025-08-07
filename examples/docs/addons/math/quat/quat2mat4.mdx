@@ -44,18 +44,18 @@ const fragment = () => {
 
         const phase = iTime.add(hash.mul(6.28))
         const q = vec4(
-                sin(phase),
-                cos(phase.mul(1.618)),
-                sin(phase.mul(0.707)),
-                cos(phase.mul(2.414))
+                phase.sin(),
+                phase.mul(1.618).cos(),
+                phase.mul(0.707).sin(),
+                phase.mul(2.414).cos()
         ).normalize()
 
         const matrix = quat2mat4(q)
         const point = vec4(grid, 0, 1)
         const transformed = matrix.mul(point)
 
-        const distance = length(transformed.xy)
-        const rings = sin(distance.mul(12).sub(iTime.mul(3))).abs()
+        const distance = transformed.xy.length()
+        const rings = distance.mul(12).sub(iTime.mul(3)).sin().abs()
         const color = rings.mul(vec3(0.5, 0.8, 1.0))
 
         return vec4(color, 1)

@@ -41,16 +41,16 @@ const fragment = () => {
         const cell = cellPos.floor()
         const local = cellPos.fract().sub(0.5)
 
-        const hash = sin(cell.x.mul(127.1).add(cell.y.mul(311.7))).mul(43758.5).fract()
-        const baseQuat = vec4(sin(hash.mul(12.56)), cos(hash.mul(7.85)), sin(hash.mul(5.14)), cos(hash.mul(3.92)))
+        const hash = cell.x.mul(127.1).add(cell.y.mul(311.7)).sin().mul(43758.5).fract()
+        const baseQuat = vec4(hash.mul(12.56).sin(), hash.mul(7.85).cos(), hash.mul(5.14).sin(), hash.mul(3.92).cos())
 
         const timePhase = iTime.add(hash.mul(6.28))
-        const divisor = sin(timePhase).abs().mul(4).add(1)
+        const divisor = timePhase.sin().abs().mul(4).add(1)
         const compressedQuat = quatDiv(baseQuat, divisor)
 
-        const fieldIntensity = dot(compressedQuat.abs(), vec4(1, 1.618, 2.414, 3.141))
+        const fieldIntensity = compressedQuat.abs().dot(vec4(1, 1.618, 2.414, 3.141))
         const spatialResonance = fieldIntensity.mul(local.length()).mul(15)
-        const compressionWave = sin(spatialResonance).mul(cos(spatialResonance.mul(0.618))).abs()
+        const compressionWave = spatialResonance.sin().mul(spatialResonance.mul(0.618).cos()).abs()
 
         const decayRate = divisor.reciprocal()
         const energyLevel = compressionWave.mul(decayRate)

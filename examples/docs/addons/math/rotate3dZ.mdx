@@ -47,7 +47,7 @@ const fragment = () => {
     const baseAngle = atan2(pos.y, pos.x).mul(3)
     const rotatedAngle = baseAngle.add(iTime.mul(0.4))
     const rotated = rotate3dZ(rotatedAngle).mul(vec3(pos, 0))
-    const petal = abs(sin(radius.mul(2)).mul(cos(rotated.x.mul(0.5))))
+    const petal = radius.mul(2).sin().mul(rotated.x.mul(0.5).cos()).abs()
     const fractal = petal.pow(radius.mul(0.3).add(1))
     const rosette = smoothstep(0.1, 0.9, fractal)
     const hue = rotatedAngle.div(6.28).fract()

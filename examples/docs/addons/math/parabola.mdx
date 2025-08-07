@@ -41,7 +41,7 @@ const fragment = () => {
         const center = vec2(0.5, 0.5)
         const fieldPos = uv.sub(center).abs()
 
-        const radialDistance = length(fieldPos).clamp(0, 0.5).mul(2)
+        const radialDistance = fieldPos.length().clamp(0, 0.5).mul(2)
         const temporalModulation = iTime.mul(0.4).sin().mul(0.5).add(1.5)
 
         const parabolicField = parabola(radialDistance, temporalModulation)

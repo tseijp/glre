@@ -41,10 +41,10 @@ const fragment = () => {
         const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
 
         const q = vec4(
-                sin(angle.add(iTime)),
-                cos(angle.mul(2)),
-                sin(radius.mul(5).add(iTime.mul(0.7))),
-                cos(radius.mul(3).sub(iTime.mul(0.5)))
+                angle.add(iTime).sin(),
+                angle.mul(2).cos(),
+                radius.mul(5).add(iTime.mul(0.7)).sin(),
+                radius.mul(3).sub(iTime.mul(0.5)).cos()
         ).normalize()
 
         const conjugate = quatConj(q)
@@ -53,8 +53,8 @@ const fragment = () => {
         const originalRotation = quat2mat3(q).mul(vec3(uv.sub(0.5), 0))
         const mirrorRotation = quat2mat3(conjugate).mul(vec3(uv.sub(0.5), 0))
 
-        const pattern1 = sin(originalRotation.xy.mul(8)).length()
-        const pattern2 = cos(mirrorRotation.xy.mul(8)).length()
+        const pattern1 = originalRotation.xy.mul(8).sin().length()
+        const pattern2 = mirrorRotation.xy.mul(8).cos().length()
         const symmetry = pattern1.add(pattern2).mul(symmetryField.abs())
 
         const color = vec3(symmetry.mul(0.7), symmetry, symmetry.mul(0.5))

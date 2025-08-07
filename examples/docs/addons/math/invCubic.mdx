@@ -44,8 +44,9 @@ This example applies the invCubic transformation to radial distances, creating s
         isFun
         code={`
 const fragment = () => {
-        const r = uv.distance(vec2(0.5))
-        const theta = uv.sub(vec2(0.5)).y.atan2(uv.sub(vec2(0.5)).x)
+        const offset = uv.sub(vec2(0.5))
+        const r = offset.length()
+        const theta = offset.y.atan2(offset.x)
         const phase = invCubic(r.mul(2).saturate())
         const interference = theta.mul(6).add(phase.mul(20)).sin()
         const resonance = phase.mul(interference).abs()

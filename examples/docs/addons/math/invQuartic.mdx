@@ -37,7 +37,7 @@ This example demonstrates how the invQuartic function can be applied to differen
 const fragment = () => {
         const coord = uv.sub(0.5).mul(4)
         const radius = coord.length()
-        const angle = atan2(coord.y, coord.x)
+        const angle = coord.y.atan2(coord.x)
 
         // Quantum field transition zones
         const zone1 = invQuartic(radius.fract())

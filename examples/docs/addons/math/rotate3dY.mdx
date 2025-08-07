@@ -46,7 +46,7 @@ const fragment = () => {
     const distance = pos.length()
     const angle = distance.mul(4).add(iTime.mul(1.5))
     const rotated = rotate3dY(angle).mul(pos)
-    const vortex = sin(rotated.x.mul(6)).mul(cos(rotated.z.mul(6)))
+    const vortex = rotated.x.mul(6).sin().mul(rotated.z.mul(6).cos())
     const intensity = vortex.mul(smoothstep(1.5, 0, distance))
     const color = vec3(intensity.add(0.3), intensity.mul(0.7).add(0.2), intensity.mul(0.9).add(0.1))
     return vec4(color, 1)

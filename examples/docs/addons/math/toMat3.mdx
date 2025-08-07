@@ -41,8 +41,8 @@ This operation is fundamental in computer graphics for separating orientation fr
         code={`
 const fragment = () => {
         const baseMatrix = mat4(
-                cos(iTime), sin(iTime).negate(), 0, 0,
-                sin(iTime), cos(iTime), 0, 0,
+                iTime.cos(), iTime.sin().negate(), 0, 0,
+                iTime.sin(), iTime.cos(), 0, 0,
                 0, 0, 1, 0,
                 0.5, 0.3, 0.2, 1
         )
@@ -51,11 +51,11 @@ const fragment = () => {
         const direction = vec3(uv, 0.5).normalize()
         const transformed = rotationOnly.mul(direction)
 
-        const intensity = abs(transformed.z)
+        const intensity = transformed.z.abs()
         const colorPhase = atan2(transformed.y, transformed.x)
         const color = vec3(
-                sin(colorPhase.add(iTime)).mul(0.5).add(0.5),
-                sin(colorPhase.add(iTime).add(2.0)).mul(0.5).add(0.5),
+                colorPhase.add(iTime).sin().mul(0.5).add(0.5),
+                colorPhase.add(iTime).add(2.0).sin().mul(0.5).add(0.5),
                 intensity
         ).mul(intensity)
 

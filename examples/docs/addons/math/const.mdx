@@ -69,9 +69,9 @@ const fragment = () => {
 const fragment = () => {
         const center = vec2(0.5)
         const pos = uv.sub(center)
-        const radius = length(pos)
+        const radius = pos.length()
 
-        const angle = atan2(pos.y, pos.x).add(iTime.mul(0.2))
+        const angle = pos.y.atan2(pos.x).add(iTime.mul(0.2))
         const spiral = angle.div(GOLDEN_ANGLE).fract()
 
         const color1 = vec3(spiral, radius.mul(2), 1)

@@ -56,7 +56,7 @@ const fragment = () => {
 
         // Create 17-fold crystallographic symmetry matrices
         const angle17 = atan2(baseY.sub(144.5), baseX.sub(144.5)).mul(17)
-        const radius17 = sqrt(baseX.sub(144.5).pow(2).add(baseY.sub(144.5).pow(2)))
+        const radius17 = baseX.sub(144.5).pow(2).add(baseY.sub(144.5).pow(2)).sqrt()
 
         // Generate primary crystal lattice with 289-periodic boundaries
         const latticeU = mod289(radius17.mul(17).add(angle17.mul(3)))

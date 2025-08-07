@@ -44,8 +44,8 @@ Range mapping creates chromatic transformations that exist beyond conventional c
         code={`
 const fragment = () => {
         const timePhase = iTime.mul(0.8)
-        const polarRadius = length(uv.sub(0.5)).mul(2)
-        const polarAngle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+        const polarRadius = uv.sub(0.5).length().mul(2)
+        const polarAngle = uv.y.sub(0.5).atan2(uv.x.sub(0.5))
         const redMapping = mapRange(polarRadius.mul(4).add(timePhase).sin(), -1, 1, 0.1, 0.9)
         const greenMapping = mapRange(polarAngle.mul(3).add(timePhase.mul(1.3)).cos(), -1, 1, 0.2, 1.0)
         const blueMapping = mapRange(polarRadius.mul(6).sub(polarAngle.mul(2).add(timePhase.mul(0.7))).sin(), -1, 1, 0.3, 0.8)

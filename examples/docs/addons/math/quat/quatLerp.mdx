@@ -40,7 +40,7 @@ const fragment = () => {
         const lerpT = phase.select(float(2).sub(phase), phase.lessThan(1))
 
         const qa = vec4(0, 0, 0, 1)
-        const qb = vec4(sin(1.57), 0, 0, cos(1.57)).normalize()
+        const qb = vec4(float(1.57).sin(), 0, 0, float(1.57).cos()).normalize()
 
         const interpolated = quatLerp(qa, qb, lerpT)
         const rotMatrix = quat2mat3(interpolated)
@@ -48,7 +48,7 @@ const fragment = () => {
         const coords = uv.sub(0.5).mul(4)
         const rotated = rotMatrix.mul(vec3(coords, 0))
 
-        const pattern = sin(rotated.x.mul(rotated.y).mul(6)).abs()
+        const pattern = rotated.x.mul(rotated.y).mul(6).sin().abs()
         const color = vec3(pattern.mul(0.8), pattern, pattern.mul(0.6))
 
         return vec4(color, 1)
@@ -75,9 +75,9 @@ const fragment = () => {
         const segmentT = phase.fract()
 
         const q1 = quatIdentity()
-        const q2 = vec4(sin(hash.mul(3.14)), 0, 0, cos(hash.mul(3.14))).normalize()
-        const q3 = vec4(0, sin(hash.mul(1.57)), 0, cos(hash.mul(1.57))).normalize()
-        const q4 = vec4(0, 0, sin(hash.mul(2.35)), cos(hash.mul(2.35))).normalize()
+        const q2 = vec4(hash.mul(3.14).sin(), 0, 0, hash.mul(3.14).cos()).normalize()
+        const q3 = vec4(0, hash.mul(1.57).sin(), 0, hash.mul(1.57).cos()).normalize()
+        const q4 = vec4(0, 0, hash.mul(2.35).sin(), hash.mul(2.35).cos()).normalize()
 
         const segment = phase.floor()
         const qa = q1.select(q2.select(q3.select(q4, segment.lessThan(3)), segment.lessThan(2)), segment.lessThan(1))

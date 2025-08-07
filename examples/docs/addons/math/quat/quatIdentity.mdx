@@ -42,7 +42,7 @@ const fragment = () => {
         const local = cellPos.fract().sub(0.5)
 
         const identity = quatIdentity()
-        const hash = sin(cell.x.mul(73.1).add(cell.y.mul(157.3))).mul(8134.7).fract()
+        const hash = cell.x.mul(73.1).add(cell.y.mul(157.3)).sin().mul(8134.7).fract()
 
         const rotationalEnergy = hash.mul(iTime.mul(0.3)).sin().abs()
         const disturbance = vec4(

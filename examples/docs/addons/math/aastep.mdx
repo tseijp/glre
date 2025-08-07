@@ -44,9 +44,9 @@ const fragment = () => {
         const time = iTime.mul(0.5)
 
         // Create morphing geometric shapes
-        const shape1 = abs(uv.x).add(abs(uv.y)).sub(1.5)
+        const shape1 = uv.x.abs().add(uv.y.abs()).sub(1.5)
         const shape2 = uv.length().sub(1.2)
-        const morphedShape = mix(shape1, shape2, time.sin().mul(0.5).add(0.5))
+        const morphedShape = shape1.mix(shape2, time.sin().mul(0.5).add(0.5))
 
         const threshold = time.mul(2).sin().mul(0.3).add(0.1)
         const pattern = aastep(threshold, morphedShape)
@@ -87,5 +87,5 @@ With $t = \frac{x - a}{b - a}$. This creates smooth transitions that eliminate a
 | Component           | Purpose                           | Implementation                                            |
 | ------------------- | --------------------------------- | --------------------------------------------------------- |
 | Derivative Analysis | Detects pixel boundaries          | `vec2(dFdx(value), dFdy(value))`                          |
-| Smoothing Width     | Calculates anti-alias range       | `length(derivative) * 0.7`                                |
+| Smoothing Width     | Calculates anti-alias range       | `derivative.length() * 0.7`                                |
 | Smooth Transition   | Applies intelligent interpolation | `smoothstep(threshold - width, threshold + width, value)` |

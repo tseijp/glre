@@ -59,10 +59,10 @@ const fragment = () => {
         const crystallized = saturate(interference.mul(1.5))
 
         const phase = atan2(coord.y, coord.x)
-        const radius = length(coord)
+        const radius = coord.length()
         const orbital = phase.mul(3).add(radius.add(time.mul(2))).sin()
 
-        const final = crystallized.mul(saturate(orbital.add(0.5)))
+        const final = crystallized.mul(orbital.add(0.5).saturate())
 
         return vec4(final.mul(0.6), final.mul(1.2), final.mul(0.9), 1)
 

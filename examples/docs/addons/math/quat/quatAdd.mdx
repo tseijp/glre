@@ -34,12 +34,12 @@ const fragment = () => {
         const cell = pos.floor()
         const local = pos.fract().sub(0.5)
 
-        const hash1 = sin(cell.x.mul(12.9898).add(cell.y.mul(78.233))).mul(43758.5).fract()
-        const hash2 = sin(cell.x.mul(39.346).add(cell.y.mul(11.135))).mul(73156.8).fract()
+        const hash1 = cell.x.mul(12.9898).add(cell.y.mul(78.233)).sin().mul(43758.5).fract()
+        const hash2 = cell.x.mul(39.346).add(cell.y.mul(11.135)).sin().mul(73156.8).fract()
 
-        const q1 = vec4(sin(hash1.mul(6.28)), cos(hash1.mul(3.14)), sin(hash2.mul(4.71)), cos(hash2.mul(1.57)))
-        const q2 = vec4(cos(iTime.add(hash1).mul(2)), sin(iTime.add(hash2).mul(1.5)),
-                       cos(iTime.add(hash1).mul(0.8)), sin(iTime.add(hash2).mul(1.2)))
+        const q1 = vec4(hash1.mul(6.28).sin(), hash1.mul(3.14).cos(), hash2.mul(4.71).sin(), hash2.mul(1.57).cos())
+        const q2 = vec4(iTime.add(hash1).mul(2).cos(), iTime.add(hash2).mul(1.5).sin(),
+                       iTime.add(hash1).mul(0.8).cos(), iTime.add(hash2).mul(1.2).sin())
 
         const sum = quatAdd(q1, q2).normalize()
         const field = dot(sum, vec4(local.x, local.y, local.x.mul(local.y), 1))

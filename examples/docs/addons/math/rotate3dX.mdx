@@ -45,7 +45,7 @@ const fragment = () => {
     const pos = vec3(uv, 0).sub(center).mul(2)
     const angle = pos.x.mul(3).add(iTime.mul(2))
     const rotated = rotate3dX(angle).mul(pos)
-    const wave = sin(rotated.y.mul(8)).mul(cos(rotated.z.mul(6)))
+    const wave = rotated.y.mul(8).sin().mul(rotated.z.mul(6).cos())
     const intensity = wave.mul(0.5).add(0.5)
     const color = vec3(intensity.mul(0.6), intensity.mul(0.9), intensity)
     return vec4(color, 1)

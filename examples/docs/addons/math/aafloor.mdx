@@ -47,8 +47,8 @@ Anti-aliased floor is particularly useful for creating smooth repeating patterns
         isFun
         code={`
 const fragment = () => {
-        const spiral = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
-        const radius = length(uv.sub(0.5)).mul(8)
+        const spiral = uv.y.sub(0.5).atan2(uv.x.sub(0.5))
+        const radius = uv.sub(0.5).length().mul(8)
         const floorSpiral = aafloor(spiral.mul(3).add(iTime))
         const floorRadius = aafloor(radius.add(iTime.mul(2)))
         const pattern = floorSpiral.mul(floorRadius).mod(4).div(4)

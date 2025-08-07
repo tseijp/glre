@@ -51,7 +51,7 @@ const fragment = () => {
         const originalPos = uv.sub(center).mul(4)
         const translatedPos = translationMatrix.mul(vec4(originalPos, 0, 1)).xy
         const circle = smoothstep(0.6, 0.4, translatedPos.length())
-        const trail = smoothstep(0.1, 0.05, abs(originalPos.y.sub(offset.y)))
+        const trail = smoothstep(0.1, 0.05, originalPos.y.sub(offset.y).abs())
         const combined = circle.add(trail.mul(0.3))
         const color = vec3(combined, combined.mul(0.8), combined.mul(0.6))
         return vec4(color, 1)

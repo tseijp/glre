@@ -42,7 +42,7 @@ This mathematical framework enables creation of temporal phase transitions that 
         code={`
 const fragment = () => {
 	const time = iTime.mul(0.3)
-	const centerDistance = length(uv.sub(vec2(0.5)))
+	const centerDistance = uv.sub(vec2(0.5)).length()
 	
 	const ringCount = float(8)
 	const ringPhase = centerDistance.mul(ringCount).add(time)

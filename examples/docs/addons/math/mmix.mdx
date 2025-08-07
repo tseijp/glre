@@ -60,7 +60,7 @@ const fragment = () => {
         const t = iTime.mul(0.2)
 
         // Create four distinct spatial distortion fields
-        const phase1 = p.mul(cos(t))                    // Scaling oscillation
+        const phase1 = p.mul(t.cos())                    // Scaling oscillation
         const phase2 = vec2(p.x.cos(), p.y.sin())      // Circular warping
         const phase3 = p.add(vec2(t.cos(), t.sin()))   // Linear translation
         const phase4 = p.mul(mat2(t.cos(), t.sin(), t.sin().negate(), t.cos()))  // Rotation

@@ -107,7 +107,7 @@ const fragment = () => {
         const fresnel = float(1.0).sub(lambertian).pow(5.0).mul(0.04).add(0.96)
 
         const finalColor = vec3(lambertian).mul(fresnel)
-        const brightness = sin(iTime.add(cellIndex.mul(0.1))).mul(0.2).add(0.8)
+        const brightness = iTime.add(cellIndex.mul(0.1)).sin().mul(0.2).add(0.8)
 
         return vec4(finalColor.mul(brightness), 1)
 
