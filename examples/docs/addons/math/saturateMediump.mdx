@@ -29,24 +29,38 @@ $$
 **Hardware Optimization:**
 The function serves as a mathematical bridge between full-precision calculations and hardware-constrained rendering pipelines, ensuring visual consistency across platforms while optimizing for mobile GPU architectures.
 
-### Numerical Stability Architecture
+### Mobile Hardware Compatibility
 
-Multiple precision layers demonstrate how saturateMediump preserves computational integrity across different mathematical operations. Each layer represents a different order of magnitude, showing precision boundaries at various scales.
+Shows how saturateMediump maintains visual consistency across different precision architectures by demonstrating computational patterns that remain stable within medium precision constraints.
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        const coord = uv.mul(8).sub(4)
-        const time = iTime.mul(0.8)
+        const p = uv.sub(0.5).mul(4)
+        const t = iTime.mul(0.6)
         
-        const plasma1 = sin(coord.x.add(cos(coord.y.add(time))))
-        const plasma2 = cos(coord.y.add(sin(coord.x.add(time.mul(1.3)))))
-        const plasma3 = sin(sqrt(coord.x.mul(coord.x).add(coord.y.mul(coord.y))).add(time.mul(2)))
+        // Complex calculations that might overflow on mobile
+        const complex1 = pow(abs(sin(p.x.mul(3).add(t))), 8).mul(10000)
+        const complex2 = exp(cos(p.y.mul(2).sub(t.mul(1.3)))).mul(5000)
+        const complex3 = pow(length(p).add(sin(t.mul(2))), 6).mul(8000)
         
-        const energy = plasma1.add(plasma2).add(plasma3).div(3)
-        const amplified = energy.mul(3).add(1).div(2)
+        // Apply saturateMediump for mobile stability
+        const stable1 = saturateMediump(complex1).div(65504)
+        const stable2 = saturateMediump(complex2).div(65504)
+        const stable3 = saturateMediump(complex3).div(65504)
         
-        return vec4(amplified.mul(0.7), amplified.mul(1.2), amplified.mul(0.9), 1)
+        // Create stable interference pattern
+        const interference = stable1.mul(stable2).add(stable2.mul(stable3))
+        const pattern = saturateMediump(interference.mul(3)).div(3)
+        
+        // Visualize precision-safe computation
+        const safety = smoothstep(0.8, 1.0, pattern)
+        
+        return vec4(vec3(
+                pattern.mul(0.8).add(safety.mul(0.2)),
+                pattern.mul(0.9),
+                pattern.mul(0.7).add(safety.mul(0.4))
+        ), 1)
 }`}
 />

@@ -30,30 +30,6 @@ const fragment = () => {
 }`}
 />
 
-## Wave Symmetry Generation
-
-Advanced wave manipulation techniques use integer absolute value operations to create perfectly symmetric patterns that mirror across mathematical axes.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const uv = position.xy.div(iResolution).sub(0.5).mul(6)
-        const time = iTime.mul(0.3)
-
-        // Generate complex symmetric wave patterns
-        const wave1 = sin(uv.x.add(time)).mul(cos(uv.y.sub(time)))
-        const wave2 = cos(uv.x.mul(2).sub(time)).add(sin(uv.y.mul(1.5).add(time)))
-
-        const symmetric1 = absi(wave1.sub(0.2))
-        const symmetric2 = absi(wave2.add(0.1))
-
-        const color = vec3(symmetric1.mul(0.7), symmetric2.mul(0.5), symmetric1.mul(symmetric2))
-        return vec4(color, 1)
-
-}`}
-/>
-
 ## Dynamic Threshold Visualization
 
 Threshold-based visual effects leverage absolute value operations to create dynamic boundaries that respond to mathematical conditions and time-based parameters.

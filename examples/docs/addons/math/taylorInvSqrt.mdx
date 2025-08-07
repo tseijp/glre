@@ -1,0 +1,47 @@
+---
+title: 'taylorInvSqrt'
+description: 'Taylor series approximation for fast inverse square root calculation with mathematical visualization'
+keywords: ['taylor series', 'inverse square root', 'approximation', 'fast math', 'normalization']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# taylorInvSqrt: Taylor Series Inverse Square Root Approximation
+
+### Fast Mathematical Approximation for Graphics Programming
+
+The Taylor inverse square root function provides a rapid approximation of $\frac{1}{\sqrt{r}}$ using polynomial expansion. This technique sacrifices precision for computational speed, making it valuable in real-time graphics applications where normalization operations dominate performance.
+
+The mathematical foundation rests on the Taylor series expansion around a carefully chosen point, yielding the linear approximation:
+
+$$
+\text{taylorInvSqrt}(r) = 1.79284291400159 - 0.85373472095314 \cdot r
+$$
+
+This approximation maintains reasonable accuracy within the range $r \in [0.5, 2.0]$, where the linear model closely follows the true inverse square root curve. Beyond this interval, deviation increases exponentially, creating distinct visual artifacts that reveal the approximation's mathematical boundaries.
+
+### Frequency Domain Analysis
+
+The approximation's linear nature creates unique harmonic distortions when applied to oscillating functions. This mathematical property generates distinctive interference patterns that expose the polynomial's spectral characteristics:
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(2)
+        const freq = uv.x.mul(8).add(1)
+        const amplitude = uv.y.mul(2).add(0.5)
+        const signal = freq.mul(t).sin().mul(amplitude)
+        const normalized = signal.mul(signal).add(1)
+        const taylorNorm = taylorInvSqrt(normalized)
+        const phase = taylorNorm.mul(freq).mul(t).sin()
+        const spectral = phase.abs().pow(0.3)
+        const color = vec3(
+                spectral,
+                spectral.mul(0.7),
+                spectral.mul(0.4)
+        )
+        return vec4(color, 1)
+}`}
+/>

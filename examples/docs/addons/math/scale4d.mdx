@@ -37,66 +37,6 @@ $$
 
 The fourth dimension serves dual purposes: in standard 3D graphics, $w=1$ maintains homogeneous coordinates for affine transformations, while $w \neq 1$ enables projective transformations and hyperdimensional scaling operations.
 
-### Tesseract Projection Dynamics
-
-This visualization explores the mathematical projection of a 4D hypercube (tesseract) onto 3D space, demonstrating how scale4d transformations affect higher-dimensional geometric structures.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const p = uv.sub(0.5).mul(6)
-        const time = iTime.mul(0.4)
-        
-        // 4D hypercube vertices in homogeneous coordinates
-        const w1 = sin(time.mul(0.7)).mul(0.5).add(1)
-        const w2 = cos(time.mul(0.9)).mul(0.3).add(0.8)
-        
-        // Anisotropic 4D scaling transformation
-        const scaleX = sin(time).mul(0.4).add(1.2)
-        const scaleY = cos(time.mul(1.3)).mul(0.6).add(1.1)
-        const scaleZ = sin(time.mul(0.8)).mul(0.3).add(0.9)
-        const scaleW = cos(time.mul(1.1)).mul(0.2).add(1.0)
-        
-        // Apply 4D scaling to hypercube coordinates
-        const z1 = sin(p.x.mul(2)).add(cos(p.y.mul(1.5)))
-        const z2 = cos(p.x.mul(1.8)).sub(sin(p.y.mul(2.2)))
-        
-        // Transform 4D points [x, y, z, w] with scale4d matrix
-        const transformed1 = vec4(p.x.mul(scaleX), p.y.mul(scaleY), z1.mul(scaleZ), w1.mul(scaleW))
-        const transformed2 = vec4(p.x.mul(scaleX), p.y.mul(scaleY), z2.mul(scaleZ), w2.mul(scaleW))
-        
-        // Project from 4D to 3D using homogeneous division
-        const projected1 = transformed1.xyz.div(transformed1.w.add(0.1))
-        const projected2 = transformed2.xyz.div(transformed2.w.add(0.1))
-        
-        // Calculate hypersurface intersections
-        const distance1 = length(projected1.xy)
-        const distance2 = length(projected2.xy)
-        
-        // Visualize 4D scaling effects through interference patterns
-        const wave1 = sin(distance1.mul(8).sub(time.mul(3)))
-        const wave2 = cos(distance2.mul(6).add(time.mul(2)))
-        const interference = wave1.mul(wave2)
-        
-        const intensity = smoothstep(-0.4, 0.4, interference)
-        
-        // Color encodes scaling ratios and dimensional compression
-        const volumeScale = scaleX.mul(scaleY).mul(scaleZ).mul(scaleW)
-        const anisotropy = max(scaleX, max(scaleY, max(scaleZ, scaleW))).div(
-                min(scaleX, min(scaleY, min(scaleZ, scaleW)))
-        )
-        
-        const color = vec3(
-                intensity.mul(volumeScale.div(4)),
-                intensity.mul(anisotropy.div(3)),
-                intensity.mul(transformed1.w.add(transformed2.w).div(4))
-        )
-        
-        return vec4(color, 1)
-}`}
-/>
-
 ### Relativistic Space-Time Compression
 
 Demonstrates how scale4d transformations model relativistic effects by treating the fourth dimension as temporal, creating visual representations of Lorentz transformations and space-time curvature.
@@ -116,18 +56,16 @@ const fragment = () => {
         const spatialZ = cos(length(spacetime).add(cosmicTime))
         const timeCoord = sin(spacetime.x.add(spacetime.y).add(cosmicTime.mul(2)))
         
-        // Apply relativistic scaling transformation
-        const lorentzX = gamma
-        const lorentzY = float(1)
-        const lorentzZ = float(1) 
-        const lorentzT = gamma
+        // Apply relativistic scaling transformation using scale4d
+        const lorentzMatrix = scale4dXYZW(gamma, float(1), float(1), gamma)
+        const spacetimePoint = vec4(spacetime.x, spacetime.y, spatialZ, timeCoord)
         
-        // Transform space-time coordinates
+        // Transform space-time coordinates using scale4d matrix
         const transformedSpace = vec4(
-                spacetime.x.mul(lorentzX),
-                spacetime.y.mul(lorentzY),
-                spatialZ.mul(lorentzZ),
-                timeCoord.mul(lorentzT)
+                lorentzMatrix[0][0].mul(spacetimePoint.x),
+                lorentzMatrix[1][1].mul(spacetimePoint.y),
+                lorentzMatrix[2][2].mul(spacetimePoint.z),
+                lorentzMatrix[3][3].mul(spacetimePoint.w)
         )
         
         // Calculate proper time and spatial intervals
@@ -154,81 +92,6 @@ const fragment = () => {
                 field.mul(compression),
                 field.mul(dilation),
                 field.mul(velocity.abs().add(0.2))
-        ), 1)
-}`}
-/>
-
-### Hyperdimensional Fractal Cascade
-
-Explores recursive 4D transformations by applying scale4d operations across multiple dimensional layers, creating cascading fractal structures that reveal the mathematical hierarchy of hyperdimensional geometry.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coords = uv.sub(0.5).mul(3)
-        const evolution = iTime.mul(0.6)
-        
-        // Multi-layer 4D transformation cascade
-        const layer1Scale = vec4(
-                sin(evolution).mul(0.3).add(0.8),
-                cos(evolution.mul(1.2)).mul(0.4).add(0.9),
-                sin(evolution.mul(0.8)).mul(0.2).add(0.7),
-                cos(evolution.mul(1.5)).mul(0.3).add(1.1)
-        )
-        
-        const layer2Scale = vec4(
-                cos(evolution.mul(1.4)).mul(0.5).add(1.2),
-                sin(evolution.mul(0.9)).mul(0.3).add(0.6),
-                cos(evolution.mul(1.1)).mul(0.4).add(1.0),
-                sin(evolution.mul(1.7)).mul(0.2).add(0.8)
-        )
-        
-        // Initialize 4D fractal coordinates
-        const base4D = vec4(coords.x, coords.y, 
-                sin(coords.x.mul(coords.y).add(evolution)), 
-                cos(length(coords).add(evolution.mul(0.5))))
-        
-        // First 4D transformation layer
-        const transformed1 = vec4(
-                base4D.x.mul(layer1Scale.x),
-                base4D.y.mul(layer1Scale.y),
-                base4D.z.mul(layer1Scale.z),
-                base4D.w.mul(layer1Scale.w)
-        )
-        
-        // Project to 3D and iterate
-        const projected1 = transformed1.xyz.div(transformed1.w.add(1))
-        
-        // Second 4D transformation layer
-        const iteration4D = vec4(projected1.x, projected1.y, projected1.z,
-                sin(length(projected1).mul(3).add(evolution)))
-        
-        const transformed2 = vec4(
-                iteration4D.x.mul(layer2Scale.x),
-                iteration4D.y.mul(layer2Scale.y),
-                iteration4D.z.mul(layer2Scale.z),
-                iteration4D.w.mul(layer2Scale.w)
-        )
-        
-        // Final hyperdimensional projection
-        const finalProjection = transformed2.xyz.div(abs(transformed2.w).add(0.1))
-        
-        // Calculate fractal convergence patterns
-        const convergence = sin(length(finalProjection).mul(8).sub(evolution.mul(3)))
-        const bifurcation = cos(atan2(finalProjection.y, finalProjection.x).mul(5).add(evolution.mul(2)))
-        
-        const pattern = convergence.mul(bifurcation)
-        const intensity = smoothstep(-0.6, 0.6, pattern)
-        
-        // Encode dimensional hierarchy in color
-        const hierarchy = abs(transformed1.w.sub(transformed2.w))
-        const complexity = length(layer1Scale.xyz.sub(layer2Scale.xyz))
-        
-        return vec4(vec3(
-                intensity.mul(hierarchy.add(0.3)),
-                intensity.mul(complexity.div(3)),
-                intensity.mul(abs(transformed2.w).div(2).add(0.2))
         ), 1)
 }`}
 />

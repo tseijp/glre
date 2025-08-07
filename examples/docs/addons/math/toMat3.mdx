@@ -1,0 +1,66 @@
+---
+title: 'toMat3'
+description: 'Matrix dimensional reduction: Extract 3×3 transformation core from 4×4 homogeneous matrix'
+keywords: [matrix, transformation, dimensional, reduction, projection, homogeneous]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# toMat3: Dimensional Matrix Projection
+
+### Homogeneous to Euclidean Transformation Kernel Extraction
+
+The `toMat3` function extracts the essential 3×3 transformation kernel from a 4×4 homogeneous matrix by projecting away the translational and perspective components. This operation preserves the linear transformation characteristics: rotation, scaling, and shearing while discarding positional information.
+
+Mathematically, for a 4×4 matrix $M$:
+
+$$
+M = \begin{pmatrix}
+m_{00} & m_{01} & m_{02} & t_x \\
+m_{10} & m_{11} & m_{12} & t_y \\
+m_{20} & m_{21} & m_{22} & t_z \\
+p_x & p_y & p_z & w
+\end{pmatrix}
+$$
+
+The function extracts the upper-left 3×3 submatrix:
+
+$$
+\text{toMat3}(M) = \begin{pmatrix}
+m_{00} & m_{01} & m_{02} \\
+m_{10} & m_{11} & m_{12} \\
+m_{20} & m_{21} & m_{22}
+\end{pmatrix}
+$$
+
+This operation is fundamental in computer graphics for separating orientation from position, enabling normal vector transformations without translational artifacts.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const baseMatrix = mat4(
+                cos(iTime), sin(iTime).negate(), 0, 0,
+                sin(iTime), cos(iTime), 0, 0,
+                0, 0, 1, 0,
+                0.5, 0.3, 0.2, 1
+        )
+        
+        const rotationOnly = toMat3(baseMatrix)
+        const direction = vec3(uv, 0.5).normalize()
+        const transformed = rotationOnly.mul(direction)
+        
+        const intensity = abs(transformed.z)
+        const colorPhase = atan2(transformed.y, transformed.x)
+        const color = vec3(
+                sin(colorPhase.add(iTime)).mul(0.5).add(0.5),
+                sin(colorPhase.add(iTime).add(2.0)).mul(0.5).add(0.5),
+                intensity
+        ).mul(intensity)
+        
+        return vec4(color, 1)
+}`}
+/>
+
+This visualization demonstrates how `toMat3` isolates rotational transformation from a complete 4×4 matrix. The extracted 3×3 matrix transforms directional vectors while preserving their angular relationships, creating fluid color rotations without positional drift that would occur with the full 4×4 matrix transformation.
