@@ -1,0 +1,47 @@
+---
+title: 'exponentialOut'
+description: 'Exponential deceleration with sharp exponential onset and extremely smooth completion'
+keywords: [animation, easing, exponential, deceleration, sharp, smooth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# exponentialOut: Exponential Deceleration Function
+
+### Mathematical Foundation for Exponential Deceleration
+
+The `exponentialOut` function applies inverted exponential transformation creating deceleration curves with sharp exponential initial motion that smooths to extremely gentle completion.
+
+$$
+f(t) = \begin{cases}
+t & \text{if } t = 1 \\
+1 - 2^{-10t} & \text{otherwise}
+\end{cases}
+$$
+
+This transformation generates motion profiles where velocity decreases exponentially from sharp initial movement to smooth completion, providing distinctive exponential deceleration characteristics.
+
+### Exponential Decay Analysis
+
+The derivative reveals exponential deceleration patterns that begin with high velocity and decay exponentially toward zero completion.
+
+$$
+\frac{df}{dt} = 10 \ln(2) \cdot 2^{-10t}
+$$
+
+This creates maximum initial velocity with deceleration that smooths exponentially, producing distinctive sharp-start smooth-finish motion profiles through exponential decay.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = exponentialOut(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.005)
+        return vec4(line, marker, curve, 1)
+}`}
+/>
+
+The implementation demonstrates exponential deceleration behavior where motion begins with sharp exponential intensity and smooths to extremely gentle completion through inverted exponential transformation.

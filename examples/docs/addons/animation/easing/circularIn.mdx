@@ -1,0 +1,44 @@
+---
+title: 'circularIn'
+description: 'Circular acceleration based on quarter-circle arc with smooth onset and curved crescendo'
+keywords: [animation, easing, circular, acceleration, smooth, curved]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circularIn: Circular Arc Acceleration Function
+
+### Mathematical Foundation for Circular Acceleration
+
+The `circularIn` function applies circular arc transformation creating acceleration curves derived from quarter-circle geometry with smooth initial motion building to curved increases.
+
+$$
+f(t) = 1 - \sqrt{1 - t^2}
+$$
+
+This quarter-circle relationship generates motion profiles following circular arc geometry where velocity increases smoothly according to circular rather than polynomial or exponential characteristics.
+
+### Circular Arc Geometry
+
+The derivative reveals circular acceleration patterns derived from the geometry of a unit circle's first quadrant.
+
+$$
+\frac{df}{dt} = \frac{t}{\sqrt{1 - t^2}}
+$$
+
+This creates acceleration that follows circular arc geometry, producing distinctive smooth curved motion profiles based on circular mathematical relationships.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = circularIn(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.005)
+        return vec4(line, marker, curve, 1)
+}`}
+/>
+
+The implementation demonstrates circular acceleration behavior where motion follows quarter-circle arc geometry creating smooth curved acceleration through circular mathematical transformation.

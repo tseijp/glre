@@ -1,0 +1,50 @@
+---
+title: 'circularInOut'
+description: 'Bidirectional circular easing with symmetric quarter-circle arc curves and smooth transitions'
+keywords: [animation, easing, circular, bidirectional, symmetric, smooth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circularInOut: Symmetric Circular Arc Motion Function
+
+### Mathematical Foundation for Symmetric Circular Motion
+
+The `circularInOut` function applies circular arc transformation through piecewise construction, creating symmetric motion profiles with circular acceleration and deceleration characteristics derived from quarter-circle geometry.
+
+$$
+f(t) = \begin{cases}
+\frac{1}{2}(1 - \sqrt{1 - 4t^2}) & \text{if } t < 0.5 \\
+\frac{1}{2}(\sqrt{(3-2t)(2t-1)} + 1) & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+The piecewise definition maintains continuity at $t = 0.5$ while generating circular motion profiles through quarter-circle arc scaling that creates distinctive curved visual characteristics.
+
+### Circular Arc Symmetry Properties
+
+The derivative reveals symmetric circular acceleration and deceleration patterns based on quarter-circle arc geometry with smooth transitions.
+
+$$
+\frac{df}{dt} = \begin{cases}
+\frac{2t}{\sqrt{1 - 4t^2}} & \text{if } t < 0.5 \\
+\frac{1 - t}{\sqrt{(3-2t)(2t-1)}} & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+This creates symmetric velocity curves that follow circular arc geometry, producing distinctive motion dynamics unavailable through polynomial or exponential transformations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = circularInOut(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.005)
+        return vec4(line, marker, curve, 1)
+}`}
+/>
+
+The implementation demonstrates symmetric circular motion behavior where circular acceleration and deceleration phases create distinctive animation dynamics through quarter-circle arc transformation.

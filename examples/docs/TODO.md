@@ -148,9 +148,9 @@
 - [x] `animation/easing/exponentialIn.glsl` → TSL
 - [x] `animation/easing/exponentialOut.glsl` → TSL
 - [x] `animation/easing/exponentialInOut.glsl` → TSL
-- [ ] `animation/easing/circularIn.glsl` → TSL
-- [ ] `animation/easing/circularOut.glsl` → TSL
-- [ ] `animation/easing/circularInOut.glsl` → TSL
+- [x] `animation/easing/circularIn.glsl` → TSL
+- [x] `animation/easing/circularOut.glsl` → TSL
+- [x] `animation/easing/circularInOut.glsl` → TSL
 
 ### Phase 2C: SDF 基本図形 (42 ファイル) - 依存関係なし
 
