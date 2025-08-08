@@ -1,0 +1,68 @@
+---
+title: 'raymarch'
+description: 'Advanced 3D rendering using sphere tracing and signed distance fields'
+keywords: [raymarch, sdf, rendering, 3d, sphere, tracing]
+date: 2025-08-08
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# raymarch: Sphere Tracing 3D Renderer
+
+### Mathematical Foundation of Ray Marching
+
+Ray marching implements sphere tracing, an iterative 3D rendering technique that uses signed distance fields to determine surface intersections. The algorithm advances along rays by the safe distance provided by the SDF at each point:
+
+$$\mathbf{p}_{n+1} = \mathbf{p}_n + d(\mathbf{p}_n) \cdot \hat{\mathbf{r}}$$
+
+Where $\mathbf{p}_n$ is the current ray position, $d(\mathbf{p}_n)$ is the signed distance to the nearest surface, and $\hat{\mathbf{r}}$ is the normalized ray direction.
+
+The algorithm terminates when either:
+
+- Distance threshold reached: $d(\mathbf{p}_n) < \epsilon$ (surface hit)
+- Maximum distance exceeded: $|\mathbf{p}_n - \mathbf{p}_0| > d_{max}$ (ray escape)
+
+### Perspective Projection Mathematics
+
+The camera system transforms 2D screen coordinates to 3D ray directions using perspective projection. For field of view $\theta$ and normalized screen coordinates $(u,v) \in [-1,1]^2$:
+
+$$\text{fov factor} = \frac{1}{\tan(\theta/2)}$$
+
+$$\mathbf{r} = \text{normalize}(u, v, \text{fov factor})$$
+
+This creates rays that diverge from the camera origin with correct perspective distortion.
+
+### Scene Composition via Boolean Operations
+
+Multiple primitive SDFs combine using distance field operations:
+
+$$d_{\text{union}}(\mathbf{p}) = \min(d_1(\mathbf{p}), d_2(\mathbf{p}))$$
+
+$$d_{\text{intersection}}(\mathbf{p}) = \max(d_1(\mathbf{p}), d_2(\mathbf{p}))$$
+
+$$d_{\text{difference}}(\mathbf{p}) = \max(d_1(\mathbf{p}), -d_2(\mathbf{p}))$$
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.3)
+        const cameraPos = vec3(t.sin().mul(2.5), 1.5, t.cos().mul(2.5))
+        const lookAtPoint = vec3(0, 0, 0)
+        const color = raymarchBasic(cameraPos, lookAtPoint, uv)
+        return color
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const orbit = iTime.mul(0.4)
+        const height = iTime.sin().mul(0.5).add(2)
+        const cameraPos = vec3(orbit.cos().mul(3), height, orbit.sin().mul(3))
+        const result = raymarchBasic(cameraPos, vec3(0, -0.2, 0), uv)
+        const fog = result.rgb.mix(vec3(0.2, 0.4, 0.7), result.a.mul(0.3))
+        return vec4(fog, 1)
+}`}
+/>

@@ -1,0 +1,53 @@
+---
+title: 'circleSDF'
+description: '2D circular signed distance field computation with customizable center positioning'
+keywords: [sdf, circle, distance, field, geometry, 2d]
+date: 2025-08-08
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circleSDF: 2D Circular Distance Field Generation
+
+### Mathematical Foundation for Circular Distance Computation
+
+The circular signed distance field computes the Euclidean distance from any point to the nearest surface of a circle. For a circle centered at point $\mathbf{c}$ with radius $r$, the signed distance function is defined as:
+
+$$d(\mathbf{p}) = |\mathbf{p} - \mathbf{c}| - r$$
+
+Where $|\mathbf{p} - \mathbf{c}|$ represents the Euclidean distance from point $\mathbf{p}$ to the center $\mathbf{c}$. The function returns negative values inside the circle, positive values outside, and zero exactly on the boundary.
+
+The implementation scales the distance by factor 2 to normalize coordinates from UV space [0,1] to geometric space, where the default circle occupies the unit square with center at (0.5, 0.5).
+
+### Geometric Transformation Properties
+
+The circular SDF exhibits several important mathematical properties:
+
+- **Rotational Symmetry**: $d(R\mathbf{p}) = d(\mathbf{p})$ for any rotation matrix $R$ around the center
+- **Scale Invariance**: Scaling the input coordinates by factor $s$ scales the distance by the same factor
+- **Translation**: Moving the center by vector $\mathbf{t}$ transforms the function to $d(\mathbf{p} - \mathbf{t})$
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const radius = iTime.sin().mul(0.3).add(0.5)
+        const center = vec2(0.5).add(iTime.cos().mul(0.2))
+        const dist = circleSDF(uv, center).sub(radius)
+        const color = dist.smoothstep(-0.02, 0.02)
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const gridScale = 8
+        const gridUV = uv.mul(gridScale).fract()
+        const dist = circleSDFBasic(gridUV).sub(0.3)
+        const pattern = dist.step(0).oneMinus()
+        const color = pattern.mul(vec3(0.2, 0.6, 0.9))
+        return vec4(color, 1)
+}`}
+/>
