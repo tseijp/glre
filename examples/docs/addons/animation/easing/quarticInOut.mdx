@@ -46,7 +46,8 @@ const fragment = () => {
         const t = iTime.fract()
         const curve = quarticInOut(t)
         const line = uv.x.sub(curve).abs().step(0.01)
-        const marker = t.sub(uv.x).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.01
+        )
         return vec4(line, marker, 0, 1)
 }`}
 />

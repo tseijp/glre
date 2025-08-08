@@ -1,0 +1,55 @@
+---
+title: 'exponentialInOut'
+description: 'Bidirectional exponential easing with sharp exponential curves and smooth transitions'
+keywords: [animation, easing, exponential, bidirectional, sharp, smooth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# exponentialInOut: Symmetric Exponential Motion Function
+
+### Mathematical Foundation for Exponential Dual-Phase Motion
+
+The `exponentialInOut` function applies exponential transformation through piecewise construction, creating symmetric motion profiles with exponential acceleration and deceleration characteristics that differ fundamentally from polynomial alternatives.
+
+$$
+f(t) = \begin{cases}
+t & \text{if } t = 0 \text{ or } t = 1 \\
+\frac{1}{2} \cdot 2^{20t-10} & \text{if } t < 0.5 \\
+-\frac{1}{2} \cdot 2^{10-20t} + 1 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+The function handles edge cases explicitly while generating exponential motion profiles through base-2 exponential scaling that creates distinctive visual characteristics compared to polynomial easing functions.
+
+### Exponential Growth Characteristics
+
+The derivative reveals exponential acceleration and deceleration patterns with logarithmic scaling properties distinct from polynomial alternatives.
+
+$$
+\frac{df}{dt} = \begin{cases}
+10 \ln(2) \cdot 2^{20t-10} & \text{if } t < 0.5 \\
+10 \ln(2) \cdot 2^{10-20t} & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+This creates exponential velocity curves that build and decay according to exponential rather than polynomial characteristics, producing unique motion dynamics.
+
+### Exponential Symmetry Properties
+
+The function maintains perfect symmetry around $(0.5, 0.5)$ while exhibiting exponential curve characteristics that generate distinctive motion profiles unavailable through polynomial transformations.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = exponentialInOut(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.005)
+        return vec4(line, marker, curve, 1)
+}`}
+/>
+
+The implementation demonstrates exponential symmetric motion behavior where exponential acceleration and deceleration phases create distinctive animation dynamics through base-2 exponential transformation.

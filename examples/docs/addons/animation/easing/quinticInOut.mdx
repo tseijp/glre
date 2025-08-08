@@ -1,0 +1,54 @@
+---
+title: 'quinticInOut'
+description: 'Bidirectional quintic easing with maximum intensity acceleration and extreme deceleration phases'
+keywords: [animation, easing, quintic, bidirectional, maximum, extreme]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quinticInOut: Symmetric Fifth-Order Motion Function
+
+### Mathematical Foundation for Maximum Intensity Dual-Phase Motion
+
+The `quinticInOut` function applies fifth-degree polynomial transformation through piecewise construction, creating symmetric motion profiles with maximum intensity acceleration and deceleration characteristics exceeding all lower-order polynomial variants.
+
+$$
+f(t) = \begin{cases}
+16t^5 & \text{if } t < 0.5 \\
+-\frac{1}{2}(2t-2)^5 + 1 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+The piecewise definition maintains continuity at $t = 0.5$ while generating extreme motion profiles through fifth-power scaling that creates the most pronounced visual impact during transitions among polynomial easing functions.
+
+### Velocity Analysis with Quintic Characteristics
+
+The derivative reveals symmetric quartic velocity profiles with maximum intensity acceleration patterns that build extreme velocity at the midpoint transition.
+
+$$
+\frac{df}{dt} = \begin{cases}
+80t^4 & \text{if } t < 0.5 \\
+-5(2t-2)^4 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+This produces maximum velocity at $t = 0.5$ with quartic velocity curves that remain minimal at endpoints while generating the most dramatic momentum changes during the central transition phase.
+
+### Fifth-Order Symmetry Properties
+
+The function maintains perfect symmetry around $(0.5, 0.5)$ while exhibiting quintic curve characteristics that generate the most extreme motion profiles among standard polynomial easing functions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = quinticInOut(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.01)
+        return vec4(line, marker, 0, 1)
+}`}
+/>
+
+The implementation demonstrates fifth-order symmetric motion behavior where quintic acceleration and deceleration phases create maximum animation intensity with the most pronounced velocity transitions among polynomial easing alternatives.

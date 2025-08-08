@@ -1,0 +1,44 @@
+---
+title: 'quarticOut'
+description: 'Fourth-degree polynomial deceleration with sharp onset and smooth completion'
+keywords: [animation, easing, quartic, deceleration, sharp, smooth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quarticOut: Fourth-Order Deceleration Function
+
+### Mathematical Foundation for Sharp-to-Smooth Deceleration
+
+The `quarticOut` function applies inverted fourth-degree polynomial transformation creating deceleration curves with sharp initial motion that smooths to gentle completion.
+
+$$
+f(t) = (t-1)^3 \cdot (1-t) + 1
+$$
+
+This transformation generates motion profiles where velocity decreases dramatically from sharp initial movement to smooth completion, providing the inverse characteristics of quartic acceleration.
+
+### Deceleration Analysis
+
+The derivative reveals complex deceleration patterns that begin with high velocity and smooth toward zero completion.
+
+$$
+\frac{df}{dt} = 3(t-1)^2 \cdot (1-t) - (t-1)^3
+$$
+
+This creates maximum initial velocity with deceleration that smooths progressively, producing the characteristic sharp-start smooth-finish motion profile.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = quarticOut(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.005)
+        return vec4(line, marker, 0, 1)
+}`}
+/>
+
+The implementation demonstrates fourth-order deceleration behavior where motion begins with sharp intensity and smooths to gentle completion through inverted quartic polynomial transformation.

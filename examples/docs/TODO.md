@@ -142,12 +142,12 @@
 - [x] `animation/easing/quarticIn.glsl` → TSL
 - [x] `animation/easing/quarticOut.glsl` → TSL
 - [x] `animation/easing/quarticInOut.glsl` → TSL
-- [ ] `animation/easing/quinticIn.glsl` → TSL
-- [ ] `animation/easing/quinticOut.glsl` → TSL
-- [ ] `animation/easing/quinticInOut.glsl` → TSL
-- [ ] `animation/easing/exponentialIn.glsl` → TSL
-- [ ] `animation/easing/exponentialOut.glsl` → TSL
-- [ ] `animation/easing/exponentialInOut.glsl` → TSL
+- [x] `animation/easing/quinticIn.glsl` → TSL
+- [x] `animation/easing/quinticOut.glsl` → TSL
+- [x] `animation/easing/quinticInOut.glsl` → TSL
+- [x] `animation/easing/exponentialIn.glsl` → TSL
+- [x] `animation/easing/exponentialOut.glsl` → TSL
+- [x] `animation/easing/exponentialInOut.glsl` → TSL
 - [ ] `animation/easing/circularIn.glsl` → TSL
 - [ ] `animation/easing/circularOut.glsl` → TSL
 - [ ] `animation/easing/circularInOut.glsl` → TSL
