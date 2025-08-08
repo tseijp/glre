@@ -1,0 +1,48 @@
+---
+title: 'backIn'
+description: 'Cubic ease-in with back overshoot for natural motion acceleration with anticipatory undershoot effect'
+keywords: [animation, easing, cubic, back, overshoot, acceleration]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# backIn: Anticipatory Acceleration Curve
+
+### Mathematical Definition of Cubic Back-In Easing
+
+The backIn function implements a cubic easing curve with negative anticipatory motion followed by accelerated transition. The mathematical foundation combines cubic polynomial acceleration with sinusoidal undershoot, creating a motion pattern that pulls back before moving forward.
+
+The mathematical expression $f(t) = t^3 - t \cdot \sin(t \cdot \pi)$ where $t \in [0, 1]$ produces a curve that begins with negative values before accelerating toward unity. The cubic term $t^3$ provides smooth acceleration, while the sinusoidal component $t \cdot \sin(t \cdot \pi)$ introduces the characteristic undershoot at the beginning.
+
+The derivative $f'(t) = 3t^2 - \sin(t \cdot \pi) - t \cdot \pi \cdot \cos(t \cdot \pi)$ reveals the velocity profile: negative initial velocity followed by increasing acceleration rate.
+
+### Physical Interpretation and Practical Applications
+
+This easing function simulates realistic motion where objects gather momentum by first moving in the opposite direction. Natural systems exhibit this behavior when overcoming inertia: a pendulum drawing back before swinging forward, or a spring compressing before extending.
+
+The anticipatory undershoot creates visual tension that enhances the perceived power of the subsequent acceleration. This psychological effect makes motion feel more dynamic and intentional compared to standard cubic curves.
+
+### Implementation Characteristics
+
+The TSL implementation leverages the mathematical constant $\pi$ for precise sinusoidal computation. The function accepts normalized time input $t$ and returns position values that extend below zero initially before transitioning smoothly to unity.
+
+The cubic component ensures $C^2$ continuity at both endpoints, while the sinusoidal term maintains bounded derivatives throughout the domain.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = backIn(t)
+    const Y = backIn(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

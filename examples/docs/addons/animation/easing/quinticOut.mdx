@@ -1,0 +1,36 @@
+---
+title: 'quinticOut'
+description: 'Fifth-power deceleration with maximum gentle completion intensity'
+keywords: [quintic, easing, deceleration, fifth-power, gentle, extreme]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quinticOut: Fifth-Power Deceleration
+
+### Maximum polynomial deceleration creating extraordinarily gentle completion
+
+The quinticOut function produces the most extreme polynomial deceleration through inverted fifth-power scaling. This creates the most dramatic transition from rapid motion to extraordinarily gentle completion.
+
+$$f(t) = 1 - (t-1)^5$$
+
+The inverted quintic relationship maximizes the deceleration effect beyond all lower-order polynomial curves, creating the longest possible gentle landing phase.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = quinticOut(t)
+    const Y = quinticOut(uv.x)
+    const a = vec3(0.9, 0.6, 0.1)
+    const b = vec3(0.1, 0.4, 0.9)
+    const c = a.mix(b, y).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

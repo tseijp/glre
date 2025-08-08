@@ -1,0 +1,48 @@
+---
+title: 'cubicIn'
+description: 'Cubic polynomial acceleration easing with smooth third-degree curve progression'
+keywords: [animation, easing, cubic, polynomial, acceleration]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cubicIn: Cubic Polynomial Acceleration
+
+### Mathematical Foundation of Cubic Motion
+
+The cubicIn function implements acceleration through cubic polynomial progression. The mathematical expression $f(t) = t^3$ represents the simplest form of cubic easing, creating smooth acceleration with increasing rate throughout the motion.
+
+The cubic function provides $C^2$ continuity with zero initial velocity and zero initial acceleration, making it ideal for natural motion that starts gently and builds momentum progressively.
+
+The derivative $f'(t) = 3t^2$ shows quadratic velocity growth, while the second derivative $f''(t) = 6t$ indicates linear acceleration increase, characteristic of polynomial motion curves.
+
+### Polynomial Properties and Smoothness
+
+Cubic functions maintain excellent smoothness properties due to their polynomial nature. The motion begins with near-zero velocity, gradually increasing acceleration that builds to maximum rate at completion.
+
+This acceleration profile creates motion that feels natural and predictable, without the jarring transitions that can occur with linear or discontinuous easing functions.
+
+### Computational Efficiency
+
+The TSL implementation uses direct multiplication: `t.mul(t).mul(t)`, providing computational efficiency while maintaining mathematical precision. This approach avoids more expensive power operations while achieving identical results.
+
+The auto-typed parameters enable compatibility with both scalar and vector inputs, maintaining consistent cubic behavior across different data types.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = cubicIn(t)
+    const Y = cubicIn(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

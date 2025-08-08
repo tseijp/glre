@@ -1,0 +1,36 @@
+---
+title: 'quarticOut'
+description: 'Fourth-power deceleration with extremely gentle completion'
+keywords: [quartic, easing, deceleration, fourth-power, gentle, completion]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quarticOut: Fourth-Power Deceleration
+
+### Inverted quartic curve producing extremely gentle motion completion
+
+The quarticOut function creates dramatic deceleration through inverted fourth-power scaling. This produces rapid initial motion that decelerates to an extremely gentle completion.
+
+$$f(t) = -(t-1)^4 + 1$$
+
+The inverted quartic relationship amplifies the deceleration effect beyond quadratic and cubic curves, creating extended periods of near-zero velocity toward completion.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = quarticOut(t)
+    const Y = quarticOut(uv.x)
+    const a = vec3(0.1, 0.8, 0.9)
+    const b = vec3(0.9, 0.4, 0.1)
+    const c = a.mix(b, y).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

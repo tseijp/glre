@@ -1,0 +1,36 @@
+---
+title: 'quadraticIn'
+description: 'Parabolic acceleration from zero'
+keywords: [quadratic, easing, acceleration, parabola, animation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quadraticIn: Parabolic Acceleration
+
+### Squared intensity curve for smooth motion onset
+
+The quadraticIn function creates parabolic acceleration by squaring the input value. This mathematical relationship produces gentle acceleration that increases smoothly from zero.
+
+$$f(t) = t^2$$
+
+The function transforms linear time progression into curved motion. Values near zero remain close to zero, while values approaching one accelerate toward the maximum.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = quadraticIn(t)
+    const Y = quadraticIn(uv.x)
+    const a = vec3(0.2, 0.4, 0.9)
+    const b = vec3(0.9, 0.7, 0.3)
+    const c = a.mix(b, y).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

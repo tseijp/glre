@@ -1,0 +1,50 @@
+---
+title: 'circularInOut'
+description: 'Symmetric circular easing with quarter-circle acceleration and deceleration phases for balanced motion'
+keywords: [animation, easing, circular, symmetric, inout, arc]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circularInOut: Symmetric Circular Motion
+
+### Mathematical Structure of Bidirectional Circular Easing
+
+The circularInOut function creates symmetric motion through piecewise circular arc composition. The mathematical foundation uses distinct quarter-circle segments for acceleration and deceleration phases.
+
+For $t \in [0, 0.5]$: $f(t) = \frac{1}{2}(1 - \sqrt{1 - 4t^2})$ (scaled circular acceleration)
+
+For $t \in [0.5, 1]$: $f(t) = \frac{1}{2}(\sqrt{(3-2t)(2t-1)} + 1)$ (circular deceleration)
+
+The first segment scales the standard circular curve by factor 2 in the domain, while the second segment uses an inverted transformation to create symmetric deceleration behavior.
+
+### Geometric Properties and Continuity
+
+Both segments maintain circular arc curvature properties while ensuring $C^0$ continuity at the transition point $t = 0.5$. The geometric construction preserves smooth curvature transitions between acceleration and deceleration phases.
+
+The velocity profile increases during the first half following circular arc tangent behavior, reaches maximum at the midpoint, then decreases symmetrically through the second half.
+
+### Implementation Through Piecewise Composition
+
+The TSL implementation computes both circular segments and uses conditional selection based on the temporal threshold. The early segment handles acceleration through scaled circular motion, while the late segment provides symmetric deceleration.
+
+Mathematical transformations ensure proper domain and range scaling while preserving circular geometric properties throughout both motion phases.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = circularInOut(t)
+    const Y = circularInOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

@@ -1,0 +1,34 @@
+---
+title: 'linearIn'
+description: 'Linear easing function with constant velocity and uniform progression'
+keywords: [animation, easing, linear, constant, uniform]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# linearIn: Linear Progression
+
+### Mathematical Foundation
+
+The linearIn function represents direct linear interpolation with the mathematical expression $f(t) = t$. This creates motion with constant velocity throughout the duration, maintaining a derivative $f'(t) = 1$.
+
+Linear easing provides predictable, mechanical motion without acceleration or deceleration effects, serving as the baseline for comparing other easing functions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = linearIn(t)
+    const Y = linearIn(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

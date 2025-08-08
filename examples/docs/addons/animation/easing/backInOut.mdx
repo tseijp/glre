@@ -1,0 +1,50 @@
+---
+title: 'backInOut'
+description: 'Combined back easing curve with anticipatory undershoot at both ends and smooth transition through center'
+keywords: [animation, easing, back, inout, anticipatory, symmetric]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# backInOut: Symmetric Anticipatory Motion
+
+### Mathematical Structure of Bidirectional Back Easing
+
+The backInOut function creates symmetric anticipatory motion by combining back-in and back-out curves through piecewise composition. The mathematical foundation uses conditional transformation to apply backIn to the first half and its inverted counterpart to the second half.
+
+For $t \in [0, 0.5]$: $f(t) = \frac{1}{2} \cdot \text{backIn}(2t)$
+
+For $t \in [0.5, 1]$: $f(t) = \frac{1}{2} \cdot (1 - \text{backIn}(2(1-t))) + 0.5$
+
+This piecewise construction ensures $C^0$ continuity at $t = 0.5$ while maintaining the characteristic undershoot behavior at both endpoints.
+
+### Kinematic Properties and Motion Characteristics
+
+The velocity profile exhibits negative initial acceleration, followed by positive acceleration through the center, then negative acceleration toward the end with overshoot beyond the target. This creates a motion signature where objects appear to hesitate before accelerating, then decelerate with overshoot.
+
+The acceleration profile shows three distinct phases: initial backward pull, forward acceleration through center, and final forward overshoot with return. This tri-phase motion creates engaging visual dynamics for UI transitions and character animations.
+
+### Implementation Architecture
+
+The TSL implementation leverages the existing backIn function through functional composition. The conditional logic uses select operations to handle the piecewise definition, ensuring proper domain transformation for each half of the curve.
+
+The scaling factors (0.5 multiplication and 0.5 offset) maintain output range $[0,1]$ while preserving the characteristic undershoot properties inherited from the base backIn function.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = backInOut(t)
+    const Y = backInOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

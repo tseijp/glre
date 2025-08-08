@@ -1,0 +1,48 @@
+---
+title: 'bounceOut'
+description: 'Elastic deceleration easing with diminishing bounce amplitude simulating realistic collision physics'
+keywords: [animation, easing, bounce, elastic, collision, physics]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# bounceOut: Elastic Collision Deceleration
+
+### Mathematical Foundation of Bounce Physics
+
+The bounceOut function implements realistic elastic collision dynamics through piecewise polynomial approximation. The mathematical structure uses four distinct segments with carefully calibrated coefficients to simulate gravitational bounce behavior with energy dissipation.
+
+The polynomial segments utilize coefficients derived from physical collision models: 7.5625, 9.075, and ratios like 4356/361, representing energy retention factors for successive bounces. Each segment corresponds to different phases of elastic collision with decreasing amplitude.
+
+The piecewise structure maintains $C^0$ continuity at transition points while preserving the characteristic exponential decay of bounce amplitude observed in real elastic systems.
+
+### Physical Modeling and Energy Dissipation
+
+This easing pattern accurately models the behavior of elastic objects under gravitational influence. The mathematical coefficients correspond to specific restitution values that govern energy retention between successive collisions.
+
+The temporal distribution of bounces follows physically accurate spacing, with larger intervals between later bounces as kinetic energy dissipates. This creates authentic motion profiles for objects settling under gravity.
+
+### Computational Implementation Strategy
+
+The TSL implementation uses nested conditional logic to select appropriate polynomial segments based on time intervals. The constants (a=4/11, b=8/11, c=9/10) define transition boundaries between bounce phases.
+
+Each polynomial segment employs optimized coefficients that balance computational efficiency with physical accuracy, ensuring smooth motion while maintaining realistic bounce characteristics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = bounceOut(t)
+    const Y = bounceOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

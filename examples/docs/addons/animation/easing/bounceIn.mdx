@@ -1,0 +1,48 @@
+---
+title: 'bounceIn'
+description: 'Bounce acceleration easing with inverted elastic collision behavior for dramatic motion buildup'
+keywords: [animation, easing, bounce, collision, acceleration, elastic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# bounceIn: Inverted Elastic Collision Curve
+
+### Mathematical Foundation of Bounce Acceleration
+
+The bounceIn function implements elastic collision dynamics through inversion of the bounceOut curve. The mathematical relationship $f(t) = 1 - \text{bounceOut}(1-t)$ creates accelerating motion that mimics a ball gathering energy through reverse elastic collisions before reaching its target.
+
+This transformation preserves the characteristic bounce coefficients while inverting the temporal sequence. The function maintains piecewise polynomial structure with carefully tuned coefficients to simulate realistic collision dynamics.
+
+The underlying bounceOut function uses four distinct polynomial segments with decreasing amplitude, creating the characteristic diminishing bounce pattern when inverted for acceleration behavior.
+
+### Physical Modeling and Collision Dynamics
+
+This easing pattern models the reverse of gravitational bounce behavior, where an object appears to collect energy from multiple virtual collisions before accelerating toward its destination. Each bounce segment corresponds to different phases of elastic collision with varying energy retention coefficients.
+
+The mathematical coefficients (7.5625, 9.075, etc.) derive from physical models of elastic collision with specific restitution values, ensuring realistic energy distribution across bounce phases.
+
+### Implementation Through Function Composition
+
+The TSL implementation leverages the existing bounceOut function through domain and range inversion. This approach maintains computational efficiency while ensuring consistent bounce characteristics across the easing family.
+
+The inversion transform $(1-t)$ input followed by $(1-\text{result})$ output produces the desired acceleration profile without requiring separate polynomial derivation.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = bounceIn(t)
+    const Y = bounceIn(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

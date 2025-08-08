@@ -599,7 +599,9 @@ children 配列では、条件式とスコープが交互に配置され、Else 
 この配置により、コード生成時に条件分岐構造を判定する。
 
 ```ts
-select(条件がfalseのとき, 条件がtrueのとき, 条件)
+select(条件がfalseのときの値, 条件がtrueのときの値, 条件の boolean)
+// or
+(条件がfalseのときの値).select(条件がtrueのときの値, 条件の boolean)
 ```
 
 ## 関数定義システム
