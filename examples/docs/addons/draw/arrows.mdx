@@ -1,0 +1,63 @@
+---
+title: 'arrows'
+description: 'Vector field arrow visualization with tiled arrangement and directional indicators'
+keywords: [arrows, vector field, direction, visualization, flow]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# arrows: Vector Field Visualization
+
+### Arrow Tiling Mathematics
+
+The `arrows` function renders directional arrows arranged in a tiled grid pattern. Each tile contains a single arrow whose direction and magnitude represent vector field data at that spatial location.
+
+For tile coordinate calculation:
+
+$$
+\text{tileCenter}(p) = \left(\lfloor \frac{p}{\text{tileSize}} \rfloor + 0.5\right) \times \text{tileSize}
+$$
+
+Where the default tile size is 32 units, creating a regular grid of arrow positions across the coordinate space.
+
+### Vector Direction and Magnitude Encoding
+
+Input vectors control both arrow direction and visual magnitude. The function clamps vector magnitude between 5 and half the tile size to maintain readable arrow proportions while preserving directional information.
+
+Arrow geometry consists of a main shaft line plus two head segments forming a pointed tip. The head angle and length parameters control the visual appearance of the directional indicator.
+
+### Spatial Frequency and Resolution
+
+The resolution parameter scales the input coordinate space, effectively controlling arrow density. Higher resolution values create more densely packed arrows, while lower values spread arrows across larger spatial regions.
+
+This tiling approach enables efficient vector field visualization across large coordinate ranges without geometric complexity scaling issues.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(2)
+        const time = iTime.mul(0.3)
+        const flow = vec2(sin(p.y.mul(3).add(time)), cos(p.x.mul(2).sub(time))).mul(0.5)
+        const arrowField = arrows(p, flow)
+        return vec4(arrowField.mul(vec3(0.8, 0.9, 0.4)), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(3)
+        const center = vec2(sin(iTime.mul(0.8)), cos(iTime.mul(0.6))).mul(0.5)
+        const dist = p.sub(center).length()
+        const angle = atan2(p.sub(center).y, p.sub(center).x).add(iTime)
+        const spiral = vec2(cos(angle.add(dist.mul(5))), sin(angle.add(dist.mul(5))))
+        const magnitude = exp(dist.negate().mul(2)).mul(sin(dist.mul(8).sub(iTime.mul(4))).add(1))
+        const vectorField = spiral.mul(magnitude)
+        const resolution = vec2(sin(iTime.mul(0.4)).mul(0.3).add(1.2))
+        const arrowVis = arrowsWithResolution(p, vectorField, resolution)
+        return vec4(arrowVis.mul(vec3(0.3, 0.7, 0.9)), 1)
+}`}
+/>

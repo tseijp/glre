@@ -1,0 +1,72 @@
+---
+title: 'char'
+description: 'Simplified character rendering system for basic text display functionality'
+keywords: [character, text, bitmap, font, rendering, ASCII]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# char: Character Rendering System
+
+### Simplified Character Implementation
+
+The `char` function provides basic character rendering capability. This implementation offers a simplified approach to text rendering, focusing on demonstrable character patterns rather than full bitmap font reproduction.
+
+For character coordinate mapping:
+
+$$
+\text{charCoord} = \lfloor uv \times (8, 16) \rfloor
+$$
+
+Pattern generation uses character code modulation:
+
+$$
+\text{pattern} = |x - 4| + |y - 8| < (charCode \bmod 8)
+$$
+
+### Grid-Based Character Structure
+
+Characters are rendered on an 8×16 pixel grid, following traditional bitmap font proportions. Each character occupies a normalized UV space that maps to discrete pixel coordinates for pattern generation.
+
+The coordinate system places (0,0) at the top-left and (7,15) at the bottom-right of each character cell, enabling precise pixel-level control over character appearance.
+
+### Pattern-Based Rendering Approach
+
+Instead of storing complete bitmap font data, this implementation generates patterns based on character codes. Different ASCII values produce distinct visual patterns through mathematical operations.
+
+This approach significantly reduces memory requirements while maintaining recognizable character differentiation for debugging and visualization purposes.
+
+### Implementation Scope Note
+
+The original GLSL implementation contains extensive bitmap font data for complete ASCII character sets. This simplified version focuses on core rendering mechanics while avoiding the complexity of full font bitmap storage and bit manipulation routines.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(10)
+        const cellPos = p.fract()
+        const cellId = floor(p).add(vec2(5, 5))
+        const charCode = int(cellId.x.add(cellId.y.mul(3)).mod(26).add(65))
+        const character = charSimple(cellPos, charCode)
+        return vec4(character.mul(vec3(0.8, 0.9, 0.6)), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(vec2(12, 8))
+        const cellPos = p.fract()
+        const cellId = floor(p)
+        const time = iTime.mul(0.5)
+        const wave = sin(cellId.x.add(cellId.y).mul(0.8).add(time))
+        const charCode = int(wave.mul(20).add(70).mod(26).add(65))
+        const character = charSimple(cellPos, charCode)
+        const hue = cellId.x.add(cellId.y).mul(0.3).add(time)
+        const color = vec3(sin(hue), cos(hue.add(2.09)), sin(hue.add(4.19))).mul(0.4).add(0.6)
+        return vec4(character.mul(color), 1)
+}`}
+/>

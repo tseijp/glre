@@ -3,5 +3,15 @@
 - [x] `draw/line.glsl` → TSL
 - [x] `draw/rect.glsl` → TSL
 - [x] `draw/circle.glsl` → TSL
-- [ ] `draw/tri.glsl` → TSL
-- [ ] `draw/point.glsl` → TSL
+- [x] `draw/tri.glsl` → TSL
+- [x] `draw/point.glsl` → TSL
+- [x] `draw/arrows.glsl` → TSL
+- [x] `draw/axis.glsl` → TSL
+- [x] `draw/bridge.glsl` → TSL
+- [x] `draw/char.glsl` → TSL
+- [ ] `draw/colorChecker.glsl` → TSL
+- [ ] `draw/colorPicker.glsl` → TSL
+- [ ] `draw/digits.glsl` → TSL
+- [x] `draw/flip.glsl` → TSL
+- [x] `draw/hex.glsl` → TSL
+- [ ] `draw/matrix.glsl` → TSL
