@@ -15,3 +15,58 @@
 - [x] `draw/flip.glsl` → TSL
 - [x] `draw/hex.glsl` → TSL
 - [ ] `draw/matrix.glsl` → TSL
+
+## Animation/Easing Functions
+- [x] `animation/easing/back.glsl` → TSL
+- [x] `animation/easing/backIn.glsl` → TSL
+- [x] `animation/easing/backInOut.glsl` → TSL
+- [x] `animation/easing/backOut.glsl` → TSL
+- [x] `animation/easing/bounce.glsl` → TSL
+- [x] `animation/easing/bounceIn.glsl` → TSL
+- [x] `animation/easing/bounceInOut.glsl` → TSL
+- [x] `animation/easing/bounceOut.glsl` → TSL
+- [x] `animation/easing/circular.glsl` → TSL
+- [x] `animation/easing/circularIn.glsl` → TSL
+- [x] `animation/easing/circularInOut.glsl` → TSL
+- [x] `animation/easing/circularOut.glsl` → TSL
+- [x] `animation/easing/cubic.glsl` → TSL
+- [x] `animation/easing/cubicIn.glsl` → TSL
+- [x] `animation/easing/cubicInOut.glsl` → TSL
+- [x] `animation/easing/cubicOut.glsl` → TSL
+- [x] `animation/easing/elastic.glsl` → TSL
+- [x] `animation/easing/elasticIn.glsl` → TSL
+- [x] `animation/easing/elasticInOut.glsl` → TSL
+- [x] `animation/easing/elasticOut.glsl` → TSL
+- [x] `animation/easing/exponential.glsl` → TSL
+- [x] `animation/easing/exponentialIn.glsl` → TSL
+- [x] `animation/easing/exponentialInOut.glsl` → TSL
+- [x] `animation/easing/exponentialOut.glsl` → TSL
+- [x] `animation/easing/linear.glsl` → TSL
+- [x] `animation/easing/linearIn.glsl` → TSL
+- [x] `animation/easing/linearInOut.glsl` → TSL
+- [x] `animation/easing/linearOut.glsl` → TSL
+- [x] `animation/easing/quadratic.glsl` → TSL
+- [x] `animation/easing/quadraticIn.glsl` → TSL
+- [x] `animation/easing/quadraticInOut.glsl` → TSL
+- [x] `animation/easing/quadraticOut.glsl` → TSL
+- [x] `animation/easing/quartic.glsl` → TSL
+- [x] `animation/easing/quarticIn.glsl` → TSL
+- [x] `animation/easing/quarticInOut.glsl` → TSL
+- [x] `animation/easing/quarticOut.glsl` → TSL
+- [x] `animation/easing/quintic.glsl` → TSL
+- [x] `animation/easing/quinticIn.glsl` → TSL
+- [x] `animation/easing/quinticInOut.glsl` → TSL
+- [x] `animation/easing/quinticOut.glsl` → TSL
+- [x] `animation/easing/sine.glsl` → TSL
+- [x] `animation/easing/sineIn.glsl` → TSL
+- [x] `animation/easing/sineInOut.glsl` → TSL
+- [x] `animation/easing/sineOut.glsl` → TSL
+
+## Color Functions
+- [x] `color/blend/add.glsl` → TSL
+- [ ] `color/blend/multiply.glsl` → TSL
+- [ ] `color/blend/screen.glsl` → TSL
+- [ ] `color/blend/overlay.glsl` → TSL
+- [ ] `color/blend/difference.glsl` → TSL
+- [ ] `color/palette/heatmap.glsl` → TSL
+- [ ] `color/palette/fire.glsl` → TSL
