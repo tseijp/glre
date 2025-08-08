@@ -28,9 +28,9 @@ The cone model ensures saturation remains meaningful across all brightness level
         code={`
 const fragment = () => {
         const complex_rgb = vec3(
-                sin(uv.x.mul(7).add(iTime.mul(0.8))).mul(0.3).add(0.6),
-                cos(uv.y.mul(5).sub(iTime.mul(0.6))).mul(0.4).add(0.5),
-                sin(uv.x.add(uv.y).mul(3).add(iTime)).mul(0.2).add(0.7)
+                uv.x.mul(7).add(iTime.mul(0.8)).sin().mul(0.3).add(0.6),
+                uv.y.mul(5).sub(iTime.mul(0.6)).cos().mul(0.4).add(0.5),
+                uv.x.add(uv.y).mul(3).add(iTime).sin().mul(0.2).add(0.7)
         )
         const hsv_extract = rgb2hsv(complex_rgb)
         const reconstructed = hsv2rgb(vec3(hsv_extract.x.add(0.3).fract(), hsv_extract.y.mul(1.5), hsv_extract.z))

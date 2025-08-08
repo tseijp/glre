@@ -7,12 +7,7 @@ export const rgb2lch3 = Fn(([rgb]: [Vec3]): Vec3 => {
 }).setLayout({
         name: 'rgb2lch3',
         type: 'vec3',
-        inputs: [
-                {
-                        name: 'rgb',
-                        type: 'vec3'
-                }
-        ]
+        inputs: [{ name: 'rgb', type: 'vec3' }],
 })
 
 export const rgb2lch4 = Fn(([rgb]: [Vec4]): Vec4 => {
@@ -21,12 +16,7 @@ export const rgb2lch4 = Fn(([rgb]: [Vec4]): Vec4 => {
 }).setLayout({
         name: 'rgb2lch4',
         type: 'vec4',
-        inputs: [
-                {
-                        name: 'rgb',
-                        type: 'vec4'
-                }
-        ]
+        inputs: [{ name: 'rgb', type: 'vec4' }],
 })
 
 export const rgb2lch = rgb2lch3

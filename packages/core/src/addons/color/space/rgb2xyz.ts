@@ -1,11 +1,7 @@
 import { Fn, Vec3, Vec4, mat3, vec4 } from '../../../node'
 
-// CIE D65 white point transformation matrix  
-const RGB2XYZ = mat3(
-        0.4124564, 0.3575761, 0.1804375,
-        0.2126729, 0.7151522, 0.0721750,
-        0.0193339, 0.1191920, 0.9503041
-)
+// CIE D65 white point transformation matrix
+const RGB2XYZ = mat3(0.4124564, 0.3575761, 0.1804375, 0.2126729, 0.7151522, 0.072175, 0.0193339, 0.119192, 0.9503041)
 
 export const rgb2xyz = Fn(([rgb]: [Vec3]): Vec3 => {
         return RGB2XYZ.mul(rgb)

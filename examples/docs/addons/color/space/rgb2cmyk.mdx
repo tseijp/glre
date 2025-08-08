@@ -31,10 +31,10 @@ The black component $K$ represents the maximum darkness achievable by overlaying
         isFun
         code={`
 const fragment = () => {
-        const rgb = vec3(uv, sin(iTime).mul(0.5).add(0.5))
+        const rgb = vec3(uv, iTime.sin().mul(0.5).add(0.5))
         const cmyk = rgb2cmyk(rgb)
         const channels = vec3(cmyk.x, cmyk.y, cmyk.z)
-        return vec4(channels.mul(float(1).sub(cmyk.w)), 1)
+        return vec4(channels.mul(cmyk.w.oneMinus()), 1)
 }`}
 />
 

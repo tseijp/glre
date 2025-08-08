@@ -25,10 +25,10 @@ Linear space enables accurate color blending, lighting calculations, and physica
         isFun
         code={`
 const fragment = () => {
-        const bands = floor(uv.x.mul(16))
+        const bands = uv.x.mul(16).floor()
         const gamma_input = bands.div(16)
         const linear_output = gamma2linear(gamma_input)
-        const comparison = select(gamma_input, linear_output, uv.y.greaterThan(0.5))
+        const comparison = gamma_input.select(linear_output, uv.y.greaterThan(0.5))
         return vec4(vec3(comparison), 1)
 }`}
 />
@@ -37,11 +37,11 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-        const grid = floor(uv.mul(8))
+        const grid = uv.mul(8).floor()
         const cell_value = grid.x.add(grid.y.mul(8)).div(64)
         const gamma_space = cell_value.pow(2)
         const linear_space = gamma2linear(gamma_space)
-        const blend_factor = sin(iTime.mul(2)).mul(0.5).add(0.5)
+        const blend_factor = iTime.mul(2).sin().mul(0.5).add(0.5)
         const result = gamma_space.mix(linear_space, blend_factor)
         return vec4(vec3(result), 1)
 }`}

@@ -35,22 +35,23 @@ This function is useful for finding the smallest component in color values, dete
         isFun
         code={`
 const fragment = () => {
-	const t = iTime.mul(0.3)
-	const p = uv.sub(0.5)
-	
-	const h1 = p.x.mul(2.8).add(t.mul(0.9))
-	const h2 = p.length().mul(3.5).add(t.mul(1.1))
-	const h3 = p.x.mul(p.y).mul(1.7).add(t.mul(1.8))
-	const h4 = p.x.add(p.y).mul(4.2).add(t.mul(0.7))
-	
-	const oscillators = vec4(h1.cos().mul(h1.sin()), 
-	                        h2.mul(5.0).sin().mul(0.8),
-	                        h3.mul(3.0).cos(),
-	                        h4.mul(1.9).sin().mul(1.2))
-	
-	const convergence = mmin(oscillators)
-	const field = p.length().mul(6.0).sub(convergence.mul(8.0)).cos().mul(convergence.abs())
-	
-	return vec4(field.mul(vec3(0.3, 0.7, 1.0)), 1)
+        const t = iTime.mul(0.3)
+        const p = uv.sub(0.5)
+
+        const h1 = p.x.mul(2.8).add(t.mul(0.9))
+        const h2 = p.length().mul(3.5).add(t.mul(1.1))
+        const h3 = p.x.mul(p.y).mul(1.7).add(t.mul(1.8))
+        const h4 = p.x.add(p.y).mul(4.2).add(t.mul(0.7))
+
+        const oscillators = vec4(h1.cos().mul(h1.sin()),
+                                h2.mul(5.0).sin().mul(0.8),
+                                h3.mul(3.0).cos(),
+                                h4.mul(1.9).sin().mul(1.2))
+
+        const convergence = mmin(oscillators)
+        const field = p.length().mul(6.0).sub(convergence.mul(8.0)).cos().mul(convergence.abs())
+
+        return vec4(field.mul(vec3(0.3, 0.7, 1.0)), 1)
+
 }`}
 />

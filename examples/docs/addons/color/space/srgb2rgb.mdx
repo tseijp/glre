@@ -30,10 +30,10 @@ The linear threshold at $0.04045$ prevents numerical discontinuities near black 
         isFun
         code={`
 const fragment = () => {
-        const web_color = vec3(uv.x, uv.y, sin(iTime).mul(0.3).add(0.7))
+        const web_color = vec3(uv.x, uv.y, iTime.sin().mul(0.3).add(0.7))
         const linear_color = srgb2rgb(web_color)
-        const comparison = sin(uv.x.mul(20)).greaterThan(0)
-        const result = select(web_color, linear_color, comparison)
+        const comparison = uv.x.mul(20).sin().greaterThan(0)
+        const result = web_color.select(linear_color, comparison)
         return vec4(result, 1)
 }`}
 />

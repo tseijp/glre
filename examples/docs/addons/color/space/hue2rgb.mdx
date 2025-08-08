@@ -16,7 +16,7 @@ The hue2rgb function transforms angular hue positions to RGB color components th
 The mathematical transformation applies piecewise linear functions:
 
 $$R = \text{saturate}(|6h - 3| - 1)$$
-$$G = \text{saturate}(2 - |6h - 2|)$$  
+$$G = \text{saturate}(2 - |6h - 2|)$$
 $$B = \text{saturate}(2 - |6h - 4|)$$
 
 Where $h \in [0, 1]$ represents the normalized hue angle, and saturate clamps values to $[0, 1]$.

@@ -25,7 +25,7 @@ Display gamma correction compresses linear light values into perceptually unifor
         isFun
         code={`
 const fragment = () => {
-        const strips = floor(uv.y.mul(12))
+        const strips = uv.y.mul(12).floor()
         const linear_input = uv.x.pow(3)
         const gamma_output = linear2gamma(linear_input)
         const comparison = linear_input.select(gamma_output, strips.mod(2).equal(0))
@@ -37,11 +37,11 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-        const cellular = floor(uv.mul(6))
+        const cellular = uv.mul(6).floor()
         const cell_id = cellular.x.add(cellular.y.mul(6))
         const linear_base = cell_id.div(36).pow(2)
         const gamma_corrected = linear2gamma(linear_base)
-        const temporal_mod = sin(iTime.mul(4).add(cell_id)).mul(0.2).add(0.8)
+        const temporal_mod = iTime.mul(4).add(cell_id).sin().mul(0.2).add(0.8)
         const result = gamma_corrected.mul(temporal_mod)
         return vec4(vec3(result), 1)
 }`}

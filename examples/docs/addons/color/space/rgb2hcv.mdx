@@ -26,7 +26,7 @@ Where offset values (0, 1/3, 2/3) correspond to RGB channel dominance regions.
         isFun
         code={`
 const fragment = () => {
-        const grid = floor(uv.mul(6))
+        const grid = uv.mul(6).floor()
         const cell = grid.x.add(grid.y.mul(6))
         const rgb_base = vec3(
                 cell.mod(3).div(2),

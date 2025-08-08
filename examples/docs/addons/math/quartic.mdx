@@ -29,29 +29,30 @@ The second derivative reveals inflection points at $v = \pm 1/\sqrt{3}$, creatin
         isFun
         code={`
 const fragment = () => {
-	const t = iTime.mul(0.3).sin()
-	const center = vec2(0.5)
-	const pos = uv.sub(center)
-	
-	const r = pos.length().mul(3)
-	const angle = pos.y.atan2(pos.x)
-	
-	const warpFactor = quartic(t.mul(2).sub(1).abs())
-	const spiralR = r.add(warpFactor.mul(angle.mul(8).add(iTime.mul(2)).sin()).mul(0.3))
-	const spiralAngle = angle.add(quartic(r.mul(0.5)).mul(t).mul(6.28))
-	
-	const warpedPos = vec2(spiralAngle.cos(), spiralAngle.sin()).mul(spiralR)
-	const pattern = warpedPos.x.mul(warpedPos.y).abs()
-	
-	const intensity = quartic(pattern.fract())
-	const depth = quartic(smoothstep(0.2, 0.8, spiralR.mul(0.2)))
-	
-	const color = vec3(
-		intensity.mul(0.8).add(0.2),
-		quartic(depth).mul(0.9).add(0.1),
-		quartic(intensity.mul(depth)).mul(0.7).add(0.3)
-	)
-	
-	return vec4(color, 1)
+        const t = iTime.mul(0.3).sin()
+        const center = vec2(0.5)
+        const pos = uv.sub(center)
+
+        const r = pos.length().mul(3)
+        const angle = pos.y.atan2(pos.x)
+
+        const warpFactor = quartic(t.mul(2).sub(1).abs())
+        const spiralR = r.add(warpFactor.mul(angle.mul(8).add(iTime.mul(2)).sin()).mul(0.3))
+        const spiralAngle = angle.add(quartic(r.mul(0.5)).mul(t).mul(6.28))
+
+        const warpedPos = vec2(spiralAngle.cos(), spiralAngle.sin()).mul(spiralR)
+        const pattern = warpedPos.x.mul(warpedPos.y).abs()
+
+        const intensity = quartic(pattern.fract())
+        const depth = quartic(smoothstep(0.2, 0.8, spiralR.mul(0.2)))
+
+        const color = vec3(
+                intensity.mul(0.8).add(0.2),
+                quartic(depth).mul(0.9).add(0.1),
+                quartic(intensity.mul(depth)).mul(0.7).add(0.3)
+        )
+
+        return vec4(color, 1)
+
 }`}
 />

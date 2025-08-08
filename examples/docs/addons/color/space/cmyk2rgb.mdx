@@ -33,7 +33,7 @@ The black component $k$ represents the maximum darkness. The chromatic component
 const fragment = () => {
         const c = uv.x
         const m = uv.y
-        const y = sin(iTime).mul(0.3).add(0.5)
+        const y = iTime.sin().mul(0.3).add(0.5)
         const k = float(0.1)
         const rgb = cmyk2rgb(vec4(c, m, y, k))
         return vec4(rgb, 1)

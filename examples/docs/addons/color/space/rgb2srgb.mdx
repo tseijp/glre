@@ -30,10 +30,10 @@ The gamma exponent $1/2.4 \approx 0.4167$ applies perceptual correction above th
         isFun
         code={`
 const fragment = () => {
-        const linear_color = vec3(uv.x.mul(uv.x), uv.y, sin(iTime).mul(0.5).add(0.5))
+        const linear_color = vec3(uv.x.mul(uv.x), uv.y, iTime.sin().mul(0.5).add(0.5))
         const display_color = rgb2srgb(linear_color)
         const split_mask = uv.x.greaterThan(0.5)
-        const result = select(linear_color, display_color, split_mask)
+        const result = linear_color.select(display_color, split_mask)
         return vec4(result, 1)
 }`}
 />
