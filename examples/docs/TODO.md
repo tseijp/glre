@@ -152,6 +152,46 @@
 - [x] `animation/easing/circularOut.glsl` → TSL
 - [x] `animation/easing/circularInOut.glsl` → TSL
 
+#### 未実装 easing 関数 (23 ファイル)
+
+**Base Functions (11 ファイル)**
+
+- [ ] `animation/easing/back.glsl` → TSL
+- [ ] `animation/easing/bounce.glsl` → TSL
+- [ ] `animation/easing/circular.glsl` → TSL
+- [ ] `animation/easing/cubic.glsl` → TSL
+- [ ] `animation/easing/elastic.glsl` → TSL
+- [ ] `animation/easing/exponential.glsl` → TSL
+- [ ] `animation/easing/linear.glsl` → TSL
+- [ ] `animation/easing/quadratic.glsl` → TSL
+- [ ] `animation/easing/quartic.glsl` → TSL
+- [ ] `animation/easing/quintic.glsl` → TSL
+- [ ] `animation/easing/sine.glsl` → TSL
+
+**Back Easing (3 ファイル)**
+
+- [ ] `animation/easing/backIn.glsl` → TSL
+- [ ] `animation/easing/backOut.glsl` → TSL
+- [ ] `animation/easing/backInOut.glsl` → TSL
+
+**Bounce Easing (3 ファイル)**
+
+- [ ] `animation/easing/bounceIn.glsl` → TSL
+- [ ] `animation/easing/bounceOut.glsl` → TSL
+- [ ] `animation/easing/bounceInOut.glsl` → TSL
+
+**Elastic Easing (3 ファイル)**
+
+- [ ] `animation/easing/elasticIn.glsl` → TSL
+- [ ] `animation/easing/elasticOut.glsl` → TSL
+- [ ] `animation/easing/elasticInOut.glsl` → TSL
+
+**Sine Easing (3 ファイル)**
+
+- [ ] `animation/easing/sineIn.glsl` → TSL
+- [ ] `animation/easing/sineOut.glsl` → TSL
+- [ ] `animation/easing/sineInOut.glsl` → TSL
+
 ### Phase 2C: SDF 基本図形 (42 ファイル) - 依存関係なし
 
 - [ ] `sdf/sphereSDF.glsl` → TSL
