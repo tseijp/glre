@@ -1,0 +1,66 @@
+---
+title: 'linearOut: Mirrored Identity Easing Function'
+description: 'Linear easing function providing consistent deceleration pattern for animation completion'
+keywords: [animation, easing, linear, timing, interpolation, deceleration]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# linearOut: Mirrored Identity Easing Function
+
+### Mathematical Equivalence in Linear Motion Systems
+
+The `linearOut` function maintains mathematical equivalence to linear motion despite its name suggesting output-focused behavior. In linear systems, input and output transformations remain identical across the normalized parameter domain.
+
+$$
+f(t) = t \quad \text{where } t \in [0, 1]
+$$
+
+This mathematical identity preserves uniform velocity characteristics, making the distinction between "in" and "out" variants purely conventional in linear easing contexts.
+
+### Velocity Profile Analysis
+
+Linear functions exhibit constant derivative across their entire domain, producing uniform acceleration profiles regardless of directional interpretation.
+
+$$
+\frac{df}{dt} = 1 \quad \text{(constant velocity)}
+$$
+
+The mathematical properties remain invariant under linear transformations, ensuring predictable motion characteristics.
+
+### Animation Context Applications
+
+Linear easing variants serve organizational purposes in animation frameworks, enabling consistent naming conventions across easing function families while maintaining mathematical simplicity.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cycle = iTime.mul(1.5).fract()
+        const outProgress = linearOut(cycle)
+        const displacement = outProgress.mul(0.6).sub(0.3)
+        const wave = uv.y.add(displacement).sin().mul(0.3)
+        const field = uv.x.sub(0.5).abs().sub(wave).step(0)
+        return vec4(field, outProgress, outProgress.mul(0.7), 1)
+}`}
+/>
+
+### Comparative Motion Visualization
+
+Multiple linear instances demonstrate temporal synchronization properties inherent in linear motion systems. Parallel linear functions maintain phase relationships across animation sequences.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const primary = iTime.mul(0.8).fract()
+        const secondary = iTime.mul(1.2).add(0.3).fract()
+        const out1 = linearOut(primary)
+        const out2 = linearOut(secondary)
+        const interaction = out1.mul(out2).mul(4)
+        const modulation = interaction.sin().add(1).mul(0.5)
+        const pattern = uv.length().sub(0.3).abs().sub(0.1).step(0)
+        return vec4(pattern.mul(modulation), out1.mul(0.6), out2.mul(0.4), 1)
+}`}
+/>

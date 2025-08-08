@@ -131,7 +131,7 @@
 ### Phase 2B: アニメーション基礎 (88 ファイル) - 依存関係なし
 
 - [x] `animation/easing/linearIn.glsl` → TSL
-- [ ] `animation/easing/linearOut.glsl` → TSL
+- [x] `animation/easing/linearOut.glsl` → TSL
 - [ ] `animation/easing/linearInOut.glsl` → TSL
 - [ ] `animation/easing/quadraticIn.glsl` → TSL
 - [ ] `animation/easing/quadraticOut.glsl` → TSL
