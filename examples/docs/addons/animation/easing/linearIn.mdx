@@ -1,0 +1,65 @@
+---
+title: 'linearIn: Identity Easing Function'
+description: 'Linear easing function that maintains constant velocity throughout animation duration'
+keywords: [animation, easing, linear, timing, interpolation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# linearIn: Identity Easing Function
+
+### Mathematical Foundation for Uniform Animation Timing
+
+The `linearIn` function represents the identity mapping in animation interpolation. This function maintains constant velocity throughout the animation duration, creating uniform motion without acceleration or deceleration.
+
+$$
+f(t) = t \quad \text{where } t \in [0, 1]
+$$
+
+This direct mapping preserves the linear relationship between time and animation progress, making it the foundation for understanding more complex easing behaviors.
+
+### Core Implementation Properties
+
+The function exhibits several fundamental characteristics that define linear interpolation behavior. The derivative remains constant at unity across the entire domain, indicating uniform velocity without variation.
+
+$$
+\frac{df}{dt} = 1
+$$
+
+This mathematical property ensures predictable animation timing where each time unit produces equivalent visual change.
+
+### Practical Animation Applications
+
+Linear easing serves specific use cases where consistent motion velocity creates the desired visual effect. Mechanical objects, conveyor systems, and progress indicators benefit from this uniform timing approach.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const phase = iTime.mul(2).fract()
+        const progress = linearIn(phase)
+        const position = progress.mul(0.8).sub(0.4)
+        const pattern = uv.x.sub(position).abs().sub(0.02).step(0)
+        return vec4(pattern, progress.mul(0.5), progress, 1)
+}`}
+/>
+
+### Advanced Timing Control Demonstrations
+
+Complex animations often combine linear segments with other easing functions to achieve sophisticated motion profiles. The linear segment provides controlled acceleration zones within broader animation sequences.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t1 = iTime.mul(0.5).fract()
+        const t2 = iTime.mul(0.3).add(0.5).fract()
+        const linear1 = linearIn(t1)
+        const linear2 = linearIn(t2)
+        const interference = sin(linear1.mul(10)).mul(sin(linear2.mul(12)))
+        const grid = uv.mul(8).fract().sub(0.5).abs().max().sub(0.4).step(0)
+        const combined = grid.mul(interference.add(1).mul(0.5))
+        return vec4(vec3(combined), 1)
+}`}
+/>
