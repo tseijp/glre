@@ -1,5 +1,5 @@
 ---
-title: 'linearIn: Identity Easing Function'
+title: 'linearIn'
 description: 'Linear easing function that maintains constant velocity throughout animation duration'
 keywords: [animation, easing, linear, timing, interpolation]
 date: 2025-08-06
@@ -28,3 +28,14 @@ $$
 $$
 
 This mathematical property ensures predictable animation timing where each time unit produces equivalent visual change.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const phase = iTime.fract()
+        const progress = linearIn(phase)
+        const pattern = uv.x.sub(progress).abs().sub(0.01).step(0)
+        return vec4(pattern, 0, 0, 1)
+}`}
+/>

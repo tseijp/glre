@@ -1,0 +1,54 @@
+---
+title: 'quarticInOut'
+description: 'Bidirectional quartic easing with intense acceleration and dramatic deceleration phases'
+keywords: [animation, easing, quartic, bidirectional, intense, dramatic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quarticInOut: Symmetric Fourth-Order Motion Function
+
+### Mathematical Foundation for Extreme Dual-Phase Motion
+
+The `quarticInOut` function applies fourth-degree polynomial transformation through piecewise construction, creating symmetric motion profiles with extreme acceleration and deceleration characteristics more dramatic than cubic variants.
+
+$$
+f(t) = \begin{cases}
+8t^4 & \text{if } t < 0.5 \\
+-8(t-1)^4 + 1 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+The piecewise definition maintains continuity at $t = 0.5$ while generating extreme motion profiles through fourth-power scaling that creates pronounced visual impact during transitions.
+
+### Velocity Analysis with Quartic Characteristics
+
+The derivative reveals symmetric cubic velocity profiles with extreme acceleration patterns that build maximum velocity at the midpoint transition.
+
+$$
+\frac{df}{dt} = \begin{cases}
+32t^3 & \text{if } t < 0.5 \\
+-32(t-1)^3 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+This produces maximum velocity at $t = 0.5$ with cubic velocity curves that remain minimal at endpoints while generating dramatic momentum changes during the central transition phase.
+
+### Fourth-Order Symmetry Properties
+
+The function maintains perfect symmetry around $(0.5, 0.5)$ while exhibiting quartic curve characteristics that generate more pronounced motion profiles than lower-order polynomial alternatives.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.fract()
+        const curve = quarticInOut(t)
+        const line = uv.x.sub(curve).abs().step(0.01)
+        const marker = t.sub(uv.x).abs().step(0.01)
+        return vec4(line, marker, 0, 1)
+}`}
+/>
+
+The implementation demonstrates fourth-order symmetric motion behavior where quartic acceleration and deceleration phases create extreme animation dynamics with pronounced velocity transitions beyond cubic alternatives.

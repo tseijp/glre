@@ -5,10 +5,5 @@ export const linearOut = Fn(([t]: [X]): X => {
 }).setLayout({
         name: 'linearOut',
         type: 'auto',
-        inputs: [
-                {
-                        name: 't',
-                        type: 'auto',
-                },
-        ],
+        inputs: [{ name: 't', type: 'auto' }],
 })

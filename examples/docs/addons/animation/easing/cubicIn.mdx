@@ -1,0 +1,51 @@
+---
+title: 'cubicIn'
+description: 'Cubic acceleration easing function with pronounced initial curve steepness'
+keywords: [animation, easing, cubic, acceleration, steep, curve]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cubicIn: Sharp Cubic Acceleration Function
+
+### Mathematical Foundation for Pronounced Acceleration
+
+The `cubicIn` function implements cubic acceleration through third-degree polynomial progression. This creates dramatic transitions from rest to movement with sharp initial acceleration curves.
+
+$$
+f(t) = t^3 \quad \text{where } t \in [0, 1]
+$$
+
+The cubic relationship establishes steep acceleration curves that remain close to zero for extended periods before rapidly increasing near the endpoint.
+
+### Velocity Profile Analysis
+
+The derivative reveals quadratic acceleration throughout the animation duration, creating exponential velocity growth.
+
+$$
+\frac{df}{dt} = 3t^2
+$$
+
+This quadratic acceleration profile produces very slow initial movement followed by dramatic speed increases, ideal for attention-grabbing motion effects.
+
+### Geometric Interpretation
+
+The function traces a cubic curve that stays significantly below the linear diagonal for most of its domain, then sharply curves upward. This creates the characteristic slow-start, fast-finish acceleration behavior.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(1.3).fract()
+        const linear = t
+        const cubic = cubicIn(t)
+        const side = uv.x.lessThan(0.5)
+        const height = select(linear, cubic, side).mul(0.9)
+        const curve = uv.x.mul(0.9).add(0.05).sub(height).abs().sub(0.008).step(0)
+        const marker = t.sub(uv.x).abs().sub(0.003).step(0).mul(cubic)
+        return vec4(curve.add(marker), curve.mul(0.5), curve.add(marker), 1)
+}`}
+/>
+
+The implementation demonstrates cubic acceleration where motion remains minimal initially then accelerates dramatically, creating sharp curve distinctions from linear progression.

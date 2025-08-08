@@ -1,9 +1,9 @@
 import { Fn, X } from '../../../node'
 
-export const linearIn = Fn(([t]: [X]): X => {
-        return t
+export const quadraticIn = Fn(([t]: [X]): X => {
+        return t.mul(t)
 }).setLayout({
-        name: 'linearIn',
+        name: 'quadraticIn',
         type: 'auto',
         inputs: [{ name: 't', type: 'auto' }],
 })

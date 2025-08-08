@@ -628,7 +628,9 @@ In the children array, conditional expressions and scopes are arranged alternate
 This arrangement enables determination of conditional branch structures during code generation.
 
 ```ts
-select(value if condition is false, value if condition is true, condition)
+select(value if condition is false, value if condition is true, condition boolean)
+// or
+(value if condition is false).select(value if condition is true, condition boolean)
 ```
 
 ## Function Definition System

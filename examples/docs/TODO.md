@@ -132,16 +132,16 @@
 
 - [x] `animation/easing/linearIn.glsl` → TSL
 - [x] `animation/easing/linearOut.glsl` → TSL
-- [ ] `animation/easing/linearInOut.glsl` → TSL
-- [ ] `animation/easing/quadraticIn.glsl` → TSL
-- [ ] `animation/easing/quadraticOut.glsl` → TSL
-- [ ] `animation/easing/quadraticInOut.glsl` → TSL
-- [ ] `animation/easing/cubicIn.glsl` → TSL
-- [ ] `animation/easing/cubicOut.glsl` → TSL
-- [ ] `animation/easing/cubicInOut.glsl` → TSL
-- [ ] `animation/easing/quarticIn.glsl` → TSL
-- [ ] `animation/easing/quarticOut.glsl` → TSL
-- [ ] `animation/easing/quarticInOut.glsl` → TSL
+- [x] `animation/easing/linearInOut.glsl` → TSL
+- [x] `animation/easing/quadraticIn.glsl` → TSL
+- [x] `animation/easing/quadraticOut.glsl` → TSL
+- [x] `animation/easing/quadraticInOut.glsl` → TSL
+- [x] `animation/easing/cubicIn.glsl` → TSL
+- [x] `animation/easing/cubicOut.glsl` → TSL
+- [x] `animation/easing/cubicInOut.glsl` → TSL
+- [x] `animation/easing/quarticIn.glsl` → TSL
+- [x] `animation/easing/quarticOut.glsl` → TSL
+- [x] `animation/easing/quarticInOut.glsl` → TSL
 - [ ] `animation/easing/quinticIn.glsl` → TSL
 - [ ] `animation/easing/quinticOut.glsl` → TSL
 - [ ] `animation/easing/quinticInOut.glsl` → TSL

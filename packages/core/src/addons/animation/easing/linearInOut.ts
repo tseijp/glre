@@ -1,9 +1,9 @@
 import { Fn, X } from '../../../node'
 
-export const linearIn = Fn(([t]: [X]): X => {
+export const linearInOut = Fn(([t]: [X]): X => {
         return t
 }).setLayout({
-        name: 'linearIn',
+        name: 'linearInOut',
         type: 'auto',
         inputs: [{ name: 't', type: 'auto' }],
 })

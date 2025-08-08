@@ -1,0 +1,58 @@
+---
+title: 'cubicInOut'
+description: 'Bidirectional cubic easing combining sharp acceleration and deceleration phases'
+keywords: [animation, easing, cubic, bidirectional, sharp, dramatic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cubicInOut: Symmetric Sharp Transform Function
+
+### Mathematical Foundation for Dual-Phase Sharp Motion
+
+The `cubicInOut` function combines cubic acceleration and deceleration through piecewise third-degree polynomial construction. This creates symmetric motion profiles with dramatic transitions between phases.
+
+$$
+f(t) = \begin{cases}
+4t^3 & \text{if } t < 0.5 \\
+\frac{1}{2}(2t-2)^3 + 1 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+The piecewise definition ensures continuous motion across the midpoint transition while maintaining cubic characteristics that create dramatic acceleration and deceleration phases.
+
+### Velocity Profile Analysis
+
+The derivative reveals symmetric quadratic acceleration and deceleration patterns around the midpoint with sharp transitions.
+
+$$
+\frac{df}{dt} = \begin{cases}
+12t^2 & \text{if } t < 0.5 \\
+3(2t-2)^2 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+This creates maximum velocity at $t = 0.5$ with sharp velocity profiles that remain minimal near endpoints while building dramatic momentum at the center.
+
+### Symmetry Properties with Sharp Transitions
+
+The function exhibits perfect symmetry around the center point $(0.5, 0.5)$ while maintaining cubic curve characteristics that create dramatic visual impact.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.9).fract()
+        const linear = t
+        const cubicCurve = cubicInOut(t)
+        const x = uv.x.mul(0.88).add(0.06)
+        const linearLine = x.sub(linear).abs().sub(0.006).step(0)
+        const cubicLine = x.sub(cubicCurve).abs().sub(0.006).step(0)
+        const timeMarker = t.sub(uv.x).abs().sub(0.004).step(0)
+        const emphasis = cubicCurve.mul(0.6).add(0.4)
+        return vec4(cubicLine.add(timeMarker).mul(emphasis), linearLine.mul(0.3), cubicLine.add(linearLine), 1)
+}`}
+/>
+
+The implementation demonstrates symmetric cubic motion behavior where acceleration and deceleration phases create sharp, dramatic animation cycles with pronounced velocity transitions.
