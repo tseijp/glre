@@ -1,11 +1,8 @@
-import { Fn, Vec2, Float, float, vec2, floor, length, clamp, step, min, If } from '../../node'
-import { lineSDF2D } from '../sdf/lineSDF'
+import { Fn, Vec2, Float, float, vec2, floor, length, clamp, min, dot, cos, normalize, If } from '../../node'
 
 // Constants
 const ARROWS_TILE_SIZE = float(32)
 const ARROWS_HEAD_ANGLE = float(0.5)
-const ARROWS_HEAD_LENGTH = ARROWS_TILE_SIZE.div(5)
-const ARROWS_SHAFT_THICKNESS = float(2)
 
 // Arrow tile center coordinate calculation
 export const arrowsTileCenterCoord = Fn(([pos]: [Vec2]): Vec2 => {
@@ -21,24 +18,21 @@ export const arrowsWithResolution = Fn(([p, v, resolution]: [Vec2, Vec2, Vec2]):
 	const scaledP = p.mul(resolution).toVar()
 	scaledP.subAssign(arrowsTileCenterCoord(scaledP))
 	const mag_v = length(v).toVar()
-	const mag_p = length(scaledP)
 	
-	// Check if vector has magnitude and calculate arrow
-	const hasVector = mag_v.greaterThan(0).toVar()
 	const result = float(0).toVar()
 	
-	If(hasVector, () => {
-		const dir_v = v.div(mag_v)
+	If(mag_v.greaterThan(0), () => {
+		const dir_v = v.div(mag_v).toVar()
 		mag_v.assign(clamp(mag_v, 5, ARROWS_TILE_SIZE.div(2)))
-		const adjustedV = dir_v.mul(mag_v)
+		const vScaled = dir_v.mul(mag_v).toVar()
 		
-		// Basic line-style arrow implementation
-		const shaft = lineSDF2D(scaledP, adjustedV, adjustedV.negate())
-		const head1 = lineSDF2D(scaledP, adjustedV, adjustedV.mul(0.4).add(vec2(adjustedV.y, adjustedV.x.negate()).mul(0.2)))
-		const head2 = lineSDF2D(scaledP, adjustedV, adjustedV.mul(0.4).add(vec2(adjustedV.y.negate(), adjustedV.x).mul(0.2)))
-		const head = min(head1, head2)
-		
-		result.assign(step(min(shaft, head), 1))
+		// Simplified arrow implementation based on GLSL default style
+		const arrow = float(1).add(
+			min(float(0), dot(normalize(vScaled.sub(scaledP)), dir_v).sub(cos(ARROWS_HEAD_ANGLE.div(2)))).mul(2).mul(length(vScaled.sub(scaledP)))
+			.add(min(float(0), dot(scaledP, dir_v).add(1)))
+			.add(min(float(0), cos(ARROWS_HEAD_ANGLE.div(2)).sub(dot(normalize(vScaled.mul(0.33).sub(scaledP)), dir_v))).mul(mag_v).mul(0.8))
+		).saturate()
+		result.assign(arrow)
 	})
 	
 	return result

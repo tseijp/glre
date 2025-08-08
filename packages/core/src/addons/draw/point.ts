@@ -1,4 +1,4 @@
-import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4 } from '../../node'
+import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4, float } from '../../node'
 import { circleFill } from './circle'
 
 // Simple point rendering (circle at position with color and radius)
@@ -19,7 +19,7 @@ export const point2D = Fn(([st, pos, color, radius]: [Vec2, Vec2, Vec3, Float]):
 
 // Simple point with default red color and radius
 export const pointSimple = Fn(([st, pos]: [Vec2, Vec2]): Vec4 => {
-	return point2D(st, pos, vec3(1, 0, 0), 0.02)
+	return point2D(st, pos, vec3(1, 0, 0), float(0.02))
 }).setLayout({
 	name: 'pointSimple',
 	type: 'vec4',

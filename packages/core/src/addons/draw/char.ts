@@ -28,7 +28,7 @@ export const charSimple = Fn(([uv, charCode]: [Vec2, Int]): Float => {
 	// This creates a basic cross pattern for demonstration
 	const centerX = charCoord.x.sub(4).abs()
 	const centerY = charCoord.y.sub(8).abs()
-	const pattern = centerX.add(centerY).lessThan(charCode.mod(8))
+	const pattern = centerX.add(centerY).lessThan(charCode.mod(8) as any)
 	
 	return float(0).select(float(1), pattern)
 }).setLayout({

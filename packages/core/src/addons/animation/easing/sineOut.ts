@@ -1,12 +1,10 @@
-import { Fn, Float, sin, float } from '../../../node'
+import { Fn, X, sin } from '../../../node'
+import { HALF_PI } from '../../math/const'
 
-export const sineOut = Fn(([t]: [Float]): Float => {
-	const halfPi = float(1.5707963267948966)
-	return sin(t.mul(halfPi))
+export const sineOut = Fn(([t]: [X]): X => {
+        return sin(t.mul(HALF_PI as any))
 }).setLayout({
-	name: 'sineOut',
-	type: 'float',
-	inputs: [
-		{ name: 't', type: 'float' },
-	],
+        name: 'sineOut',
+        type: 'auto',
+        inputs: [{ name: 't', type: 'auto' }],
 })

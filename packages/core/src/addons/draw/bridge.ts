@@ -66,8 +66,8 @@ export const bridgeVec4 = Fn(([c, d, s, w]: [Vec4, Float, Float, Float]): Vec4 =
 
 // Generic bridge function using auto type
 export const bridge = Fn(([c, d, s, w]: [X, Float, Float, Float]): X => {
-	const strokeMask = stroke(d, s, w.mul(2))
-	const maskedC = c.mul(float(1).sub(strokeMask))
+	const strokeMask = stroke(d, s, (w as any).mul(2))
+	const maskedC = (c as any).mul(float(1).sub(strokeMask))
 	return maskedC.add(strokeMask)
 }).setLayout({
 	name: 'bridge',

@@ -24,20 +24,20 @@ export const axis = Fn(([st, M, pos, thickness]: [Vec2, Mat4, Vec3, Float]): Vec
 	
 	// Draw each axis
 	Loop(int(3), ({ i }) => {
-		const axisColor = i.equal(int(0)).select(axisColors[0], 
-			i.equal(int(1)).select(axisColors[1], axisColors[2]))
+		const axisColor = (i.equal(int(0)) as any).select(axisColors[0], 
+			(i.equal(int(1)) as any).select(axisColors[1], axisColors[2]))
 		
-		const axisDir = i.equal(int(0)).select(axisDirections[0],
-			i.equal(int(1)).select(axisDirections[1], axisDirections[2]))
+		const axisDir = (i.equal(int(0)) as any).select(axisDirections[0],
+			(i.equal(int(1)) as any).select(axisDirections[1], axisDirections[2]))
 		
 		// Transform axis endpoint
-		const axisPoint = M.mul(vec4(pos.add(axisDir), 1)).toVar()
+		const axisPoint = (M as any).mul(vec4((pos as any).add(axisDir as any), 1)).toVar()
 		axisPoint.xy.assign(axisPoint.xy.div(axisPoint.w))
 		axisPoint.xy.assign(axisPoint.xy.mul(0.5).add(0.5))
 		
 		// Draw line from center to axis endpoint
 		const axisLine = line(st, center.xy, axisPoint.xy, thickness)
-		result.addAssign(axisColor.mul(axisLine))
+		result.addAssign((axisColor as any).mul(axisLine as any))
 	})
 	
 	return result

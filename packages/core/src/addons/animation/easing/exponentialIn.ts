@@ -1,7 +1,7 @@
-import { Fn, X, select } from '../../../node'
+import { Fn, X } from '../../../node'
 
 export const exponentialIn = Fn(([t]: [X]): X => {
-        return select(t.sub(1).mul(10).exp2(), t, t.equal(0))
+        return (t as any).select(t.sub(1).mul(10).exp2(), t.equal(0))
 }).setLayout({
         name: 'exponentialIn',
         type: 'auto',
