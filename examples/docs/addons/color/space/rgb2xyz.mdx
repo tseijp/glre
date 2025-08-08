@@ -33,30 +33,9 @@ This matrix assumes linear RGB values. The Y component represents luminance, whi
         isFun
         code={`
 const fragment = () => {
-        const rgb = vec3(uv.x, uv.y, 0.5)
-        const xyzColor = rgb2xyz(rgb)
-        
-        const X = xyzColor.x.div(xyzColor.x.add(xyzColor.y).add(xyzColor.z))
-        const Y = xyzColor.y.div(xyzColor.x.add(xyzColor.y).add(xyzColor.z))
-        const luminance = xyzColor.y
-        
-        return vec4(X, Y, luminance.mul(2), 1)
-}`}
-/>
-
-### XYZ Space Luminance Mapping
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const t = iTime.mul(0.5)
-        const wave = uv.x.add(t).sin().mul(0.5).add(0.5)
-        
-        const rgb = vec3(wave, uv.y, uv.x.sub(uv.y).abs())
-        const xyzColor = rgb2xyz(rgb)
-        
-        const normalizedXYZ = xyzColor.div(100)
-        return vec4(normalizedXYZ, 1)
-}`}
+        const rgbColor = vec3(uv.x, uv.y, 0.5)
+        const xyzColor = rgb2xyz(rgbColor)
+        return vec4(xyzColor, 1)
+}
+`}
 />

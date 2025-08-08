@@ -38,17 +38,18 @@ The final XYZ values are scaled by the CIE D65 white point and normalized to 0-1
         isFun
         code={`
 const fragment = () => {
-      const center = vec2(0.5)
-      const p = uv.sub(center).mul(50)
-      
-      const L = uv.y
-      const A = p.x
-      const B = p.y
-      
-      const labColor = vec3(L, A, B)
-      const rgbColor = lab2xyz(labColor)
-      
-      return vec4(rgbColor.max(0).min(1), 1)
+        const center = vec2(0.5)
+        const p = uv.sub(center).mul(50)
+
+        const L = uv.y
+        const A = p.x
+        const B = p.y
+
+        const labColor = vec3(L, A, B)
+        const rgbColor = lab2xyz(labColor)
+
+        return vec4(rgbColor.max(0).min(1), 1)
+
 }
 `}
 />

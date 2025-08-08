@@ -31,33 +31,8 @@ The LAB space provides three components: L* (lightness from 0-100), a* (green-re
         isFun
         code={`
 const fragment = () => {
-        const rgbColor = vec3(uv.x, uv.y, 0.8)
+        const rgbColor = vec3(uv.x, uv.y, 0.5)
         const labColor = rgb2lab(rgbColor)
-        
-        const L = labColor.x.div(100)
-        const A = labColor.y.add(127).div(254)
-        const B = labColor.z.add(127).div(254)
-        
-        return vec4(L, A, B, 1)
-}`}
-/>
-
-### Perceptual Color Distance Calculation
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const color1 = vec3(uv.x, 0.5, 0.8)
-        const color2 = vec3(0.8, uv.y, 0.5)
-        
-        const lab1 = rgb2lab(color1)
-        const lab2 = rgb2lab(color2)
-        
-        const deltaE = lab1.sub(lab2).length()
-        const perceptualDist = deltaE.div(100)
-        
-        const blendFactor = perceptualDist.smoothstep(0, 0.5)
-        return vec4(vec3(blendFactor), 1)
+        return vec4(labColor, 1)
 }`}
 />

@@ -1,0 +1,51 @@
+---
+title: 'rgb2oklab'
+description: 'Convert linear RGB values to perceptually uniform OKLab color space'
+keywords: [color, rgb, oklab, conversion, perceptual, uniformity, linear]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2oklab: RGB to Perceptual Color Space Conversion
+
+### Mathematical Foundation of Perceptual Color Encoding
+
+RGB to OKLab conversion transforms linear RGB values into a perceptually uniform color space where equal numerical distances represent equal perceived color differences. The transformation involves two matrix operations with intermediate cube root processing.
+
+The mathematical operation sequence:
+$$\text{LMS} = M_B \cdot \text{RGB}$$
+$$\text{OKLab} = M_A \cdot \sqrt[3]{\text{LMS}}$$
+
+Where $M_B$ transforms RGB to LMS cone response values, the cube root operation compresses the light response to match human perception, and $M_A$ produces the final OKLab coordinates.
+
+### Perceptual Properties
+
+OKLab coordinates encode color information optimally for human vision. The L component represents perceived lightness, while a and b components encode green-red and blue-yellow color opponents respectively. This structure aligns with human visual processing pathways.
+
+Mathematical characteristics:
+
+- **Cube root compression**: Models logarithmic light sensitivity of human vision
+- **Cone space mapping**: LMS coordinates correspond to human photoreceptor responses
+- **Uniform perception**: Color differences in OKLab correlate with visual perception
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, uv.y, 0.6)
+        const oklabColor = rgb2oklab(rgbColor)
+        return vec4(oklabColor.mul(0.5).add(0.5), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbInput = vec3(0.8, 0.2, 0.4)
+        const oklab = rgb2oklab(rgbInput)
+        const recovered = oklab2rgb(oklab)
+        return vec4(recovered, 1)
+}`}
+/>

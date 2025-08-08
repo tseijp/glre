@@ -1,0 +1,51 @@
+---
+title: 'oklab2rgb'
+description: 'Convert OKLab color values to linear RGB coordinates with perceptual uniformity'
+keywords: [color, oklab, rgb, conversion, perceptual, uniformity, srgb]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# oklab2rgb: Perceptual Color Space to RGB Conversion
+
+### Mathematical Foundation of Perceptual Color Transformation
+
+OKLab represents a perceptually uniform color space where equal distances correspond to equal perceived color differences. The conversion to RGB involves two matrix transformations with intermediate cubic root processing.
+
+The mathematical operation follows this sequence:
+$$\text{LMS} = M_A \cdot \text{OKLab}$$
+$$\text{RGB} = M_B \cdot (\text{LMS}^3)$$
+
+Where $M_A$ and $M_B$ are transformation matrices calibrated for human visual perception, and the cubic operation reverses the cube root applied during RGB to OKLab conversion.
+
+### Transformation Properties
+
+The function implements a two-stage linear-nonlinear-linear pipeline. Matrix $M_A$ transforms OKLab coordinates to LMS (Long, Medium, Short wavelength) response space, representing cone cell responses. The cubic operation reconstructs linear light values from perceptual coordinates. Matrix $M_B$ converts LMS to linear RGB values.
+
+Key mathematical properties:
+
+- **Bijective mapping**: Every valid OKLab coordinate maps to exactly one RGB value
+- **Perceptual linearity**: Equal distances in OKLab correspond to equal perceived color differences
+- **Gamut preservation**: The transformation maintains valid RGB ranges for displayable colors
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const oklabColor = vec3(0.7, uv.x.sub(0.5), uv.y.sub(0.5))
+        const rgbColor = oklab2rgb(oklabColor)
+        return vec4(rgbColor, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const originalRgb = vec3(uv.x, 0.3, uv.y)
+        const oklab = rgb2oklab(originalRgb)
+        const recovered = oklab2rgb(oklab)
+        return vec4(recovered, 1)
+}`}
+/>
