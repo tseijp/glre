@@ -1,4 +1,4 @@
-import { Fn, Vec2, Vec3, Float, vec2 } from '../../node'
+import { Fn, Vec2, Float, vec2 } from '../../node'
 import { rotate2d } from '../math/rotate2d'
 
 export const rotate2DCenter = Fn(([v, r, c]: [Vec2, Float, Vec2]) => {
@@ -9,8 +9,8 @@ export const rotate2DCenter = Fn(([v, r, c]: [Vec2, Float, Vec2]) => {
         inputs: [
                 { name: 'v', type: 'vec2' },
                 { name: 'r', type: 'float' },
-                { name: 'c', type: 'vec2' }
-        ]
+                { name: 'c', type: 'vec2' },
+        ],
 })
 
 export const rotate2DBasic = Fn(([v, r]: [Vec2, Float]) => {
@@ -20,8 +20,8 @@ export const rotate2DBasic = Fn(([v, r]: [Vec2, Float]) => {
         type: 'vec2',
         inputs: [
                 { name: 'v', type: 'vec2' },
-                { name: 'r', type: 'float' }
-        ]
+                { name: 'r', type: 'float' },
+        ],
 })
 
 export const rotate2DAxis = Fn(([v, xAxis]: [Vec2, Vec2]) => {
@@ -32,6 +32,6 @@ export const rotate2DAxis = Fn(([v, xAxis]: [Vec2, Vec2]) => {
         type: 'vec2',
         inputs: [
                 { name: 'v', type: 'vec2' },
-                { name: 'xAxis', type: 'vec2' }
-        ]
+                { name: 'xAxis', type: 'vec2' },
+        ],
 })

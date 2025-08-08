@@ -1,4 +1,4 @@
-import { Fn, Vec3, Float, Mat4, vec3 } from '../../node'
+import { Fn, Vec3, Float, vec3 } from '../../node'
 import { lookAt, lookAtRoll } from './lookAt'
 import { translateMat3 } from './translate'
 

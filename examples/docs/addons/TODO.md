@@ -1,0 +1,7 @@
+- [x] `draw/fill.glsl` → TSL
+- [x] `draw/stroke.glsl` → TSL
+- [x] `draw/line.glsl` → TSL
+- [x] `draw/rect.glsl` → TSL
+- [x] `draw/circle.glsl` → TSL
+- [ ] `draw/tri.glsl` → TSL
+- [ ] `draw/point.glsl` → TSL

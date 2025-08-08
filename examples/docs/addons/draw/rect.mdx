@@ -1,0 +1,76 @@
+---
+title: 'rect'
+description: 'Rectangle rendering with distance field precision and flexible sizing options'
+keywords: [rectangle, distance field, fill, stroke, uniform, geometry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rect: Distance Field Rectangle Rendering
+
+### Rectangle Distance Field Mathematics
+
+The `rect` family functions render rectangles using distance field operations. They combine rectangle distance field calculations with fill and stroke operations to create precise geometric shapes.
+
+For rectangle distance fields:
+
+$$
+\text{rectSDF}(p, s) = \max\left(\frac{|p_x|}{s_x}, \frac{|p_y|}{s_y}\right)
+$$
+
+Where the point is normalized to [-1,1] coordinate space and compared against the size parameters.
+
+Rectangle rendering applies:
+
+$$
+\text{rectFill}(p, s) = \text{fill}(\text{rectSDF}(p, s), 1.0)
+$$
+
+$$
+\text{rectStroke}(p, s, w) = \text{stroke}(\text{rectSDF}(p, s), 1.0, w)
+$$
+
+### Size Parameter Flexibility
+
+The rect functions support both vector and uniform sizing. Vector sizing allows independent width and height control, while uniform sizing maintains square proportions. This flexibility enables rapid prototyping and responsive design patterns.
+
+Uniform sizing functions automatically convert scalar values to vec2, eliminating redundant parameter specification for square shapes while maintaining full control when aspect ratios matter.
+
+### Distance Field Precision Benefits
+
+Distance field rectangles maintain crisp edges at any scale and rotation. Unlike texture-based approaches, they provide analytical precision without memory overhead or resolution limitations.
+
+The distance field representation enables advanced operations like rounded corners, beveled edges, and complex boolean combinations through standard distance field arithmetic.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(8)
+        const grid = p.fract().sub(0.5)
+        const t = iTime.mul(0.5)
+        const size = vec2(sin(t), cos(t.mul(1.3))).mul(0.2).add(0.3)
+        const rects = rectFill(grid, size)
+        return vec4(rects.mul(vec3(0.7, 0.9, 0.4)), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(6)
+        const layers = float(0).toVar()
+        const count = int(4)
+        Loop(count, ({ i }) => {
+                const phase = float(i).div(float(count)).mul(6.28)
+                const offset = vec2(cos(phase.add(iTime)), sin(phase.mul(1.7).add(iTime.mul(0.8)))).mul(1.2)
+                const size = sin(phase.add(iTime.mul(2))).mul(0.3).add(0.6)
+                const strokeWidth = cos(phase.mul(2).add(iTime.mul(1.5))).mul(0.05).add(0.1)
+                const r = rectStrokeUniform(p.sub(offset), size, strokeWidth)
+                layers.addAssign(r)
+        })
+        return vec4(layers.clamp(0, 1).mul(vec3(0.9, 0.5, 0.2)), 1)
+}`}
+/>
