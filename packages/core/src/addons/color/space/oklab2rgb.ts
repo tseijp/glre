@@ -30,12 +30,7 @@ export const oklab2rgb3 = Fn(([oklab]: [Vec3]): Vec3 => {
 }).setLayout({
         name: 'oklab2rgb3',
         type: 'vec3',
-        inputs: [
-                {
-                        name: 'oklab',
-                        type: 'vec3',
-                },
-        ],
+        inputs: [{ name: 'oklab', type: 'vec3' }],
 })
 
 export const oklab2rgb4 = Fn(([oklab]: [Vec4]): Vec4 => {
@@ -44,12 +39,7 @@ export const oklab2rgb4 = Fn(([oklab]: [Vec4]): Vec4 => {
 }).setLayout({
         name: 'oklab2rgb4',
         type: 'vec4',
-        inputs: [
-                {
-                        name: 'oklab',
-                        type: 'vec4',
-                },
-        ],
+        inputs: [{ name: 'oklab', type: 'vec4' }],
 })
 
 export const oklab2rgb = oklab2rgb3

@@ -1,0 +1,41 @@
+---
+title: 'yiq2rgb'
+description: 'Convert YIQ color values to RGB coordinates for NTSC broadcast standard'
+keywords: [color, yiq, rgb, conversion, ntsc, broadcast, luminance, chrominance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# yiq2rgb: NTSC Color Space to RGB Conversion
+
+### Mathematical Foundation of NTSC Color Encoding
+
+YIQ represents the NTSC broadcast color standard where Y encodes luminance, I represents in-phase chrominance, and Q represents quadrature chrominance. This color space optimized analog television transmission with minimal visual artifacts.
+
+The mathematical transformation:
+$$\text{RGB} = M_{\text{YIQ}\rightarrow\text{RGB}} \cdot \text{YIQ}$$
+
+Where the transformation matrix reconstructs RGB values from luminance and quadrature-modulated chrominance components.
+
+### Quadrature Modulation Properties
+
+YIQ uses quadrature amplitude modulation for chrominance encoding, where I and Q components represent orthogonal color axes. This approach minimized bandwidth requirements while maintaining color fidelity for broadcast television.
+
+Technical characteristics:
+
+- **Luminance preservation**: Y component identical to grayscale representation
+- **Quadrature encoding**: I and Q axes optimized for human color perception
+- **Bandwidth efficiency**: Chrominance components transmitted at reduced resolution
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const yComponent = 0.6
+        const iComponent = uv.x.sub(0.5).mul(0.6)
+        const qComponent = uv.y.sub(0.5).mul(0.6)
+        const yiqColor = vec3(yComponent, iComponent, qComponent)
+        return vec4(yiq2rgb(yiqColor), 1)
+}`}
+/>

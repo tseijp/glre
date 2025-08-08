@@ -1,0 +1,41 @@
+---
+title: 'rgb2lch'
+description: 'Convert RGB values to cylindrical LCH color coordinates via LAB space'
+keywords: [color, rgb, lch, lab, conversion, cylindrical, lightness, chroma, hue]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2lch: RGB to Cylindrical Color Space Conversion
+
+### Mathematical Transformation to Cylindrical Coordinates
+
+RGB to LCH conversion transforms Cartesian color coordinates into cylindrical representation via LAB color space. The process separates luminance from chromatic information and expresses color relationships through polar coordinates.
+
+The mathematical transformation sequence:
+$$\text{LAB} = f_{\text{RGB}\rightarrow\text{LAB}}(\text{RGB})$$
+$$\text{LCH} = \begin{bmatrix} L \\ \sqrt{a^2 + b^2} \\ \arctan(b, a) \cdot \frac{180}{\pi} \end{bmatrix}$$
+
+Where $L$ preserves lightness from LAB, chroma $C$ equals the magnitude of chromatic components, and hue $H$ represents the angle in degrees.
+
+### Cylindrical Representation Advantages
+
+LCH coordinates provide intuitive color manipulation by separating achromatic and chromatic information. Lightness controls brightness independently of color content, chroma adjusts saturation, and hue rotates through the color spectrum.
+
+Computational properties:
+
+- **Magnitude calculation**: Chroma computed as Euclidean distance in ab plane
+- **Angular conversion**: Hue derived from arctangent with proper quadrant handling
+- **Degree scaling**: Angular result converted from radians to degrees for standard notation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, 0.5, uv.y)
+        const lchColor = rgb2lch(rgbColor)
+        const normalizedLch = vec3(lchColor.x.div(100), lchColor.y.div(100), lchColor.z.div(360))
+        return vec4(normalizedLch, 1)
+}`}
+/>
