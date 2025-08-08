@@ -1,0 +1,69 @@
+---
+title: 'hue2rgb: Hue to RGB Component Mapping'
+description: 'Convert hue values to RGB color components using hexagonal color wheel projection'
+keywords: [hue, rgb, color wheel, hexagonal projection, color components]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hue2rgb: Hue to RGB Component Mapping
+
+### Hexagonal Color Wheel Projection
+
+The hue2rgb function transforms angular hue positions to RGB color components through a hexagonal projection. This mapping divides the color circle into six 60° segments, each representing transitions between adjacent primary and secondary colors.
+
+The mathematical transformation applies piecewise linear functions:
+
+$$R = \text{saturate}(|6h - 3| - 1)$$
+$$G = \text{saturate}(2 - |6h - 2|)$$  
+$$B = \text{saturate}(2 - |6h - 4|)$$
+
+Where $h \in [0, 1]$ represents the normalized hue angle, and saturate clamps values to $[0, 1]$.
+
+This creates a hexagonal color space where:
+- $h = 0$: Pure red (1, 0, 0)
+- $h = 1/6$: Yellow (1, 1, 0)  
+- $h = 2/6$: Green (0, 1, 0)
+- $h = 3/6$: Cyan (0, 1, 1)
+- $h = 4/6$: Blue (0, 0, 1)
+- $h = 5/6$: Magenta (1, 0, 1)
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const hue = uv.x.add(iTime.mul(0.2)).fract()
+        const color = hue2rgb(hue)
+        return vec4(color, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = uv.sub(0.5)
+        const angle = center.y.atan2(center.x).add(3.14159).div(6.28318)
+        const radius = center.length().mul(2)
+        const hue = angle.add(iTime.mul(0.1)).fract()
+        const color = hue2rgb(hue).mul(radius.step(0.8))
+        return vec4(color, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const wave1 = sin(uv.y.mul(8).add(iTime.mul(2)))
+        const wave2 = cos(uv.x.mul(12).add(iTime.mul(1.5)))
+        const hue = wave1.mul(wave2).mul(0.5).add(0.5)
+        const color = hue2rgb(hue)
+        return vec4(color, 1)
+}`}
+/>
+
+The hexagonal projection ensures that adjacent hues produce visually continuous color transitions while maintaining distinct separation between primary colors. This geometric approach creates sharp boundaries at primary hue positions (multiples of 60°) and smooth gradients between them.
+
+The function forms the foundation for more complex color space conversions like HSL and HSV, where the pure hue components are then modified by saturation and lightness parameters to achieve the full color gamut.
