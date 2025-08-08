@@ -1,0 +1,44 @@
+---
+title: 'exponentialInOut'
+description: 'Symmetric exponential easing with dramatic acceleration and deceleration phases'
+keywords: [animation, easing, exponential, symmetric, inout, dramatic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# exponentialInOut: Symmetric Exponential Motion
+
+### Mathematical Structure of Bidirectional Exponential Easing
+
+The exponentialInOut function creates symmetric motion through piecewise exponential composition with boundary condition handling. The mathematical foundation uses conditional logic to handle special cases and scaled exponential functions for each motion phase.
+
+For boundary conditions: $f(t) = t$ if $t = 0$ or $t = 1$
+For $t \in (0, 0.5)$: $f(t) = 0.5 \cdot 2^{20t-10}$ (exponential acceleration)
+For $t \in (0.5, 1)$: $f(t) = -0.5 \cdot 2^{10-20t} + 1$ (exponential deceleration)
+
+This piecewise structure ensures proper boundary behavior while maintaining exponential growth and decay characteristics throughout both motion phases.
+
+### Exponential Growth and Decay Dynamics
+
+Both segments exhibit exponential behavior with scaling factors that ensure continuity at the midpoint. The acceleration phase starts gently and builds dramatically, while the deceleration phase begins rapidly and settles exponentially.
+
+The boundary condition handling prevents numerical issues at the endpoints while preserving the dramatic motion characteristics of exponential easing.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = exponentialInOut(t)
+    const Y = exponentialInOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

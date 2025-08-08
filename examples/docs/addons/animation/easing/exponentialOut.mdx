@@ -1,0 +1,42 @@
+---
+title: 'exponentialOut'
+description: 'Exponential deceleration easing with rapid initial motion followed by asymptotic approach'
+keywords: [animation, easing, exponential, deceleration, asymptotic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# exponentialOut: Exponential Decay Deceleration
+
+### Mathematical Foundation of Exponential Decay
+
+The exponentialOut function implements deceleration through exponential decay. The mathematical expression uses conditional logic: $f(t) = t$ if $t = 1$, otherwise $f(t) = 1 - 2^{-10t}$.
+
+The exponential decay component $2^{-10t}$ creates motion that starts with high velocity and rapidly approaches the target position asymptotically. The transformation $(1 - \text{decay})$ ensures the output increases toward unity as the decay approaches zero.
+
+The special case handling for $t = 1$ ensures proper boundary behavior and mathematical correctness at the endpoint.
+
+### Exponential Decay Properties
+
+Exponential decay functions exhibit decreasing rates of change, creating motion that slows dramatically but never quite reaches zero velocity mathematically. This creates natural settling behavior that approaches the target smoothly.
+
+The deceleration profile starts at maximum velocity and decreases exponentially, creating motion that appears to "coast" into its final position. This characteristic makes exponential decay ideal for natural conclusions and smooth landings.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = exponentialOut(t)
+    const Y = exponentialOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

@@ -1,0 +1,50 @@
+---
+title: 'bounceInOut'
+description: 'Symmetric bounce easing with elastic collision behavior at both acceleration and deceleration phases'
+keywords: [animation, easing, bounce, inout, symmetric, elastic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# bounceInOut: Symmetric Elastic Motion
+
+### Mathematical Structure of Bidirectional Bounce
+
+The bounceInOut function creates symmetric elastic collision dynamics by combining bounce acceleration and deceleration through piecewise composition. The mathematical foundation applies inverse bounceOut behavior to the first half and standard bounceOut to the second half.
+
+For $t \in [0, 0.5]$: $f(t) = \frac{1}{2} \cdot (1 - \text{bounceOut}(1 - 2t))$
+
+For $t \in [0.5, 1]$: $f(t) = \frac{1}{2} \cdot \text{bounceOut}(2t - 1) + 0.5$
+
+This piecewise structure ensures $C^0$ continuity at the midpoint while maintaining characteristic elastic collision behavior at both endpoints.
+
+### Collision Dynamics and Energy Distribution
+
+The velocity profile exhibits multiple elastic collision events during both acceleration and deceleration phases. Energy distribution follows realistic collision mechanics with decreasing bounce amplitude as the system approaches equilibrium.
+
+The acceleration profile shows gathering momentum through reverse collisions in the first half, followed by energy dissipation through forward collisions in the second half, creating authentic elastic motion signatures.
+
+### Implementation Through Conditional Composition
+
+The TSL implementation uses conditional logic to apply appropriate transformations to each temporal half. The scaling factors (0.5 multiplication and offset) maintain proper output range while preserving bounce characteristics.
+
+Domain scaling (2t and 2t-1) ensures each half utilizes the full bounce curve range, while range scaling maintains continuity across the transition point.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = bounceInOut(t)
+    const Y = bounceInOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

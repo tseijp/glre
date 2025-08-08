@@ -1,0 +1,42 @@
+---
+title: 'cubicOut'
+description: 'Cubic polynomial deceleration easing with smooth third-degree curve conclusion'
+keywords: [animation, easing, cubic, polynomial, deceleration]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cubicOut: Cubic Polynomial Deceleration
+
+### Mathematical Foundation of Cubic Deceleration
+
+The cubicOut function implements deceleration through transformed cubic polynomial. The mathematical expression uses $f(t) = (t-1)^3 + 1$, creating smooth deceleration that begins with high velocity and gradually reduces to zero.
+
+The transformation shifts the cubic curve to provide the desired deceleration characteristics while maintaining polynomial smoothness properties. The function starts with maximum velocity and approaches zero velocity asymptotically.
+
+The derivative $f'(t) = 3(t-1)^2$ shows decreasing velocity throughout the motion, characteristic of cubic deceleration curves.
+
+### Polynomial Properties and Motion Quality
+
+Cubic deceleration maintains $C^2$ continuity, providing smooth velocity and acceleration transitions without jarring discontinuities. The motion feels natural and predictable, ideal for concluding animations.
+
+This easing creates motion that settles gracefully into its final position, making it excellent for UI elements that need to appear to "land" softly at their destination.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = cubicOut(t)
+    const Y = cubicOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

@@ -1,0 +1,48 @@
+---
+title: 'exponentialIn'
+description: 'Exponential acceleration easing with rapid growth curve for dramatic motion buildup'
+keywords: [animation, easing, exponential, acceleration, growth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# exponentialIn: Exponential Growth Acceleration
+
+### Mathematical Foundation of Exponential Motion
+
+The exponentialIn function implements acceleration through exponential growth. The mathematical expression uses conditional logic: $f(t) = t$ if $t = 0$, otherwise $f(t) = 2^{10(t-1)}$.
+
+The exponential component $2^{10(t-1)}$ creates dramatic acceleration that starts nearly imperceptibly and builds to maximum velocity rapidly. The base-2 exponential with scaling factor 10 provides steep growth curves characteristic of exponential functions.
+
+The special case handling for $t = 0$ ensures proper boundary behavior and prevents numerical issues at the starting point.
+
+### Exponential Growth Properties
+
+Exponential functions exhibit constant relative growth rates, meaning the rate of change is proportional to the current value. This creates motion that accelerates increasingly rapidly as time progresses.
+
+The acceleration profile starts very gently, then increases dramatically toward the end, creating motion that appears to "suddenly" reach full speed. This characteristic makes exponential easing ideal for dramatic entrances and dynamic transitions.
+
+### Implementation and Boundary Conditions
+
+The TSL implementation uses conditional selection to handle the boundary case at $t = 0$, ensuring mathematical correctness while maintaining the desired exponential acceleration behavior throughout the rest of the domain.
+
+The exp2 function provides computational efficiency compared to general power operations while maintaining identical mathematical behavior.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = exponentialIn(t)
+    const Y = exponentialIn(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

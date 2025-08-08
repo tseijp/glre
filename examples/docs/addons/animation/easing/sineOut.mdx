@@ -1,0 +1,36 @@
+---
+title: 'sineOut'
+description: 'Sinusoidal deceleration with smooth trigonometric completion'
+keywords: [sine, easing, deceleration, trigonometric, smooth, gentle]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# sineOut: Sinusoidal Deceleration
+
+### Smooth trigonometric deceleration with natural curved completion
+
+The sineOut function creates gentle deceleration through direct sinusoidal mapping. This produces smooth curved motion that decelerates naturally without the sharpness of polynomial alternatives.
+
+$$f(t) = \sin\left(t \cdot \frac{\pi}{2}\right)$$
+
+The sinusoidal relationship provides smoother deceleration than linear functions while maintaining gentler characteristics than polynomial curves, creating naturally flowing completion phases.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = sineOut(t)
+    const Y = sineOut(uv.x)
+    const a = vec3(0.4, 0.7, 0.9)
+    const b = vec3(0.9, 0.5, 0.2)
+    const c = a.mix(b, y).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

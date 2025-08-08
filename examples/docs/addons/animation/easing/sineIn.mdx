@@ -1,0 +1,36 @@
+---
+title: 'sineIn'
+description: 'Sinusoidal acceleration with smooth trigonometric onset'
+keywords: [sine, easing, acceleration, trigonometric, smooth, curved]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# sineIn: Sinusoidal Acceleration
+
+### Smooth trigonometric acceleration with natural curved onset
+
+The sineIn function creates gentle acceleration through sinusoidal mapping. This produces smooth curved motion that feels natural and organic compared to polynomial alternatives.
+
+$$f(t) = \sin\left((t-1) \cdot \frac{\pi}{2}\right) + 1$$
+
+The sinusoidal relationship provides smoother acceleration than linear functions while remaining gentler than polynomial curves, creating naturally flowing motion characteristics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = sineIn(t)
+    const Y = sineIn(uv.x)
+    const a = vec3(0.6, 0.9, 0.3)
+    const b = vec3(0.9, 0.3, 0.7)
+    const c = a.mix(b, y).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

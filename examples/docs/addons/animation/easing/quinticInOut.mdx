@@ -1,0 +1,41 @@
+---
+title: 'quinticInOut'
+description: 'Symmetric fifth-power curve with maximum contrast between acceleration and deceleration'
+keywords: [quintic, easing, symmetric, fifth-power, extreme, bidirectional]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# quinticInOut: Symmetric Fifth-Power Motion
+
+### Maximum contrast bidirectional motion through mirrored quintic curves
+
+The quinticInOut function creates the most extreme symmetric motion pattern through scaled fifth-power curves. The first half produces extraordinary acceleration while the second half mirrors this with equally extreme deceleration.
+
+$$
+f(t) = \begin{cases}
+16t^5 & \text{if } t < 0.5 \\
+-\frac{1}{2}(2t-2)^5 + 1 & \text{if } t \geq 0.5
+\end{cases}
+$$
+
+The scaling factor of 16 maintains continuity while maximizing the quintic acceleration effect, creating the strongest contrast between motion phases possible with polynomial curves.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = quinticInOut(t)
+    const Y = quinticInOut(uv.x)
+    const a = vec3(0.2, 0.6, 0.9)
+    const b = vec3(0.9, 0.2, 0.6)
+    const c = a.mix(b, y).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

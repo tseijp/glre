@@ -1,0 +1,48 @@
+---
+title: 'circularOut'
+description: 'Circular arc deceleration easing based on upper quarter-circle geometry for smooth motion conclusion'
+keywords: [animation, easing, circular, arc, deceleration, geometry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circularOut: Quarter-Circle Deceleration
+
+### Mathematical Foundation of Circular Deceleration
+
+The circularOut function implements deceleration following upper quarter-circle arc geometry. The mathematical expression $f(t) = \sqrt{t(2-t)}$ represents the upper portion of a unit circle, creating smooth deceleration that follows circular arc curvature.
+
+This function derives from the circle equation through algebraic manipulation: starting from $x^2 + y^2 = 1$ and solving for y in terms of a transformed domain, yielding the characteristic square root form.
+
+The derivative $f'(t) = \frac{1-t}{\sqrt{t(2-t)}}$ shows decreasing velocity as $t$ increases, with the rate approaching zero as motion completes, characteristic of circular arc geometry.
+
+### Geometric Properties and Curvature Behavior
+
+The circular deceleration maintains constant curvature throughout its domain, providing predictable motion characteristics that feel natural and geometrically consistent. The arc begins with high velocity and gradually reduces to zero.
+
+The geometric relationship ensures smooth transitions without abrupt velocity changes, making it ideal for concluding motions that require gentle settling behavior.
+
+### Computational Implementation Strategy
+
+The TSL implementation uses the mathematical identity $\sqrt{t(2-t)}$ through method chaining: `t.mul(t.mul(-1).add(2)).sqrt()`. This formulation maintains numerical stability while preserving the geometric relationship.
+
+The auto-typed parameters enable compatibility with both scalar and vector inputs, maintaining consistent circular arc behavior across different data types.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = circularOut(t)
+    const Y = circularOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

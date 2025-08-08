@@ -1,0 +1,48 @@
+---
+title: 'circularIn'
+description: 'Circular arc acceleration easing based on quarter-circle geometry for smooth motion buildup'
+keywords: [animation, easing, circular, arc, acceleration, geometry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circularIn: Quarter-Circle Acceleration
+
+### Mathematical Foundation of Circular Motion
+
+The circularIn function implements acceleration based on quarter-circle arc geometry. The mathematical expression $f(t) = 1 - \sqrt{1 - t^2}$ represents the lower portion of a unit circle, creating smooth acceleration that follows circular arc curvature.
+
+This function derives from the circle equation $x^2 + y^2 = 1$, where the output represents the y-coordinate for a given x-coordinate along the quarter-circle from $(0,0)$ to $(1,1)$.
+
+The derivative $f'(t) = \frac{t}{\sqrt{1-t^2}}$ shows increasing acceleration rate as $t$ approaches 1, with infinite slope at the endpoint, characteristic of circular arc geometry.
+
+### Geometric Properties and Curvature Analysis
+
+The circular easing function maintains constant curvature $\kappa = 1$ throughout its domain, providing predictable acceleration characteristics. This geometric property ensures smooth velocity transitions without abrupt changes in acceleration direction.
+
+The arc length parametrization creates natural motion that feels organic and mathematically elegant. The acceleration profile increases gradually at first, then more rapidly as the motion approaches completion.
+
+### Computational Implementation
+
+The TSL implementation uses the mathematical identity $1 - \sqrt{1-t^2}$ through method chaining: `t.mul(t).oneMinus().sqrt().oneMinus()`. This approach maintains numerical stability while preserving the geometric relationship.
+
+The function accepts auto-typed input, enabling compatibility with scalar and vector arguments while maintaining consistent circular arc behavior across different data types.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = circularIn(t)
+    const Y = circularIn(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

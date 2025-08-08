@@ -1,0 +1,34 @@
+---
+title: 'elasticInOut'
+description: 'Symmetric elastic easing with oscillatory behavior at both acceleration and deceleration phases'
+keywords: [animation, easing, elastic, symmetric, oscillation, spring]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# elasticInOut: Symmetric Elastic Motion
+
+### Mathematical Structure of Bidirectional Elastic Behavior
+
+The elasticInOut function creates symmetric elastic motion by combining scaled elastic acceleration and deceleration phases. The mathematical foundation uses modified sinusoidal and exponential components for each half of the motion.
+
+The piecewise construction ensures elastic oscillations occur at both the beginning and end of the motion, creating a spring-like behavior that feels natural and dynamic.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = elasticInOut(t)
+    const Y = elasticInOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

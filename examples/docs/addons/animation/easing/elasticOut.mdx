@@ -1,0 +1,46 @@
+---
+title: 'elasticOut'
+description: 'Elastic spring deceleration with oscillatory settling motion and exponential amplitude decay'
+keywords: [animation, easing, elastic, spring, oscillation, deceleration]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# elasticOut: Elastic Spring Deceleration
+
+### Mathematical Foundation of Elastic Settling
+
+The elasticOut function simulates elastic spring settling behavior through combined sinusoidal and exponential decay components. The mathematical expression $f(t) = \sin(-13(t+1) \cdot \frac{\pi}{2}) \cdot 2^{-10t} + 1$ creates oscillatory motion with exponentially decreasing amplitude.
+
+The sinusoidal component generates oscillations at frequency 13 with phase shift, while the exponential decay term $2^{-10t}$ provides amplitude reduction that starts at maximum and decreases toward zero.
+
+This combination produces motion characteristic of a damped spring system settling into its equilibrium position after initial displacement.
+
+### Spring Dynamics and Damping Behavior
+
+The negative frequency factor (-13) creates oscillations that begin at maximum amplitude and decay exponentially. The exponential damping ensures oscillations diminish rapidly, creating realistic spring settling behavior.
+
+The phase shift $(t+1)$ adjusts the initial oscillation phase to begin the motion appropriately, while the offset (+1) ensures the final position reaches unity.
+
+### Physical Interpretation
+
+This easing pattern accurately models physical spring behavior where an object overshoots its target position multiple times with decreasing magnitude before finally settling. The motion starts with high velocity and large oscillations that gradually diminish to zero.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = elasticOut(t)
+    const Y = elasticOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>

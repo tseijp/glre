@@ -1,0 +1,48 @@
+---
+title: 'backOut'
+description: 'Overshoot deceleration easing with initial rapid motion followed by overshoot and settle behavior'
+keywords: [animation, easing, back, out, overshoot, deceleration]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# backOut: Overshoot Deceleration Curve
+
+### Mathematical Foundation of Back-Out Motion
+
+The backOut function implements overshoot deceleration through inversion transformation of the backIn curve. The mathematical relationship $f(t) = 1 - \text{backIn}(1-t)$ creates a motion profile that begins with rapid acceleration, overshoots the target, then settles back to the final position.
+
+This transformation preserves the characteristic overshoot behavior while inverting the temporal direction. The function maintains differentiability and produces smooth velocity transitions throughout the motion range.
+
+The derivative analysis reveals initial high velocity that decreases through the motion, with a characteristic overshoot peak followed by negative velocity as the object returns to its target position.
+
+### Physical Interpretation and Motion Dynamics
+
+This easing pattern models natural settling behavior observed in damped oscillatory systems. Objects exhibit initial momentum that carries them beyond the target position before gravitational or restoring forces bring them back to equilibrium.
+
+The overshoot characteristic creates anticipation and visual interest, making motion feel more organic and physically plausible. This is particularly effective for UI elements that need to convey completion or arrival with emphasis.
+
+### Implementation Through Function Composition
+
+The TSL implementation leverages functional composition by inverting both input and output of the backIn function. This approach maintains computational efficiency while ensuring consistent mathematical properties across the easing family.
+
+The domain inversion $(1-t)$ followed by range inversion $(1-\text{result})$ produces the desired overshoot behavior without requiring separate mathematical derivation.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+    const w = 0.01
+    const t = iTime.fract()
+    const y = backOut(t)
+    const Y = backOut(uv.x)
+    const a = vec3(0.1, 0.9, 0.3)
+    const b = vec3(0.8, 0.9, 0.7)
+    const c = a.mix(b, t).mul(uv.x.step(t))
+    const lines = mmin2(smoothstep(0, w, uv.mod(0.1).min(uv.sub(vec2(t, y)).abs())))
+    const curve = stroke(uv.y.sub(Y), 0, w).mul(c)
+    const color = lines.oneMinus().mul(0.2).add(curve)
+    return vec4(color, 1)
+}`}
+/>
