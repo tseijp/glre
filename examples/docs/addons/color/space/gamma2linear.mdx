@@ -1,0 +1,52 @@
+---
+title: 'gamma2linear'
+description: 'Transform gamma-corrected values to linear color space using power function for accurate color computation'
+keywords: [gamma, linear, correction, power function, color space, luminance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# gamma2linear: Gamma Correction to Linear Space Conversion
+
+### Power Function Color Space Mathematics
+
+Gamma correction compensates for non-linear luminance perception in display devices. The gamma2linear transformation converts perceptually uniform gamma space to mathematically linear space using power function $v^{\gamma}$ where $\gamma = 2.2$ represents standard display gamma.
+
+The mathematical relationship follows:
+
+$$L = V^{\gamma}$$
+
+Where $V$ represents the gamma-corrected input value and $L$ the resulting linear luminance. Standard gamma value 2.2 accounts for cathode-ray tube response characteristics and human visual perception non-linearity.
+
+Linear space enables accurate color blending, lighting calculations, and physically-based rendering operations that require additive color mathematics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const bands = uv.x.mul(16).floor()
+        const gamma_input = bands.div(16)
+        const linear_output = gamma2linear(gamma_input)
+        const comparison = gamma_input.select(linear_output, uv.y.greaterThan(0.5))
+        return vec4(vec3(comparison), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const grid = uv.mul(8).floor()
+        const cell_value = grid.x.add(grid.y.mul(8)).div(64)
+        const gamma_space = cell_value.pow(2)
+        const linear_space = gamma2linear(gamma_space)
+        const blend_factor = iTime.mul(2).sin().mul(0.5).add(0.5)
+        const result = gamma_space.mix(linear_space, blend_factor)
+        return vec4(vec3(result), 1)
+}`}
+/>
+
+The gamma correction transformation preserves perceptual uniformity while enabling linear mathematical operations. Dark values receive greater amplification than bright values, restoring the linear relationship between numerical values and physical light intensity.
+
+This mathematical foundation ensures accurate color blending, proper lighting calculations, and consistent color reproduction across different display technologies and computational frameworks requiring linear color space operations.

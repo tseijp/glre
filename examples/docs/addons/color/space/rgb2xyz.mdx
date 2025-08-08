@@ -1,0 +1,41 @@
+---
+title: 'rgb2xyz'
+description: 'Convert RGB color space to CIE XYZ intermediate space for advanced color transformations'
+keywords: [color space, RGB, CIE XYZ, color science, transformation matrix]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2xyz: RGB to CIE XYZ Color Space Conversion
+
+### Device-Independent Color Transformation
+
+The `rgb2xyz` function converts RGB color values to the CIE XYZ color space, which serves as an intermediate step for color space transformations. XYZ space provides a device-independent representation based on human vision standardization.
+
+### Mathematical Foundation
+
+The transformation uses the sRGB to CIE XYZ D65 standard matrix:
+
+$$
+\begin{pmatrix} X \\ Y \\ Z \end{pmatrix} = \begin{pmatrix}
+0.4125 & 0.3576 & 0.1804 \\
+0.2127 & 0.7152 & 0.0722 \\
+0.0193 & 0.1192 & 0.9503
+\end{pmatrix} \begin{pmatrix} R \\ G \\ B \end{pmatrix}
+$$
+
+This matrix assumes linear RGB values. The Y component represents luminance, while X and Z define chromaticity coordinates.
+
+### XYZ Chromaticity Decomposition
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, uv.y, 0.5)
+        const xyzColor = rgb2xyz(rgbColor)
+        return vec4(xyzColor, 1)
+}
+`}
+/>

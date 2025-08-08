@@ -1,0 +1,41 @@
+---
+title: 'yuv2rgb'
+description: 'Convert YUV color values to RGB coordinates for broadcast video standards'
+keywords: [color, yuv, rgb, conversion, broadcast, video, luminance, chrominance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# yuv2rgb: Broadcast Color Space to RGB Conversion
+
+### Mathematical Foundation of Video Color Encoding
+
+YUV separates luminance (Y) from chrominance (UV) components, enabling efficient video compression and broadcast transmission. The conversion to RGB applies a linear transformation optimized for human visual perception of brightness and color.
+
+The mathematical transformation:
+$$\text{RGB} = M_{\text{YUV}\rightarrow\text{RGB}} \cdot \text{YUV}$$
+
+Where the transformation matrix accounts for different broadcast standards (HDTV vs SDTV) with distinct luminance weighting coefficients.
+
+### Broadcast Standard Differences
+
+HDTV (Rec. 709) and SDTV (Rec. 601) use different RGB-to-luminance conversion coefficients. HDTV applies greater weight to green components, reflecting modern display characteristics. SDTV uses legacy coefficients optimized for CRT displays.
+
+Technical specifications:
+
+- **HDTV weights**: R=0.2126, G=0.7152, B=0.0722
+- **SDTV weights**: R=0.299, G=0.587, B=0.114
+- **Chrominance scaling**: U and V components scaled for efficient transmission
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const yComponent = 0.5
+        const uComponent = uv.x.sub(0.5).mul(0.5)
+        const vComponent = uv.y.sub(0.5).mul(0.5)
+        const yuvColor = vec3(yComponent, uComponent, vComponent)
+        return vec4(yuv2rgb(yuvColor), 1)
+}`}
+/>

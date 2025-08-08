@@ -1,0 +1,38 @@
+---
+title: 'rgb2lab'
+description: 'Convert RGB to LAB color space for perceptual color analysis and uniform color difference calculations'
+keywords: [color space, RGB, LAB, perceptual uniformity, color science, color difference]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2lab: RGB to LAB Color Space Conversion
+
+### Perceptual Color Space Transformation
+
+The `rgb2lab` function converts RGB values to the perceptually uniform LAB color space through the CIE XYZ intermediate space. This enables accurate color difference calculations and perceptual color manipulations.
+
+### Transformation Pipeline
+
+The conversion follows a two-stage process:
+
+$$
+\text{RGB} \xrightarrow{\text{Linear Transform}} \text{XYZ} \xrightarrow{\text{Cube Root}} \text{LAB}
+$$
+
+First, RGB values are transformed to XYZ using the sRGB matrix. Then XYZ coordinates are converted to LAB using the CIE LAB formula with D65 illuminant normalization.
+
+The LAB space provides three components: L* (lightness from 0-100), a* (green-red axis from -127 to +127), and b\* (blue-yellow axis from -127 to +127).
+
+### RGB to LAB Color Analysis
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, uv.y, 0.5)
+        const labColor = rgb2lab(rgbColor)
+        return vec4(labColor, 1)
+}`}
+/>

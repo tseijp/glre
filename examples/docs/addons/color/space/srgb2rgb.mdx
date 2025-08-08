@@ -1,0 +1,43 @@
+---
+title: 'srgb2rgb'
+description: 'Convert sRGB color values to linear RGB color space for accurate color processing and calculations'
+keywords: [srgb, rgb, color space, conversion, gamma correction, linear, web standard]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# srgb2rgb: sRGB to Linear RGB Color Space Conversion
+
+### Standard RGB Gamma Correction Removal
+
+The sRGB to linear RGB conversion transforms standard web color values to linear color space for accurate mathematical operations. sRGB applies gamma correction to match human visual perception, while linear RGB maintains proportional light intensity relationships.
+
+The transformation follows a piecewise function:
+
+For sRGB values $v \in [0, 1]$:
+
+$$
+\text{RGB} = \begin{cases}
+\frac{v}{12.92} & \text{if } v \leq 0.04045 \\
+\left(\frac{v + 0.055}{1.055}\right)^{2.4} & \text{if } v > 0.04045
+\end{cases}
+$$
+
+The linear threshold at $0.04045$ prevents numerical discontinuities near black values. Below this threshold, simple division by $12.92$ provides linear mapping. Above this threshold, the power function removes gamma correction applied for perceptual uniformity.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const web_color = vec3(uv.x, uv.y, iTime.sin().mul(0.3).add(0.7))
+        const linear_color = srgb2rgb(web_color)
+        const comparison = uv.x.mul(20).sin().greaterThan(0)
+        const result = web_color.select(linear_color, comparison)
+        return vec4(result, 1)
+}`}
+/>
+
+The conversion includes epsilon addition ($10^{-10}$) to prevent floating-point precision issues near zero values. This ensures numerical stability across different hardware implementations while maintaining color accuracy.
+
+sRGB to linear RGB conversion enables proper color blending, lighting calculations, and texture filtering operations that require linear light intensity relationships rather than perceptually uniform color distribution.

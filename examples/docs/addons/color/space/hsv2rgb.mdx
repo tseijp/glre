@@ -1,0 +1,44 @@
+---
+title: 'hsv2rgb'
+description: 'Convert HSV (Hue, Saturation, Value) to RGB using cone model mathematics for maximum brightness preservation'
+keywords: [hsv, rgb, cone model, value, saturation, brightness, color space]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hsv2rgb: HSV to RGB Cone Model Transformation
+
+### Cone Model Color Space Mathematics
+
+HSV represents colors within a cone where the apex contains black and the base contains pure colors at maximum value. Unlike HSL's double-cone structure, HSV maintains full color intensity at maximum value regardless of saturation.
+
+The transformation formula applies cone geometry:
+
+$$\text{RGB} = ((hue2rgb(h) - 1) \times s + 1) \times v$$
+
+Where $(h, s, v)$ represent hue $\in [0,1]$, saturation $\in [0,1]$, and value $\in [0,1]$.
+
+The cone model ensures:
+
+- $v = 1, s = 1$: Pure saturated colors
+- $v = 1, s = 0$: White
+- $v = 0$: Black regardless of hue or saturation
+- Intermediate $s$ values: Linear interpolation between white and pure color
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cell = uv.x.mul(uv.y).pow(0.3)
+        const hue = cell.add(iTime.mul(0.3)).fract()
+        const sat = uv.x.pow(1.5)
+        const value = uv.y.pow(0.7).add(0.3)
+        const color = hsv2rgb(vec3(hue, sat, value))
+        return vec4(color, 1)
+}`}
+/>
+
+The cone model's mathematical advantage lies in its intuitive brightness control. Maximum value produces the brightest possible color for any hue-saturation combination, while saturation linearly blends between white and pure color without reducing overall brightness.
+
+This geometric approach enables natural color manipulation where brightness adjustments maintain color character, making HSV particularly suitable for applications requiring intuitive color control and maximum luminance preservation.

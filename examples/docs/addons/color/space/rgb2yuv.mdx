@@ -1,0 +1,39 @@
+---
+title: 'rgb2yuv'
+description: 'Convert RGB values to YUV broadcast color space for video processing'
+keywords: [color, rgb, yuv, conversion, broadcast, video, luminance, chrominance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2yuv: RGB to Broadcast Color Space Conversion
+
+### Mathematical Structure of Video Color Separation
+
+RGB to YUV conversion separates luminance information from chrominance data, optimizing video signal transmission and storage. The transformation computes perceived brightness independently from color content.
+
+The mathematical transformation:
+$$\text{YUV} = M_{\text{RGB}\rightarrow\text{YUV}} \cdot \text{RGB}$$
+
+Where Y represents luminance (brightness), U encodes blue-yellow color difference, and V encodes red-cyan color difference.
+
+### Luminance Calculation Properties
+
+The Y component computes perceptually weighted brightness using coefficients derived from human visual sensitivity. Green contributes most heavily to perceived brightness, followed by red, then blue.
+
+Mathematical characteristics:
+
+- **Luminance weighting**: Green channel receives highest coefficient due to eye sensitivity
+- **Chrominance encoding**: U and V represent color deviations from grayscale
+- **Bandwidth optimization**: Chrominance components can be subsampled without perceptual loss
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, uv.y, 0.6)
+        const yuvColor = rgb2yuv(rgbColor)
+        return vec4(yuvColor.add(0.5), 1)
+}`}
+/>

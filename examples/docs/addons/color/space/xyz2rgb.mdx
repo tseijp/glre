@@ -1,0 +1,49 @@
+---
+title: 'xyz2rgb'
+description: 'Convert CIE XYZ color space to RGB using standard sRGB transformation matrix'
+keywords: [color space, CIE XYZ, RGB, sRGB, color matrix, linear transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# xyz2rgb: CIE XYZ to RGB Color Space Conversion
+
+### Linear Color Matrix Transformation
+
+The `xyz2rgb` function converts colors from CIE XYZ color space to RGB using the standard sRGB transformation matrix. This linear transformation applies the ITU-R BT.709 color primaries with proper scaling for display-ready RGB values.
+
+### Mathematical Foundation
+
+The conversion uses the standardized sRGB transformation matrix:
+
+$$
+\begin{pmatrix} R \\ G \\ B \end{pmatrix} = \begin{pmatrix}
+3.2405 & -1.5371 & -0.4985 \\
+-0.9693 & 1.8760 & 0.0416 \\
+0.0556 & -0.2040 & 1.0572
+\end{pmatrix} \begin{pmatrix} X/100 \\ Y/100 \\ Z/100 \end{pmatrix}
+$$
+
+The XYZ values are first normalized from 0-100 range to 0-1 range before matrix multiplication.
+
+### Matrix-Based Color Transformation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(2).sub(1)
+        const t = iTime.mul(0.5)
+
+        const X = p.x.mul(50)
+        const Y = float(50).add(p.y.mul(30))
+        const Z = p.length().mul(40)
+
+        const xyzColor = vec3(X, Y, Z)
+        const rgbColor = xyz2rgb(xyzColor)
+
+        return vec4(rgbColor.max(0).min(1), 1)
+
+}`}
+/>

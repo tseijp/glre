@@ -1,0 +1,61 @@
+---
+title: 'lab2rgb'
+description: 'Convert CIELAB color space to RGB with perceptual uniformity for advanced color transformations'
+keywords: [color space, CIELAB, RGB, perceptual uniformity, color science, CIE]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# lab2rgb: CIELAB to RGB Color Space Conversion
+
+### Perceptually Uniform Color Space Transformation
+
+The `lab2rgb` function converts colors from the CIELAB color space to RGB, utilizing the perceptually uniform properties of LAB space for advanced color manipulations. CIELAB is designed to approximate human vision, where equal distances in color space correspond to equal perceived color differences.
+
+### Mathematical Foundation
+
+The conversion follows a two-step process through CIE XYZ intermediate space:
+
+$$
+\text{LAB} \rightarrow \text{XYZ} \rightarrow \text{RGB}
+$$
+
+The LAB to XYZ transformation applies the inverse of the CIE LAB formula:
+
+$$
+X = X_n \cdot f_x^3 \text{ if } f_x > \delta, \text{ else } \frac{f_x - 16/116}{7.787}
+$$
+
+where $f_x = \frac{a}{500} + f_y$, $f_y = \frac{L + 16}{116}$, and $\delta = 0.206897$.
+
+The XYZ to RGB conversion uses the standard sRGB color matrix:
+
+$$
+\begin{pmatrix} R \\ G \\ B \end{pmatrix} = \begin{pmatrix}
+3.2405 & -1.5371 & -0.4985 \\
+-0.9693 & 1.8760 & 0.0416 \\
+0.0556 & -0.2040 & 1.0572
+\end{pmatrix} \begin{pmatrix} X \\ Y \\ Z \end{pmatrix}
+$$
+
+### LAB Color Space Exploration
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const p = uv.sub(center).mul(1000)
+
+        const L = uv.y
+        const A = p.x
+        const B = p.y
+
+        const labColor = vec3(L, A, B)
+        const rgbColor = lab2rgb(labColor)
+
+        return vec4(rgbColor.max(0).min(1), 1)
+
+}`}
+/>

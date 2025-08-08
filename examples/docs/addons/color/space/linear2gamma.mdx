@@ -1,0 +1,52 @@
+---
+title: 'linear2gamma'
+description: 'Convert linear color values to gamma-corrected display space using inverse power function for proper display output'
+keywords: [linear, gamma, display, correction, inverse power, output, luminance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# linear2gamma: Linear to Gamma Space Display Conversion
+
+### Inverse Power Function Display Mathematics
+
+Linear to gamma conversion transforms mathematically linear color values to display-optimized gamma space using inverse power function $v^{1/\gamma}$ where $1/\gamma = 1/2.2 ≈ 0.4545$ compensates for display device response curves.
+
+The mathematical transformation applies:
+
+$$G = L^{1/\gamma}$$
+
+Where $L$ represents linear luminance input and $G$ the gamma-corrected display output. This inverse transformation ensures proper luminance distribution on cathode-ray tube displays and maintains perceptual uniformity across brightness levels.
+
+Display gamma correction compresses linear light values into perceptually uniform distribution matching human visual response characteristics.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const strips = uv.y.mul(12).floor()
+        const linear_input = uv.x.pow(3)
+        const gamma_output = linear2gamma(linear_input)
+        const comparison = linear_input.select(gamma_output, strips.mod(2).equal(0))
+        return vec4(vec3(comparison), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const cellular = uv.mul(6).floor()
+        const cell_id = cellular.x.add(cellular.y.mul(6))
+        const linear_base = cell_id.div(36).pow(2)
+        const gamma_corrected = linear2gamma(linear_base)
+        const temporal_mod = iTime.mul(4).add(cell_id).sin().mul(0.2).add(0.8)
+        const result = gamma_corrected.mul(temporal_mod)
+        return vec4(vec3(result), 1)
+}`}
+/>
+
+The linear to gamma transformation prepares computationally linear color values for display output. Dark regions receive compression while bright areas expand, creating perceptually uniform brightness distribution on gamma-corrected display devices.
+
+This mathematical conversion bridges the gap between linear color computation and display technology requirements, ensuring accurate color reproduction and maintaining visual consistency across different display systems and viewing conditions.

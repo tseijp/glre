@@ -1,0 +1,39 @@
+---
+title: 'rgb2yiq'
+description: 'Convert RGB values to YIQ NTSC broadcast color space'
+keywords: [color, rgb, yiq, conversion, ntsc, broadcast, luminance, chrominance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2yiq: RGB to NTSC Color Space Conversion
+
+### Mathematical Structure of NTSC Color Encoding
+
+RGB to YIQ conversion transforms color values into the NTSC broadcast standard, separating luminance from quadrature-modulated chrominance components. This encoding enabled color television transmission compatible with black-and-white receivers.
+
+The mathematical transformation:
+$$\text{YIQ} = M_{\text{RGB}\rightarrow\text{YIQ}} \cdot \text{RGB}$$
+
+Where Y preserves luminance information, I encodes orange-cyan color differences, and Q encodes green-magenta color differences.
+
+### Quadrature Chrominance Encoding
+
+The I and Q components represent chrominance along axes rotated 33 degrees from the U and V axes used in other color spaces. This rotation aligned chrominance axes with principal directions of human color vision.
+
+Mathematical properties:
+
+- **Luminance weighting**: Y component uses NTSC standard coefficients
+- **Rotated chrominance**: I and Q axes optimized for visual perception
+- **Broadcast compatibility**: Grayscale information preserved in Y component
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, 0.7, uv.y)
+        const yiqColor = rgb2yiq(rgbColor)
+        return vec4(yiqColor.mul(0.5).add(0.5), 1)
+}`}
+/>

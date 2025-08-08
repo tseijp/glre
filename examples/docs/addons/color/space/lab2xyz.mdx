@@ -1,0 +1,55 @@
+---
+title: 'lab2xyz'
+description: 'Convert CIELAB color space to CIE XYZ with precise color science transformations'
+keywords: [color space, CIELAB, CIE XYZ, color science, intermediate conversion]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# lab2xyz: CIELAB to CIE XYZ Color Space Conversion
+
+### Intermediate Color Space Transformation
+
+The `lab2xyz` function converts colors from the CIELAB color space to CIE XYZ, serving as the essential intermediate step for color space transformations. This conversion applies the inverse CIE LAB formula with proper gamma correction and white point normalization.
+
+### Mathematical Implementation
+
+The transformation uses the inverse LAB formula with threshold-based calculations:
+
+$$
+f_y = \frac{L + 16}{116}, \quad f_x = \frac{a}{500} + f_y, \quad f_z = f_y - \frac{b}{200}
+$$
+
+For each component, the conversion applies:
+
+$$
+\text{Component} = \begin{cases}
+f^3 & \text{if } f > 0.206897 \\
+\frac{f - 16/116}{7.787} & \text{otherwise}
+\end{cases}
+$$
+
+The final XYZ values are scaled by the CIE D65 white point and normalized to 0-100 range.
+
+### XYZ Color Space Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const p = uv.sub(center).mul(50)
+
+        const L = uv.y
+        const A = p.x
+        const B = p.y
+
+        const labColor = vec3(L, A, B)
+        const rgbColor = lab2xyz(labColor)
+
+        return vec4(rgbColor.max(0).min(1), 1)
+
+}
+`}
+/>

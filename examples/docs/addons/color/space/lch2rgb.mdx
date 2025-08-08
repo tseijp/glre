@@ -1,0 +1,42 @@
+---
+title: 'lch2rgb'
+description: 'Convert LCH color coordinates to RGB values via LAB color space'
+keywords: [color, lch, rgb, lab, conversion, cylindrical, polar, lightness, chroma, hue]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# lch2rgb: Cylindrical Color Space to RGB Conversion
+
+### Mathematical Structure of Cylindrical Color Coordinates
+
+LCH (Lightness, Chroma, Hue) represents colors in cylindrical coordinates where lightness forms the vertical axis, chroma defines radial distance from the center, and hue specifies angular position. The conversion to RGB follows a two-step process through LAB color space.
+
+The mathematical transformation sequence:
+$$\text{LAB} = \begin{bmatrix} L \\ C \cos(H \cdot \frac{\pi}{180}) \\ C \sin(H \cdot \frac{\pi}{180}) \end{bmatrix}$$
+$$\text{RGB} = f_{\text{LAB}\rightarrow\text{RGB}}(\text{LAB})$$
+
+Where $L$ is lightness, $C$ is chroma, $H$ is hue in degrees, and $f_{\text{LAB}\rightarrow\text{RGB}}$ represents the LAB to RGB transformation matrix.
+
+### Coordinate System Properties
+
+LCH provides intuitive color manipulation through cylindrical coordinates. Lightness ranges from 0 (black) to 100 (white), chroma represents color intensity, and hue cycles through the color wheel from 0 to 360 degrees.
+
+Geometric characteristics:
+
+- **Cylindrical structure**: Colors arranged around a central lightness axis
+- **Hue continuity**: Angular hue values wrap continuously at 360 degrees
+- **Chroma scaling**: Radial distance controls color saturation intensity
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const lightness = 70
+        const chroma = uv.x.mul(60)
+        const hue = uv.y.mul(360)
+        const lchColor = vec3(lightness, chroma, hue)
+        return vec4(lch2rgb(lchColor), 1)
+}`}
+/>

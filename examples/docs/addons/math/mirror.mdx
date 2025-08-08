@@ -22,6 +22,7 @@ $$
 $$
 
 where:
+
 - $f = \text{fract}(x)$ represents the fractional component
 - $m = \lfloor \bmod(x, 2) \rfloor$ creates alternating $\{0,1\}$ pattern
 - The term $fm \cdot 2$ generates the reflection mechanism
@@ -38,27 +39,28 @@ $$
 This mathematical structure enables creation of complex visual phenomena through simple periodic alternation, where spatial or temporal domains exhibit contrasting directional characteristics while maintaining mathematical continuity.
 
 <FragmentEditor
-	isFun
-	code={`
+        isFun
+        code={`
 const fragment = () => {
-	const time = iTime.mul(0.7)
-	const coord = uv.mul(8).add(time)
-	
-	const mirroredX = mirror(coord.x)
-	const mirroredY = mirror(coord.y.add(time.mul(0.3)))
-	
-	const wave1 = mirroredX.mul(3.14159).sin()
-	const wave2 = mirroredY.mul(2.71828).cos()
-	
-	const interference = wave1.mul(wave2).abs()
-	
-	const phase = coord.x.add(coord.y).mul(0.5)
-	const colorPhase = mirror(phase.add(time.mul(0.2)))
-	
-	const red = interference.mul(colorPhase.pow(1.5))
-	const green = interference.mul(colorPhase.sub(0.33).abs().pow(0.8))
-	const blue = interference.mul(colorPhase.sub(0.66).abs().pow(2.0))
-	
-	return vec4(red, green, blue, 1)
+        const time = iTime.mul(0.7)
+        const coord = uv.mul(8).add(time)
+
+        const mirroredX = mirror(coord.x)
+        const mirroredY = mirror(coord.y.add(time.mul(0.3)))
+
+        const wave1 = mirroredX.mul(3.14159).sin()
+        const wave2 = mirroredY.mul(2.71828).cos()
+
+        const interference = wave1.mul(wave2).abs()
+
+        const phase = coord.x.add(coord.y).mul(0.5)
+        const colorPhase = mirror(phase.add(time.mul(0.2)))
+
+        const red = interference.mul(colorPhase.pow(1.5))
+        const green = interference.mul(colorPhase.sub(0.33).abs().pow(0.8))
+        const blue = interference.mul(colorPhase.sub(0.66).abs().pow(2.0))
+
+        return vec4(red, green, blue, 1)
+
 }`}
 />

@@ -1,0 +1,43 @@
+---
+title: 'rgb2cmyk'
+description: 'Convert RGB color values to CMYK color space for subtractive color mixing and print applications'
+keywords: [rgb, cmyk, color space, conversion, subtractive, print, cyan, magenta, yellow, black]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2cmyk: RGB to CMYK Color Space Conversion
+
+### Subtractive Color Model Transformation
+
+The RGB to CMYK conversion transforms additive color values to subtractive color space used in printing. CMYK represents colors through Cyan, Magenta, Yellow, and Black (Key) ink densities that subtract wavelengths from white paper.
+
+The mathematical transformation follows:
+
+For RGB values $(r, g, b)$ where each component $\in [0, 1]$:
+
+$$K = \text{min}(1-r, 1-g, 1-b)$$
+
+$$C = \frac{(1-r) - K}{1-K}$$
+
+$$M = \frac{(1-g) - K}{1-K}$$
+
+$$Y = \frac{(1-b) - K}{1-K}$$
+
+The black component $K$ represents the maximum darkness achievable by overlaying all three chromatic inks. The chromatic components $(C, M, Y)$ are normalized by the remaining color gamut after black extraction.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgb = vec3(uv, iTime.sin().mul(0.5).add(0.5))
+        const cmyk = rgb2cmyk(rgb)
+        const channels = vec3(cmyk.x, cmyk.y, cmyk.z)
+        return vec4(channels.mul(cmyk.w.oneMinus()), 1)
+}`}
+/>
+
+The conversion includes division by zero protection through step function masking. When $K = 1$ (pure black), the chromatic components become undefined, requiring special handling to prevent numerical instabilities.
+
+CMYK color separation enables independent control of ink densities in printing processes. The four-channel representation allows precise reproduction of colors within the printable gamut while optimizing ink usage through black substitution.

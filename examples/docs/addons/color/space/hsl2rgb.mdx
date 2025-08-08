@@ -1,0 +1,47 @@
+---
+title: 'hsl2rgb'
+description: 'Convert HSL (Hue, Saturation, Lightness) values to RGB color space using mathematical transformation'
+keywords: [hsl, rgb, color space, conversion, hue, saturation, lightness]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hsl2rgb: HSL to RGB Color Space Conversion
+
+### Mathematical Color Space Transformation
+
+The HSL to RGB conversion transforms cylindrical color space coordinates to Cartesian RGB values. HSL represents colors through hue (angular position), saturation (radial distance), and lightness (vertical position) in a double cone model.
+
+The transformation follows the mathematical relationship:
+
+For a given HSL triplet $(h, s, l)$ where $h \in [0, 1]$, $s \in [0, 1]$, $l \in [0, 1]$:
+
+$$C = s \cdot (1 - |2l - 1|)$$
+
+$$\text{RGB} = (\text{hue2rgb}(h) - 0.5) \cdot C + l$$
+
+The hue2rgb function maps hue values to RGB components using:
+
+$$R = \text{saturate}(|6h - 3| - 1)$$
+$$G = \text{saturate}(2 - |6h - 2|)$$
+$$B = \text{saturate}(2 - |6h - 4|)$$
+
+This creates a hexagonal projection from the hue circle to RGB space, where each 60° segment corresponds to transitions between primary and secondary colors.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.3)
+        const hue = uv.x.add(t).fract()
+        const sat = uv.y.mul(0.8).add(0.2)
+        const lightness = float(0.6)
+        const color = hsl2rgb(vec3(hue, sat, lightness))
+        return vec4(color, 1)
+}`}
+/>
+
+The HSL model provides intuitive color manipulation through separate control of hue rotation, saturation scaling, and lightness adjustment. This separation enables natural color operations like desaturation (reducing s), darkening (reducing l), and hue shifting (modifying h) that correspond to perceptual color properties.
+
+The mathematical foundation ensures smooth interpolation in HSL space produces visually pleasing color transitions, making it ideal for procedural color generation and artistic applications where perceptual uniformity is desired over linear RGB mixing.

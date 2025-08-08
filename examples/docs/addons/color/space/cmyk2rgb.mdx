@@ -1,0 +1,45 @@
+---
+title: 'cmyk2rgb'
+description: 'Convert CMYK color values to RGB color space for display and digital color workflows'
+keywords: [cmyk, rgb, color space, conversion, subtractive, additive, cyan, magenta, yellow, black]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cmyk2rgb: CMYK to RGB Color Space Conversion
+
+### Subtractive to Additive Color Model Transformation
+
+The CMYK to RGB conversion transforms subtractive color values used in printing to additive color space for digital display. CMYK represents ink densities that subtract wavelengths from white paper, while RGB represents light intensities that add to create colors.
+
+The mathematical transformation follows:
+
+For CMYK values $(c, m, y, k)$ where each component $\in [0, 1]$:
+
+$$\text{invK} = 1 - k$$
+
+$$R = (1 - \text{min}(1, c \cdot \text{invK} + k))$$
+
+$$G = (1 - \text{min}(1, m \cdot \text{invK} + k))$$
+
+$$B = (1 - \text{min}(1, y \cdot \text{invK} + k))$$
+
+The black component $k$ represents the maximum darkness. The chromatic components $(c, m, y)$ are scaled by the remaining brightness $(1-k)$ and combined with black to determine the final subtractive effect on each RGB channel.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const c = uv.x
+        const m = uv.y
+        const y = iTime.sin().mul(0.3).add(0.5)
+        const k = float(0.1)
+        const rgb = cmyk2rgb(vec4(c, m, y, k))
+        return vec4(rgb, 1)
+}`}
+/>
+
+The conversion ensures proper saturation clamping through the minimum function. This prevents oversaturation that would occur from direct arithmetic conversion, maintaining color accuracy within the displayable RGB gamut.
+
+CMYK to RGB conversion enables preview of print colors on digital displays. The transformation accounts for the fundamental difference between subtractive ink mixing and additive light emission, providing accurate color representation for design and proofing workflows.
