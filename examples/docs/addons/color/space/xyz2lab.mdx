@@ -49,34 +49,8 @@ const fragment = () => {
         const X = uv.x.mul(100)
         const Y = uv.y.mul(100)
         const Z = float(50)
-        
         const xyzColor = vec3(X, Y, Z)
         const labColor = xyz2lab(xyzColor)
-        
-        const normalizedL = labColor.x.div(100)
-        const normalizedA = labColor.y.add(127).div(254)
-        const normalizedB = labColor.z.add(127).div(254)
-        
-        return vec4(normalizedL, normalizedA, normalizedB, 1)
-}`}
-/>
-
-### LAB Space Chromatic Expansion
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const centerXYZ = vec3(50, 50, 50)
-        const offset = vec2(uv.sub(0.5).mul(100))
-        
-        const xyzColor = centerXYZ.add(vec3(offset.x, offset.y, 0))
-        const labColor = xyz2lab(xyzColor.max(0))
-        
-        const chromaA = labColor.y.div(127)
-        const chromaB = labColor.z.div(127)
-        const lightness = labColor.x.div(100)
-        
-        return vec4(chromaA.abs(), chromaB.abs(), lightness, 1)
+        return vec4(labColor.normalize(), 1)
 }`}
 />

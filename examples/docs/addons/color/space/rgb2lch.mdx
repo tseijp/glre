@@ -35,7 +35,7 @@ Computational properties:
 const fragment = () => {
         const rgbColor = vec3(uv.x, 0.5, uv.y)
         const lchColor = rgb2lch(rgbColor)
-        const normalizedLch = vec3(lchColor.x.div(100), lchColor.y.div(100), lchColor.z.div(360))
-        return vec4(normalizedLch, 1)
+        const color = vec3(lchColor.x.div(100), lchColor.y.div(100), lchColor.z.div(360))
+        return vec4(color, 1)
 }`}
 />

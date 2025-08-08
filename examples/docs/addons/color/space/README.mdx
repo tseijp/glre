@@ -1,0 +1,174 @@
+---
+title: 'space'
+description: 'Comprehensive GPU-accelerated color space transformations for GLRE'
+keywords: [color, space, conversion, rgb, hsl, hsv, lab, oklab, lch, cmyk, yuv, yiq, gamma, srgb]
+date: 2025-08-06
+---
+
+# Color Space Conversion Reference
+
+GLRE provides comprehensive color space conversion functions optimized for GPU execution. Each function follows consistent patterns with Vec3/Vec4 variants and mathematical precision suitable for real-time graphics applications.
+
+## Function Architecture
+
+### Type System
+
+All conversion functions provide consistent input/output patterns:
+
+- **Vec3 functions**: Primary 3-component conversions (e.g., `rgb2hsl: Vec3 → Vec3`)
+- **Vec4 variants**: 4-component versions preserving alpha channel (e.g., `rgb2hslVec4: Vec4 → Vec4`)
+- **Numbered variants**: Explicit dimensionality functions (e.g., `rgb2lab3`, `rgb2lab4`)
+
+### Mathematical Foundation
+
+Functions implement mathematically accurate transformations using:
+
+- **Matrix operations**: Linear transformations via `mat3` multiplication
+- **Piecewise functions**: Conditional operations for gamma correction and sRGB
+- **Trigonometric calculations**: Hue-based color spaces using optimized sin/cos operations
+- **Numerical stability**: Epsilon constants (typically `1e-10`) prevent computational errors
+
+## RGB-Based Conversions
+
+### Gamma Correction
+
+**`gamma2linear(v: Vec3): Vec3`** - Converts gamma-encoded to linear RGB using power function `v^2.2`
+**`linear2gamma(v: Vec3): Vec3`** - Applies gamma encoding using `v^(1/2.2)` transformation
+
+### sRGB Standard
+
+**`srgb2rgb(v: Vec3): Vec3`** - sRGB to linear RGB with piecewise function (threshold: 0.04045)
+**`rgb2srgb(v: Vec3): Vec3`** - Linear RGB to sRGB encoding (threshold: 0.0031308)
+
+Mathematical implementation uses conditional selection:
+
+- Linear region: `v * 12.92` or `v * 0.0773993808`
+- Gamma region: Power functions with standard sRGB coefficients
+
+### HSL/HSV System
+
+**`hue2rgb(hue: Vec3): Vec3`** - Core hue-to-RGB conversion using 6-segment color wheel
+**`rgb2hcv(rgb: Vec3): Vec3`** - RGB to Hue-Chroma-Value intermediate conversion
+**`hsl2rgb(hsl: Vec3): Vec3`** - HSL to RGB using chroma calculation `C = (1 - |2L - 1|) * S`
+**`hsv2rgb(hsv: Vec3): Vec3`** - HSV to RGB via direct hue multiplication
+**`rgb2hsl(rgb: Vec3): Vec3`** - RGB to HSL through HCV intermediate space
+**`rgb2hsv(rgb: Vec3): Vec3`** - RGB to HSV conversion with proper value/saturation calculation
+**`rgb2hue(rgb: Vec3): Float`** - Extract hue component as single float value
+
+### CMYK System
+
+**`cmyk2rgb(cmyk: Vec4): Vec3`** - CMYK to RGB using key component formula: `RGB = 1 - min(CMY*(1-K) + K, 1)`
+**`rgb2cmyk(rgb: Vec3): Vec4`** - RGB to CMYK with key calculation: `K = min(1-RGB)`
+
+## CIE Color Spaces
+
+### XYZ Foundation
+
+**`rgb2xyz(rgb: Vec3): Vec3`** - RGB to CIE XYZ using D65 white point transformation matrix
+**`xyz2rgb(xyz: Vec3): Vec3`** - XYZ to RGB with inverse D65 matrix and 0.01 scaling factor
+
+D65 transformation matrix:
+
+```
+[ 0.4124564  0.3575761  0.1804375 ]
+[ 0.2126729  0.7151522  0.0721750 ]
+[ 0.0193339  0.1191920  0.9503041 ]
+```
+
+### LAB Color Space
+
+**`xyz2lab(xyz: Vec3): Vec3`** - XYZ to CIELAB using D65 illuminant (95.047, 100, 108.883)
+**`lab2xyz(xyz: Vec3): Vec3`** - CIELAB to XYZ with cube root transformation
+**`lab2rgb(lab: Vec3): Vec3`** - LAB to RGB via XYZ intermediate space
+**`rgb2lab(rgb: Vec3): Vec3`** - RGB to LAB through XYZ conversion chain
+
+Implements cube root transformation with linear fallback (threshold: 0.008856) and proper white point normalization.
+
+### LCH Cylindrical Space
+
+**`lab2lch(lab: Vec3): Vec3`** - LAB to cylindrical LCH coordinates
+**`lch2lab(lch: Vec3): Vec3`** - LCH to LAB using polar conversion
+**`lch2rgb(lch: Vec3): Vec3`** - LCH to RGB via LAB intermediate
+**`rgb2lch(rgb: Vec3): Vec3`** - RGB to LCH through LAB conversion
+
+Cylindrical conversion: `Chroma = √(a² + b²)`, `Hue = atan2(b,a) * 180/π`
+
+### OKLab Perceptual Space
+
+**`oklab2rgb(oklab: Vec3): Vec3`** - OKLab to RGB using dual matrix transformation
+**`rgb2oklab(rgb: Vec3): Vec3`** - RGB to OKLab with LMS intermediate space
+
+Uses optimized matrices for perceptually uniform color representation:
+
+- RGB→LMS conversion matrix
+- LMS cube root transformation: `sign(lms) * |lms|^(1/3)`
+- LMS→OKLab final transformation matrix
+
+## Broadcast Color Spaces
+
+### YUV Video Standards
+
+**`yuv2rgb(yuv: Vec3): Vec3`** - YUV to RGB for HDTV/SDTV broadcast standards
+**`rgb2yuv(rgb: Vec3): Vec3`** - RGB to YUV with luminance weighting
+**`yuv2rgbSDTV(yuv: Vec3): Vec3`** - SDTV variant with legacy coefficients
+
+Provides both HDTV (Rec. 709) and SDTV (Rec. 601) transformation matrices with proper luminance weighting.
+
+### YIQ NTSC Standard
+
+**`yiq2rgb(yiq: Vec3): Vec3`** - YIQ to RGB for NTSC television standard
+**`rgb2yiq(rgb: Vec3): Vec3`** - RGB to YIQ with quadrature modulation encoding
+
+Uses NTSC transformation matrix optimized for analog television broadcast compatibility.
+
+## Function Dependencies
+
+Complex color space conversions utilize function composition:
+
+- **LAB conversions**: `lab2rgb` ← `lab2xyz` ← `xyz2rgb`
+- **LCH conversions**: `lch2rgb` ← `lch2lab` ← `lab2rgb`
+- **HSL/HSV**: Both utilize `hue2rgb` for final conversion
+- **RGB analysis**: `rgb2hsl` depends on `rgb2hcv` intermediate calculation
+
+## Usage Patterns
+
+### Direct Conversion
+
+```glsl
+vec3 hslColor = rgb2hsl(vec3(0.8, 0.2, 0.4))
+vec3 recoveredRgb = hsl2rgb(hslColor)
+```
+
+### Alpha Preservation
+
+```glsl
+vec4 rgbaColor = vec4(0.6, 0.8, 0.3, 0.9)
+vec4 hslAlpha = rgb2hslVec4(rgbaColor)  // Alpha preserved
+```
+
+### Chain Conversions
+
+```glsl
+vec3 rgbColor = vec3(0.5, 0.7, 0.2)
+vec3 labColor = rgb2lab(rgbColor)
+vec3 lchColor = lab2lch(labColor)
+```
+
+## Mathematical Constants
+
+Key mathematical constants used throughout the library:
+
+- **Degree conversion**: 0.01745329251 (π/180), 57.2957795131 (180/π)
+- **Gamma values**: 2.2 (standard), 2.4 (sRGB), 0.4166666667 (sRGB inverse)
+- **CIE D65 white point**: (0.95045592705, 1.0, 1.08905775076)
+- **Numerical stability**: Various epsilon values (typically 1e-10)
+- **sRGB thresholds**: 0.04045 (decode), 0.0031308 (encode)
+
+## Performance Characteristics
+
+All functions are optimized for GPU execution with:
+
+- **Matrix operations**: Leverage GPU parallel matrix multiplication
+- **Minimal branching**: Conditional operations use GPU-friendly selection
+- **Numerical precision**: Balanced accuracy and performance for real-time applications
+- **Memory efficiency**: Direct Vec3/Vec4 operations without intermediate allocations

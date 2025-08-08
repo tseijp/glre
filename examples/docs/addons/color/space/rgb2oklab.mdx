@@ -38,14 +38,3 @@ const fragment = () => {
         return vec4(oklabColor.mul(0.5).add(0.5), 1)
 }`}
 />
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const rgbInput = vec3(0.8, 0.2, 0.4)
-        const oklab = rgb2oklab(rgbInput)
-        const recovered = oklab2rgb(oklab)
-        return vec4(recovered, 1)
-}`}
-/>

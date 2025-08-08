@@ -1,0 +1,42 @@
+---
+title: 'lch2lab'
+description: 'Convert cylindrical LCH coordinates to Cartesian LAB representation'
+keywords: [color, lch, lab, conversion, cartesian, polar, lightness, chroma, hue]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# lch2lab: Cylindrical to Cartesian Color Space Conversion
+
+### Mathematical Foundation of Cartesian Coordinate Reconstruction
+
+LCH to LAB conversion transforms cylindrical color coordinates into Cartesian representation where polar chroma and hue values become rectangular a and b components while preserving lightness.
+
+The mathematical transformation:
+$$\text{LAB} = \begin{bmatrix} L \\ C \cos(H \cdot \frac{\pi}{180}) \\ C \sin(H \cdot \frac{\pi}{180}) \end{bmatrix}$$
+
+Where L remains unchanged, a-component equals chroma times cosine of hue angle, and b-component equals chroma times sine of hue angle.
+
+### Trigonometric Projection Properties
+
+The conversion from cylindrical to Cartesian coordinates projects polar coordinates onto rectangular axes. The chroma value scales the unit circle, while the hue angle determines the direction of projection.
+
+Mathematical characteristics:
+
+- **Trigonometric projection**: Chroma scaled by cosine and sine of hue angle
+- **Radian conversion**: Hue converted from degrees to radians using π/180
+- **Lightness preservation**: L component passes through unchanged
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const lightness = 60
+        const chroma = uv.x.mul(40)
+        const hue = uv.y.mul(360)
+        const lchColor = vec3(lightness, chroma, hue)
+        const labColor = lch2lab(lchColor)
+        return vec4(labColor.mul(0.01).add(0.5), 1)
+}`}
+/>

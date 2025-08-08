@@ -35,14 +35,15 @@ The XYZ values are first normalized from 0-100 range to 0-1 range before matrix 
 const fragment = () => {
         const p = uv.mul(2).sub(1)
         const t = iTime.mul(0.5)
-        
-        const X = p.x.abs().mul(50).add(t.sin().mul(20).add(30))
+
+        const X = p.x.mul(50)
         const Y = float(50).add(p.y.mul(30))
-        const Z = p.length().mul(40).add(t.cos().mul(15).add(25))
-        
+        const Z = p.length().mul(40)
+
         const xyzColor = vec3(X, Y, Z)
         const rgbColor = xyz2rgb(xyzColor)
-        
+
         return vec4(rgbColor.max(0).min(1), 1)
+
 }`}
 />
