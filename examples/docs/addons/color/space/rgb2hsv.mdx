@@ -1,0 +1,43 @@
+---
+title: 'rgb2hsv'
+description: 'Extract HSV components from RGB using cone model mathematics for intuitive color manipulation'
+keywords: [rgb, hsv, cone model, value, saturation, color extraction, analysis]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2hsv: RGB to HSV Cone Model Color Analysis
+
+### Cone Model Component Extraction
+
+RGB to HSV conversion extracts cylindrical coordinates from Cartesian color space using cone model mathematics. This transformation preserves maximum brightness while providing intuitive color manipulation parameters through hue, saturation, and value components.
+
+The algorithm applies conditional channel selection:
+
+1. **Channel Comparison**: Determine RGB component ordering through conditional selection
+2. **Value Extraction**: $V = \max(RGB)$ identifies the cone apex distance
+3. **Chroma Calculation**: $C = \max(RGB) - \min(RGB)$ measures color purity
+4. **Saturation Normalization**: $S = \frac{C}{V + \epsilon}$ scales chroma by brightness
+5. **Hue Calculation**: Angular position based on dominant channel
+
+The cone model ensures saturation remains meaningful across all brightness levels.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const complex_rgb = vec3(
+                sin(uv.x.mul(7).add(iTime.mul(0.8))).mul(0.3).add(0.6),
+                cos(uv.y.mul(5).sub(iTime.mul(0.6))).mul(0.4).add(0.5),
+                sin(uv.x.add(uv.y).mul(3).add(iTime)).mul(0.2).add(0.7)
+        )
+        const hsv_extract = rgb2hsv(complex_rgb)
+        const reconstructed = hsv2rgb(vec3(hsv_extract.x.add(0.3).fract(), hsv_extract.y.mul(1.5), hsv_extract.z))
+        return vec4(reconstructed, 1)
+}`}
+/>
+
+HSV cone model provides direct access to perceptual color properties. Value represents maximum channel intensity, saturation measures color purity relative to brightness, and hue indicates angular position in color space.
+
+This mathematical framework enables intuitive color operations where brightness adjustments preserve color character and saturation modifications maintain perceptual color relationships across the entire brightness spectrum.

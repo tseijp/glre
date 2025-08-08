@@ -1,0 +1,63 @@
+---
+title: 'rgb2lab'
+description: 'Convert RGB to LAB color space for perceptual color analysis and uniform color difference calculations'
+keywords: [color space, RGB, LAB, perceptual uniformity, color science, color difference]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2lab: RGB to LAB Color Space Conversion
+
+### Perceptual Color Space Transformation
+
+The `rgb2lab` function converts RGB values to the perceptually uniform LAB color space through the CIE XYZ intermediate space. This enables accurate color difference calculations and perceptual color manipulations.
+
+### Transformation Pipeline
+
+The conversion follows a two-stage process:
+
+$$
+\text{RGB} \xrightarrow{\text{Linear Transform}} \text{XYZ} \xrightarrow{\text{Cube Root}} \text{LAB}
+$$
+
+First, RGB values are transformed to XYZ using the sRGB matrix. Then XYZ coordinates are converted to LAB using the CIE LAB formula with D65 illuminant normalization.
+
+The LAB space provides three components: L* (lightness from 0-100), a* (green-red axis from -127 to +127), and b\* (blue-yellow axis from -127 to +127).
+
+### RGB to LAB Color Analysis
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const rgbColor = vec3(uv.x, uv.y, 0.8)
+        const labColor = rgb2lab(rgbColor)
+        
+        const L = labColor.x.div(100)
+        const A = labColor.y.add(127).div(254)
+        const B = labColor.z.add(127).div(254)
+        
+        return vec4(L, A, B, 1)
+}`}
+/>
+
+### Perceptual Color Distance Calculation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const color1 = vec3(uv.x, 0.5, 0.8)
+        const color2 = vec3(0.8, uv.y, 0.5)
+        
+        const lab1 = rgb2lab(color1)
+        const lab2 = rgb2lab(color2)
+        
+        const deltaE = lab1.sub(lab2).length()
+        const perceptualDist = deltaE.div(100)
+        
+        const blendFactor = perceptualDist.smoothstep(0, 0.5)
+        return vec4(vec3(blendFactor), 1)
+}`}
+/>

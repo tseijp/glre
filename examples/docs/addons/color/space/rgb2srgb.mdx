@@ -1,0 +1,43 @@
+---
+title: 'rgb2srgb'
+description: 'Convert linear RGB color values to sRGB color space for web display and standard color representation'
+keywords: [rgb, srgb, color space, conversion, gamma correction, web standard, display]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2srgb: Linear RGB to sRGB Color Space Conversion
+
+### Linear Color to Display-Ready Transformation
+
+The linear RGB to sRGB conversion transforms mathematically accurate color values to standard web color space for display. Linear RGB maintains proportional light intensity relationships, while sRGB applies gamma correction for optimal visual perception on standard displays.
+
+The transformation follows a piecewise function:
+
+For linear RGB values $c \in [0, 1]$:
+
+$$
+\text{sRGB} = \begin{cases}
+12.92 \cdot c & \text{if } c \leq 0.0031308 \\
+1.055 \cdot c^{1/2.4} - 0.055 & \text{if } c > 0.0031308
+\end{cases}
+$$
+
+The gamma exponent $1/2.4 \approx 0.4167$ applies perceptual correction above the linear threshold. Below $0.0031308$, linear scaling prevents discontinuities near black values while maintaining precision in dark regions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const linear_color = vec3(uv.x.mul(uv.x), uv.y, sin(iTime).mul(0.5).add(0.5))
+        const display_color = rgb2srgb(linear_color)
+        const split_mask = uv.x.greaterThan(0.5)
+        const result = select(linear_color, display_color, split_mask)
+        return vec4(result, 1)
+}`}
+/>
+
+The conversion includes epsilon subtraction ($10^{-10}$) to prevent edge case numerical issues and applies saturation clamping to ensure output values remain within the valid [0,1] range for display systems.
+
+Linear RGB to sRGB conversion is essential for proper color display, ensuring that mathematically computed lighting and color operations appear correctly on standard monitors and web browsers that expect gamma-corrected color values.

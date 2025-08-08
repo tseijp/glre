@@ -1,0 +1,82 @@
+---
+title: 'xyz2lab'
+description: 'Convert CIE XYZ to LAB color space with perceptual uniformity for color difference calculations'
+keywords: [color space, CIE XYZ, LAB, perceptual uniformity, color difference, illuminant]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# xyz2lab: CIE XYZ to LAB Color Space Conversion
+
+### Perceptually Uniform Color Representation
+
+The `xyz2lab` function transforms CIE XYZ coordinates into the LAB color space, where equal distances correspond to equal perceived color differences. This transformation applies the CIE LAB formula with D65 illuminant normalization.
+
+### Mathematical Foundation
+
+The conversion applies three stages of transformation. First, values are normalized by the D65 white point:
+
+$$
+n = \frac{XYZ}{XYZ_{white}} = \frac{XYZ}{[95.047, 100.0, 108.883]}
+$$
+
+Then the cube root function or linear approximation is applied:
+
+$$
+f(t) = \begin{cases}
+\sqrt[3]{t} & \text{if } t > \delta \\
+\frac{t \cdot 7.787 + 16/116}{1} & \text{otherwise}
+\end{cases}
+$$
+
+Finally, LAB coordinates are computed:
+
+$$
+\begin{align}
+L^* &= 116f(Y) - 16 \\
+a^* &= 500(f(X) - f(Y)) \\
+b^* &= 200(f(Y) - f(Z))
+\end{align}
+$$
+
+### LAB Components Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const X = uv.x.mul(100)
+        const Y = uv.y.mul(100)
+        const Z = float(50)
+        
+        const xyzColor = vec3(X, Y, Z)
+        const labColor = xyz2lab(xyzColor)
+        
+        const normalizedL = labColor.x.div(100)
+        const normalizedA = labColor.y.add(127).div(254)
+        const normalizedB = labColor.z.add(127).div(254)
+        
+        return vec4(normalizedL, normalizedA, normalizedB, 1)
+}`}
+/>
+
+### LAB Space Chromatic Expansion
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const centerXYZ = vec3(50, 50, 50)
+        const offset = vec2(uv.sub(0.5).mul(100))
+        
+        const xyzColor = centerXYZ.add(vec3(offset.x, offset.y, 0))
+        const labColor = xyz2lab(xyzColor.max(0))
+        
+        const chromaA = labColor.y.div(127)
+        const chromaB = labColor.z.div(127)
+        const lightness = labColor.x.div(100)
+        
+        return vec4(chromaA.abs(), chromaB.abs(), lightness, 1)
+}`}
+/>

@@ -1,0 +1,44 @@
+---
+title: 'rgb2hsl'
+description: 'Extract HSL components from RGB values using HCV intermediate space for accurate color analysis'
+keywords: [rgb, hsl, color analysis, hcv, chroma, lightness, saturation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2hsl: RGB to HSL Inverse Color Space Transformation
+
+### HCV Intermediate Space Decomposition
+
+RGB to HSL conversion employs HCV (Hue, Chroma, Value) as an intermediate representation to accurately extract cylindrical color coordinates from Cartesian RGB space. This decomposition preserves color relationships while enabling perceptual color analysis.
+
+The transformation process follows:
+
+1. **RGB → HCV**: Extract maximum component value and chroma through conditional channel selection
+2. **HCV → HSL**: Apply lightness calculation and saturation normalization
+
+$$L = V - \frac{C}{2}$$
+
+$$S = \frac{C}{1 - |2L - 1| + \epsilon}$$
+
+Where $V$ represents the maximum RGB component, $C$ the chroma difference, and $\epsilon$ prevents division by zero.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const spiral_rgb = vec3(
+                sin(uv.length().mul(12).add(iTime)),
+                cos(uv.x.mul(8).sub(iTime.mul(0.7))),
+                sin(uv.y.mul(10).add(iTime.mul(1.3)))
+        ).mul(0.5).add(0.5)
+        const extracted_hsl = rgb2hsl(spiral_rgb)
+        const brightness = extracted_hsl.z.pow(3).mul(2)
+        return vec4(vec3(brightness), 1)
+}`}
+/>
+
+The HCV intermediate space enables robust color analysis by separating chromatic information from luminance. Maximum component identification through conditional selection preserves color relationships during the RGB-to-cylindrical transformation.
+
+This mathematical approach provides accurate color component extraction for applications requiring precise color manipulation, analysis, and reconstruction workflows.

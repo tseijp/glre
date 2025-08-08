@@ -1,0 +1,43 @@
+---
+title: 'rgb2hue'
+description: 'Extract pure hue angle from RGB colors using conditional channel selection for color wheel position'
+keywords: [rgb, hue, angle, color wheel, channel selection, angular position]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2hue: RGB to Hue Angular Component Extraction
+
+### Angular Position Calculation
+
+RGB to hue extraction isolates the angular component from color space, representing position on the color wheel regardless of saturation or brightness. This mathematical transformation identifies the dominant color relationship through systematic channel comparison.
+
+The algorithm determines hue angle through:
+
+1. **Channel Ordering**: Conditional selection identifies RGB component relationships
+2. **Angular Calculation**: $H = \frac{(\text{secondary} - \text{tertiary})}{6 \cdot \text{chroma}} + \text{offset}$
+3. **Offset Application**: Base angles (0°, 120°, 240°) for RGB dominance regions
+4. **Normalization**: Absolute value ensures positive angular output
+
+Hue represents pure chromatic information independent of luminance and color intensity.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const complex = vec3(
+                sin(uv.x.mul(8).add(iTime)).mul(0.4).add(0.6),
+                cos(uv.y.mul(6).sub(iTime.mul(0.7))).mul(0.3).add(0.5),
+                sin(uv.x.add(uv.y).mul(4).add(iTime.mul(1.3))).mul(0.2).add(0.8)
+        )
+        const hue_analysis = rgb2hue(complex)
+        const hue_shift = hue_analysis.add(iTime.mul(0.2)).fract()
+        const shifted_color = hue2rgb(hue_shift)
+        return vec4(shifted_color, 1)
+}`}
+/>
+
+Hue extraction enables color wheel operations where chromatic relationships are preserved while allowing independent manipulation of color intensity and purity. This mathematical approach provides foundation for color harmony analysis and chromatic transformations.
+
+The angular nature of hue enables cyclic operations, color wheel rotations, and complementary color calculations essential for artistic and design applications requiring precise chromatic control.

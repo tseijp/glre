@@ -1,0 +1,41 @@
+---
+title: 'rgb2hcv'
+description: 'Extract Hue, Chroma, and Value components from RGB using conditional channel selection algorithms'
+keywords: [rgb, hcv, hue, chroma, value, color extraction, intermediate space]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rgb2hcv: RGB to HCV Intermediate Space Extraction
+
+### Conditional Channel Selection Algorithm
+
+RGB to HCV transformation employs conditional channel selection to identify maximum and minimum color components. This process extracts hue angle, chroma magnitude, and value brightness through systematic RGB channel analysis.
+
+The algorithm performs:
+
+1. **Primary Selection**: Compare G and B channels to determine initial sorting
+2. **Secondary Selection**: Compare R with the primary result for final ordering
+3. **Chroma Calculation**: $C = \max(RGB) - \min(RGB)$
+4. **Hue Calculation**: $H = \frac{(\text{mid} - \text{min})}{6C + \epsilon} + \text{offset}$
+
+Where offset values (0, 1/3, 2/3) correspond to RGB channel dominance regions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const grid = floor(uv.mul(6))
+        const cell = grid.x.add(grid.y.mul(6))
+        const rgb_base = vec3(
+                cell.mod(3).div(2),
+                cell.div(3).mod(3).div(2),
+                cell.div(9).mod(3).div(2)
+        )
+        const hcv_result = rgb2hcv(rgb_base)
+        return vec4(hcv_result, 1)
+}`}
+/>
+
+HCV intermediate space provides direct access to perceptual color properties without the computational overhead of full HSL conversion. The conditional selection algorithm maintains mathematical precision while enabling efficient color component isolation for specialized color processing workflows.

@@ -1,5 +1,5 @@
 ---
-title: 'hsl2rgb: HSL to RGB Color Space Conversion'
+title: 'hsl2rgb'
 description: 'Convert HSL (Hue, Saturation, Lightness) values to RGB color space using mathematical transformation'
 keywords: [hsl, rgb, color space, conversion, hue, saturation, lightness]
 date: 2025-08-06
@@ -37,33 +37,6 @@ const fragment = () => {
         const hue = uv.x.add(t).fract()
         const sat = uv.y.mul(0.8).add(0.2)
         const lightness = float(0.6)
-        const color = hsl2rgb(vec3(hue, sat, lightness))
-        return vec4(color, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const angle = uv.sub(0.5).length().mul(6.28)
-        const radius = uv.sub(0.5).length().mul(2)
-        const hue = angle.div(6.28).add(iTime.mul(0.1)).fract()
-        const sat = radius.clamp(0, 1)
-        const lightness = sin(iTime.mul(2)).mul(0.3).add(0.5)
-        const color = hsl2rgb(vec3(hue, sat, lightness))
-        return vec4(color, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const wave = sin(uv.y.mul(20).add(iTime.mul(3)))
-        const hue = wave.mul(0.5).add(0.5)
-        const sat = cos(uv.x.mul(15)).abs()
-        const lightness = uv.x.mul(0.6).add(0.2)
         const color = hsl2rgb(vec3(hue, sat, lightness))
         return vec4(color, 1)
 }`}
