@@ -1,0 +1,73 @@
+---
+title: 'cnoise'
+description: 'Classical Perlin noise implementation with dimensional overloading for procedural generation'
+keywords: [cnoise, perlin, noise, procedural, generative, turbulence, random]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cnoise: Smooth Perlin Noise Generator
+
+### Classical Perlin noise with mathematically continuous gradient interpolation for organic visual patterns
+
+Perlin noise generates smooth, natural-looking random variations through gradient vector interpolation at lattice points. The algorithm employs quintic smoothing polynomials to eliminate visual artifacts and ensure $C^2$ continuity across sampling boundaries.
+
+The mathematical foundation rests on dot products between randomly oriented gradient vectors and offset vectors from lattice corners to sample points. Ken Perlin's original formulation uses the polynomial $6t^5 - 15t^4 + 10t^3$ for smooth interpolation between discrete lattice values.
+
+## Mathematical Definition
+
+Given input coordinates $\mathbf{p} \in \mathbb{R}^n$, classical Perlin noise computes:
+
+$$
+N(\mathbf{p}) = \sum_{i} w_i \cdot \mathbf{g_i} \cdot (\mathbf{p} - \mathbf{p_i})
+$$
+
+where $\mathbf{g_i}$ represents the gradient vector at lattice point $\mathbf{p_i}$, and $w_i$ denotes the interpolation weight derived from the quintic smoothstep function $Q(t) = 6t^5 - 15t^4 + 10t^3$.
+
+The gradient vectors undergo normalization through Taylor series approximation: $\frac{1}{\sqrt{x}} \approx 1.79284291400159 - 0.85373472095314x$ for computational efficiency.
+
+## Function Variants
+
+| Function        | Input  | Output  | Application                      |
+| --------------- | ------ | ------- | -------------------------------- |
+| `cnoiseVec2(p)` | `vec2` | `float` | 2D textures, heightmapso         |
+| `cnoiseVec3(p)` | `vec3` | `float` | 3D volumes, animated textures    |
+| `cnoiseVec4(p)` | `vec4` | `float` | 4D spacetime, complex animations |
+| `cnoise(p)`     | `vec3` | `float` | Default 3D implementation        |
+
+## Spectral Properties
+
+The noise function exhibits the following frequency characteristics:
+
+- **Bandwidth**: Approximately 1 octave around the fundamental frequency
+- **Amplitude range**: $[-1, 1]$ theoretical, $[-0.5, 0.5]$ practical
+- **Correlation length**: $\sqrt{2}$ sampling units between decorrelated points
+- **Isotropy**: Rotationally invariant gradient distribution
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(8)
+        const n1 = cnoiseVec3(vec3(p, iTime.mul(0.5)))
+        const n2 = cnoiseVec3(vec3(p.add(100), iTime.mul(0.3)))
+        const turbulence = n1.mul(0.7).add(n2.mul(0.3))
+        const color = turbulence.add(0.5)
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = vec3(uv.mul(6), iTime.mul(0.2))
+        const base = cnoiseVec3(p)
+        const detail = cnoiseVec3(p.mul(2.5)).mul(0.4)
+        const fine = cnoiseVec3(p.mul(6.3)).mul(0.15)
+        const marble = base.add(detail).add(fine).mul(0.5).add(0.5)
+        const veining = marble.pow(2.2).mul(1.4)
+        return vec4(vec3(veining), 1)
+}`}
+/>

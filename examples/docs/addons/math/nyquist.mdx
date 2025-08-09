@@ -33,10 +33,10 @@ The filter establishes critical frequency bounds:
         code={`
 const fragment = () => {
         const time = iTime.mul(1.2)
-        const field = uv.sub(0.5).mul(10.0)
+        const field = uv.sub(0.5).mul(10)
 
-        const quantum1 = field.length().mul(3.0).add(time).sin().pow(3.0)
-        const quantum2 = field.x.mul(field.y).mul(2.0).sub(time.mul(1.4)).cos()
+        const quantum1 = field.length().mul(3).add(time).sin().pow(3)
+        const quantum2 = field.x.mul(field.y).mul(2).sub(time.mul(1.4)).cos()
         const entanglement = quantum1.add(quantum2).mul(0.5)
 
         const oscillatingWidth = field.length().mul(0.06).add(
@@ -47,7 +47,7 @@ const fragment = () => {
         const energy = filtered.abs().pow(1.5)
 
         const spectrum = vec3(
-                energy.mul(1.0),
+                energy.mul(1),
                 energy.mul(0.7).add(0.1),
                 energy.mul(0.4).add(0.2)
         )

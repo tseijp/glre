@@ -1,0 +1,73 @@
+---
+title: 'fbm'
+description: 'Fractional Brownian Motion for complex multi-scale procedural patterns through octave accumulation'
+keywords: [fbm, fractional brownian motion, octaves, lacunarity, persistence, noise layers]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# fbm: Multi-Scale Pattern Generation
+
+### Hierarchical Noise Composition Through Octave Layering
+
+Fractional Brownian Motion constructs complex organic patterns by accumulating multiple octaves of noise functions at varying frequencies and amplitudes. Each successive layer contributes finer detail while maintaining coherent structure across different scales.
+
+## Mathematical Foundation
+
+FBM accumulates $n$ octaves of noise function $f(x)$ with geometric progression parameters:
+
+$$
+\text{FBM}(x) = \sum_{i=0}^{n-1} A_i \cdot f(F_i \cdot x)
+$$
+
+Where:
+
+- $A_i = A_0 \cdot r^i$ (amplitude progression)
+- $F_i = F_0 \cdot s^i$ (frequency progression)
+- $r = 0.5$ (amplitude reduction factor, persistence)
+- $s = 2$ (frequency scaling factor, lacunarity)
+
+## Parameter Configuration
+
+| Parameter         | Default | Description                    |
+| ----------------- | ------- | ------------------------------ |
+| Octaves           | 4       | Number of noise layers         |
+| Initial Amplitude | 0.5     | Starting amplitude value       |
+| Amplitude Scalar  | 0.5     | Amplitude reduction per octave |
+| Scale Scalar      | 2       | Frequency increase per octave  |
+
+## Function Variants
+
+| Function       | Input Type    | Purpose                              |
+| -------------- | ------------- | ------------------------------------ |
+| `fbmVec2`      | `vec2`        | 2D FBM using simplex noise           |
+| `fbmVec3`      | `vec3`        | 3D FBM using simplex noise           |
+| `fbmVec3Tiled` | `vec3, float` | Tileable 3D FBM using gradient noise |
+
+## Implementation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(3)
+        const base = fbmVec2(p.add(iTime))
+        const warped = fbmVec2(p.add(vec2(base)))
+        const detail = base.add(warped)
+        return vec4(detail.mul(0.5).add(0.5), base.mul(warped), detail.pow(2), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = vec3(uv.mul(2), iTime.mul(0.1))
+        const layers = fbmVec3(p)
+        const ridged = layers.abs().mul(-1).add(1)
+        const turbulence = fbmVec3(p.mul(2)).mul(0.3)
+        const final = ridged.add(turbulence)
+        return vec4(vec3(final), 1)
+}`}
+/>

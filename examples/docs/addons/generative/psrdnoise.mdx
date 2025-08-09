@@ -1,0 +1,65 @@
+---
+title: 'psrdnoise'
+description: 'Perlin-like noise with rotating gradients and periodic continuity for advanced pattern generation'
+keywords: [psrdnoise, perlin, noise, periodic, rotate, gradient, pattern, texture, animation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# psrdnoise: Periodic Rotating Simplex-Like Dimensional Noise
+
+## Advanced Periodic Noise with Gradient Rotation Control
+
+The `psrdnoise` function generates Perlin-like noise patterns with enhanced control over periodicity and gradient rotation. Unlike standard noise functions, it provides seamless tiling capabilities and gradient rotation parameters for sophisticated texture generation.
+
+The mathematical foundation follows simplex-like grid transformations with explicit control over periodic boundaries:
+
+$$
+\text{psrdnoise}(x, p, \alpha) = \sum_{i} w_i^4 \cdot g_i \cdot d_i
+$$
+
+where $w_i$ represents corner weights, $g_i$ are rotated gradient vectors by angle $\alpha$, and $d_i$ are distance vectors from simplex corners.
+
+### Basic Usage Patterns
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = position.xy.mul(iTime)
+        const n = psrdnoise(p)
+        return vec4(vec3(n), 1)
+}`}
+/>
+
+### Mathematical Properties
+
+| Property                | Description                | Implementation                   |
+| ----------------------- | -------------------------- | -------------------------------- |
+| **Period Control**      | Seamless tiling boundaries | `vec2(px, py)` period parameters |
+| **Gradient Rotation**   | Dynamic gradient direction | `alpha` rotation angle parameter |
+| **Dimensional Support** | 2D and 3D implementations  | `psrdnoise2D`, `psrdnoise3D`     |
+| **Derivative Access**   | Surface normal computation | Built-in gradient calculation    |
+
+### Function Variants
+
+The implementation provides multiple overloads for different use cases:
+
+| Function                   | Input               | Output  | Purpose           |
+| -------------------------- | ------------------- | ------- | ----------------- |
+| `psrdnoise(x)`             | `vec2`              | `float` | Basic 2D noise    |
+| `psrdnoisePeriod(x, p)`    | `vec2, vec2`        | `float` | Periodic 2D noise |
+| `psrdnoiseAlpha(x, p, α)`  | `vec2, vec2, float` | `float` | Rotated 2D noise  |
+| `psrdnoise3(x)`            | `vec3`              | `float` | Basic 3D noise    |
+| `psrdnoise3Alpha(x, p, α)` | `vec3, vec3, float` | `float` | Rotated 3D noise  |
+
+### Advanced Pattern Generation
+
+The combination of periodicity and rotation enables complex pattern synthesis:
+
+$$
+P(x,t) = \sum_{k=1}^{N} A_k \cdot \text{psrdnoise}(f_k x, p_k, \alpha_k t + \phi_k)
+$$
+
+This layered approach creates intricate textures with controllable animation characteristics and seamless boundaries for tileable patterns.

@@ -76,7 +76,7 @@ const fragment = () => {
 
         // Create catastrophic symmetry breaking
         const symmetryBreak = transition.sub(0.5).abs().mul(2)
-        const orderParameter = symmetryBreak.smoothstep(0.3, 0.7)
+        const orderParameter = smoothstep(0.3, 0.7, symmetryBreak)
 
         // Apply modular chromatic decomposition
         const primeR = mod289(fractalA.mul(7).add(metaX)).div(289)

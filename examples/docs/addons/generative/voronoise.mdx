@@ -1,0 +1,46 @@
+---
+title: 'voronoise'
+description: 'Hybrid noise function combining Voronoi patterns with smooth interpolation for parametric texture control'
+keywords: [voronoise, voronoi, noise, procedural, parametric, texture, hybrid]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# voronoise: Parametric Voronoi-Noise Hybrid
+
+### Controllable transition between cellular patterns and smooth noise
+
+Voronoise generates textures that interpolate between Voronoi cellular patterns and smooth noise based on control parameters. The function produces weighted cellular structures where parameter $u$ controls randomness displacement and parameter $v$ governs the transition between sharp cellular boundaries and smooth noise characteristics.
+
+The mathematical foundation uses weighted distance fields within a grid sampling approach. For each grid cell, random offset vectors $\vec{o}$ are generated and combined with distance calculations to produce weighted contributions:
+
+$$
+w = \left(1 - \text{smoothstep}(0, \sqrt{2}, |\vec{d}|)\right)^k
+$$
+
+where $k = 1 + 63(1-v)^6$ determines the sharpness of the transition, and $\vec{d}$ represents the offset distance from grid positions.
+
+The final value is computed as a weighted average:
+
+$$
+\text{voronoise}(\vec{p}) = \frac{\sum w_i \cdot o_{i,z}}{\sum w_i}
+$$
+
+where $o_{i,z}$ represents the z-component of random offset vectors used as height values.
+
+Parameter $u$ scales the random displacement within each cell, affecting the randomness of cell positions. When $u = 0$, cells align to regular grid positions. As $u$ increases, cells become more randomly displaced.
+
+Parameter $v$ controls the blend between cellular and noise characteristics. At $v = 0$, the function produces sharp Voronoi cellular patterns with distinct boundaries. At $v = 1$, the output becomes smooth noise-like with gradual transitions between regions.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(8)
+        const noise1 = voronoise(p, iTime.sin(), 0.3)
+        const noise2 = voronoise(p, 1, 0.7)
+        const pattern = vec3(noise1, noise2, noise1.mul(noise2))
+        return vec4(pattern, 1)
+}`}
+/>

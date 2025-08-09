@@ -1,0 +1,70 @@
+---
+title: 'random'
+description: 'Pseudo-random number generation functions for stochastic pattern creation and noise seeding'
+keywords: [random, pseudorandom, seed, hash, stochastic, generator]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# random: Deterministic Pseudo-Random Generation
+
+### High-Quality Hash Functions for Procedural Randomness
+
+Pseudo-random generators create deterministic yet unpredictable values from input coordinates. These functions transform spatial coordinates into seemingly random distributions through mathematical hash operations, enabling reproducible stochastic patterns.
+
+## Mathematical Foundation
+
+The implementation uses polynomial hash functions with large prime multipliers to achieve uniform distribution:
+
+$$
+\text{random}(x) = \text{fract}(\sin(x \cdot c) \cdot s)
+$$
+
+Where $c$ represents coordinate mixing coefficients and $s$ is a large scaling factor (43758.5453) that amplifies small differences in the sine function.
+
+For multi-dimensional inputs, dot products combine coordinates:
+
+$$
+\text{random}(\vec{p}) = \text{fract}(\sin(\vec{p} \cdot \vec{c}) \cdot s)
+$$
+
+## Function Variants
+
+| Function       | Input   | Output  | Purpose                |
+| -------------- | ------- | ------- | ---------------------- |
+| `random`       | `float` | `float` | 1D scalar random       |
+| `randomVec2`   | `vec2`  | `float` | 2D position to scalar  |
+| `randomVec3`   | `vec3`  | `float` | 3D position to scalar  |
+| `randomVec4`   | `vec4`  | `float` | 4D position to scalar  |
+| `random2Float` | `float` | `vec2`  | 1D to 2D vector random |
+| `random3Vec2`  | `vec2`  | `vec3`  | 2D to 3D vector random |
+| `random4Vec3`  | `vec3`  | `vec4`  | 3D to 4D vector random |
+
+## Implementation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(20).floor()
+        const r = randomVec2(p)
+        const cellColor = random3Vec2(p).mul(0.5).add(0.5)
+        const noise = r.step(0.7)
+        return vec4(cellColor.mul(noise), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const scale = 8
+        const coord = uv.mul(scale).floor()
+        const rnd = random4Vec2(coord)
+        const pattern = rnd.x.mul(rnd.y).mul(rnd.z).step(0.3)
+        const hue = randomVec2(coord.add(vec2(100)))
+        const color = vec3(pattern.mul(hue))
+        return vec4(color, pattern)
+}`}
+/>

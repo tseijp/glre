@@ -1,8 +1,8 @@
 import { Fn, Float, X, mix, smoothstep, float } from '../../node'
 
 export const nyquist = Fn(([x, width]: [X, Float]): X => {
-        const cutoffStart = 0.25 // NYQUIST_FILTER_CENTER - NYQUIST_FILTER_WIDTH = 0.5 - 0.25
-        const cutoffEnd = 0.75 // NYQUIST_FILTER_CENTER + NYQUIST_FILTER_WIDTH = 0.5 + 0.25
+        const cutoffStart = 0.25
+        const cutoffEnd = 0.75
         const f = smoothstep(cutoffEnd, cutoffStart, width)
         return mix(float(0.5), x, f)
 }).setLayout({

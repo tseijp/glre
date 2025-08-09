@@ -36,41 +36,13 @@ The permute function has several important characteristics for procedural genera
         code={`
 const fragment = () => {
         const baseCoord = uv.mul(20).add(iTime.mul(0.1))
-
         const layer1 = permute(baseCoord.x.add(baseCoord.y.mul(0.5)))
         const layer2 = permute(layer1.add(baseCoord.y.mul(1.5)))
-        const layer3 = permute(layer2.add(baseCoord.x.mul(2.0)))
-
+        const layer3 = permute(layer2.add(baseCoord.x.mul(2)))
         const crystallinePattern = layer3.div(289).mul(3.14159).sin()
         const metamorphicField = permute(crystallinePattern.mul(50).add(layer1.div(100)))
-
         const finalColor = metamorphicField.div(289)
         const enhanced = finalColor.pow(0.7).mul(1.2)
-
         return vec4(vec3(enhanced), 1)
-
-}`}
-/>
-
-### Usage in Procedural Systems
-
-The permute function is commonly used in noise algorithms like Perlin noise and Simplex noise. It converts coordinate inputs into pseudo-random values that serve as the basis for natural-looking textures and patterns.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coords = uv.mul(12).add(iTime.mul(0.2))
-
-        const xPerm = permute(coords.x.mul(7.3).add(13.7))
-        const yPerm = permute(coords.y.mul(5.1).add(xPerm.div(50)))
-        const zPerm = permute(xPerm.add(yPerm).mul(0.01).add(coords.x.mul(coords.y)))
-
-        const r = xPerm.div(289).pow(2)
-        const g = yPerm.div(289).mul(zPerm.div(289))
-        const b = zPerm.div(289).sqrt()
-
-        return vec4(r, g, b, 1)
-
 }`}
 />

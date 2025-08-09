@@ -1,0 +1,31 @@
+- [x] `generative/cnoise.glsl` → TSL
+- [x] `generative/curl.glsl` → TSL
+- [x] `generative/fbm.glsl` → TSL
+- [x] `generative/gerstnerWave.glsl` → TSL
+- [x] `generative/gnoise.glsl` → TSL
+- [x] `generative/noised.glsl` → TSL
+- [x] `generative/pnoise.glsl` → TSL
+- [x] `generative/psrdnoise.glsl` → TSL
+- [x] `generative/random.glsl` → TSL
+- [ ] `generative/snoise.glsl` → TSL
+- [x] `generative/srandom.glsl` → TSL
+- [x] `generative/voronoi.glsl` → TSL
+- [x] `generative/voronoise.glsl` → TSL
+- [x] `generative/wavelet.glsl` → TSL
+- [x] `generative/worley.glsl` → TSL
+
+## Included Files (Dependencies)
+
+- [x] `generative/gnoise.glsl` → TSL (already listed above)
+- [x] `generative/random.glsl` → TSL (already listed above)
+- [x] `generative/snoise.glsl` → TSL (already listed above)
+- [x] `generative/srandom.glsl` → TSL (already listed above)
+- [x] `math/const.glsl` → TSL
+- [x] `math/cubic.glsl` → TSL
+- [x] `math/dist.glsl` → TSL
+- [x] `math/grad4.glsl` → TSL
+- [x] `math/mod289.glsl` → TSL
+- [x] `math/permute.glsl` → TSL
+- [x] `math/quintic.glsl` → TSL
+- [x] `math/rotate2d.glsl` → TSL
+- [x] `math/taylorInvSqrt.glsl` → TSL

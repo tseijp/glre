@@ -58,7 +58,7 @@ const fragment = () => {
 
         const red = interference.mul(colorPhase.pow(1.5))
         const green = interference.mul(colorPhase.sub(0.33).abs().pow(0.8))
-        const blue = interference.mul(colorPhase.sub(0.66).abs().pow(2.0))
+        const blue = interference.mul(colorPhase.sub(0.66).abs().pow(2))
 
         return vec4(red, green, blue, 1)
 

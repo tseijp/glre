@@ -44,7 +44,7 @@ const fragment = () => {
     const center = vec2(0.5)
     const pos = uv.sub(center).mul(6)
     const radius = pos.length()
-    const baseAngle = atan2(pos.y, pos.x).mul(3)
+    const baseAngle = pos.y.atan2(pos.x).mul(3)
     const rotatedAngle = baseAngle.add(iTime.mul(0.4))
     const rotated = rotate3dZ(rotatedAngle).mul(vec3(pos, 0))
     const petal = radius.mul(2).sin().mul(rotated.x.mul(0.5).cos()).abs()

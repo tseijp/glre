@@ -32,7 +32,7 @@ const fragment = () => {
         const angle = center.y.atan2(center.x)
 
         const heptaPhase = angle.mul(3.5).add(iTime.mul(0.5))
-        const radialPulse = radius.mul(7.0).sub(iTime.mul(2.0))
+        const radialPulse = radius.mul(7).sub(iTime.mul(2))
 
         const septenaryCore = pow7(heptaPhase.sin().mul(0.4))
         const radialTransform = pow7(radialPulse.sin().mul(0.35))
@@ -40,7 +40,7 @@ const fragment = () => {
         const mysticalResonance = septenaryCore.add(radialTransform.mul(0.7))
         const crystallineIntensity = mysticalResonance.abs().pow(0.2)
 
-        const heptaSymmetry = angle.mul(7.0).cos().mul(0.5).add(0.5)
+        const heptaSymmetry = angle.mul(7).cos().mul(0.5).add(0.5)
 
         const r = crystallineIntensity.mul(heptaSymmetry)
         const g = crystallineIntensity.mul(septenaryCore.abs().add(0.3))

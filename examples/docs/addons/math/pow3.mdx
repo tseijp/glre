@@ -28,7 +28,7 @@ This implementation generates three-dimensional acoustic crystals through cubic 
         code={`
 const fragment = () => {
         const baseFreq = iTime.mul(0.3)
-        const pos = uv.sub(0.5).mul(8.0)
+        const pos = uv.sub(0.5).mul(8)
 
         const resonanceX = pos.x.add(baseFreq).sin()
         const resonanceY = pos.y.add(baseFreq.mul(1.618)).cos()

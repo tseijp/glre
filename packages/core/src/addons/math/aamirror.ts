@@ -3,7 +3,7 @@ import { nyquist } from './nyquist'
 
 export const aamirror = Fn(([x]: [X]): X => {
         const afwidth = length(vec2(dFdx(x), dFdy(x)))
-        const v = abs(x.sub(floor(x.add(0.5)))).mul(2.0)
+        const v = abs(x.sub(floor(x.add(0.5)))).mul(2)
         return nyquist(v, afwidth)
 }).setLayout({
         name: 'aamirror',

@@ -79,7 +79,7 @@ const fragment = () => {
         const distortion = smoothstep(-0.3, 0.3, curvature)
 
         // Geodesic field visualization
-        const geodesic = atan2(transformedSpace.y, transformedSpace.x).add(
+        const geodesic = transformedSpace.y.atan2(transformedSpace.x).add(
                 properTime.mul(2)).sin()
 
         const field = distortion.mul(smoothstep(-0.5, 0.5, geodesic))

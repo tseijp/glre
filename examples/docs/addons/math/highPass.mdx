@@ -58,10 +58,10 @@ const fragment = () => {
         const filter3 = highPass(filter2, threshold3.div(float(1).sub(threshold2)))
 
         // Create layered color response
-        const base = vec3(float(0.1), float(0.0), float(0.2))
+        const base = vec3(float(0.1), float(0), float(0.2))
         const layer1 = vec3(float(0.8), float(0.2), float(0.4)).mul(filter1)
         const layer2 = vec3(float(0.4), float(0.9), float(0.3)).mul(filter2)
-        const layer3 = vec3(float(1.0), float(0.8), float(0.1)).mul(filter3)
+        const layer3 = vec3(float(1), float(0.8), float(0.1)).mul(filter3)
 
         const color = base.add(layer1).add(layer2).add(layer3)
 

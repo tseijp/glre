@@ -1,0 +1,77 @@
+---
+title: 'gnoise'
+description: 'Gradient noise functions for smooth interpolated patterns with customizable smoothing curves'
+keywords: [gnoise, gradient noise, interpolation, cubic, quintic, smooth, tileable]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# gnoise: Smooth Gradient Interpolation
+
+### Value Noise with Advanced Smoothing Kernels
+
+Gradient noise interpolates between random values at grid points using smooth transition functions. Unlike sharp linear interpolation, gradient noise employs cubic and quintic polynomials that eliminate directional artifacts and create organic-looking patterns.
+
+## Mathematical Foundation
+
+For 1D gradient noise with smoothstep interpolation:
+
+$$
+\text{gnoise}(x) = \text{mix}(r(i), r(i+1), S(f))
+$$
+
+Where:
+
+- $i = \lfloor x \rfloor$ (grid coordinate)
+- $f = x - i$ (fractional part)
+- $S(t) = 3t^2 - 2t^3$ (smoothstep function)
+- $r(n)$ is the random value at grid point $n$
+
+For 2D noise, cubic interpolation replaces smoothstep:
+
+$$
+S(t) = t^2(3 - 2t)
+$$
+
+For 3D noise, quintic interpolation provides even smoother transitions:
+
+$$
+Q(t) = t^3(6t^2 - 15t + 10)
+$$
+
+## Function Variants
+
+| Function          | Input         | Smoothing  | Purpose           |
+| ----------------- | ------------- | ---------- | ----------------- |
+| `gnoise`          | `float`       | smoothstep | 1D value noise    |
+| `gnoiseVec2`      | `vec2`        | cubic      | 2D value noise    |
+| `gnoiseVec3`      | `vec3`        | quintic    | 3D value noise    |
+| `gnoiseVec3Tiled` | `vec3, float` | quintic    | Tileable 3D noise |
+| `gnoise3`         | `vec3`        | quintic    | 3D vector noise   |
+
+## Implementation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(5)
+        const noise1 = gnoiseVec2(p)
+        const noise2 = gnoiseVec2(p.mul(2).add(vec2(100)))
+        const combined = noise1.mul(0.7).add(noise2.mul(0.3))
+        return vec4(combined.mul(0.5).add(0.5), noise1, noise2, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = vec3(uv.mul(3), iTime.mul(0.2))
+        const base = gnoiseVec3(p)
+        const detail = gnoiseVec3(p.mul(3)).mul(0.3)
+        const marble = p.x.add(base.mul(4)).add(detail.mul(2)).sin().mul(0.5).add(0.5)
+        return vec4(vec3(marble), 1)
+}`}
+/>

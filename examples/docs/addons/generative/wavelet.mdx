@@ -1,0 +1,104 @@
+---
+title: 'wavelet'
+description: 'Turbulent fractal noise with vorticity control for fluid-like patterns'
+keywords: [wavelet, noise, fractal, turbulence, vorticity, fluid, pattern]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# wavelet: Turbulent Fractal Noise
+
+### Fluid-like turbulence with controlled vorticity
+
+Wavelet noise generates turbulent patterns through iterative rotation and sampling. Unlike standard fractal noise, wavelet introduces rotation matrices at each octave, creating fluid-like turbulence with controllable vorticity.
+
+The function combines multiple scales through a rotation-based accumulation process:
+
+$$
+W(p, \phi, k) = \frac{1}{M} \sum_{i=0}^{n} \frac{\sin(10 \cdot q_i.x + \phi)}{s_i} \cdot S(\|q_i\|^2)
+$$
+
+where:
+
+- $p$ represents input coordinates
+- $\phi$ controls phase offset for animation
+- $k$ determines frequency scaling between octaves
+- $q_i = R_i \cdot (fract(p \cdot s_i) - 0.5)$ applies rotation $R_i$
+- $S(d) = smoothstep(0.25, 0, d)$ provides radial falloff
+- $M = \sum_{i=0}^{n} \frac{1}{s_i}$ normalizes the result
+
+The rotation angle at each octave: $\theta_i = random(floor(p \cdot s_i)) \cdot 1000 + \phi \cdot random_{factor}$
+
+### Function Variations
+
+| Function                     | Purpose         | Parameters                                   |
+| ---------------------------- | --------------- | -------------------------------------------- |
+| `wavelet(p, phase, k)`       | Full control    | vec2 position, phase offset, frequency ratio |
+| `waveletVec2(p)`             | Basic 2D        | vec2 position only                           |
+| `waveletVec2Phase(p, phase)` | Animated 2D     | vec2 position, phase for time                |
+| `waveletVec3(p)`             | 3D input        | vec3 with z as phase                         |
+| `waveletVec3K(p, k)`         | 3D with control | vec3 input, frequency control                |
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const pos = uv.mul(8)
+        const turbulence = waveletVec2Phase(pos, iTime.mul(0.5))
+        const contours = turbulence.mul(12).sin().pow(2)
+        return vec4(contours.mul(vec3(0.3, 0.6, 0.9)), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const grid = uv.mul(4)
+        const w1 = wavelet(grid, iTime, 1.8)
+        const w2 = wavelet(grid.add(vec2(10, 3)), iTime.mul(0.7), 2.1)
+        const interference = w1.add(w2).abs()
+        const bands = interference.mul(15).fract().step(0.3)
+        const heat = vec3(bands.pow(3), bands.pow(1.5), bands)
+        return vec4(heat, 1)
+}`}
+/>
+
+### Mathematical Properties
+
+The wavelet function exhibits several key characteristics:
+
+**Rotation Matrix Application**: Each octave applies a 2x2 rotation matrix:
+
+$$
+R(\theta) = \begin{pmatrix}
+\cos\theta & -\sin\theta \\
+\sin\theta & \cos\theta
+\end{pmatrix}
+$$
+
+**Coordinate Transformation**: The fractal iteration applies:
+
+$$
+p_{i+1} = p_i \cdot \begin{pmatrix}
+0.54 & -0.84 \\
+0.84 & 0.54
+\end{pmatrix} + i
+$$
+
+**Frequency Progression**: Scale factor evolves as $s_{i+1} = s_i \cdot k$ where $k \approx 1.24$ provides balanced octave spacing.
+
+**Radial Falloff**: The smoothstep function $S(d) = smoothstep(0.25, 0, d)$ creates circular falloff for each sample point, preventing harsh discontinuities.
+
+### Implementation Characteristics
+
+Wavelet noise differs from Perlin or simplex noise through:
+
+1. **Rotational Coupling**: Each octave introduces rotation based on local random values
+2. **Sinusoidal Basis**: Uses sine waves instead of gradient interpolation
+3. **Radial Weighting**: Applies distance-based falloff at each sample
+4. **Phase Control**: Supports temporal animation through phase parameter
+5. **Vorticity Generation**: Rotation accumulation creates swirl patterns
+
+The algorithm maintains bounded output range $[-1, 1]$ through normalization factor $M$, ensuring consistent amplitude regardless of octave count.

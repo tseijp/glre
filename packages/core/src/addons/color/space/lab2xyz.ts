@@ -1,7 +1,7 @@
 import { Fn, Vec3, Vec4, float, select, vec3, vec4 } from '../../../node'
 
 // CIE D65 white point (default)
-const CIE_WHITE = vec3(0.95045592705, 1.0, 1.08905775076)
+const CIE_WHITE = vec3(0.95045592705, 1, 1.08905775076)
 
 export const lab2xyz = Fn(([lab]: [Vec3]): Vec3 => {
         const fy = lab.x.add(16).div(116).toVar()

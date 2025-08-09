@@ -1,0 +1,56 @@
+---
+title: 'pnoise'
+description: 'Periodic Perlin noise with seamless tiling for texture generation and procedural patterns'
+keywords: [noise, periodic, tiling, seamless, texture, perlin]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pnoise: Periodic Noise Generator
+
+### Mathematical Foundation of Tiling Noise
+
+Periodic noise solves the fundamental problem of texture boundaries by ensuring seamless repetition across specified intervals. The mathematical approach modifies standard Perlin noise through modular arithmetic operations on lattice coordinates.
+
+The core periodicity constraint applies the modulus operation to lattice positions before gradient lookup:
+
+$$
+P_{periodic} = P \bmod \text{rep}
+$$
+
+Where $\text{rep}$ represents the repetition period vector. This ensures that gradient vectors at positions separated by multiples of the period are identical, creating seamless transitions at tile boundaries.
+
+### Two-Dimensional Tiling Patterns
+
+The 2D variant creates perfectly tileable patterns suitable for texture synthesis. The repetition vector controls tile dimensions independently for each axis, enabling rectangular tiling patterns.
+
+<FragmentEditor
+isFun
+code={`
+const fragment = () => {
+        const tileSize = vec2(2, 1.5)
+        const noise = pnoise(uv.mul(8), tileSize)
+        const pattern = noise.mul(0.5).add(0.5)
+        const grid = mmax2(uv.fract().sub(0.5).abs()).step(0.48)
+        return vec4(vec3(pattern).add(grid.mul(0.1)), 1)
+}`}
+/>
+
+### Higher-Dimensional Periodicity
+
+The 3D and 4D variants extend periodicity to volumetric and spacetime domains. These functions maintain computational efficiency through vectorized gradient calculations while preserving the seamless repetition property across all dimensions.
+
+Four-dimensional periodic noise enables seamless animation loops by treating time as the fourth dimension with a specified period, creating infinitely repeating temporal patterns.
+
+<FragmentEditor
+isFun
+code={`
+const fragment = () => {
+        const coord3d = vec3(uv.mul(4), iTime.mul(0.2))
+        const period3d = vec3(2, 2, 1)
+        const noise = pnoiseVec3(coord3d, period3d)
+        const layers = noise.add(pnoiseVec3(coord3d.mul(2), period3d.mul(2)).mul(0.5))
+        return vec4(vec3(layers.mul(0.5).add(0.5)), 1)
+}`}
+/>

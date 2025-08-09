@@ -42,36 +42,9 @@ By capturing only the fractional remainder, complex coordinate systems collapse 
         isFun
         code={`
 const fragment = () => {
-        const tiled = frac(uv.mul(8.0))
-        const pattern = smoothstep(0.1, 0.2, tiled.x).mul(smoothstep(0.1, 0.2, tiled.y))
+        const tiled = frac(uv.mul(8))
+        const pattern = smoothstep(0.1, 0.2, tiled.x).mul(float(0.1).smoothstep(0.2, tiled.y))
         const gradient = tiled.sub(0.5).length().mul(2)
         return vec4(vec3(pattern.mul(gradient)), 1)
-}`}
-/>
-
-### Dimensional Fractal Architecture
-
-The fractional function enables construction of self-similar architectural structures that exist across multiple dimensional scales. Each fractional layer creates geometric recursion, building infinite complexity from simple mathematical principles.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = uv.sub(0.5).mul(6)
-        const layer1 = frac(pos.mul(1))
-        const layer2 = frac(pos.mul(3))
-        const layer3 = frac(pos.mul(9))
-
-        const structure = layer1.x.mul(layer1.y).add(
-                layer2.x.mul(layer2.y).mul(0.5)
-        ).add(
-                layer3.x.mul(layer3.y).mul(0.25)
-        )
-
-        const depth = structure.mul(PI).add(iTime.mul(2)).sin().abs()
-        const architectural = smoothstep(0.2, 0.8, depth)
-
-        return vec4(architectural.mul(1.3), architectural.mul(0.8), architectural.mul(0.4), 1)
-
 }`}
 />

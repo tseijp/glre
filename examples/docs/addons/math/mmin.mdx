@@ -44,14 +44,14 @@ const fragment = () => {
         const h4 = p.x.add(p.y).mul(4.2).add(t.mul(0.7))
 
         const oscillators = vec4(h1.cos().mul(h1.sin()),
-                                h2.mul(5.0).sin().mul(0.8),
-                                h3.mul(3.0).cos(),
+                                h2.mul(5).sin().mul(0.8),
+                                h3.mul(3).cos(),
                                 h4.mul(1.9).sin().mul(1.2))
 
         const convergence = mmin(oscillators)
-        const field = p.length().mul(6.0).sub(convergence.mul(8.0)).cos().mul(convergence.abs())
+        const field = p.length().mul(6).sub(convergence.mul(8)).cos().mul(convergence.abs())
 
-        return vec4(field.mul(vec3(0.3, 0.7, 1.0)), 1)
+        return vec4(field.mul(vec3(0.3, 0.7, 1)), 1)
 
 }`}
 />

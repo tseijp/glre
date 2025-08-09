@@ -1,6 +1,5 @@
-import { Fn, UInt, Int, Vec2, Vec3, float, vec2, vec3, uint, int } from '../../node'
-
-const PI = 3.1415926535897932384626433832795
+import { PI } from './const'
+import { Fn, Int, Vec2, Vec3, float, vec2, vec3, uint } from '../../node'
 
 export const hammersley = Fn(([index, numSamples]: [Int, Int]): Vec2 => {
         const tof = float(0.5).div(float(2147483648)).toVar('tof')
@@ -43,11 +42,10 @@ export const hammersley = Fn(([index, numSamples]: [Int, Int]): Vec2 => {
 })
 
 export const hemisphereCosSample = Fn(([u]: [Vec2]): Vec3 => {
-        const phi = float(2.0).mul(PI).mul(u.x).toVar('phi')
-        const cosTheta2 = float(1.0).sub(u.y).toVar('cosTheta2')
+        const phi = float(2).mul(PI).mul(u.x).toVar('phi')
+        const cosTheta2 = float(1).sub(u.y).toVar('cosTheta2')
         const cosTheta = cosTheta2.sqrt().toVar('cosTheta')
-        const sinTheta = float(1.0).sub(cosTheta2).sqrt().toVar('sinTheta')
-
+        const sinTheta = float(1).sub(cosTheta2).sqrt().toVar('sinTheta')
         return vec3(phi.cos().mul(sinTheta), phi.sin().mul(sinTheta), cosTheta)
 }).setLayout({
         name: 'hemisphereCosSample',
