@@ -1,7 +1,10 @@
 import { Fn, Float, Vec2, Vec3, Vec4, X } from '../../node'
 
-// Core mod289 operation - reusable implementation
-const mod289Core = (x: X): X => {
+function fun(x: Float): Float
+function fun(x: Vec2): Vec2
+function fun(x: Vec3): Vec3
+function fun(x: Vec4): Vec4
+function fun(x: X): X {
         return x.sub(
                 x
                         .mul(1.0 / 289.0)
@@ -10,36 +13,32 @@ const mod289Core = (x: X): X => {
         )
 }
 
-// Float variant
 export const mod289 = Fn(([x]: [Float]): Float => {
-        return mod289Core(x) as Float
+        return fun(x)
 }).setLayout({
         name: 'mod289',
         type: 'float',
         inputs: [{ name: 'x', type: 'float' }],
 })
 
-// Vec2 variant
 export const mod289Vec2 = Fn(([x]: [Vec2]): Vec2 => {
-        return mod289Core(x) as Vec2
+        return fun(x)
 }).setLayout({
         name: 'mod289Vec2',
         type: 'vec2',
         inputs: [{ name: 'x', type: 'vec2' }],
 })
 
-// Vec3 variant
 export const mod289Vec3 = Fn(([x]: [Vec3]): Vec3 => {
-        return mod289Core(x) as Vec3
+        return fun(x)
 }).setLayout({
         name: 'mod289Vec3',
         type: 'vec3',
         inputs: [{ name: 'x', type: 'vec3' }],
 })
 
-// Vec4 variant
 export const mod289Vec4 = Fn(([x]: [Vec4]): Vec4 => {
-        return mod289Core(x) as Vec4
+        return fun(x)
 }).setLayout({
         name: 'mod289Vec4',
         type: 'vec4',

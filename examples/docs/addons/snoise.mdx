@@ -1,0 +1,69 @@
+---
+title: 'snoise'
+description: 'Simplex noise functions for procedural generation with natural organic patterns'
+keywords: [simplex noise, noise, procedural, generation, organic, random]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# snoise: Simplex Noise Generation
+
+### High-Quality Procedural Pattern Synthesis
+
+Simplex noise represents an advancement over Perlin noise, offering improved computational efficiency and reduced directional artifacts. These functions generate organic, natural-looking patterns through gradient-based interpolation across simplex grids.
+
+## Mathematical Basis
+
+Simplex noise operates on a triangular (2D) or tetrahedral (3D/4D) grid structure rather than the square grid of classical Perlin noise. The algorithm:
+
+1. **Grid Skewing**: Transform coordinates to simplex space using skewing factor $F_n = \frac{\sqrt{n+1}-1}{n}$
+2. **Vertex Identification**: Determine simplex vertices containing the sample point
+3. **Gradient Calculation**: Compute gradient vectors at each vertex
+4. **Falloff Application**: Apply distance-based falloff with kernel function $(0.5 - r^2)^4$
+5. **Contribution Summation**: Sum weighted contributions from all vertices
+
+For 2D simplex noise, the transformation uses:
+$$s = (x + y) \cdot F_2 \text{ where } F_2 = \frac{\sqrt{3}-1}{2}$$
+
+## Function Variants
+
+| Function | Input | Output | Purpose |
+|----------|-------|--------|---------|
+| `snoiseVec2` | `vec2` | `float` | 2D scalar noise field |
+| `snoiseVec3` | `vec3` | `float` | 3D scalar noise field |
+| `snoiseVec4` | `vec4` | `float` | 4D scalar noise field |
+| `snoise2` | `vec2` | `vec2` | 2D vector noise field |
+| `snoise3Vec3` | `vec3` | `vec3` | 3D vector noise field |
+| `snoise3Vec4` | `vec4` | `vec3` | Time-varying 3D vector field |
+
+## Implementation
+
+<FragmentEditor
+  isFun
+  code={`
+const fragment = () => {
+  const p = uv.mul(8)
+  const n1 = snoiseVec2(p)
+  const n2 = snoiseVec2(p.add(vec2(100, 100)))
+  const distortion = vec2(n1, n2).mul(0.1)
+  const final = snoiseVec2(p.add(distortion)).mul(0.5).add(0.5)
+  return vec4(vec3(final), 1)
+}`}
+/>
+
+<FragmentEditor
+  isFun
+  code={`
+const fragment = () => {
+  const p = vec3(uv.mul(5), iTime.mul(0.3))
+  const noise3d = snoise3Vec3(p)
+  const turbulence = noise3d.dot(noise3d).sqrt()
+  const layers = snoiseVec3(p.mul(2)).mul(0.5).add(
+    snoiseVec3(p.mul(4)).mul(0.25).add(
+      snoiseVec3(p.mul(8)).mul(0.125)
+    )
+  )
+  return vec4(turbulence, layers.mul(0.5).add(0.5), noise3d.x.mul(0.5).add(0.5), 1)
+}`}
+/>

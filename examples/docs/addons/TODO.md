@@ -1,6 +1,5 @@
-- [ ] `` → TSL
 - [x] `generative/cnoise.glsl` → TSL
-- [ ] `generative/curl.glsl` → TSL
+- [x] `generative/curl.glsl` → TSL
 - [ ] `generative/fbm.glsl` → TSL
 - [ ] `generative/gerstnerWave.glsl` → TSL
 - [ ] `generative/gnoise.glsl` → TSL
@@ -8,7 +7,7 @@
 - [ ] `generative/pnoise.glsl` → TSL
 - [ ] `generative/psrdnoise.glsl` → TSL
 - [ ] `generative/random.glsl` → TSL
-- [ ] `generative/snoise.glsl` → TSL
+- [x] `generative/snoise.glsl` → TSL
 - [ ] `generative/srandom.glsl` → TSL
 - [ ] `generative/voronoi.glsl` → TSL
 - [ ] `generative/voronoise.glsl` → TSL
@@ -16,6 +15,7 @@
 - [ ] `generative/worley.glsl` → TSL
 
 ## Included Files (Dependencies)
+
 - [ ] `generative/gnoise.glsl` → TSL (already listed above)
 - [ ] `generative/random.glsl` → TSL (already listed above)
 - [ ] `generative/snoise.glsl` → TSL (already listed above)

@@ -1,11 +1,10 @@
 import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4, dot, mix, step } from '../../node'
 import { mod289Vec3, mod289Vec4 } from '../math/mod289'
-import { permuteVec3, permuteVec4 } from '../math/permute'
+import { permuteVec4 } from '../math/permute'
 import { taylorInvSqrt } from '../math/taylorInvSqrt'
 import { quintic } from '../math/quintic'
 
-// Classical 2D Perlin noise
-export const cnoise2 = Fn(([P]: [Vec2]): Float => {
+export const cnoiseVec2 = Fn(([P]: [Vec2]): Float => {
         const Pi = P.xyxy.floor().add(vec4(0, 0, 1, 1)).toVar('Pi')
         const Pf = P.xyxy.fract().sub(vec4(0, 0, 1, 1)).toVar('Pf')
         Pi.assign(mod289Vec4(Pi))
@@ -41,13 +40,12 @@ export const cnoise2 = Fn(([P]: [Vec2]): Float => {
         const n_xy = mix(n_x.x, n_x.y, fade_xy.y)
         return n_xy.mul(2.3)
 }).setLayout({
-        name: 'cnoise2',
+        name: 'cnoiseVec2',
         type: 'float',
         inputs: [{ name: 'P', type: 'vec2' }],
 })
 
-// Classical 3D Perlin noise
-export const cnoise3 = Fn(([P]: [Vec3]): Float => {
+export const cnoiseVec3 = Fn(([P]: [Vec3]): Float => {
         const Pi0 = P.floor().toVar('Pi0')
         const Pi1 = Pi0.add(vec3(1)).toVar('Pi1')
         Pi0.assign(mod289Vec3(Pi0))
@@ -121,13 +119,12 @@ export const cnoise3 = Fn(([P]: [Vec3]): Float => {
         const n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x)
         return n_xyz.mul(2.2)
 }).setLayout({
-        name: 'cnoise3',
+        name: 'cnoiseVec3',
         type: 'float',
         inputs: [{ name: 'P', type: 'vec3' }],
 })
 
-// Classical 4D Perlin noise
-export const cnoise4 = Fn(([P]: [Vec4]): Float => {
+export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const Pi0 = P.floor().toVar('Pi0')
         const Pi1 = Pi0.add(1).toVar('Pi1')
         Pi0.assign(mod289Vec4(Pi0))
@@ -261,10 +258,9 @@ export const cnoise4 = Fn(([P]: [Vec4]): Float => {
         const n_xyzw = mix(n_yzw.x, n_yzw.y, fade_xyzw.x)
         return n_xyzw.mul(2.2)
 }).setLayout({
-        name: 'cnoise4',
+        name: 'cnoiseVec4',
         type: 'float',
         inputs: [{ name: 'P', type: 'vec4' }],
 })
 
-// Main cnoise function using cnoise3 as default
-export const cnoise = cnoise3
+export const cnoise = cnoiseVec3

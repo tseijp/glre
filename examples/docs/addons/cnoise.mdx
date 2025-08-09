@@ -29,12 +29,12 @@ The gradient vectors undergo normalization through Taylor series approximation: 
 
 ## Function Variants
 
-| Function     | Input  | Output  | Application                      |
-| ------------ | ------ | ------- | -------------------------------- |
-| `cnoise2(p)` | `vec2` | `float` | 2D textures, heightmapso         |
-| `cnoise3(p)` | `vec3` | `float` | 3D volumes, animated textures    |
-| `cnoise4(p)` | `vec4` | `float` | 4D spacetime, complex animations |
-| `cnoise(p)`  | `vec3` | `float` | Default 3D implementation        |
+| Function        | Input  | Output  | Application                      |
+| --------------- | ------ | ------- | -------------------------------- |
+| `cnoiseVec2(p)` | `vec2` | `float` | 2D textures, heightmapso         |
+| `cnoiseVec3(p)` | `vec3` | `float` | 3D volumes, animated textures    |
+| `cnoiseVec4(p)` | `vec4` | `float` | 4D spacetime, complex animations |
+| `cnoise(p)`     | `vec3` | `float` | Default 3D implementation        |
 
 ## Spectral Properties
 
@@ -50,8 +50,8 @@ The noise function exhibits the following frequency characteristics:
         code={`
 const fragment = () => {
         const p = uv.mul(8)
-        const n1 = cnoise3(vec3(p, iTime.mul(0.5)))
-        const n2 = cnoise3(vec3(p.add(100), iTime.mul(0.3)))
+        const n1 = cnoiseVec3(vec3(p, iTime.mul(0.5)))
+        const n2 = cnoiseVec3(vec3(p.add(100), iTime.mul(0.3)))
         const turbulence = n1.mul(0.7).add(n2.mul(0.3))
         const color = turbulence.add(0.5)
         return vec4(vec3(color), 1)
@@ -63,9 +63,9 @@ const fragment = () => {
         code={`
 const fragment = () => {
         const p = vec3(uv.mul(6), iTime.mul(0.2))
-        const base = cnoise3(p)
-        const detail = cnoise3(p.mul(2.5)).mul(0.4)
-        const fine = cnoise3(p.mul(6.3)).mul(0.15)
+        const base = cnoiseVec3(p)
+        const detail = cnoiseVec3(p.mul(2.5)).mul(0.4)
+        const fine = cnoiseVec3(p.mul(6.3)).mul(0.15)
         const marble = base.add(detail).add(fine).mul(0.5).add(0.5)
         const veining = marble.pow(2.2).mul(1.4)
         return vec4(vec3(veining), 1)

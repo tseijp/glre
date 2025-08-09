@@ -2,7 +2,7 @@ import { Fn, Float, Vec2, X, dFdx, dFdy, fract, length, mix, smoothstep, vec2, s
 
 const nyquist = Fn(([x, width]: [Float, Float]): Float => {
         const cutoffStart = float(0.25).toVar('cutoffStart') // NYQUIST_FILTER_CENTER - NYQUIST_FILTER_WIDTH
-        const cutoffEnd = float(0.75).toVar('cutoffEnd')     // NYQUIST_FILTER_CENTER + NYQUIST_FILTER_WIDTH
+        const cutoffEnd = float(0.75).toVar('cutoffEnd') // NYQUIST_FILTER_CENTER + NYQUIST_FILTER_WIDTH
         const f = smoothstep(cutoffEnd, cutoffStart, width).toVar('f')
         return mix(float(0.5), x, f)
 }).setLayout({
@@ -15,7 +15,9 @@ const nyquist = Fn(([x, width]: [Float, Float]): Float => {
 })
 
 export const aafract = Fn(([x]: [X]): X => {
-        const afwidth = length(vec2(dFdx(x), dFdy(x))).mul(2.0).toVar('afwidth')
+        const afwidth = length(vec2(dFdx(x), dFdy(x)))
+                .mul(2.0)
+                .toVar('afwidth')
         const fx = fract(x).toVar('fx')
         const idx = afwidth.oneMinus().toVar('idx')
         const v = select(fx.div(idx as any), fx.oneMinus().div(afwidth as any), fx.lessThan(idx as any)).toVar('v')

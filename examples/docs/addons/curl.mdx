@@ -1,0 +1,64 @@
+---
+title: 'curl'
+description: 'Vector field curl computation functions for fluid dynamics and noise-based flow patterns'
+keywords: [curl, vector field, fluid dynamics, flow, turbulence, vorticity]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# curl: Vector Field Flow Analysis
+
+### Advanced Flow Pattern Generation Through Differential Calculus
+
+The curl function computes the rotational characteristics of vector fields generated from noise functions. This mathematical operator calculates the circulation density at each point in a field, creating natural swirling and turbulent patterns essential for fluid dynamics simulation.
+
+## Mathematical Foundation
+
+For a 2D vector field $\vec{F}(x,y) = (P(x,y), Q(x,y))$, the curl operation is defined as:
+
+$$
+\text{curl } \vec{F} = \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}
+$$
+
+For 3D vector fields $\vec{F}(x,y,z) = (P, Q, R)$, the curl becomes:
+
+$$
+\nabla \times \vec{F} = \left(\frac{\partial R}{\partial y} - \frac{\partial Q}{\partial z}, \frac{\partial P}{\partial z} - \frac{\partial R}{\partial x}, \frac{\partial Q}{\partial x} - \frac{\partial P}{\partial y}\right)
+$$
+
+The implementation uses finite differences with step size $\epsilon = 0.1$ to approximate these partial derivatives numerically.
+
+## Function Variants
+
+| Function | Input Type | Output Type | Purpose |
+|----------|------------|-------------|---------|
+| `curlVec2` | `vec2` | `vec2` | 2D flow field analysis |
+| `curlVec3` | `vec3` | `vec3` | 3D turbulence patterns |
+| `curlVec4` | `vec4` | `vec3` | Time-varying flow evolution |
+
+## Implementation
+
+<FragmentEditor
+  isFun
+  code={`
+const fragment = () => {
+  const p = uv.mul(4)
+  const flow = curlVec2(p.add(iTime.mul(0.1)))
+  const intensity = flow.length().mul(2)
+  const angle = atan2(flow.y, flow.x).add(float(3.14159)).div(float(3.14159).mul(2))
+  return vec4(intensity, angle, pow(intensity, 2), 1)
+}`}
+/>
+
+<FragmentEditor
+  isFun
+  code={`
+const fragment = () => {
+  const p = vec3(uv.mul(3), iTime.mul(0.2))
+  const vorticity = curlVec3(p)
+  const magnitude = vorticity.length()
+  const color = vorticity.abs().normalize().mul(magnitude).pow(vec3(0.7))
+  return vec4(color, 1)
+}`}
+/>
