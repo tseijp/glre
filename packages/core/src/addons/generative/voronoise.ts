@@ -41,7 +41,7 @@ export const voronoiseVec3 = Fn(([p, u, v]: [Vec3, Float, Float]): Float => {
         const f = fract(p).toVar('f')
         const a = vec2(0, 0).toVar('a')
 
-        // 5x5x5 grid sampling from -2 to +2 
+        // 5x5x5 grid sampling from -2 to +2
         Loop(int(5), ({ i: zLoop }) => {
                 const zOffset = zLoop.sub(int(2)).toFloat().toVar('zOffset')
                 Loop(int(5), ({ i: yLoop }) => {

@@ -11,7 +11,7 @@
 - [x] `generative/srandom.glsl` → TSL
 - [x] `generative/voronoi.glsl` → TSL
 - [x] `generative/voronoise.glsl` → TSL
-- [ ] `generative/wavelet.glsl` → TSL
+- [x] `generative/wavelet.glsl` → TSL
 - [ ] `generative/worley.glsl` → TSL
 
 ## Included Files (Dependencies)

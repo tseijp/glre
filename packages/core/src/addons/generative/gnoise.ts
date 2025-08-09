@@ -1,13 +1,13 @@
-import { Fn, Float, Vec2, Vec3, vec2, vec3, float, floor, fract, mix, smoothstep, dot } from '../../node'
+import { Fn, Float, Vec2, Vec3, vec2, vec3, float } from '../../node'
 import { random, randomVec2, randomVec3 } from './random'
 import { srandom3Vec3Tiled } from './srandom'
 import { cubicVec2 } from '../math/cubic'
 import { quintic } from '../math/quintic'
 
 export const gnoise = Fn(([x]: [Float]): Float => {
-        const i = floor(x).toVar('i')
-        const f = fract(x).toVar('f')
-        return mix(random(i), random(i.add(1)), smoothstep(0, 1, f))
+        const i = x.floor().toVar('i')
+        const f = x.fract().toVar('f')
+        return random(i).mix(random(i.add(1)), float(0).smoothstep(1, f))
 }).setLayout({
         name: 'gnoise',
         type: 'float',
@@ -15,14 +15,14 @@ export const gnoise = Fn(([x]: [Float]): Float => {
 })
 
 export const gnoiseVec2 = Fn(([st]: [Vec2]): Float => {
-        const i = floor(st).toVar('i')
-        const f = fract(st).toVar('f')
+        const i = st.floor().toVar('i')
+        const f = st.fract().toVar('f')
         const a = randomVec2(i).toVar('a')
         const b = randomVec2(i.add(vec2(1, 0))).toVar('b')
         const c = randomVec2(i.add(vec2(0, 1))).toVar('c')
         const d = randomVec2(i.add(vec2(1, 1))).toVar('d')
         const u = cubicVec2(f).toVar('u')
-        return mix(a, b, u.x).add(c.sub(a).mul(u.y).mul(float(1).sub(u.x)).add(d.sub(b).mul(u.x).mul(u.y)))
+        return a.mix(b, u.x).add(c.sub(a).mul(u.y).mul(float(1).sub(u.x)).add(d.sub(b).mul(u.x).mul(u.y)))
 }).setLayout({
         name: 'gnoiseVec2',
         type: 'float',
@@ -30,24 +30,26 @@ export const gnoiseVec2 = Fn(([st]: [Vec2]): Float => {
 })
 
 export const gnoiseVec3 = Fn(([p]: [Vec3]): Float => {
-        const i = floor(p).toVar('i')
-        const f = fract(p).toVar('f')
+        const i = p.floor().toVar('i')
+        const f = p.fract().toVar('f')
         const u = quintic(f).toVar('u')
         return float(-1).add(
                 float(2).mul(
-                        mix(
-                                mix(
-                                        mix(randomVec3(i.add(vec3(0, 0, 0))), randomVec3(i.add(vec3(1, 0, 0))), u.x),
-                                        mix(randomVec3(i.add(vec3(0, 1, 0))), randomVec3(i.add(vec3(1, 1, 0))), u.x),
-                                        u.y
-                                ),
-                                mix(
-                                        mix(randomVec3(i.add(vec3(0, 0, 1))), randomVec3(i.add(vec3(1, 0, 1))), u.x),
-                                        mix(randomVec3(i.add(vec3(0, 1, 1))), randomVec3(i.add(vec3(1, 1, 1))), u.x),
-                                        u.y
-                                ),
-                                u.z
-                        )
+                        randomVec3(i.add(vec3(0, 0, 0)))
+                                .mix(randomVec3(i.add(vec3(1, 0, 0))), u.x)
+                                .mix(randomVec3(i.add(vec3(0, 1, 0))).mix(randomVec3(i.add(vec3(1, 1, 0))), u.x), u.y)
+                                .mix(
+                                        randomVec3(i.add(vec3(0, 0, 1)))
+                                                .mix(randomVec3(i.add(vec3(1, 0, 1))), u.x)
+                                                .mix(
+                                                        randomVec3(i.add(vec3(0, 1, 1))).mix(
+                                                                randomVec3(i.add(vec3(1, 1, 1))),
+                                                                u.x
+                                                        ),
+                                                        u.y
+                                                ),
+                                        u.z
+                                )
                 )
         )
 }).setLayout({
@@ -57,38 +59,38 @@ export const gnoiseVec3 = Fn(([p]: [Vec3]): Float => {
 })
 
 export const gnoiseVec3Tiled = Fn(([p, tileLength]: [Vec3, Float]): Float => {
-        const i = floor(p).toVar('i')
-        const f = fract(p).toVar('f')
+        const i = p.floor().toVar('i')
+        const f = p.fract().toVar('f')
         const u = quintic(f).toVar('u')
-        return mix(
-                mix(
-                        mix(
-                                dot(srandom3Vec3Tiled(i.add(vec3(0, 0, 0)), tileLength), f.sub(vec3(0, 0, 0))),
-                                dot(srandom3Vec3Tiled(i.add(vec3(1, 0, 0)), tileLength), f.sub(vec3(1, 0, 0))),
-                                u.x
-                        ),
-                        mix(
-                                dot(srandom3Vec3Tiled(i.add(vec3(0, 1, 0)), tileLength), f.sub(vec3(0, 1, 0))),
-                                dot(srandom3Vec3Tiled(i.add(vec3(1, 1, 0)), tileLength), f.sub(vec3(1, 1, 0))),
-                                u.x
-                        ),
+        return srandom3Vec3Tiled(i.add(vec3(0, 0, 0)), tileLength)
+                .dot(f.sub(vec3(0, 0, 0)))
+                .mix(srandom3Vec3Tiled(i.add(vec3(1, 0, 0)), tileLength).dot(f.sub(vec3(1, 0, 0))), u.x)
+                .mix(
+                        srandom3Vec3Tiled(i.add(vec3(0, 1, 0)), tileLength)
+                                .dot(f.sub(vec3(0, 1, 0)))
+                                .mix(
+                                        srandom3Vec3Tiled(i.add(vec3(1, 1, 0)), tileLength).dot(f.sub(vec3(1, 1, 0))),
+                                        u.x
+                                ),
                         u.y
-                ),
-                mix(
-                        mix(
-                                dot(srandom3Vec3Tiled(i.add(vec3(0, 0, 1)), tileLength), f.sub(vec3(0, 0, 1))),
-                                dot(srandom3Vec3Tiled(i.add(vec3(1, 0, 1)), tileLength), f.sub(vec3(1, 0, 1))),
-                                u.x
-                        ),
-                        mix(
-                                dot(srandom3Vec3Tiled(i.add(vec3(0, 1, 1)), tileLength), f.sub(vec3(0, 1, 1))),
-                                dot(srandom3Vec3Tiled(i.add(vec3(1, 1, 1)), tileLength), f.sub(vec3(1, 1, 1))),
-                                u.x
-                        ),
-                        u.y
-                ),
-                u.z
-        )
+                )
+                .mix(
+                        srandom3Vec3Tiled(i.add(vec3(0, 0, 1)), tileLength)
+                                .dot(f.sub(vec3(0, 0, 1)))
+                                .mix(srandom3Vec3Tiled(i.add(vec3(1, 0, 1)), tileLength).dot(f.sub(vec3(1, 0, 1))), u.x)
+                                .mix(
+                                        srandom3Vec3Tiled(i.add(vec3(0, 1, 1)), tileLength)
+                                                .dot(f.sub(vec3(0, 1, 1)))
+                                                .mix(
+                                                        srandom3Vec3Tiled(i.add(vec3(1, 1, 1)), tileLength).dot(
+                                                                f.sub(vec3(1, 1, 1))
+                                                        ),
+                                                        u.x
+                                                ),
+                                        u.y
+                                ),
+                        u.z
+                )
 }).setLayout({
         name: 'gnoiseVec3Tiled',
         type: 'float',

@@ -1,4 +1,4 @@
-import { Fn, Vec2, Vec3, vec2, vec3, vec4, dot } from '../../node'
+import { Fn, Vec2, Vec3, vec2, vec3, vec4 } from '../../node'
 import { srandom2Vec2, srandom3Vec3 } from './srandom'
 
 export const noised = Fn(([p]: [Vec2]) => {
@@ -20,10 +20,10 @@ export const noised = Fn(([p]: [Vec2]) => {
         const gc = srandom2Vec2(i.add(vec2(0, 1))).toVar('gc')
         const gd = srandom2Vec2(i.add(vec2(1, 1))).toVar('gd')
 
-        const va = dot(ga, f.sub(vec2(0, 0))).toVar('va')
-        const vb = dot(gb, f.sub(vec2(1, 0))).toVar('vb')
-        const vc = dot(gc, f.sub(vec2(0, 1))).toVar('vc')
-        const vd = dot(gd, f.sub(vec2(1, 1))).toVar('vd')
+        const va = f.sub(vec2(0, 0)).dot(ga).toVar('va')
+        const vb = f.sub(vec2(1, 0)).dot(gb).toVar('vb')
+        const vc = f.sub(vec2(0, 1)).dot(gc).toVar('vc')
+        const vd = f.sub(vec2(1, 1)).dot(gd).toVar('vd')
 
         return vec3(
                 va
@@ -65,14 +65,14 @@ export const noisedVec3 = Fn(([pos]: [Vec3]) => {
         const gg = srandom3Vec3(p.add(vec3(0, 1, 1))).toVar('gg')
         const gh = srandom3Vec3(p.add(vec3(1, 1, 1))).toVar('gh')
 
-        const va = dot(ga, w.sub(vec3(0, 0, 0))).toVar('va')
-        const vb = dot(gb, w.sub(vec3(1, 0, 0))).toVar('vb')
-        const vc = dot(gc, w.sub(vec3(0, 1, 0))).toVar('vc')
-        const vd = dot(gd, w.sub(vec3(1, 1, 0))).toVar('vd')
-        const ve = dot(ge, w.sub(vec3(0, 0, 1))).toVar('ve')
-        const vf = dot(gf, w.sub(vec3(1, 0, 1))).toVar('vf')
-        const vg = dot(gg, w.sub(vec3(0, 1, 1))).toVar('vg')
-        const vh = dot(gh, w.sub(vec3(1, 1, 1))).toVar('vh')
+        const va = w.sub(vec3(0, 0, 0)).dot(ga).toVar('va')
+        const vb = w.sub(vec3(1, 0, 0)).dot(gb).toVar('vb')
+        const vc = w.sub(vec3(0, 1, 0)).dot(gc).toVar('vc')
+        const vd = w.sub(vec3(1, 1, 0)).dot(gd).toVar('vd')
+        const ve = w.sub(vec3(0, 0, 1)).dot(ge).toVar('ve')
+        const vf = w.sub(vec3(1, 0, 1)).dot(gf).toVar('vf')
+        const vg = w.sub(vec3(0, 1, 1)).dot(gg).toVar('vg')
+        const vh = w.sub(vec3(1, 1, 1)).dot(gh).toVar('vh')
 
         const noiseValue = va
                 .add(u.x.mul(vb.sub(va)))

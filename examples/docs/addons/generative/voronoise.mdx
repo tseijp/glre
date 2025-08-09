@@ -31,17 +31,17 @@ Where parameter $v$ controls the transition between Voronoi-like ($v=0$) and Per
 
 | Parameter | Range | Effect                                    |
 | --------- | ----- | ----------------------------------------- |
-| `u`       | 0-1   | Regularity: 0=chaotic, 1=regular grid    |
+| `u`       | 0-1   | Regularity: 0=chaotic, 1=regular grid     |
 | `v`       | 0-1   | Shape: 0=cellular/sharp, 1=smooth/flowing |
 
 The regularity parameter $u$ controls random displacement magnitude, while the shape parameter $v$ determines the blending kernel's smoothness.
 
 ## Function Variants
 
-| Function        | Input               | Output | Purpose                    |
-| --------------- | ------------------- | ------ | -------------------------- |
-| `voronoise`     | `vec2, float, float` | `float` | 2D parametric voronoise   |
-| `voronoiseVec3` | `vec3, float, float` | `float` | 3D parametric voronoise   |
+| Function        | Input                | Output  | Purpose                 |
+| --------------- | -------------------- | ------- | ----------------------- |
+| `voronoise`     | `vec2, float, float` | `float` | 2D parametric voronoise |
+| `voronoiseVec3` | `vec3, float, float` | `float` | 3D parametric voronoise |
 
 ## Implementation Examples
 
@@ -49,43 +49,25 @@ The regularity parameter $u$ controls random displacement magnitude, while the s
         isFun
         code={`
 const fragment = () => {
-        const scale = 8
-        const p = uv.mul(scale)
-        const time = iTime.mul(0.1)
-        
-        const regularity = sin(time).mul(0.5).add(0.5)
-        const smoothness = cos(time.mul(1.3)).mul(0.5).add(0.5)
-        
-        const noise = voronoise(p, regularity, smoothness)
-        const intensity = noise.mul(0.5).add(0.5)
-        
-        const hue = p.x.add(p.y).mul(0.1).add(time)
-        const r = sin(hue.mul(6.28)).mul(0.5).add(0.5)
-        const g = sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5)
-        const b = sin(hue.mul(6.28).add(4.19)).mul(0.5).add(0.5)
-        
-        return vec4(vec3(r, g, b).mul(intensity), 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
         const p = uv.mul(6)
-        const time = iTime.mul(0.05)
-        
-        const layer1 = voronoise(p, 0.1, 0.3)
-        const layer2 = voronoise(p.mul(2), 0.8, 0.7)
+
+        const layer1 = voronoise(p, iTime.sin(), 0.3)
+        const layer2 = voronoise(p.mul(2), 0.8, iTime.cos())
         const layer3 = voronoise(p.mul(0.5), 0.5, 0.9)
-        
-        const combined = layer1.mul(0.6).add(layer2.mul(0.3).add(layer3.mul(0.1)))
+
+        const layers = vec3(layer1, layer2, layer3)
+        const weights = vec3(0.6, 0.3, 0.1)
+        const combined = dot(layers, weights)
         const normalized = combined.mul(0.5).add(0.5)
-        
-        const gradient = length(p.sub(vec2(3, 3))).div(4)
+
+        const gradient = vec2(3, 3).sub(p).length().div(4)
         const mask = smoothstep(0.8, 1.2, gradient).oneMinus()
-        
-        const final = normalized.mul(mask)
-        return vec4(vec3(final), 1)
+
+        const hue = normalized.mul(0.3).add(iTime.mul(0.02))
+        const value = normalized.mul(mask).add(0.4)
+
+        const color = hsv2rgb(vec3(hue, 0.4, value))
+        return vec4(color, 1)
+
 }`}
 />

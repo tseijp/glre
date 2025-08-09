@@ -1,4 +1,4 @@
-import { Fn, Float, Vec2, Vec3, vec2, vec3, floor, fract, sin, length, float, If } from '../../node'
+import { Fn, Float, Vec2, Vec3, vec2, vec3, floor, fract, length, float, If } from '../../node'
 import { random2Vec2 } from './random'
 import { TAU } from '../math/const'
 
@@ -9,22 +9,22 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
 
         // Unroll nested loop: for j=-1 to 1, for i=-1 to 1
         // j=-1, i=-1
-        const neighbor_n1n1 = vec2(-1, -1).toVar('neighbor_n1n1')
-        const point_n1n1 = random2Vec2(i_uv.add(neighbor_n1n1)).toVar('point_n1n1')
-        point_n1n1.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_n1n1))))))
-        const diff_n1n1 = neighbor_n1n1.add(point_n1n1).sub(f_uv).toVar('diff_n1n1')
-        const dist_n1n1 = length(diff_n1n1).toVar('dist_n1n1')
-        If(dist_n1n1.lessThan(rta.z), () => {
-                rta.xy.assign(point_n1n1)
-                rta.z.assign(dist_n1n1)
+        const neighbor_m1m1 = vec2(-1, -1).toVar('neighbor_m1m1')
+        const point_m1m1 = random2Vec2(i_uv.add(neighbor_m1m1)).toVar('point_m1m1')
+        point_m1m1.assign(float(0.5).add(float(0.5).mul(time.add(point_m1m1.mul(TAU)).sin())))
+        const diff_m1m1 = neighbor_m1m1.add(point_m1m1).sub(f_uv).toVar('diff_m1m1')
+        const dist_m1m1 = diff_m1m1.length().toVar('dist_m1m1')
+        If(dist_m1m1.lessThan(rta.z), () => {
+                rta.xy.assign(point_m1m1)
+                rta.z.assign(dist_m1m1)
         })
 
         // j=-1, i=0
         const neighbor_0m1 = vec2(0, -1).toVar('neighbor_0m1')
         const point_0m1 = random2Vec2(i_uv.add(neighbor_0m1)).toVar('point_0m1')
-        point_0m1.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_0m1))))))
+        point_0m1.assign(float(0.5).add(float(0.5).mul(time.add(point_0m1.mul(TAU)).sin())))
         const diff_0m1 = neighbor_0m1.add(point_0m1).sub(f_uv).toVar('diff_0m1')
-        const dist_0m1 = length(diff_0m1).toVar('dist_0m1')
+        const dist_0m1 = diff_0m1.length().toVar('dist_0m1')
         If(dist_0m1.lessThan(rta.z), () => {
                 rta.xy.assign(point_0m1)
                 rta.z.assign(dist_0m1)
@@ -33,9 +33,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=-1, i=1
         const neighbor_1m1 = vec2(1, -1).toVar('neighbor_1m1')
         const point_1m1 = random2Vec2(i_uv.add(neighbor_1m1)).toVar('point_1m1')
-        point_1m1.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_1m1))))))
+        point_1m1.assign(float(0.5).add(float(0.5).mul(time.add(point_1m1.mul(TAU)).sin())))
         const diff_1m1 = neighbor_1m1.add(point_1m1).sub(f_uv).toVar('diff_1m1')
-        const dist_1m1 = length(diff_1m1).toVar('dist_1m1')
+        const dist_1m1 = diff_1m1.length().toVar('dist_1m1')
         If(dist_1m1.lessThan(rta.z), () => {
                 rta.xy.assign(point_1m1)
                 rta.z.assign(dist_1m1)
@@ -44,9 +44,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=0, i=-1
         const neighbor_m10 = vec2(-1, 0).toVar('neighbor_m10')
         const point_m10 = random2Vec2(i_uv.add(neighbor_m10)).toVar('point_m10')
-        point_m10.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_m10))))))
+        point_m10.assign(float(0.5).add(float(0.5).mul(time.add(point_m10.mul(TAU)).sin())))
         const diff_m10 = neighbor_m10.add(point_m10).sub(f_uv).toVar('diff_m10')
-        const dist_m10 = length(diff_m10).toVar('dist_m10')
+        const dist_m10 = diff_m10.length().toVar('dist_m10')
         If(dist_m10.lessThan(rta.z), () => {
                 rta.xy.assign(point_m10)
                 rta.z.assign(dist_m10)
@@ -55,9 +55,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=0, i=0
         const neighbor_00 = vec2(0, 0).toVar('neighbor_00')
         const point_00 = random2Vec2(i_uv.add(neighbor_00)).toVar('point_00')
-        point_00.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_00))))))
+        point_00.assign(float(0.5).add(float(0.5).mul(time.add(point_00.mul(TAU)).sin())))
         const diff_00 = neighbor_00.add(point_00).sub(f_uv).toVar('diff_00')
-        const dist_00 = length(diff_00).toVar('dist_00')
+        const dist_00 = diff_00.length().toVar('dist_00')
         If(dist_00.lessThan(rta.z), () => {
                 rta.xy.assign(point_00)
                 rta.z.assign(dist_00)
@@ -66,9 +66,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=0, i=1
         const neighbor_10 = vec2(1, 0).toVar('neighbor_10')
         const point_10 = random2Vec2(i_uv.add(neighbor_10)).toVar('point_10')
-        point_10.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_10))))))
+        point_10.assign(float(0.5).add(float(0.5).mul(time.add(point_10.mul(TAU)).sin())))
         const diff_10 = neighbor_10.add(point_10).sub(f_uv).toVar('diff_10')
-        const dist_10 = length(diff_10).toVar('dist_10')
+        const dist_10 = diff_10.length().toVar('dist_10')
         If(dist_10.lessThan(rta.z), () => {
                 rta.xy.assign(point_10)
                 rta.z.assign(dist_10)
@@ -77,9 +77,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=1, i=-1
         const neighbor_m11 = vec2(-1, 1).toVar('neighbor_m11')
         const point_m11 = random2Vec2(i_uv.add(neighbor_m11)).toVar('point_m11')
-        point_m11.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_m11))))))
+        point_m11.assign(float(0.5).add(float(0.5).mul(time.add(point_m11.mul(TAU)).sin())))
         const diff_m11 = neighbor_m11.add(point_m11).sub(f_uv).toVar('diff_m11')
-        const dist_m11 = length(diff_m11).toVar('dist_m11')
+        const dist_m11 = diff_m11.length().toVar('dist_m11')
         If(dist_m11.lessThan(rta.z), () => {
                 rta.xy.assign(point_m11)
                 rta.z.assign(dist_m11)
@@ -88,9 +88,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=1, i=0
         const neighbor_01 = vec2(0, 1).toVar('neighbor_01')
         const point_01 = random2Vec2(i_uv.add(neighbor_01)).toVar('point_01')
-        point_01.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_01))))))
+        point_01.assign(float(0.5).add(float(0.5).mul(time.add(point_01.mul(TAU)).sin())))
         const diff_01 = neighbor_01.add(point_01).sub(f_uv).toVar('diff_01')
-        const dist_01 = length(diff_01).toVar('dist_01')
+        const dist_01 = diff_01.length().toVar('dist_01')
         If(dist_01.lessThan(rta.z), () => {
                 rta.xy.assign(point_01)
                 rta.z.assign(dist_01)
@@ -99,9 +99,9 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
         // j=1, i=1
         const neighbor_11 = vec2(1, 1).toVar('neighbor_11')
         const point_11 = random2Vec2(i_uv.add(neighbor_11)).toVar('point_11')
-        point_11.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_11))))))
+        point_11.assign(float(0.5).add(float(0.5).mul(time.add(point_11.mul(TAU)).sin())))
         const diff_11 = neighbor_11.add(point_11).sub(f_uv).toVar('diff_11')
-        const dist_11 = length(diff_11).toVar('dist_11')
+        const dist_11 = diff_11.length().toVar('dist_11')
         If(dist_11.lessThan(rta.z), () => {
                 rta.xy.assign(point_11)
                 rta.z.assign(dist_11)
@@ -118,7 +118,7 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
 })
 
 export const voronoiVec2 = Fn(([p]: [Vec2]): Vec3 => {
-        return voronoi(p, float(0))
+        return voronoi(p, float(0.0))
 }).setLayout({
         name: 'voronoiVec2',
         type: 'vec3',
