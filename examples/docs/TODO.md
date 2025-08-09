@@ -1,5 +1,5 @@
 - [ ] `` → TSL
-- [ ] `generative/cnoise.glsl` → TSL
+- [x] `generative/cnoise.glsl` → TSL
 - [ ] `generative/curl.glsl` → TSL
 - [ ] `generative/fbm.glsl` → TSL
 - [ ] `generative/gerstnerWave.glsl` → TSL
