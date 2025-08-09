@@ -16,7 +16,7 @@ const nyquist = Fn(([x, width]: [Float, Float]): Float => {
 
 export const aafract = Fn(([x]: [X]): X => {
         const afwidth = length(vec2(dFdx(x), dFdy(x)))
-                .mul(2.0)
+                .mul(2)
                 .toVar('afwidth')
         const fx = fract(x).toVar('fx')
         const idx = afwidth.oneMinus().toVar('idx')

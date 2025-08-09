@@ -40,7 +40,7 @@ This technique proves invaluable when creating procedural patterns, animated tex
         isFun
         code={`
 const fragment = () => {
-        const coord = uv.mul(8.0)
+        const coord = uv.mul(8)
         const wave1 = fcos(coord.x.mul(TWO_PI))
         const wave2 = fcos(coord.y.mul(TWO_PI))
         const combined = wave1.mul(wave2).add(1).div(2)

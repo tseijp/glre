@@ -7,7 +7,7 @@
 - [x] `generative/pnoise.glsl` → TSL
 - [x] `generative/psrdnoise.glsl` → TSL
 - [x] `generative/random.glsl` → TSL
-- [x] `generative/snoise.glsl` → TSL
+- [ ] `generative/snoise.glsl` → TSL
 - [x] `generative/srandom.glsl` → TSL
 - [x] `generative/voronoi.glsl` → TSL
 - [x] `generative/voronoise.glsl` → TSL

@@ -52,7 +52,7 @@ const fragment = () => {
         const transformed = rotationOnly.mul(direction)
 
         const intensity = transformed.z.abs()
-        const colorPhase = atan2(transformed.y, transformed.x)
+        const colorPhase = transformed.y.atan2(transformed.x)
         const color = vec3(
                 colorPhase.add(iTime).sin().mul(0.5).add(0.5),
                 colorPhase.add(iTime).add(2.0).sin().mul(0.5).add(0.5),

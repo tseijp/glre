@@ -1,21 +1,4 @@
-import {
-        Fn,
-        Float,
-        Vec2,
-        Vec3,
-        Vec4,
-        vec2,
-        vec3,
-        vec4,
-        float,
-        dot,
-        fract,
-        max,
-        step,
-        min,
-        clamp,
-        select,
-} from '../../node'
+import { Fn, Float, Vec2, Vec3, Vec4, vec2, vec3, vec4, float } from '../../node'
 import { mod289Vec2, mod289Vec3, mod289Vec4 } from '../math/mod289'
 import { permute, permuteVec3, permuteVec4 } from '../math/permute'
 import { taylorInvSqrt } from '../math/taylorInvSqrt'
@@ -25,7 +8,7 @@ export const snoiseVec2 = Fn(([v]: [Vec2]): Float => {
         const C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439).toVar('C')
         const i = v.add(v.dot(C.yy)).floor().toVar('i')
         const x0 = v.sub(i).add(i.dot(C.xx)).toVar('x0')
-        const i1 = vec2(0, 1).select(vec2(1, 0), x0.x.greaterThan(x0.y)).toVar('i1')
+        const i1 = vec2(1, 0).select(vec2(0, 1), x0.x.greaterThan(x0.y)).toVar('i1')
         const x12 = x0.xyxy.add(C.xxzz).toVar('x12')
         x12.xy = x12.xy.sub(i1)
         i.assign(mod289Vec2(i))
@@ -34,7 +17,10 @@ export const snoiseVec2 = Fn(([v]: [Vec2]): Float => {
                         .add(i.x)
                         .add(vec3(0, i1.x, 1))
         ).toVar('p')
-        const m = float(0.5).sub(vec3(x0.dot(x0), x12.xy.dot(x12.xy), x12.zw.dot(x12.zw))).max(0).toVar('m')
+        const m = float(0.5)
+                .sub(vec3(x0.dot(x0), x12.xy.dot(x12.xy), x12.zw.dot(x12.zw)))
+                .max(0)
+                .toVar('m')
         m.assign(m.mul(m))
         m.assign(m.mul(m))
         const x = p.mul(C.www).fract().mul(2).sub(1).toVar('x')
@@ -51,14 +37,14 @@ export const snoiseVec2 = Fn(([v]: [Vec2]): Float => {
 })
 
 export const snoiseVec3 = Fn(([v]: [Vec3]): Float => {
-        const C = vec2(1.0 / 6.0, 1.0 / 3.0).toVar('C')
+        const C = vec2(1 / 6, 1 / 3).toVar('C')
         const D = vec4(0, 0.5, 1, 2).toVar('D')
         const i = v.add(v.dot(C.yyy)).floor().toVar('i')
         const x0 = v.sub(i).add(i.dot(C.xxx)).toVar('x0')
-        const g = step(x0.yzx, x0.xyz).toVar('g')
+        const g = x0.yzx.step(x0.xyz).toVar('g')
         const l = float(1).sub(g).toVar('l')
-        const i1 = min(g.xyz, l.zxy).toVar('i1')
-        const i2 = max(g.xyz, l.zxy).toVar('i2')
+        const i1 = g.xyz.min(l.zxy).toVar('i1')
+        const i2 = g.xyz.max(l.zxy).toVar('i2')
         const x1 = x0.sub(i1).add(C.xxx).toVar('x1')
         const x2 = x0.sub(i2).add(C.yyy).toVar('x2')
         const x3 = x0.sub(D.yyy).toVar('x3')
@@ -84,7 +70,7 @@ export const snoiseVec3 = Fn(([v]: [Vec3]): Float => {
         const b1 = vec4(x.zw, y.zw).toVar('b1')
         const s0 = b0.floor().mul(2).add(1).toVar('s0')
         const s1 = b1.floor().mul(2).add(1).toVar('s1')
-        const sh = step(h, vec4(0)).negate().toVar('sh')
+        const sh = vec4(0).step(h).negate().toVar('sh')
         const a0 = b0.xzyw.add(s0.xzyw.mul(sh.xxyy)).toVar('a0')
         const a1 = b1.xzyw.add(s1.xzyw.mul(sh.zzww)).toVar('a1')
         const p0 = vec3(a0.xy, h.x).toVar('p0')
@@ -96,7 +82,10 @@ export const snoiseVec3 = Fn(([v]: [Vec3]): Float => {
         p1.mulAssign(norm.y)
         p2.mulAssign(norm.z)
         p3.mulAssign(norm.w)
-        const m = float(0.6).sub(vec4(x0.dot(x0), x1.dot(x1), x2.dot(x2), x3.dot(x3))).max(0).toVar('m')
+        const m = float(0.6)
+                .sub(vec4(x0.dot(x0), x1.dot(x1), x2.dot(x2), x3.dot(x3)))
+                .max(0)
+                .toVar('m')
         m.assign(m.mul(m))
         return float(42).mul(m.mul(m).dot(vec4(p0.dot(x0), p1.dot(x1), p2.dot(x2), p3.dot(x3))))
 }).setLayout({
@@ -113,17 +102,17 @@ export const snoiseVec4 = Fn(([v]: [Vec4]): Float => {
                 .toVar('i')
         const x0 = v.sub(i).add(i.dot(C.xxxx)).toVar('x0')
         const i0 = vec4(0).toVar('i0')
-        const isX = step(x0.yzw, x0.xxx).toVar('isX')
-        const isYZ = step(x0.zww, x0.yyz).toVar('isYZ')
+        const isX = x0.xxx.step(x0.yzw).toVar('isX')
+        const isYZ = x0.yyz.step(x0.zww).toVar('isYZ')
         i0.x = isX.x.add(isX.y).add(isX.z)
         i0.yzw = float(1).sub(isX)
         i0.y = i0.y.add(isYZ.x).add(isYZ.y)
         i0.zw = i0.zw.add(float(1).sub(isYZ.xy))
         i0.z = i0.z.add(isYZ.z)
         i0.w = i0.w.add(float(1).sub(isYZ.z))
-        const i3 = clamp(i0, 0, 1).toVar('i3')
-        const i2 = clamp(i0.sub(1), 0, 1).toVar('i2')
-        const i1 = clamp(i0.sub(2), 0, 1).toVar('i1')
+        const i3 = i0.clamp(0, 1).toVar('i3')
+        const i2 = i0.sub(1).clamp(0, 1).toVar('i2')
+        const i1 = i0.sub(2).clamp(0, 1).toVar('i1')
         const x1 = x0.sub(i1).add(C.xxxx).toVar('x1')
         const x2 = x0.sub(i2).add(C.yyyy).toVar('x2')
         const x3 = x0.sub(i3).add(C.zzzz).toVar('x3')
@@ -143,7 +132,7 @@ export const snoiseVec4 = Fn(([v]: [Vec4]): Float => {
                         .add(i.x)
                         .add(vec4(i1.x, i2.x, i3.x, 1))
         ).toVar('j1')
-        const ip = vec4(1.0 / 294.0, 1.0 / 49.0, 1.0 / 7.0, 0).toVar('ip')
+        const ip = vec4(1 / 294, 1 / 49, 1 / 7, 0).toVar('ip')
         const p0 = grad4(j0, ip).toVar('p0')
         const p1 = grad4(j1.x, ip).toVar('p1')
         const p2 = grad4(j1.y, ip).toVar('p2')
@@ -155,14 +144,21 @@ export const snoiseVec4 = Fn(([v]: [Vec4]): Float => {
         p2.mulAssign(norm.z)
         p3.mulAssign(norm.w)
         p4.mulAssign(taylorInvSqrt(p4.dot(p4)))
-        const m0 = float(0.6).sub(vec3(x0.dot(x0), x1.dot(x1), x2.dot(x2))).max(0).toVar('m0')
-        const m1 = float(0.6).sub(vec2(x3.dot(x3), x4.dot(x4))).max(0).toVar('m1')
+        const m0 = float(0.6)
+                .sub(vec3(x0.dot(x0), x1.dot(x1), x2.dot(x2)))
+                .max(0)
+                .toVar('m0')
+        const m1 = float(0.6)
+                .sub(vec2(x3.dot(x3), x4.dot(x4)))
+                .max(0)
+                .toVar('m1')
         m0.assign(m0.mul(m0))
         m1.assign(m1.mul(m1))
         return float(49).mul(
-                m0.mul(m0).dot(vec3(p0.dot(x0), p1.dot(x1), p2.dot(x2))).add(
-                        m1.mul(m1).dot(vec2(p3.dot(x3), p4.dot(x4)))
-                )
+                m0
+                        .mul(m0)
+                        .dot(vec3(p0.dot(x0), p1.dot(x1), p2.dot(x2)))
+                        .add(m1.mul(m1).dot(vec2(p3.dot(x3), p4.dot(x4))))
         )
 }).setLayout({
         name: 'snoiseVec4',

@@ -6,7 +6,7 @@ function fun(v: Vec2): Vec2
 function fun(v: Vec3): Vec3
 function fun(v: Vec4): Vec4
 function fun(v: X): X {
-        return v.mul(34.0).add(1.0).mul(v)
+        return v.mul(34).add(1).mul(v)
 }
 
 export const permute = Fn(([v]: [Float]): Float => {

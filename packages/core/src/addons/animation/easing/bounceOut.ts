@@ -1,9 +1,9 @@
 import { Fn, Float, float } from '../../../node'
 
 export const bounceOut = Fn(([t]: [Float]): Float => {
-        const a = float(4.0 / 11.0)
-        const b = float(8.0 / 11.0)
-        const c = float(9.0 / 10.0)
+        const a = float(4 / 11)
+        const b = float(8 / 11)
+        const c = float(9 / 10)
         const ca = float(4356.0 / 361.0)
         const cb = float(35442.0 / 1805.0)
         const cc = float(16061.0 / 1805.0)

@@ -1,11 +1,11 @@
-import { Fn, Float, Vec2, Vec3, vec2, vec3, floor, fract, length, float, If } from '../../node'
+import { Fn, Float, Vec2, Vec3, vec2, vec3, float, If } from '../../node'
 import { random2Vec2 } from './random'
 import { TAU } from '../math/const'
 
 export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
-        const i_uv = floor(uv).toVar('i_uv')
-        const f_uv = fract(uv).toVar('f_uv')
-        const rta = vec3(0.0, 0.0, 10.0).toVar('rta')
+        const i_uv = uv.floor().toVar('i_uv')
+        const f_uv = uv.fract().toVar('f_uv')
+        const rta = vec3(0, 0, 10).toVar('rta')
 
         // Unroll nested loop: for j=-1 to 1, for i=-1 to 1
         // j=-1, i=-1
@@ -118,7 +118,7 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
 })
 
 export const voronoiVec2 = Fn(([p]: [Vec2]): Vec3 => {
-        return voronoi(p, float(0.0))
+        return voronoi(p, float(0))
 }).setLayout({
         name: 'voronoiVec2',
         type: 'vec3',

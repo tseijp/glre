@@ -38,7 +38,7 @@ const fragment = () => {
         const baseCoord = uv.mul(20).add(iTime.mul(0.1))
         const layer1 = permute(baseCoord.x.add(baseCoord.y.mul(0.5)))
         const layer2 = permute(layer1.add(baseCoord.y.mul(1.5)))
-        const layer3 = permute(layer2.add(baseCoord.x.mul(2.0)))
+        const layer3 = permute(layer2.add(baseCoord.x.mul(2)))
         const crystallinePattern = layer3.div(289).mul(3.14159).sin()
         const metamorphicField = permute(crystallinePattern.mul(50).add(layer1.div(100)))
         const finalColor = metamorphicField.div(289)

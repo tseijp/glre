@@ -42,8 +42,8 @@ By capturing only the fractional remainder, complex coordinate systems collapse 
         isFun
         code={`
 const fragment = () => {
-        const tiled = frac(uv.mul(8.0))
-        const pattern = smoothstep(0.1, 0.2, tiled.x).mul(smoothstep(0.1, 0.2, tiled.y))
+        const tiled = frac(uv.mul(8))
+        const pattern = smoothstep(0.1, 0.2, tiled.x).mul(float(0.1).smoothstep(0.2, tiled.y))
         const gradient = tiled.sub(0.5).length().mul(2)
         return vec4(vec3(pattern.mul(gradient)), 1)
 }`}

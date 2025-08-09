@@ -7,7 +7,7 @@ export const axis = Fn(([st, M, pos, thickness]: [Vec2, Mat4, Vec3, Float]): Vec
         // Transform center position
         const center = M.mul(vec4(pos, 1)).toVar()
         center.xy.assign(center.xy.div(center.w))
-        center.xy.assign(center.xy.mul(0.5).add(0.5))
+        center.xy.assign(center.xy.div(2).add(0.5))
 
         // Define axis colors (RGB for XYZ)
         const axisColors = [
@@ -37,7 +37,7 @@ export const axis = Fn(([st, M, pos, thickness]: [Vec2, Mat4, Vec3, Float]): Vec
                 // Transform axis endpoint
                 const axisPoint = (M as any).mul(vec4((pos as any).add(axisDir as any), 1)).toVar()
                 axisPoint.xy.assign(axisPoint.xy.div(axisPoint.w))
-                axisPoint.xy.assign(axisPoint.xy.mul(0.5).add(0.5))
+                axisPoint.xy.assign(axisPoint.xy.div(2).add(0.5))
 
                 // Draw line from center to axis endpoint
                 const axisLine = line(st, center.xy, axisPoint.xy, thickness)

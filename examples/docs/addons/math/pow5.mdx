@@ -27,7 +27,7 @@ The pow5 function simply raises input values to the fifth power ($x^5$). This cr
         isFun
         code={`
 const fragment = () => {
-        const gridScale = 4.0
+        const gridScale = 4
         const pos = uv.sub(0.5).mul(gridScale)
 
         const baseFreq = iTime.mul(0.4)
@@ -64,16 +64,16 @@ const fragment = () => {
         const angle = center.y.atan2(center.x)
 
         const temporalPhase = iTime.mul(0.6)
-        const radialPulse = distance.mul(5.0).sub(temporalPhase).sin()
+        const radialPulse = distance.mul(5).sub(temporalPhase).sin()
 
         const fluxFieldBase = pow5(radialPulse.mul(0.6))
-        const angularModulation = pow5(angle.mul(2.0).add(temporalPhase.mul(0.5)).sin().mul(0.7))
+        const angularModulation = pow5(angle.mul(2).add(temporalPhase.mul(0.5)).sin().mul(0.7))
 
         const asymmetricFlux = fluxFieldBase.add(angularModulation)
         const directionality = asymmetricFlux.sign()
 
-        const positiveFlow = asymmetricFlux.max(0.0)
-        const negativeFlow = asymmetricFlux.negate().max(0.0)
+        const positiveFlow = asymmetricFlux.max(0)
+        const negativeFlow = asymmetricFlux.negate().max(0)
 
         const flowIntensity = asymmetricFlux.abs().pow(0.4)
 

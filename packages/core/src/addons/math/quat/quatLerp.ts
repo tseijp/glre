@@ -13,7 +13,7 @@ export const quatLerp = Fn(([qa, qb, t]: [Vec4, Vec4, Float]): Vec4 => {
         const sinHalfTheta = float(1).sub(absCosHalfTheta.mul(absCosHalfTheta)).sqrt().toVar('sinHalfTheta')
 
         If(sinHalfTheta.abs().lessThan(0.001), () => {
-                Return(qa.mul(0.5).add(adjustedQb.mul(0.5)).normalize())
+                Return(qa.div(2).add(adjustedQb.div(2)).normalize())
         })
 
         const ratioA = float(1).sub(t).mul(halfTheta).sin().div(sinHalfTheta).toVar('ratioA')

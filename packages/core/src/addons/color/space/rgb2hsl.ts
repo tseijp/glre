@@ -5,7 +5,7 @@ const HSL_EPSILON = float('1e-10')
 
 export const rgb2hsl = Fn(([rgb]: [Vec3]): Vec3 => {
         const HCV = rgb2hcv(rgb).toVar()
-        const L = HCV.z.sub(HCV.y.mul(0.5)).toVar()
+        const L = HCV.z.sub(HCV.y.div(2)).toVar()
         const S = HCV.y.div(float(1).sub(L.mul(2).sub(1).abs()).add(HSL_EPSILON)).toVar()
         return vec3(HCV.x, S, L)
 }).setLayout({

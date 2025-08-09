@@ -3,9 +3,9 @@ import { PI } from '../math/const'
 
 export const gerstnerWave = Fn(([_uv, _dir, _steepness, _wavelength, _time]: [Vec2, Vec2, Float, Float, Float]) => {
         const k = PI.mul(2).div(_wavelength).toVar('k')
-        const c = sqrt(float(9.8).div(k)).toVar('c')
+        const c = float(9.8).div(k).sqrt().toVar('c')
         const d = _dir.normalize().toVar('d')
-        const f = k.mul(dot(d, _uv).sub(c.mul(_time))).toVar('f')
+        const f = k.mul(_uv.dot(d).sub(c.mul(_time))).toVar('f')
         const a = _steepness.div(k).toVar('a')
         return vec3(d.x.mul(a.mul(f.cos())), a.mul(f.sin()), d.y.mul(a.mul(f.cos())))
 }).setLayout({

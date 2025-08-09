@@ -34,9 +34,9 @@ const fragment = () => {
         const center2 = vec2(-0.2, -0.1)
         const center3 = vec2(0.1, -0.4)
 
-        const field1 = lengthSq(uv.sub(center1)).mul(8.0)
-        const field2 = lengthSq(uv.sub(center2)).mul(12.0)
-        const field3 = lengthSq(uv.sub(center3)).mul(6.0)
+        const field1 = lengthSq(uv.sub(center1)).mul(8)
+        const field2 = lengthSq(uv.sub(center2)).mul(12)
+        const field3 = lengthSq(uv.sub(center3)).mul(6)
 
         const quantumField = field1.add(field2).add(field3)
         const energyLevels = quantumField.sin().mul(0.5).add(0.5)
@@ -44,9 +44,9 @@ const fragment = () => {
         const resonance = iTime.mul(0.5).sin().mul(0.2).add(0.8)
         const finalField = energyLevels.pow(resonance)
 
-        const redChannel = finalField.mul(2.0).mod(1.0)
-        const greenChannel = finalField.mul(3.0).mod(1.0)
-        const blueChannel = finalField.mul(5.0).mod(1.0)
+        const redChannel = finalField.mul(2).mod(1.0)
+        const greenChannel = finalField.mul(3).mod(1.0)
+        const blueChannel = finalField.mul(5).mod(1.0)
 
         return vec4(redChannel, greenChannel, blueChannel, 1)
 

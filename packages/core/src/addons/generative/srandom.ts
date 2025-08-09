@@ -1,4 +1,4 @@
-import { Fn, Float, Vec2, Vec3, Vec4, vec2, vec3, vec4, float, dot, fract, sin, mod } from '../../node'
+import { Fn, Float, Vec2, Vec3, Vec4, vec2, vec3, vec4, float, dot, sin } from '../../node'
 
 export const srandom = Fn(([x]: [Float]): Float => {
         return float(-1).add(float(2).mul(x.sin().mul(43758.5453).fract()))
@@ -38,11 +38,10 @@ export const srandom2Vec2 = Fn(([st]: [Vec2]): Vec2 => {
         st.assign(st.mul(k).add(k.yx))
         return vec2(-1).add(
                 vec2(2).mul(
-                        fract(
-                                float(16)
-                                        .mul(k)
-                                        .mul(st.x.mul(st.y).mul(st.x.add(st.y)).fract())
-                        )
+                        float(16)
+                                .mul(k)
+                                .mul(st.x.mul(st.y).mul(st.x.add(st.y)).fract())
+                                .fract()
                 )
         )
 }).setLayout({
@@ -67,7 +66,7 @@ export const srandom3Vec3 = Fn(([p]: [Vec3]): Vec3 => {
 })
 
 export const srandom2Vec2Tiled = Fn(([p, tileLength]: [Vec2, Float]): Vec2 => {
-        p.assign(mod(p, vec2(tileLength)))
+        p.assign(p.mod(vec2(tileLength)))
         return srandom2Vec2(p)
 }).setLayout({
         name: 'srandom2Vec2Tiled',
@@ -79,7 +78,7 @@ export const srandom2Vec2Tiled = Fn(([p, tileLength]: [Vec2, Float]): Vec2 => {
 })
 
 export const srandom3Vec3Tiled = Fn(([p, tileLength]: [Vec3, Float]): Vec3 => {
-        p.assign(mod(p, vec3(tileLength)))
+        p.assign(p.mod(vec3(tileLength)))
         return srandom3Vec3(p)
 }).setLayout({
         name: 'srandom3Vec3Tiled',

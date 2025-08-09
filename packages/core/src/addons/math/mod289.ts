@@ -7,9 +7,9 @@ function fun(x: Vec4): Vec4
 function fun(x: X): X {
         return x.sub(
                 x
-                        .mul(1.0 / 289.0)
+                        .div(289)
                         .floor()
-                        .mul(289.0)
+                        .mul(289)
         )
 }
 

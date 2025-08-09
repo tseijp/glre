@@ -48,7 +48,7 @@ The functions return `vec3(seed_x, seed_y, distance)` where:
 const fragment = () => {
         const p = uv.mul(12)
         const cell = voronoiVec2(p)
-        const borders = smoothstep(0.0, 0.05, cell.z)
+        const borders = smoothstep(0, 0.05, cell.z)
         const cellId = cell.xy.dot(vec2(12.9898, 78.233))
         const cellColor = vec3(
                 cellId.sin().mul(0.5).add(0.5),
@@ -71,14 +71,14 @@ const fragment = () => {
         const cell2 = voronoi(p.mul(2), time.mul(1.3))
 
         const distortion = cell1.z.sub(cell2.z).mul(2)
-        const ripples = sin(cell1.z.mul(40).sub(time.mul(8))).mul(0.1)
+        const ripples = cell1.z.mul(40).sub(time.mul(8)).sin().mul(0.1)
 
         const intensity = distortion.add(ripples).clamp(0, 1)
-        const hue = cell1.xy.dot(vec2(0.5, 0.8)).add(time.mul(0.1))
+        const hue = vec2(0.5, 0.8).dot(cell1.xy).add(time.mul(0.1))
 
-        const r = sin(hue.mul(6.28)).mul(0.5).add(0.5)
-        const g = sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5)
-        const b = sin(hue.mul(6.28).add(4.19)).mul(0.5).add(0.5)
+        const r = hue.mul(6.28).sin().mul(0.5).add(0.5)
+        const g = hue.mul(6.28).add(2.09).sin().mul(0.5).add(0.5)
+        const b = hue.mul(6.28).add(4.19).sin().mul(0.5).add(0.5)
 
         return vec4(vec3(r, g, b).mul(intensity), 1)
 

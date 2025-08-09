@@ -48,7 +48,7 @@ const fragment = () => {
     const rotation = rotate4dY(orbitalAngle)
     const orbital = rotation.mul(vec4(pos, 1))
     const radial = orbital.length()
-    const angular = atan2(orbital.z, orbital.x).mul(3)
+    const angular = orbital.z.atan2(orbital.x).mul(3)
     const probability = radial.negate().exp().mul(angular.sin().pow(2))
     const electron = probability.mul(smoothstep(0.1, 0.3, probability))
     const energy = radial.mul(0.1).add(0.5)

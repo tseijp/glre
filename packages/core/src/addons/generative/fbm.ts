@@ -3,7 +3,7 @@ import { snoiseVec2, snoiseVec3 } from './snoise'
 import { gnoiseVec3Tiled } from './gnoise'
 
 const FBM_OCTAVES = int(4)
-const FBM_SCALE_SCALAR = 2.0
+const FBM_SCALE_SCALAR = 2
 const FBM_AMPLITUDE_INITIAL = 0.5
 const FBM_AMPLITUDE_SCALAR = 0.5
 
@@ -47,8 +47,8 @@ export const fbmVec3Tiled = Fn(([p, tileLength]: [Vec3, Float]): Float => {
         const normalization = float(0).toVar('normalization')
         const pVar = p.toVar('pVar')
         Loop(FBM_OCTAVES, () => {
-                const noiseValue = gnoiseVec3Tiled(pVar, tileLength.mul(lacunarity).mul(0.5))
-                        .mul(0.5)
+                const noiseValue = gnoiseVec3Tiled(pVar, tileLength.mul(lacunarity).div(2))
+                        .div(2)
                         .add(0.5)
                         .toVar('noiseValue')
                 total.addAssign(noiseValue.mul(amplitude))

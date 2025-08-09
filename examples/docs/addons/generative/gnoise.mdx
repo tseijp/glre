@@ -71,7 +71,7 @@ const fragment = () => {
         const p = vec3(uv.mul(3), iTime.mul(0.2))
         const base = gnoiseVec3(p)
         const detail = gnoiseVec3(p.mul(3)).mul(0.3)
-        const marble = sin(p.x.add(base.mul(4)).add(detail.mul(2))).mul(0.5).add(0.5)
+        const marble = p.x.add(base.mul(4)).add(detail.mul(2)).sin().mul(0.5).add(0.5)
         return vec4(vec3(marble), 1)
 }`}
 />

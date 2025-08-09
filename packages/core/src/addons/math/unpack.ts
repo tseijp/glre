@@ -5,7 +5,7 @@ const PackFactors = vec3(256.0 * 256.0 * 256.0, 256.0 * 256.0, 256.0)
 const UnpackFactors = UnpackDownscale.div(vec4(PackFactors, 1.0))
 
 export const unpack8 = Fn(([v]: [Vec3]): Float => {
-        const f = vec3(8.0, 8.0 * 8.0, 8.0 * 8.0 * 8.0)
+        const f = vec3(8, 8 * 8, 8 * 8 * 8)
         return dot(v, f).div(512.0)
 }).setLayout({
         name: 'unpack8',
@@ -14,7 +14,7 @@ export const unpack8 = Fn(([v]: [Vec3]): Float => {
 })
 
 export const unpack16 = Fn(([v]: [Vec3]): Float => {
-        const f = vec3(16.0, 16.0 * 16.0, 16.0 * 16.0 * 16.0)
+        const f = vec3(16, 16 * 16, 16 * 16 * 16)
         return dot(v, f).div(4096.0)
 }).setLayout({
         name: 'unpack16',
@@ -23,7 +23,7 @@ export const unpack16 = Fn(([v]: [Vec3]): Float => {
 })
 
 export const unpack32 = Fn(([v]: [Vec3]): Float => {
-        const f = vec3(32.0, 32.0 * 32.0, 32.0 * 32.0 * 32.0)
+        const f = vec3(32, 32 * 32, 32 * 32 * 32)
         return dot(v, f).div(32768.0)
 }).setLayout({
         name: 'unpack32',
@@ -32,7 +32,7 @@ export const unpack32 = Fn(([v]: [Vec3]): Float => {
 })
 
 export const unpack64 = Fn(([v]: [Vec3]): Float => {
-        const f = vec3(64.0, 64.0 * 64.0, 64.0 * 64.0 * 64.0)
+        const f = vec3(64, 64 * 64, 64 * 64 * 64)
         return dot(v, f).div(262144.0)
 }).setLayout({
         name: 'unpack64',
@@ -41,7 +41,7 @@ export const unpack64 = Fn(([v]: [Vec3]): Float => {
 })
 
 export const unpack128 = Fn(([v]: [Vec3]): Float => {
-        const f = vec3(128.0, 128.0 * 128.0, 128.0 * 128.0 * 128.0)
+        const f = vec3(128, 128 * 128, 128 * 128 * 128)
         return dot(v, f).div(2097152.0)
 }).setLayout({
         name: 'unpack128',
@@ -50,7 +50,7 @@ export const unpack128 = Fn(([v]: [Vec3]): Float => {
 })
 
 export const unpack256 = Fn(([v]: [Vec3]): Float => {
-        const f = vec3(256.0, 256.0 * 256.0, 256.0 * 256.0 * 256.0)
+        const f = vec3(256, 256 * 256, 256 * 256 * 256)
         return dot(v, f).div(16581375.0)
 }).setLayout({
         name: 'unpack256',

@@ -1,10 +1,10 @@
-import { Fn, Float, Vec2, Vec3, Loop, int, float, vec2, vec3, floor, fract, If } from '../../node'
+import { Fn, Float, Vec2, Vec3, Loop, int, float, vec2, vec3, If } from '../../node'
 import { random2Vec2, random3Vec3 } from './random'
 import { distEuclidean } from '../math/dist'
 
 export const worley2Vec2 = Fn(([p]: [Vec2]): Vec2 => {
-        const n = floor(p).toVar('n')
-        const f = fract(p).toVar('f')
+        const n = p.floor().toVar('n')
+        const f = p.fract().toVar('f')
         const distF1 = float(1).toVar('distF1')
         const distF2 = float(1).toVar('distF2')
         const off1 = vec2(0).toVar('off1')
@@ -38,7 +38,7 @@ export const worley2Vec2 = Fn(([p]: [Vec2]): Vec2 => {
 }).setLayout({
         name: 'worley2Vec2',
         type: 'vec2',
-        inputs: [{ name: 'p', type: 'vec2' }]
+        inputs: [{ name: 'p', type: 'vec2' }],
 })
 
 export const worleyVec2 = Fn(([p]: [Vec2]): Float => {
@@ -46,12 +46,12 @@ export const worleyVec2 = Fn(([p]: [Vec2]): Float => {
 }).setLayout({
         name: 'worleyVec2',
         type: 'float',
-        inputs: [{ name: 'p', type: 'vec2' }]
+        inputs: [{ name: 'p', type: 'vec2' }],
 })
 
 export const worley2Vec3 = Fn(([p]: [Vec3]): Vec2 => {
-        const n = floor(p).toVar('n')
-        const f = fract(p).toVar('f')
+        const n = p.floor().toVar('n')
+        const f = p.fract().toVar('f')
         const distF1 = float(1).toVar('distF1')
         const distF2 = float(1).toVar('distF2')
         const off1 = vec3(0).toVar('off1')
@@ -87,7 +87,7 @@ export const worley2Vec3 = Fn(([p]: [Vec3]): Vec2 => {
 }).setLayout({
         name: 'worley2Vec3',
         type: 'vec2',
-        inputs: [{ name: 'p', type: 'vec3' }]
+        inputs: [{ name: 'p', type: 'vec3' }],
 })
 
 export const worleyVec3 = Fn(([p]: [Vec3]): Float => {
@@ -95,5 +95,5 @@ export const worleyVec3 = Fn(([p]: [Vec3]): Float => {
 }).setLayout({
         name: 'worleyVec3',
         type: 'float',
-        inputs: [{ name: 'p', type: 'vec3' }]
+        inputs: [{ name: 'p', type: 'vec3' }],
 })

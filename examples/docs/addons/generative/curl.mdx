@@ -45,7 +45,7 @@ The implementation uses finite differences with step size $\epsilon = 0.1$ to ap
 const fragment = () => {
         const p = uv.mul(4)
         const flow = curlVec2(p.add(iTime.mul(0.1)))
-        const angle = atan2(flow.y, flow.x).add(float(3.14159)).div(float(3.14159).mul(2))
+        const angle = flow.y.atan2(flow.x).add(float(3.14159)).div(float(3.14159).mul(2))
         return vec4(flow, angle, 1)
 }`}
 />

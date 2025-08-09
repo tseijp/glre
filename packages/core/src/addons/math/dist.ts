@@ -86,7 +86,7 @@ export const distChebychev4 = Fn(([a, b]: [Vec4, Vec4]): Float => {
 
 export const distMinkowski = Fn(([a, b]: [Vec2, Vec2]): Float => {
         const p = DIST_MINKOWSKI_P
-        return pow(pow(abs(a.x.sub(b.x)), p).add(pow(abs(a.y.sub(b.y)), p)), 1.0 / p)
+        return pow(pow(abs(a.x.sub(b.x)), p).add(pow(abs(a.y.sub(b.y)), p)), 1 / p)
 }).setLayout({
         name: 'distMinkowski',
         type: 'float',
@@ -102,7 +102,7 @@ export const distMinkowski3 = Fn(([a, b]: [Vec3, Vec3]): Float => {
                 pow(abs(a.x.sub(b.x)), p)
                         .add(pow(abs(a.y.sub(b.y)), p))
                         .add(pow(abs(a.z.sub(b.z)), p)),
-                1.0 / p
+                1 / p
         )
 }).setLayout({
         name: 'distMinkowski',
@@ -120,7 +120,7 @@ export const distMinkowski4 = Fn(([a, b]: [Vec4, Vec4]): Float => {
                         .add(pow(abs(a.y.sub(b.y)), p))
                         .add(pow(abs(a.z.sub(b.z)), p))
                         .add(pow(abs(a.w.sub(b.w)), p)),
-                1.0 / p
+                1 / p
         )
 }).setLayout({
         name: 'distMinkowski',

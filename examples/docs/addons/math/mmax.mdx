@@ -41,14 +41,14 @@ const fragment = () => {
 
         const waves = vec4(f1.x.sin().mul(f1.y.cos()),
                           f2.x.cos().mul(f2.y.sin().mul(1.4)),
-                          f3.mul(7.0).sin().mul(0.7),
+                          f3.mul(7).sin().mul(0.7),
                           f4.mul(2.3).cos().mul(1.1))
 
         const supremacy = mmax(waves)
         const dominance = supremacy.abs().pow(1.8)
-        const resonance = p.length().mul(8.0).add(supremacy.mul(4.0)).sin().mul(dominance)
+        const resonance = p.length().mul(8).add(supremacy.mul(4)).sin().mul(dominance)
 
-        return vec4(resonance.mul(vec3(1.0, 0.7, 0.4)), 1)
+        return vec4(resonance.mul(vec3(1, 0.7, 0.4)), 1)
 
 }`}
 />

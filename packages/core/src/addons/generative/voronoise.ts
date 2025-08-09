@@ -1,12 +1,12 @@
-import { Fn, Float, Vec2, Vec3, vec2, vec3, int, floor, fract, smoothstep, pow, length, float, Loop } from '../../node'
+import { Fn, Float, Vec2, Vec3, vec2, vec3, int, smoothstep, float, Loop } from '../../node'
 import { random3Vec2, random3Vec3 } from './random'
 
 export const voronoise = Fn(([p, u, v]: [Vec2, Float, Float]): Float => {
         const k = float(1)
                 .add(float(63).mul(float(1).sub(v).pow(float(6))))
                 .toVar('k')
-        const i = floor(p).toVar('i')
-        const f = fract(p).toVar('f')
+        const i = p.floor().toVar('i')
+        const f = p.fract().toVar('f')
         const a = vec2(0, 0).toVar('a')
 
         // 5x5 grid sampling from -2 to +2
@@ -37,8 +37,8 @@ export const voronoiseVec3 = Fn(([p, u, v]: [Vec3, Float, Float]): Float => {
         const k = float(1)
                 .add(float(63).mul(float(1).sub(v).pow(float(6))))
                 .toVar('k')
-        const i = floor(p).toVar('i')
-        const f = fract(p).toVar('f')
+        const i = p.floor().toVar('i')
+        const f = p.fract().toVar('f')
         const a = vec2(0, 0).toVar('a')
 
         // 5x5x5 grid sampling from -2 to +2

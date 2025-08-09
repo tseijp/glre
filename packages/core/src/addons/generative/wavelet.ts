@@ -1,4 +1,4 @@
-import { Fn, Float, Vec2, Vec3, Loop, int, float, floor, fract, sin, smoothstep, dot, mat2 } from '../../node'
+import { Fn, Float, Vec2, Vec3, Loop, int, float, mat2 } from '../../node'
 import { randomVec2 } from './random'
 import { rotate2d } from '../math/rotate2d'
 
@@ -14,7 +14,10 @@ export const wavelet = Fn(([p, phase, k]: [Vec2, Float, Float]): Float => {
                 q.assign(q.fract().sub(0.5).mul(rotate2d(a)))
 
                 d.addAssign(
-                        q.x.mul(10).add(phase).sin()
+                        q.x
+                                .mul(10)
+                                .add(phase)
+                                .sin()
                                 .mul(float(0.25).smoothstep(0, q.dot(q)))
                                 .div(s)
                 )

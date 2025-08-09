@@ -17,7 +17,7 @@ The `aamirror` function creates a mirrored pattern that automatically applies an
 
 The anti-aliased mirror function creates symmetric patterns through mathematical transformation and filtering:
 
-$$v = \left| x - \lfloor x + 0.5 \rfloor \right| \cdot 2.0$$
+$$v = \left| x - \lfloor x + 0.5 \rfloor \right| \cdot 2$$
 
 The anti-aliasing width calculation:
 $$\text{afwidth} = \left\|\frac{d}{dx}(x), \frac{d}{dy}(x)\right\|$$
@@ -34,7 +34,7 @@ This creates perfect mirror symmetry with automatic anti-aliasing that adapts to
 
 | Component               | Purpose                     | Mathematical Expression              |
 | ----------------------- | --------------------------- | ------------------------------------ |
-| **Mirror Transform**    | Creates symmetric pattern   | `abs(x - floor(x + 0.5)) * 2.0`      |
+| **Mirror Transform**    | Creates symmetric pattern   | `abs(x - floor(x + 0.5)) * 2`        |
 | **Anti-aliasing Width** | Calculates smoothing factor | `vec2(dFdx(x), dFdy(x)).length()`     |
 | **Nyquist Filter**      | Prevents aliasing artifacts | `mix(0.5, pattern, smoothstep(...))` |
 
@@ -46,7 +46,7 @@ Create fundamental mirrored waves that repeat seamlessly across space.
         isFun
         code={`
 const fragment = () => {
-        const x = uv.x.mul(8.0)
+        const x = uv.x.mul(8)
         const mirror = aamirror(x)
         const color = vec3(mirror)
         return vec4(color, 1)
@@ -61,10 +61,10 @@ Apply spatial distortions to mirror patterns for organic, fluid effects.
         isFun
         code={`
 const fragment = () => {
-        const distortion = uv.y.mul(8.0).sin().mul(0.3)
-        const x = uv.x.mul(6.0).add(distortion)
+        const distortion = uv.y.mul(8).sin().mul(0.3)
+        const x = uv.x.mul(6).add(distortion)
         const mirror = aamirror(x)
-        const intensity = mirror.pow(2.0)
+        const intensity = mirror.pow(2)
         const color = vec3(intensity.mul(0.9).add(0.1))
         return vec4(color, 1)
 }`}

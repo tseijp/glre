@@ -44,7 +44,7 @@ $$
         isFun
         code={`
 const fragment = () => {
-        const coord = uv.mul(20.0)
+        const coord = uv.mul(20)
         const oscillation = iTime.mul(0.5)
 
         const base = coord.x.mul(13.0).add(coord.y.mul(71.0)).add(oscillation.mul(23.0))
@@ -57,7 +57,7 @@ const fragment = () => {
         const combined = field1.xyz.add(field2.xyz.mul(0.6)).add(field3.xyz.mul(0.4))
         const normalized = combined.normalize().mul(0.5).add(0.5)
 
-        const pulse = combined.length().mul(10.0).add(oscillation.mul(2.0)).sin().mul(0.3).add(0.7)
+        const pulse = combined.length().mul(10).add(oscillation.mul(2)).sin().mul(0.3).add(0.7)
 
         return vec4(normalized.mul(pulse), 1)
 

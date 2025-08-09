@@ -1,73 +1,46 @@
 ---
 title: 'voronoise'
-description: 'Hybrid noise combining Voronoi cellular patterns with smooth Perlin-style interpolation'
-keywords: [voronoise, noise, voronoi, perlin, hybrid, cellular, smooth]
+description: 'Hybrid noise function combining Voronoi patterns with smooth interpolation for parametric texture control'
+keywords: [voronoise, voronoi, noise, procedural, parametric, texture, hybrid]
 date: 2025-08-06
 ---
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# voronoise: Hybrid Voronoi-Perlin Noise
+# voronoise: Parametric Voronoi-Noise Hybrid
 
-### Controllable Blend Between Cellular and Smooth Patterns
+### Controllable transition between cellular patterns and smooth noise
 
-Voronoise bridges the gap between sharp cellular Voronoi patterns and smooth Perlin noise, offering parametric control over pattern characteristics. This hybrid approach enables seamless transitions from hard-edged cellular structures to organic, flowing textures.
+Voronoise generates textures that interpolate between Voronoi cellular patterns and smooth noise based on control parameters. The function produces weighted cellular structures where parameter $u$ controls randomness displacement and parameter $v$ governs the transition between sharp cellular boundaries and smooth noise characteristics.
 
-## Mathematical Foundation
+The mathematical foundation uses weighted distance fields within a grid sampling approach. For each grid cell, random offset vectors $\vec{o}$ are generated and combined with distance calculations to produce weighted contributions:
 
-Voronoise extends traditional Voronoi diagrams by introducing weighted distance calculations and smoothed interpolation. The algorithm:
+$$
+w = \left(1 - \text{smoothstep}(0, \sqrt{2}, |\vec{d}|)\right)^k
+$$
 
-1. **Grid Sampling**: Sample a 5×5 neighborhood around each point
-2. **Random Displacement**: Apply controlled random offsets to grid points
-3. **Distance Weighting**: Calculate weighted distances using power functions
-4. **Smooth Integration**: Blend contributions using smooth falloff functions
+where $k = 1 + 63(1-v)^6$ determines the sharpness of the transition, and $\vec{d}$ represents the offset distance from grid positions.
 
-The core weighting function uses:
-$$k = 1 + 63 \cdot (1-v)^6$$
+The final value is computed as a weighted average:
 
-Where parameter $v$ controls the transition between Voronoi-like ($v=0$) and Perlin-like ($v=1$) characteristics.
+$$
+\text{voronoise}(\vec{p}) = \frac{\sum w_i \cdot o_{i,z}}{\sum w_i}
+$$
 
-## Parameter Control
+where $o_{i,z}$ represents the z-component of random offset vectors used as height values.
 
-| Parameter | Range | Effect                                    |
-| --------- | ----- | ----------------------------------------- |
-| `u`       | 0-1   | Regularity: 0=chaotic, 1=regular grid     |
-| `v`       | 0-1   | Shape: 0=cellular/sharp, 1=smooth/flowing |
+Parameter $u$ scales the random displacement within each cell, affecting the randomness of cell positions. When $u = 0$, cells align to regular grid positions. As $u$ increases, cells become more randomly displaced.
 
-The regularity parameter $u$ controls random displacement magnitude, while the shape parameter $v$ determines the blending kernel's smoothness.
-
-## Function Variants
-
-| Function        | Input                | Output  | Purpose                 |
-| --------------- | -------------------- | ------- | ----------------------- |
-| `voronoise`     | `vec2, float, float` | `float` | 2D parametric voronoise |
-| `voronoiseVec3` | `vec3, float, float` | `float` | 3D parametric voronoise |
-
-## Implementation Examples
+Parameter $v$ controls the blend between cellular and noise characteristics. At $v = 0$, the function produces sharp Voronoi cellular patterns with distinct boundaries. At $v = 1$, the output becomes smooth noise-like with gradual transitions between regions.
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        const p = uv.mul(6)
-
-        const layer1 = voronoise(p, iTime.sin(), 0.3)
-        const layer2 = voronoise(p.mul(2), 0.8, iTime.cos())
-        const layer3 = voronoise(p.mul(0.5), 0.5, 0.9)
-
-        const layers = vec3(layer1, layer2, layer3)
-        const weights = vec3(0.6, 0.3, 0.1)
-        const combined = dot(layers, weights)
-        const normalized = combined.mul(0.5).add(0.5)
-
-        const gradient = vec2(3, 3).sub(p).length().div(4)
-        const mask = smoothstep(0.8, 1.2, gradient).oneMinus()
-
-        const hue = normalized.mul(0.3).add(iTime.mul(0.02))
-        const value = normalized.mul(mask).add(0.4)
-
-        const color = hsv2rgb(vec3(hue, 0.4, value))
-        return vec4(color, 1)
-
+        const p = uv.mul(8)
+        const noise1 = voronoise(p, iTime.sin(), 0.3)
+        const noise2 = voronoise(p, 1, 0.7)
+        const pattern = vec3(noise1, noise2, noise1.mul(noise2))
+        return vec4(pattern, 1)
 }`}
 />

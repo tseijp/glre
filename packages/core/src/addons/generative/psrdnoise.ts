@@ -1,19 +1,19 @@
-import { Fn, Float, Vec2, Vec3, vec2, vec3, vec4, mat3, step, floor, fract, mix, If, float, any } from '../../node'
+import { Fn, Float, Vec2, Vec3, vec2, vec3, vec4, mat3, step, mix, If, float, any } from '../../node'
 import { mod289Vec3 } from '../math/mod289'
 import { permuteVec4 } from '../math/permute'
 
 // Basic psrdnoise 2D implementation
 export const psrdnoise2D = Fn(([x, period, alpha]: [Vec2, Vec2, Float]): Vec2 => {
-        const uv = vec2(x.x.add(x.y.mul(0.5)), x.y).toVar('uv')
-        const i0 = floor(uv).toVar('i0')
-        const f0 = fract(uv).toVar('f0')
-        const cmp = step(f0.y, f0.x).toVar('cmp')
+        const uv = vec2(x.x.add(x.y.div(2)), x.y).toVar('uv')
+        const i0 = uv.floor().toVar('i0')
+        const f0 = uv.fract().toVar('f0')
+        const cmp = f0.x.step(f0.y).toVar('cmp')
         const o1 = vec2(cmp, cmp.oneMinus()).toVar('o1')
         const i1 = i0.add(o1).toVar('i1')
         const i2 = i0.add(vec2(1, 1)).toVar('i2')
 
-        const v0 = vec2(i0.x.sub(i0.y.mul(0.5)), i0.y).toVar('v0')
-        const v1 = vec2(v0.x.add(o1.x).sub(o1.y.mul(0.5)), v0.y.add(o1.y)).toVar('v1')
+        const v0 = vec2(i0.x.sub(i0.y.div(2)), i0.y).toVar('v0')
+        const v1 = vec2(v0.x.add(o1.x).sub(o1.y.div(2)), v0.y.add(o1.y)).toVar('v1')
         const v2 = vec2(v0.x.add(0.5), v0.y.add(1)).toVar('v2')
 
         const x0 = x.sub(v0).toVar('x0')
@@ -35,8 +35,8 @@ export const psrdnoise2D = Fn(([x, period, alpha]: [Vec2, Vec2, Float]): Vec2 =>
                         yw.assign(yw.mod(period.y))
                 })
 
-                iu.assign(floor(xw.add(yw.mul(0.5)).add(0.5)))
-                iv.assign(floor(yw.add(0.5)))
+                iu.assign(xw.add(yw.div(2)).add(0.5).floor())
+                iv.assign(yw.add(0.5).floor())
         })
 
         let hash = mod289Vec3(iu).toVar('hash')
@@ -85,10 +85,10 @@ export const psrdnoise3D = Fn(([x, period, alpha]: [Vec3, Vec3, Float]): Vec3 =>
         const Mi = mat3(-0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, -0.5).toVar('Mi')
 
         const uvw = M.mul(x).toVar('uvw')
-        const i0 = floor(uvw).toVar('i0')
-        const f0 = fract(uvw).toVar('f0')
+        const i0 = uvw.floor().toVar('i0')
+        const f0 = uvw.fract().toVar('f0')
 
-        const g_ = step(f0.xyx, f0.yzz).toVar('g_')
+        const g_ = f0.yzz.step(f0.xyx).toVar('g_')
         const l_ = g_.oneMinus().toVar('l_')
         const g = vec3(l_.z, g_.xy).toVar('g')
         const l = vec3(l_.xy, g_.z).toVar('l')
@@ -124,10 +124,10 @@ export const psrdnoise3D = Fn(([x, period, alpha]: [Vec3, Vec3, Float]): Vec3 =>
                 i2.assign(M.mul(vec3(vx.z, vy.z, vz.z)))
                 i3.assign(M.mul(vec3(vx.w, vy.w, vz.w)))
 
-                i0.assign(floor(i0.add(0.5)))
-                i1.assign(floor(i1.add(0.5)))
-                i2.assign(floor(i2.add(0.5)))
-                i3.assign(floor(i3.add(0.5)))
+                i0.assign(i0.add(0.5).floor())
+                i1.assign(i1.add(0.5).floor())
+                i2.assign(i2.add(0.5).floor())
+                i3.assign(i3.add(0.5).floor())
         })
 
         const hash = permuteVec4(
@@ -156,8 +156,8 @@ export const psrdnoise3D = Fn(([x, period, alpha]: [Vec3, Vec3, Float]): Vec3 =>
                 const pz = sz.toVar('pz')
 
                 const Ctp = St.mul(Sp).sub(Ct.mul(Cp)).toVar('Ctp')
-                const qx = mix(Ctp.mul(St), Sp, sz).toVar('qx')
-                const qy = mix(Ctp.negate().mul(Ct), Cp, sz).toVar('qy')
+                const qx = Ctp.mul(St).mix(Sp, sz).toVar('qx')
+                const qy = Ctp.negate().mul(Ct).mix(Cp, sz).toVar('qy')
                 const qz = py.mul(Cp).add(px.mul(Sp)).negate().toVar('qz')
 
                 const Sa = vec4(alpha.sin()).toVar('Sa')

@@ -3,7 +3,7 @@ import { Fn, Vec2, X, vec4 } from '../../node'
 // 2D modulo function that returns both cell coordinates and wrapped position
 // Returns vec4(cellX, cellY, wrappedX, wrappedY)
 export const mod2 = Fn(([p, s]: [Vec2, X]): X => {
-        const halfS = s.mul(0.5).toVar()
+        const halfS = s.div(2).toVar()
         const pShifted = p.add(halfS).toVar()
         const c = pShifted.div(s).floor().toVar()
         const wrapped = pShifted.mod(s).sub(halfS)

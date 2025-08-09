@@ -7,7 +7,7 @@ import { quintic } from '../math/quintic'
 export const gnoise = Fn(([x]: [Float]): Float => {
         const i = x.floor().toVar('i')
         const f = x.fract().toVar('f')
-        return random(i).mix(random(i.add(1)), float(0).smoothstep(1, f))
+        return random(i).mix(random(i.add(1)), float(0).smoothstep(float(1), f))
 }).setLayout({
         name: 'gnoise',
         type: 'float',

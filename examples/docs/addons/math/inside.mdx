@@ -60,7 +60,7 @@ const fragment = () => {
                 .add(region3.toFloat().mul(0.5))
                 .add(dynamicRegion.toFloat().mul(0.8))
 
-        const interference = uv.length().mul(8.0).add(time.mul(2.0)).sin()
+        const interference = uv.length().mul(8).add(time.mul(2)).sin()
         const modulated = layerIntensity.mul(interference.mul(0.3).add(0.7))
 
         const red = modulated.mul(region1.toFloat().mul(0.7).add(0.3))

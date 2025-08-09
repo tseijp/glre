@@ -42,10 +42,10 @@ export const hammersley = Fn(([index, numSamples]: [Int, Int]): Vec2 => {
 })
 
 export const hemisphereCosSample = Fn(([u]: [Vec2]): Vec3 => {
-        const phi = float(2.0).mul(PI).mul(u.x).toVar('phi')
-        const cosTheta2 = float(1.0).sub(u.y).toVar('cosTheta2')
+        const phi = float(2).mul(PI).mul(u.x).toVar('phi')
+        const cosTheta2 = float(1).sub(u.y).toVar('cosTheta2')
         const cosTheta = cosTheta2.sqrt().toVar('cosTheta')
-        const sinTheta = float(1.0).sub(cosTheta2).sqrt().toVar('sinTheta')
+        const sinTheta = float(1).sub(cosTheta2).sqrt().toVar('sinTheta')
         return vec3(phi.cos().mul(sinTheta), phi.sin().mul(sinTheta), cosTheta)
 }).setLayout({
         name: 'hemisphereCosSample',
