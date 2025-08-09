@@ -16,7 +16,7 @@ export const cubicMix = Fn(([a, b, t]: [Float, Float, Float]): X => {
 export const cubicMixVec2 = Fn(([a, b, t]: [Vec2, Vec2, Vec2]): X => {
         return a.add(b.sub(a).mul(cubicVec2(t)))
 }).setLayout({
-        name: 'cubicMix',
+        name: 'cubicMixVec2',
         type: 'auto',
         inputs: [
                 { name: 'a', type: 'auto' },
@@ -27,7 +27,7 @@ export const cubicMixVec2 = Fn(([a, b, t]: [Vec2, Vec2, Vec2]): X => {
 export const cubicMixVec3 = Fn(([a, b, t]: [Vec3, Vec3, Vec3]): X => {
         return a.add(b.sub(a).mul(cubicVec3(t)))
 }).setLayout({
-        name: 'cubicMix',
+        name: 'cubicMixVec3',
         type: 'auto',
         inputs: [
                 { name: 'a', type: 'auto' },
@@ -39,7 +39,7 @@ export const cubicMixVec3 = Fn(([a, b, t]: [Vec3, Vec3, Vec3]): X => {
 export const cubicMixVec4 = Fn(([a, b, t]: [Vec4, Vec4, Vec4]): X => {
         return a.add(b.sub(a).mul(cubicVec4(t)))
 }).setLayout({
-        name: 'cubicMix',
+        name: 'cubicMixVec4',
         type: 'auto',
         inputs: [
                 { name: 'a', type: 'auto' },
