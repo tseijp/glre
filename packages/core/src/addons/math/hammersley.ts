@@ -1,6 +1,5 @@
-import { Fn, UInt, Int, Vec2, Vec3, float, vec2, vec3, uint, int } from '../../node'
-
-const PI = 3.1415926535897932384626433832795
+import { PI } from './const'
+import { Fn, Int, Vec2, Vec3, float, vec2, vec3, uint } from '../../node'
 
 export const hammersley = Fn(([index, numSamples]: [Int, Int]): Vec2 => {
         const tof = float(0.5).div(float(2147483648)).toVar('tof')
