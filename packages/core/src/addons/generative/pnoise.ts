@@ -1,24 +1,20 @@
-import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4, dot, mix, step } from '../../node'
-import { mod289Vec3, mod289Vec4 } from '../math/mod289'
-import { permuteVec4 } from '../math/permute'
+import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4, dot, floor, fract, mix, step } from '../../node'
+import { mod289Vec4, mod289Vec3 } from '../math/mod289'
+import { permuteVec4, permuteVec3 } from '../math/permute'
 import { taylorInvSqrt } from '../math/taylorInvSqrt'
 import { quintic } from '../math/quintic'
 
-export const cnoiseVec2 = Fn(([P]: [Vec2]): Float => {
+export const pnoise = Fn(([P, rep]: [Vec2, Vec2]) => {
         const Pi = P.xyxy.floor().add(vec4(0, 0, 1, 1)).toVar('Pi')
         const Pf = P.xyxy.fract().sub(vec4(0, 0, 1, 1)).toVar('Pf')
+        Pi.assign(Pi.mod(rep.xyxy))
         Pi.assign(mod289Vec4(Pi))
         const ix = Pi.xzxz.toVar('ix')
         const iy = Pi.yyww.toVar('iy')
         const fx = Pf.xzxz.toVar('fx')
         const fy = Pf.yyww.toVar('fy')
         const i = permuteVec4(permuteVec4(ix).add(iy)).toVar('i')
-        const gx = i
-                .mul(1.0 / 41.0)
-                .fract()
-                .mul(2.0)
-                .sub(1.0)
-                .toVar('gx')
+        const gx = i.mul(1.0 / 41.0).fract().mul(2).sub(1).toVar('gx')
         const gy = gx.abs().sub(0.5).toVar('gy')
         const tx = gx.add(0.5).floor().toVar('tx')
         gx.assign(gx.sub(tx))
@@ -37,17 +33,20 @@ export const cnoiseVec2 = Fn(([P]: [Vec2]): Float => {
         const n11 = dot(g11, vec2(fx.w, fy.w)).toVar('n11')
         const fade_xy = quintic(Pf.xy).toVar('fade_xy')
         const n_x = mix(vec2(n00, n01), vec2(n10, n11), fade_xy.x).toVar('n_x')
-        const n_xy = mix(n_x.x, n_x.y, fade_xy.y)
+        const n_xy = mix(n_x.x, n_x.y, fade_xy.y).toVar('n_xy')
         return n_xy.mul(2.3)
 }).setLayout({
-        name: 'cnoiseVec2',
+        name: 'pnoise',
         type: 'float',
-        inputs: [{ name: 'P', type: 'vec2' }],
+        inputs: [
+                { name: 'P', type: 'vec2' },
+                { name: 'rep', type: 'vec2' }
+        ]
 })
 
-export const cnoiseVec3 = Fn(([P]: [Vec3]): Float => {
-        const Pi0 = P.floor().toVar('Pi0')
-        const Pi1 = Pi0.add(vec3(1)).toVar('Pi1')
+export const pnoiseVec3 = Fn(([P, rep]: [Vec3, Vec3]) => {
+        const Pi0 = P.floor().mod(rep).toVar('Pi0')
+        const Pi1 = Pi0.add(vec3(1)).mod(rep).toVar('Pi1')
         Pi0.assign(mod289Vec3(Pi0))
         Pi1.assign(mod289Vec3(Pi1))
         const Pf0 = P.fract().toVar('Pf0')
@@ -60,24 +59,14 @@ export const cnoiseVec3 = Fn(([P]: [Vec3]): Float => {
         const ixy0 = permuteVec4(ixy.add(iz0)).toVar('ixy0')
         const ixy1 = permuteVec4(ixy.add(iz1)).toVar('ixy1')
         const gx0 = ixy0.mul(1.0 / 7.0).toVar('gx0')
-        const gy0 = gx0
-                .floor()
-                .mul(1.0 / 7.0)
-                .fract()
-                .sub(0.5)
-                .toVar('gy0')
+        const gy0 = gx0.floor().mul(1.0 / 7.0).fract().sub(0.5).toVar('gy0')
         gx0.assign(gx0.fract())
         const gz0 = vec4(0.5).sub(gx0.abs()).sub(gy0.abs()).toVar('gz0')
         const sz0 = step(gz0, vec4(0)).toVar('sz0')
         gx0.subAssign(sz0.mul(step(vec4(0), gx0).sub(0.5)))
         gy0.subAssign(sz0.mul(step(vec4(0), gy0).sub(0.5)))
         const gx1 = ixy1.mul(1.0 / 7.0).toVar('gx1')
-        const gy1 = gx1
-                .floor()
-                .mul(1.0 / 7.0)
-                .fract()
-                .sub(0.5)
-                .toVar('gy1')
+        const gy1 = gx1.floor().mul(1.0 / 7.0).fract().sub(0.5).toVar('gy1')
         gx1.assign(gx1.fract())
         const gz1 = vec4(0.5).sub(gx1.abs()).sub(gy1.abs()).toVar('gz1')
         const sz1 = step(gz1, vec4(0)).toVar('sz1')
@@ -91,16 +80,12 @@ export const cnoiseVec3 = Fn(([P]: [Vec3]): Float => {
         const g101 = vec3(gx1.y, gy1.y, gz1.y).toVar('g101')
         const g011 = vec3(gx1.z, gy1.z, gz1.z).toVar('g011')
         const g111 = vec3(gx1.w, gy1.w, gz1.w).toVar('g111')
-        const norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110))).toVar(
-                'norm0'
-        )
+        const norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110))).toVar('norm0')
         g000.mulAssign(norm0.x)
         g010.mulAssign(norm0.y)
         g100.mulAssign(norm0.z)
         g110.mulAssign(norm0.w)
-        const norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111))).toVar(
-                'norm1'
-        )
+        const norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111))).toVar('norm1')
         g001.mulAssign(norm1.x)
         g011.mulAssign(norm1.y)
         g101.mulAssign(norm1.z)
@@ -116,17 +101,20 @@ export const cnoiseVec3 = Fn(([P]: [Vec3]): Float => {
         const fade_xyz = quintic(Pf0).toVar('fade_xyz')
         const n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z).toVar('n_z')
         const n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y).toVar('n_yz')
-        const n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x)
+        const n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x).toVar('n_xyz')
         return n_xyz.mul(2.2)
 }).setLayout({
-        name: 'cnoiseVec3',
+        name: 'pnoiseVec3',
         type: 'float',
-        inputs: [{ name: 'P', type: 'vec3' }],
+        inputs: [
+                { name: 'P', type: 'vec3' },
+                { name: 'rep', type: 'vec3' }
+        ]
 })
 
-export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
-        const Pi0 = P.floor().toVar('Pi0')
-        const Pi1 = Pi0.add(1).toVar('Pi1')
+export const pnoiseVec4 = Fn(([P, rep]: [Vec4, Vec4]) => {
+        const Pi0 = P.floor().mod(rep).toVar('Pi0')
+        const Pi1 = Pi0.add(1).mod(rep).toVar('Pi1')
         Pi0.assign(mod289Vec4(Pi0))
         Pi1.assign(mod289Vec4(Pi1))
         const Pf0 = P.fract().toVar('Pf0')
@@ -144,9 +132,9 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const ixy01 = permuteVec4(ixy0.add(iw1)).toVar('ixy01')
         const ixy10 = permuteVec4(ixy1.add(iw0)).toVar('ixy10')
         const ixy11 = permuteVec4(ixy1.add(iw1)).toVar('ixy11')
-        const gx00 = ixy00.div(7).toVar('gx00')
-        const gy00 = gx00.floor().div(7).toVar('gy00')
-        const gz00 = gy00.floor().div(6).toVar('gz00')
+        const gx00 = ixy00.mul(1.0 / 7.0).toVar('gx00')
+        const gy00 = gx00.floor().mul(1.0 / 7.0).toVar('gy00')
+        const gz00 = gy00.floor().mul(1.0 / 6.0).toVar('gz00')
         gx00.assign(gx00.fract().sub(0.5))
         gy00.assign(gy00.fract().sub(0.5))
         gz00.assign(gz00.fract().sub(0.5))
@@ -154,9 +142,9 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const sw00 = step(gw00, vec4(0)).toVar('sw00')
         gx00.subAssign(sw00.mul(step(vec4(0), gx00).sub(0.5)))
         gy00.subAssign(sw00.mul(step(vec4(0), gy00).sub(0.5)))
-        const gx01 = ixy01.div(7).toVar('gx01')
-        const gy01 = gx01.floor().div(7).toVar('gy01')
-        const gz01 = gy01.floor().div(6).toVar('gz01')
+        const gx01 = ixy01.mul(1.0 / 7.0).toVar('gx01')
+        const gy01 = gx01.floor().mul(1.0 / 7.0).toVar('gy01')
+        const gz01 = gy01.floor().mul(1.0 / 6.0).toVar('gz01')
         gx01.assign(gx01.fract().sub(0.5))
         gy01.assign(gy01.fract().sub(0.5))
         gz01.assign(gz01.fract().sub(0.5))
@@ -164,9 +152,9 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const sw01 = step(gw01, vec4(0)).toVar('sw01')
         gx01.subAssign(sw01.mul(step(vec4(0), gx01).sub(0.5)))
         gy01.subAssign(sw01.mul(step(vec4(0), gy01).sub(0.5)))
-        const gx10 = ixy10.div(7).toVar('gx10')
-        const gy10 = gx10.floor().div(7).toVar('gy10')
-        const gz10 = gy10.floor().div(6).toVar('gz10')
+        const gx10 = ixy10.mul(1.0 / 7.0).toVar('gx10')
+        const gy10 = gx10.floor().mul(1.0 / 7.0).toVar('gy10')
+        const gz10 = gy10.floor().mul(1.0 / 6.0).toVar('gz10')
         gx10.assign(gx10.fract().sub(0.5))
         gy10.assign(gy10.fract().sub(0.5))
         gz10.assign(gz10.fract().sub(0.5))
@@ -175,14 +163,8 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         gx10.subAssign(sw10.mul(step(vec4(0), gx10).sub(0.5)))
         gy10.subAssign(sw10.mul(step(vec4(0), gy10).sub(0.5)))
         const gx11 = ixy11.mul(1.0 / 7.0).toVar('gx11')
-        const gy11 = gx11
-                .floor()
-                .mul(1.0 / 7.0)
-                .toVar('gy11')
-        const gz11 = gy11
-                .floor()
-                .mul(1.0 / 6.0)
-                .toVar('gz11')
+        const gy11 = gx11.floor().mul(1.0 / 7.0).toVar('gy11')
+        const gz11 = gy11.floor().mul(1.0 / 6.0).toVar('gz11')
         gx11.assign(gx11.fract().sub(0.5))
         gy11.assign(gy11.fract().sub(0.5))
         gz11.assign(gz11.fract().sub(0.5))
@@ -206,30 +188,22 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const g1011 = vec4(gx11.y, gy11.y, gz11.y, gw11.y).toVar('g1011')
         const g0111 = vec4(gx11.z, gy11.z, gz11.z, gw11.z).toVar('g0111')
         const g1111 = vec4(gx11.w, gy11.w, gz11.w, gw11.w).toVar('g1111')
-        const norm00 = taylorInvSqrt(
-                vec4(dot(g0000, g0000), dot(g0100, g0100), dot(g1000, g1000), dot(g1100, g1100))
-        ).toVar('norm00')
+        const norm00 = taylorInvSqrt(vec4(dot(g0000, g0000), dot(g0100, g0100), dot(g1000, g1000), dot(g1100, g1100))).toVar('norm00')
         g0000.mulAssign(norm00.x)
         g0100.mulAssign(norm00.y)
         g1000.mulAssign(norm00.z)
         g1100.mulAssign(norm00.w)
-        const norm01 = taylorInvSqrt(
-                vec4(dot(g0001, g0001), dot(g0101, g0101), dot(g1001, g1001), dot(g1101, g1101))
-        ).toVar('norm01')
+        const norm01 = taylorInvSqrt(vec4(dot(g0001, g0001), dot(g0101, g0101), dot(g1001, g1001), dot(g1101, g1101))).toVar('norm01')
         g0001.mulAssign(norm01.x)
         g0101.mulAssign(norm01.y)
         g1001.mulAssign(norm01.z)
         g1101.mulAssign(norm01.w)
-        const norm10 = taylorInvSqrt(
-                vec4(dot(g0010, g0010), dot(g0110, g0110), dot(g1010, g1010), dot(g1110, g1110))
-        ).toVar('norm10')
+        const norm10 = taylorInvSqrt(vec4(dot(g0010, g0010), dot(g0110, g0110), dot(g1010, g1010), dot(g1110, g1110))).toVar('norm10')
         g0010.mulAssign(norm10.x)
         g0110.mulAssign(norm10.y)
         g1010.mulAssign(norm10.z)
         g1110.mulAssign(norm10.w)
-        const norm11 = taylorInvSqrt(
-                vec4(dot(g0011, g0011), dot(g0111, g0111), dot(g1011, g1011), dot(g1111, g1111))
-        ).toVar('norm11')
+        const norm11 = taylorInvSqrt(vec4(dot(g0011, g0011), dot(g0111, g0111), dot(g1011, g1011), dot(g1111, g1111))).toVar('norm11')
         g0011.mulAssign(norm11.x)
         g0111.mulAssign(norm11.y)
         g1011.mulAssign(norm11.z)
@@ -255,10 +229,13 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const n_1w = mix(vec4(n0010, n1010, n0110, n1110), vec4(n0011, n1011, n0111, n1111), fade_xyzw.w).toVar('n_1w')
         const n_zw = mix(n_0w, n_1w, fade_xyzw.z).toVar('n_zw')
         const n_yzw = mix(n_zw.xy, n_zw.zw, fade_xyzw.y).toVar('n_yzw')
-        const n_xyzw = mix(n_yzw.x, n_yzw.y, fade_xyzw.x)
+        const n_xyzw = mix(n_yzw.x, n_yzw.y, fade_xyzw.x).toVar('n_xyzw')
         return n_xyzw.mul(2.2)
 }).setLayout({
-        name: 'cnoiseVec4',
+        name: 'pnoiseVec4',
         type: 'float',
-        inputs: [{ name: 'P', type: 'vec4' }],
+        inputs: [
+                { name: 'P', type: 'vec4' },
+                { name: 'rep', type: 'vec4' }
+        ]
 })

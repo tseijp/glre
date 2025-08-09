@@ -31,34 +31,33 @@ The implementation uses finite differences with step size $\epsilon = 0.1$ to ap
 
 ## Function Variants
 
-| Function | Input Type | Output Type | Purpose |
-|----------|------------|-------------|---------|
-| `curlVec2` | `vec2` | `vec2` | 2D flow field analysis |
-| `curlVec3` | `vec3` | `vec3` | 3D turbulence patterns |
-| `curlVec4` | `vec4` | `vec3` | Time-varying flow evolution |
+| Function   | Input Type | Output Type | Purpose                     |
+| ---------- | ---------- | ----------- | --------------------------- |
+| `curlVec2` | `vec2`     | `vec2`      | 2D flow field analysis      |
+| `curlVec3` | `vec3`     | `vec3`      | 3D turbulence patterns      |
+| `curlVec4` | `vec4`     | `vec3`      | Time-varying flow evolution |
 
 ## Implementation
 
 <FragmentEditor
-  isFun
-  code={`
+        isFun
+        code={`
 const fragment = () => {
-  const p = uv.mul(4)
-  const flow = curlVec2(p.add(iTime.mul(0.1)))
-  const intensity = flow.length().mul(2)
-  const angle = atan2(flow.y, flow.x).add(float(3.14159)).div(float(3.14159).mul(2))
-  return vec4(intensity, angle, pow(intensity, 2), 1)
+        const p = uv.mul(4)
+        const flow = curlVec2(p.add(iTime.mul(0.1)))
+        const angle = atan2(flow.y, flow.x).add(float(3.14159)).div(float(3.14159).mul(2))
+        return vec4(flow, angle, 1)
 }`}
 />
 
 <FragmentEditor
-  isFun
-  code={`
+        isFun
+        code={`
 const fragment = () => {
-  const p = vec3(uv.mul(3), iTime.mul(0.2))
-  const vorticity = curlVec3(p)
-  const magnitude = vorticity.length()
-  const color = vorticity.abs().normalize().mul(magnitude).pow(vec3(0.7))
-  return vec4(color, 1)
+        const p = vec3(uv.mul(3), iTime.mul(0.2))
+        const vorticity = curlVec3(p)
+        const magnitude = vorticity.length()
+        const color = vorticity.abs().normalize().mul(magnitude).pow(vec3(0.7))
+        return vec4(color, 1)
 }`}
 />

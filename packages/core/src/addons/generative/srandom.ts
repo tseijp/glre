@@ -1,9 +1,9 @@
 import { Fn, Float, Vec2, Vec3, Vec4, vec2, vec3, vec4, float, dot, fract, sin, mod } from '../../node'
 
-export const srandomFloat = Fn(([x]: [Float]): Float => {
+export const srandom = Fn(([x]: [Float]): Float => {
         return float(-1).add(float(2).mul(fract(sin(x).mul(43758.5453))))
 }).setLayout({
-        name: 'srandomFloat',
+        name: 'srandom',
         type: 'float',
         inputs: [{ name: 'x', type: 'float' }],
 })

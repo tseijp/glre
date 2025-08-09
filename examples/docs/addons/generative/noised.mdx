@@ -1,0 +1,57 @@
+---
+title: 'noised'
+description: 'Perlin noise with analytical derivatives for precise gradient computation and surface normal generation'
+keywords: [noise, derivatives, gradient, normal, perlin, analytical]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# noised: Analytical Derivative Noise Generator
+
+### Mathematical Foundation of Gradient-Enhanced Noise
+
+The `noised` function extends Perlin noise by computing analytical derivatives alongside noise values. This eliminates the need for finite difference approximations when calculating gradients, providing mathematically precise results essential for normal mapping and procedural surface generation.
+
+The mathematical foundation centers on the chain rule application to the quintic smoothstep polynomial $f(t) = 6t^5 - 15t^4 + 10t^3$. The derivative $f'(t) = 30t^4 - 60t^3 + 30t^2$ enables precise gradient computation:
+
+$$
+\frac{\partial}{\partial x} \text{noise}(x,y) = \sum_{i,j} g_{i,j} \cdot \frac{\partial}{\partial x} w(x-i, y-j)
+$$
+
+Where $g_{i,j}$ represents gradient vectors at lattice points and $w$ denotes the weight function with its analytical derivative.
+
+### Two-Dimensional Gradient Computation
+
+The 2D variant returns a `vec3` containing the noise value in the x-component and gradient vector in the yz-components. This structure enables immediate surface normal calculation through cross products with tangent vectors.
+
+<FragmentEditor
+isFun
+code={`
+const fragment = () => {
+        const noise = noised(uv.mul(8))
+        const height = noise.x.mul(0.5).add(0.5)
+        const gradient = noise.yz.normalize()
+        const shading = gradient.dot(vec2(0.707, 0.707)).mul(0.5).add(0.5)
+        return vec4(vec3(height.mul(shading)), 1)
+}`}
+/>
+
+### Three-Dimensional Volumetric Analysis
+
+The 3D version (`noisedVec3`) returns a `vec4` where the w-component contains the noise value and xyz-components store the complete 3D gradient vector. This enables precise volumetric analysis and 3D surface reconstruction.
+
+The computational complexity increases cubically with dimension due to the eight corner evaluations required for 3D interpolation, but the analytical approach maintains numerical stability across all scales.
+
+<FragmentEditor
+isFun
+code={`
+const fragment = () => {
+        const pos = vec3(uv.mul(6), iTime.mul(0.3))
+        const noise4d = noisedVec3(pos)
+        const value = noise4d.w.mul(0.5).add(0.5)
+        const gradient = noise4d.xyz.normalize()
+        const lighting = gradient.z.abs()
+        return vec4(vec3(value).mul(lighting), 1)
+}`}
+/>

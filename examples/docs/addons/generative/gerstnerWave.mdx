@@ -1,0 +1,33 @@
+---
+title: 'gerstnerWave'
+description: 'Physically-based ocean wave simulation using Gerstner wave mathematics for realistic water surface displacement'
+keywords: [water, ocean, waves, physics, simulation, vertex, displacement, gerstner]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# gerstnerWave: Physically-Based Ocean Wave Generator
+
+### Mathematical Foundation of Water Surface Dynamics
+
+The Gerstner wave represents the most physically accurate mathematical model for ocean surface simulation. Unlike simple sine wave approximations, Gerstner waves reproduce the characteristic sharp crests and rounded troughs observed in real ocean conditions.
+
+The mathematical foundation centers on the wave equation where particle motion follows elliptical trajectories rather than simple vertical oscillations. The core formula relates wave steepness $A$ to wavelength $\lambda$ through the wave number $k = \frac{2\pi}{\lambda}$:
+
+$$
+\vec{P}(x,t) = \vec{P}_0 + \frac{A}{k}\sin(k(\hat{d} \cdot \vec{P}_0 - ct)) \hat{d} + A\cos(k(\hat{d} \cdot \vec{P}_0 - ct)) \hat{n}
+$$
+
+Where $c = \sqrt{\frac{g}{k}}$ represents the phase velocity derived from deep water gravity wave theory, $\hat{d}$ denotes the normalized wave direction vector, and $\hat{n}$ represents the surface normal.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const waves = gerstnerWave(uv.mul(4), vec2(1, 0.3), 0.8, 2.0, iTime.mul(0.5))
+        const height = waves.y.add(0.5)
+        const foam = vec3(0.1, 0.4, 0.7).select(vec3(1), height.greaterThan(0.9))
+        return vec4(foam.mul(height), 1)
+}`}
+/>

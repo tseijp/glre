@@ -1,0 +1,84 @@
+---
+title: 'voronoi'
+description: 'Voronoi diagram generation for cellular patterns and proximity-based structures'
+keywords: [voronoi, diagram, cellular, proximity, distance field, pattern]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# voronoi: Voronoi Diagram Generation
+
+### Cellular Pattern Construction Through Distance Analysis
+
+Voronoi diagrams partition space into regions based on proximity to seed points. Each region contains all points closer to its seed than to any other seed, creating natural cellular patterns found in biology, geology, and architecture.
+
+## Mathematical Foundation
+
+The Voronoi diagram construction follows these principles:
+
+1. **Seed Point Distribution**: Random points $p_i$ distributed across a grid
+2. **Distance Calculation**: For any point $q$, compute distances $d_i = ||q - p_i||$
+3. **Region Assignment**: Assign $q$ to region $i$ where $d_i = \min(d_1, d_2, ..., d_n)$
+4. **Boundary Formation**: Boundaries occur where $d_i = d_j$ for distinct seeds
+
+The distance metric typically uses Euclidean distance:
+$$d(q, p_i) = \sqrt{(q_x - p_{i,x})^2 + (q_y - p_{i,y})^2}$$
+
+## Function Variants
+
+| Function        | Input           | Output | Purpose                    |
+| --------------- | --------------- | ------ | -------------------------- |
+| `voronoi`       | `vec2`, `float` | `vec3` | Time-animated Voronoi      |
+| `voronoiVec2`   | `vec2`          | `vec3` | Static 2D Voronoi          |
+| `voronoiVec3`   | `vec3`          | `vec3` | 3D coordinates as time     |
+
+## Return Value Structure
+
+The functions return `vec3(seed_x, seed_y, distance)` where:
+- `x, y`: Coordinates of the nearest seed point
+- `z`: Distance to the nearest seed point
+
+## Implementation Examples
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(12)
+        const cell = voronoiVec2(p)
+        const borders = smoothstep(0.0, 0.05, cell.z)
+        const cellId = cell.xy.dot(vec2(12.9898, 78.233))
+        const cellColor = vec3(
+                cellId.sin().mul(0.5).add(0.5),
+                cellId.mul(2.1).sin().mul(0.5).add(0.5),
+                cellId.mul(3.3).sin().mul(0.5).add(0.5)
+        )
+        return vec4(cellColor.mul(borders), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const baseScale = 8
+        const p = uv.mul(baseScale)
+        const time = iTime.mul(0.2)
+        
+        const cell1 = voronoi(p, time)
+        const cell2 = voronoi(p.mul(2), time.mul(1.3))
+        
+        const distortion = cell1.z.sub(cell2.z).mul(2)
+        const ripples = sin(cell1.z.mul(40).sub(time.mul(8))).mul(0.1)
+        
+        const intensity = distortion.add(ripples).clamp(0, 1)
+        const hue = cell1.xy.dot(vec2(0.5, 0.8)).add(time.mul(0.1))
+        
+        const r = sin(hue.mul(6.28)).mul(0.5).add(0.5)
+        const g = sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5)  
+        const b = sin(hue.mul(6.28).add(4.19)).mul(0.5).add(0.5)
+        
+        return vec4(vec3(r, g, b).mul(intensity), 1)
+}`}
+/>

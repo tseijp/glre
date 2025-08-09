@@ -2,10 +2,10 @@ import { Fn, Float, Vec2, Vec3, Vec4, vec2, vec3, vec4, float, dot, fract, sin }
 
 const RANDOM_SCALE = vec4(443.897, 441.423, 0.0973, 0.1099)
 
-export const randomFloat = Fn(([x]: [Float]): Float => {
+export const random = Fn(([x]: [Float]): Float => {
         return fract(sin(x).mul(43758.5453))
 }).setLayout({
-        name: 'randomFloat',
+        name: 'random',
         type: 'float',
         inputs: [{ name: 'x', type: 'float' }],
 })

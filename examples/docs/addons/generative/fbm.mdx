@@ -51,11 +51,11 @@ Where:
         isFun
         code={`
 const fragment = () => {
-  const p = uv.mul(3)
-  const base = fbmVec2(p)
-  const warped = fbmVec2(p.add(vec2(base.mul(0.4))))
-  const detail = base.mul(0.6).add(warped.mul(0.4))
-  return vec4(detail.mul(0.5).add(0.5), base.mul(warped), detail.pow(2), 1)
+        const p = uv.mul(3)
+        const base = fbmVec2(p.add(iTime))
+        const warped = fbmVec2(p.add(vec2(base)))
+        const detail = base.add(warped)
+        return vec4(detail.mul(0.5).add(0.5), base.mul(warped), detail.pow(2), 1)
 }`}
 />
 
@@ -63,11 +63,11 @@ const fragment = () => {
         isFun
         code={`
 const fragment = () => {
-  const p = vec3(uv.mul(2), iTime.mul(0.1))
-  const layers = fbmVec3(p)
-  const ridged = abs(layers).mul(-1).add(1)
-  const turbulence = fbmVec3(p.mul(2)).mul(0.3)
-  const final = ridged.add(turbulence).clamp(0, 1)
-  return vec4(vec3(final), 1)
+        const p = vec3(uv.mul(2), iTime.mul(0.1))
+        const layers = fbmVec3(p)
+        const ridged = abs(layers).mul(-1).add(1)
+        const turbulence = fbmVec3(p.mul(2)).mul(0.3)
+        const final = ridged.add(turbulence).clamp(0, 1)
+        return vec4(vec3(final), 1)
 }`}
 />

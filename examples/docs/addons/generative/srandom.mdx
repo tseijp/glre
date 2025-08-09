@@ -24,6 +24,7 @@ $$
 This shifts the $[0, 1]$ range to $[-1, 1]$ while preserving the uniform distribution properties. For vector outputs, the same transformation applies component-wise.
 
 Special vector functions use enhanced mixing coefficients:
+
 $$
 \text{srandom2}(p) = 2 \cdot \text{fract}(16k \cdot \text{fract}(p_x \cdot p_y \cdot (p_x + p_y))) - 1
 $$
@@ -32,37 +33,37 @@ Where $k = (0.3183099, 0.3678794)$ provides improved spatial distribution.
 
 ## Function Variants
 
-| Function | Input | Output | Purpose |
-|----------|-------|--------|---------|
-| `srandomFloat` | `float` | `float` | Signed 1D random |
-| `srandomVec2` | `vec2` | `float` | 2D to signed scalar |
-| `srandomVec3` | `vec3` | `float` | 3D to signed scalar |
-| `srandom2Vec2` | `vec2` | `vec2` | Enhanced 2D vector |
-| `srandom3Vec3` | `vec3` | `vec3` | Enhanced 3D vector |
-| `srandom3Vec3Tiled` | `vec3, float` | `vec3` | Tileable 3D vector |
+| Function            | Input         | Output  | Purpose             |
+| ------------------- | ------------- | ------- | ------------------- |
+| `srandom`           | `float`       | `float` | Signed 1D random    |
+| `srandomVec2`       | `vec2`        | `float` | 2D to signed scalar |
+| `srandomVec3`       | `vec3`        | `float` | 3D to signed scalar |
+| `srandom2Vec2`      | `vec2`        | `vec2`  | Enhanced 2D vector  |
+| `srandom3Vec3`      | `vec3`        | `vec3`  | Enhanced 3D vector  |
+| `srandom3Vec3Tiled` | `vec3, float` | `vec3`  | Tileable 3D vector  |
 
 ## Implementation
 
 <FragmentEditor
-  isFun
-  code={`
+        isFun
+        code={`
 const fragment = () => {
-  const p = uv.mul(6)
-  const flow = srandom2Vec2(p.floor())
-  const gradient = dot(p.fract().sub(0.5), flow)
-  const intensity = gradient.mul(2).clamp(-1, 1)
-  return vec4(intensity.step(0), abs(intensity), intensity.mul(-1).step(0), 1)
+        const p = uv.mul(6)
+        const flow = srandom2Vec2(p.floor())
+        const gradient = dot(p.fract().sub(0.5), flow)
+        const intensity = gradient.mul(2).clamp(-1, 1)
+        return vec4(intensity.step(0), abs(intensity), intensity.mul(-1).step(0), 1)
 }`}
 />
 
 <FragmentEditor
-  isFun
-  code={`
+        isFun
+        code={`
 const fragment = () => {
-  const coord = vec3(uv.mul(4).floor(), 0)
-  const direction = srandom3Vec3(coord)
-  const strength = direction.length()
-  const color = direction.mul(0.5).add(0.5).mul(strength)
-  return vec4(color, 1)
+        const coord = vec3(uv.mul(4).floor(), 0)
+        const direction = srandom3Vec3(coord)
+        const strength = direction.length()
+        const color = direction.mul(0.5).add(0.5).mul(strength)
+        return vec4(color, 1)
 }`}
 />

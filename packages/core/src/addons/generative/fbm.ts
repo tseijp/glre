@@ -26,7 +26,7 @@ export const fbmVec2 = Fn(([st]: [Vec2]): Float => {
 export const fbmVec3 = Fn(([pos]: [Vec3]): Float => {
         const value = float(0).toVar('value')
         const amplitude = float(FBM_AMPLITUDE_INITIAL).toVar('amplitude')
-        const posVar = pos.toVar('pos')
+        const posVar = pos.toVar('posVar')
         Loop(FBM_OCTAVES, () => {
                 value.addAssign(amplitude.mul(snoiseVec3(posVar)))
                 posVar.mulAssign(FBM_SCALE_SCALAR)
@@ -45,7 +45,7 @@ export const fbmVec3Tiled = Fn(([p, tileLength]: [Vec3, Float]): Float => {
         const amplitude = float(0.5).toVar('amplitude')
         const total = float(0).toVar('total')
         const normalization = float(0).toVar('normalization')
-        const pVar = p.toVar('p')
+        const pVar = p.toVar('pVar')
         Loop(FBM_OCTAVES, () => {
                 const noiseValue = gnoiseVec3Tiled(pVar, tileLength.mul(lacunarity).mul(0.5))
                         .mul(0.5)
@@ -65,3 +65,5 @@ export const fbmVec3Tiled = Fn(([p, tileLength]: [Vec3, Float]): Float => {
                 { name: 'tileLength', type: 'float' },
         ],
 })
+
+export const fbm = fbmVec3

@@ -38,6 +38,7 @@ $$
 Resulting in 3D coordinates: $(\cos\phi \sin\theta, \sin\phi \sin\theta, \cos\theta)$
 
 **Properties:**
+
 - $(u_1, u_2)$: Hammersley sequence coordinates $\in [0,1]^2$
 - $N$: Total number of samples
 - Low-discrepancy property ensures even distribution
@@ -60,29 +61,6 @@ const fragment = () => {
         const color = hemisphere.abs()
 
         return vec4(color, 1)
-
-}`}
-/>
-
-### Animated Sample Distribution
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const pos = uv.mul(32.0)
-        const timeShift = iTime.mul(16.0).floor()
-
-        const sampleIndex = pos.x.add(pos.y.mul(32.0)).add(timeShift).floor().toInt()
-        const totalSamples = int(1024)
-
-        const hammersleyPoint = hammersley(sampleIndex, totalSamples)
-        const hemisphereDirection = hemisphereCosSample(hammersleyPoint)
-
-        const colorIntensity = hemisphereDirection.z.pow(2.0)
-        const colorHue = hammersleyPoint.xy.mul(0.8).add(0.2)
-
-        return vec4(colorHue.mul(colorIntensity), colorIntensity, 1)
 
 }`}
 />
