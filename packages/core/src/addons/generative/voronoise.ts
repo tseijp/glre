@@ -3,7 +3,7 @@ import { random3Vec2, random3Vec3 } from './random'
 
 export const voronoise = Fn(([p, u, v]: [Vec2, Float, Float]): Float => {
         const k = float(1)
-                .add(float(63).mul(pow(float(1).sub(v), float(6))))
+                .add(float(63).mul(float(1).sub(v).pow(float(6))))
                 .toVar('k')
         const i = floor(p).toVar('i')
         const f = fract(p).toVar('f')
@@ -17,7 +17,7 @@ export const voronoise = Fn(([p, u, v]: [Vec2, Float, Float]): Float => {
                         const g = vec2(xOffset, yOffset).toVar('g')
                         const o = random3Vec2(i.add(g)).mul(vec3(u, u, 1)).toVar('o')
                         const d = g.sub(f).add(o.xy).toVar('d')
-                        const w = pow(float(1).sub(smoothstep(0, 1.414, length(d))), k).toVar('w')
+                        const w = float(1).sub(float(0).smoothstep(1.414, d.length())).pow(k).toVar('w')
                         a.addAssign(vec2(o.z.mul(w), w))
                 })
         })
@@ -35,7 +35,7 @@ export const voronoise = Fn(([p, u, v]: [Vec2, Float, Float]): Float => {
 
 export const voronoiseVec3 = Fn(([p, u, v]: [Vec3, Float, Float]): Float => {
         const k = float(1)
-                .add(float(63).mul(pow(float(1).sub(v), float(6))))
+                .add(float(63).mul(float(1).sub(v).pow(float(6))))
                 .toVar('k')
         const i = floor(p).toVar('i')
         const f = fract(p).toVar('f')
@@ -51,7 +51,7 @@ export const voronoiseVec3 = Fn(([p, u, v]: [Vec3, Float, Float]): Float => {
                                 const g = vec3(xOffset, yOffset, zOffset).toVar('g')
                                 const o = random3Vec3(i.add(g)).mul(vec3(u, u, 1)).toVar('o')
                                 const d = g.sub(f).add(o).add(0.5).toVar('d')
-                                const w = pow(float(1).sub(smoothstep(0, 1.414, length(d))), k).toVar('w')
+                                const w = float(1).sub(float(0).smoothstep(1.414, d.length())).pow(k).toVar('w')
                                 a.addAssign(vec2(o.z.mul(w), w))
                         })
                 })

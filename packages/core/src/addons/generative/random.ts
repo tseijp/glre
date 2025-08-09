@@ -27,7 +27,7 @@ export const randomVec3 = Fn(([pos]: [Vec3]): Float => {
 })
 
 export const randomVec4 = Fn(([pos]: [Vec4]): Float => {
-        const dot_product = dot(pos, vec4(12.9898, 78.233, 45.164, 94.673)).toVar('dot_product')
+        const dot_product = pos.dot(vec4(12.9898, 78.233, 45.164, 94.673)).toVar('dot_product')
         return dot_product.sin().mul(43758.5453).fract()
 }).setLayout({
         name: 'randomVec4',
@@ -88,7 +88,7 @@ export const random3Vec2 = Fn(([p]: [Vec2]): Vec3 => {
 export const random3Vec3 = Fn(([p]: [Vec3]): Vec3 => {
         p.assign(p.mul(RANDOM_SCALE.xyz).fract())
         p.addAssign(p.dot(p.yxz.add(19.19)))
-        return fract(p.xxy.add(p.yzz).mul(p.zyx))
+        return p.xxy.add(p.yzz).mul(p.zyx).fract()
 }).setLayout({
         name: 'random3Vec3',
         type: 'vec3',

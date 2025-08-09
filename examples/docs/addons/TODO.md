@@ -12,7 +12,7 @@
 - [x] `generative/voronoi.glsl` → TSL
 - [x] `generative/voronoise.glsl` → TSL
 - [x] `generative/wavelet.glsl` → TSL
-- [ ] `generative/worley.glsl` → TSL
+- [x] `generative/worley.glsl` → TSL
 
 ## Included Files (Dependencies)
 

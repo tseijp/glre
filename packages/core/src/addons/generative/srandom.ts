@@ -1,7 +1,7 @@
 import { Fn, Float, Vec2, Vec3, Vec4, vec2, vec3, vec4, float, dot, fract, sin, mod } from '../../node'
 
 export const srandom = Fn(([x]: [Float]): Float => {
-        return float(-1).add(float(2).mul(fract(sin(x).mul(43758.5453))))
+        return float(-1).add(float(2).mul(x.sin().mul(43758.5453).fract()))
 }).setLayout({
         name: 'srandom',
         type: 'float',
@@ -9,7 +9,7 @@ export const srandom = Fn(([x]: [Float]): Float => {
 })
 
 export const srandomVec2 = Fn(([st]: [Vec2]): Float => {
-        return float(-1).add(float(2).mul(fract(sin(dot(st, vec2(12.9898, 78.233))).mul(43758.5453))))
+        return float(-1).add(float(2).mul(st.dot(vec2(12.9898, 78.233)).sin().mul(43758.5453).fract()))
 }).setLayout({
         name: 'srandomVec2',
         type: 'float',
@@ -17,7 +17,7 @@ export const srandomVec2 = Fn(([st]: [Vec2]): Float => {
 })
 
 export const srandomVec3 = Fn(([pos]: [Vec3]): Float => {
-        return float(-1).add(float(2).mul(fract(sin(dot(pos, vec3(70.9898, 78.233, 32.4355))).mul(43758.5453123))))
+        return float(-1).add(float(2).mul(pos.dot(vec3(70.9898, 78.233, 32.4355)).sin().mul(43758.5453123).fract()))
 }).setLayout({
         name: 'srandomVec3',
         type: 'float',
@@ -25,8 +25,8 @@ export const srandomVec3 = Fn(([pos]: [Vec3]): Float => {
 })
 
 export const srandomVec4 = Fn(([pos]: [Vec4]): Float => {
-        const dot_product = dot(pos, vec4(12.9898, 78.233, 45.164, 94.673)).toVar('dot_product')
-        return float(-1).add(float(2).mul(fract(sin(dot_product).mul(43758.5453))))
+        const dot_product = pos.dot(vec4(12.9898, 78.233, 45.164, 94.673)).toVar('dot_product')
+        return float(-1).add(float(2).mul(dot_product.sin().mul(43758.5453).fract()))
 }).setLayout({
         name: 'srandomVec4',
         type: 'float',
@@ -41,7 +41,7 @@ export const srandom2Vec2 = Fn(([st]: [Vec2]): Vec2 => {
                         fract(
                                 float(16)
                                         .mul(k)
-                                        .mul(fract(st.x.mul(st.y).mul(st.x.add(st.y))))
+                                        .mul(st.x.mul(st.y).mul(st.x.add(st.y)).fract())
                         )
                 )
         )
@@ -54,12 +54,12 @@ export const srandom2Vec2 = Fn(([st]: [Vec2]): Vec2 => {
 export const srandom3Vec3 = Fn(([p]: [Vec3]): Vec3 => {
         p.assign(
                 vec3(
-                        dot(p, vec3(127.1, 311.7, 74.7)),
-                        dot(p, vec3(269.5, 183.3, 246.1)),
-                        dot(p, vec3(113.5, 271.9, 124.6))
+                        p.dot(vec3(127.1, 311.7, 74.7)),
+                        p.dot(vec3(269.5, 183.3, 246.1)),
+                        p.dot(vec3(113.5, 271.9, 124.6))
                 )
         )
-        return float(-1).add(float(2).mul(fract(sin(p).mul(43758.5453123))))
+        return float(-1).add(float(2).mul(p.sin().mul(43758.5453123).fract()))
 }).setLayout({
         name: 'srandom3Vec3',
         type: 'vec3',

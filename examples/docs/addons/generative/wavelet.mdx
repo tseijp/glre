@@ -20,6 +20,7 @@ W(p, \phi, k) = \frac{1}{M} \sum_{i=0}^{n} \frac{\sin(10 \cdot q_i.x + \phi)}{s_
 $$
 
 where:
+
 - $p$ represents input coordinates
 - $\phi$ controls phase offset for animation
 - $k$ determines frequency scaling between octaves
@@ -31,13 +32,13 @@ The rotation angle at each octave: $\theta_i = random(floor(p \cdot s_i)) \cdot 
 
 ### Function Variations
 
-| Function | Purpose | Parameters |
-|----------|---------|------------|
-| `wavelet(p, phase, k)` | Full control | vec2 position, phase offset, frequency ratio |
-| `waveletVec2(p)` | Basic 2D | vec2 position only |
-| `waveletVec2Phase(p, phase)` | Animated 2D | vec2 position, phase for time |
-| `waveletVec3(p)` | 3D input | vec3 with z as phase |
-| `waveletVec3K(p, k)` | 3D with control | vec3 input, frequency control |
+| Function                     | Purpose         | Parameters                                   |
+| ---------------------------- | --------------- | -------------------------------------------- |
+| `wavelet(p, phase, k)`       | Full control    | vec2 position, phase offset, frequency ratio |
+| `waveletVec2(p)`             | Basic 2D        | vec2 position only                           |
+| `waveletVec2Phase(p, phase)` | Animated 2D     | vec2 position, phase for time                |
+| `waveletVec3(p)`             | 3D input        | vec3 with z as phase                         |
+| `waveletVec3K(p, k)`         | 3D with control | vec3 input, frequency control                |
 
 <FragmentEditor
         isFun
@@ -45,7 +46,7 @@ The rotation angle at each octave: $\theta_i = random(floor(p \cdot s_i)) \cdot 
 const fragment = () => {
         const pos = uv.mul(8)
         const turbulence = waveletVec2Phase(pos, iTime.mul(0.5))
-        const contours = turbulence.mul(12).sin().pow2()
+        const contours = turbulence.mul(12).sin().pow(2)
         return vec4(contours.mul(vec3(0.3, 0.6, 0.9)), 1)
 }`}
 />
@@ -69,18 +70,20 @@ const fragment = () => {
 The wavelet function exhibits several key characteristics:
 
 **Rotation Matrix Application**: Each octave applies a 2x2 rotation matrix:
+
 $$
-R(\theta) = \begin{pmatrix} 
+R(\theta) = \begin{pmatrix}
 \cos\theta & -\sin\theta \\
-\sin\theta & \cos\theta 
+\sin\theta & \cos\theta
 \end{pmatrix}
 $$
 
 **Coordinate Transformation**: The fractal iteration applies:
+
 $$
-p_{i+1} = p_i \cdot \begin{pmatrix} 
+p_{i+1} = p_i \cdot \begin{pmatrix}
 0.54 & -0.84 \\
-0.84 & 0.54 
+0.84 & 0.54
 \end{pmatrix} + i
 $$
 

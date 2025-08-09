@@ -1,0 +1,125 @@
+---
+title: 'worley'
+description: 'Cellular noise pattern based on distance to nearest points in a grid'
+keywords: [worley, cellular, voronoi, distance, pattern, texture]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# worley: Cellular Distance Patterns
+
+### Grid-based cellular texture generation
+
+Worley noise creates cellular patterns by calculating distances to randomly distributed points within a grid structure. The algorithm generates organic cell-like formations by evaluating proximity to nearest neighbors.
+
+The function operates through nearest-neighbor analysis across a 3×3 (2D) or 3×3×3 (3D) grid:
+
+$$
+W(p) = 1 - \min_{i \in N} d(p, s_i + r_i)
+$$
+
+where:
+
+- $p$ represents input coordinates
+- $N$ denotes neighboring grid cells
+- $s_i$ are grid cell positions
+- $r_i$ are random offsets within each cell
+- $d(\cdot, \cdot)$ calculates distance (default: Euclidean)
+
+The algorithm maintains two distances: $F_1$ (nearest) and $F_2$ (second nearest), enabling various cellular effects through their combination.
+
+### Function Variations
+
+| Function         | Purpose      | Output                         |
+| ---------------- | ------------ | ------------------------------ |
+| `worley2Vec2(p)` | 2D distances | vec2(F1, F2) nearest distances |
+| `worleyVec2(p)`  | 2D cellular  | float inverted F1 distance     |
+| `worley2Vec3(p)` | 3D distances | vec2(F1, F2) nearest distances |
+| `worleyVec3(p)`  | 3D cellular  | float inverted F1 distance     |
+
+### Distance Metrics
+
+The implementation uses Euclidean distance by default but can accommodate other metrics:
+
+**Euclidean**: $d = \sqrt{(x_2-x_1)^2 + (y_2-y_1)^2}$
+**Manhattan**: $d = |x_2-x_1| + |y_2-y_1|$
+**Chebyshev**: $d = \max(|x_2-x_1|, |y_2-y_1|)$
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coord = uv.mul(8)
+        const cells = worleyVec2(coord)
+        const edges = worley2Vec2(coord)
+        const outline = edges.y.sub(edges.x).mul(8)
+        return vec4(cells.mul(vec3(1, 0.8, 0.6)).add(outline.mul(0.3)), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const scale = uv.mul(6)
+        const w1 = worley2Vec2(scale)
+        const w2 = worley2Vec2(scale.add(vec2(0.5)))
+        const interference = w1.x.sub(w2.x).abs().mul(4)
+        const gradient = vec3(interference, interference.mul(0.7), interference.mul(0.4))
+        return vec4(gradient, 1)
+}`}
+/>
+
+### Algorithm Structure
+
+The Worley noise algorithm follows this computational pattern:
+
+1. **Grid Cell Identification**: $n = \lfloor p \rfloor$, $f = fract(p)$
+2. **Neighbor Evaluation**: Iterate through adjacent cells
+3. **Random Offset Generation**: $o = random(n + g) \times jitter$
+4. **Distance Calculation**: $d = distance(g + o, f)$
+5. **Nearest Point Tracking**: Update F1, F2 distances
+6. **Result Inversion**: Return $1 - F_1$ for cellular appearance
+
+### Jitter Control
+
+The random offset multiplier (jitter) controls cell regularity:
+
+- **jitter = 0**: Perfect grid arrangement
+- **jitter = 1**: Full random displacement (default)
+- **jitter > 1**: Exaggerated irregularity
+
+### Mathematical Properties
+
+Worley noise exhibits several characteristics:
+
+**Bounded Output**: Values range $[0, 1]$ for standard configurations
+**Cell Continuity**: Adjacent cells share boundary conditions
+**Scale Invariance**: Pattern maintains structure across scales
+**Grid Alignment**: Base structure follows integer grid spacing
+
+### Distance Combinations
+
+Different F1/F2 combinations create varied effects:
+
+| Expression | Visual Effect   |
+| ---------- | --------------- |
+| `1 - F1`   | Solid cells     |
+| `F2 - F1`  | Cell boundaries |
+| `F1 + F2`  | Inverted cells  |
+| `F2 / F1`  | Edge emphasis   |
+
+### Implementation Details
+
+The TSL implementation uses nested loops for neighbor evaluation:
+
+- 2D: 9 cells (3×3 grid)
+- 3D: 27 cells (3×3×3 cube)
+
+Distance tracking maintains two variables:
+
+- `distF1`: Nearest point distance
+- `distF2`: Second nearest point distance
+
+Random offsets employ consistent hashing for reproducible patterns while maintaining spatial coherence across grid boundaries.

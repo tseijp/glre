@@ -25,7 +25,7 @@ export const snoiseVec2 = Fn(([v]: [Vec2]): Float => {
         const C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439).toVar('C')
         const i = v.add(v.dot(C.yy)).floor().toVar('i')
         const x0 = v.sub(i).add(i.dot(C.xx)).toVar('x0')
-        const i1 = select(vec2(0, 1), vec2(1, 0), x0.x.greaterThan(x0.y)).toVar('i1')
+        const i1 = vec2(0, 1).select(vec2(1, 0), x0.x.greaterThan(x0.y)).toVar('i1')
         const x12 = x0.xyxy.add(C.xxzz).toVar('x12')
         x12.xy = x12.xy.sub(i1)
         i.assign(mod289Vec2(i))

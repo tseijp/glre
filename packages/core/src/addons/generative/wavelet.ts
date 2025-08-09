@@ -9,13 +9,13 @@ export const wavelet = Fn(([p, phase, k]: [Vec2, Float, Float]): Float => {
 
         Loop(int(4), ({ i }) => {
                 const q = p.mul(s).toVar('q')
-                const a = randomVec2(floor(q)).mul(1000).toVar('a')
+                const a = randomVec2(q.floor()).mul(1000).toVar('a')
 
-                q.assign(fract(q).sub(0.5).mul(rotate2d(a)))
+                q.assign(q.fract().sub(0.5).mul(rotate2d(a)))
 
                 d.addAssign(
-                        sin(q.x.mul(10).add(phase))
-                                .mul(smoothstep(0.25, 0, dot(q, q)))
+                        q.x.mul(10).add(phase).sin()
+                                .mul(float(0.25).smoothstep(0, q.dot(q)))
                                 .div(s)
                 )
 
