@@ -1,14 +1,14 @@
 - [x] `generative/cnoise.glsl` → TSL
 - [x] `generative/curl.glsl` → TSL
-- [ ] `generative/fbm.glsl` → TSL
+- [x] `generative/fbm.glsl` → TSL
 - [ ] `generative/gerstnerWave.glsl` → TSL
-- [ ] `generative/gnoise.glsl` → TSL
+- [x] `generative/gnoise.glsl` → TSL
 - [ ] `generative/noised.glsl` → TSL
 - [ ] `generative/pnoise.glsl` → TSL
 - [ ] `generative/psrdnoise.glsl` → TSL
-- [ ] `generative/random.glsl` → TSL
+- [x] `generative/random.glsl` → TSL
 - [x] `generative/snoise.glsl` → TSL
-- [ ] `generative/srandom.glsl` → TSL
+- [x] `generative/srandom.glsl` → TSL
 - [ ] `generative/voronoi.glsl` → TSL
 - [ ] `generative/voronoise.glsl` → TSL
 - [ ] `generative/wavelet.glsl` → TSL
@@ -16,10 +16,10 @@
 
 ## Included Files (Dependencies)
 
-- [ ] `generative/gnoise.glsl` → TSL (already listed above)
-- [ ] `generative/random.glsl` → TSL (already listed above)
-- [ ] `generative/snoise.glsl` → TSL (already listed above)
-- [ ] `generative/srandom.glsl` → TSL (already listed above)
+- [x] `generative/gnoise.glsl` → TSL (already listed above)
+- [x] `generative/random.glsl` → TSL (already listed above)
+- [x] `generative/snoise.glsl` → TSL (already listed above)
+- [x] `generative/srandom.glsl` → TSL (already listed above)
 - [ ] `math/const.glsl` → TSL
 - [ ] `math/cubic.glsl` → TSL
 - [ ] `math/dist.glsl` → TSL

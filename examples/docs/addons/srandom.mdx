@@ -1,0 +1,68 @@
+---
+title: 'srandom'
+description: 'Signed random number generation functions producing values in the range [-1, 1] for balanced distributions'
+keywords: [srandom, signed random, bipolar, balanced, distribution, noise]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# srandom: Bipolar Random Generation
+
+### Balanced Distribution Functions for Symmetric Patterns
+
+Signed random functions generate values in the range $[-1, 1]$ instead of the typical $[0, 1]$. This balanced distribution creates more natural symmetric patterns and eliminates the bias toward positive values common in standard random functions.
+
+## Mathematical Foundation
+
+The transformation from standard random to signed random applies the linear mapping:
+
+$$
+\text{srandom}(x) = 2 \cdot \text{random}(x) - 1
+$$
+
+This shifts the $[0, 1]$ range to $[-1, 1]$ while preserving the uniform distribution properties. For vector outputs, the same transformation applies component-wise.
+
+Special vector functions use enhanced mixing coefficients:
+$$
+\text{srandom2}(p) = 2 \cdot \text{fract}(16k \cdot \text{fract}(p_x \cdot p_y \cdot (p_x + p_y))) - 1
+$$
+
+Where $k = (0.3183099, 0.3678794)$ provides improved spatial distribution.
+
+## Function Variants
+
+| Function | Input | Output | Purpose |
+|----------|-------|--------|---------|
+| `srandomFloat` | `float` | `float` | Signed 1D random |
+| `srandomVec2` | `vec2` | `float` | 2D to signed scalar |
+| `srandomVec3` | `vec3` | `float` | 3D to signed scalar |
+| `srandom2Vec2` | `vec2` | `vec2` | Enhanced 2D vector |
+| `srandom3Vec3` | `vec3` | `vec3` | Enhanced 3D vector |
+| `srandom3Vec3Tiled` | `vec3, float` | `vec3` | Tileable 3D vector |
+
+## Implementation
+
+<FragmentEditor
+  isFun
+  code={`
+const fragment = () => {
+  const p = uv.mul(6)
+  const flow = srandom2Vec2(p.floor())
+  const gradient = dot(p.fract().sub(0.5), flow)
+  const intensity = gradient.mul(2).clamp(-1, 1)
+  return vec4(intensity.step(0), abs(intensity), intensity.mul(-1).step(0), 1)
+}`}
+/>
+
+<FragmentEditor
+  isFun
+  code={`
+const fragment = () => {
+  const coord = uv.mul(4).floor()
+  const direction = srandom3Vec3(coord)
+  const strength = direction.length()
+  const color = direction.mul(0.5).add(0.5).mul(strength)
+  return vec4(color, 1)
+}`}
+/>
