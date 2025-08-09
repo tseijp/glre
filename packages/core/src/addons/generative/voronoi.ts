@@ -9,14 +9,14 @@ export const voronoi = Fn(([uv, time]: [Vec2, Float]): Vec3 => {
 
         // Unroll nested loop: for j=-1 to 1, for i=-1 to 1
         // j=-1, i=-1
-        const neighbor_m1m1 = vec2(-1, -1).toVar('neighbor_m1m1')
-        const point_m1m1 = random2Vec2(i_uv.add(neighbor_m1m1)).toVar('point_m1m1')
-        point_m1m1.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_m1m1))))))
-        const diff_m1m1 = neighbor_m1m1.add(point_m1m1).sub(f_uv).toVar('diff_m1m1')
-        const dist_m1m1 = length(diff_m1m1).toVar('dist_m1m1')
-        If(dist_m1m1.lessThan(rta.z), () => {
-                rta.xy.assign(point_m1m1)
-                rta.z.assign(dist_m1m1)
+        const neighbor_n1n1 = vec2(-1, -1).toVar('neighbor_n1n1')
+        const point_n1n1 = random2Vec2(i_uv.add(neighbor_n1n1)).toVar('point_n1n1')
+        point_n1n1.assign(float(0.5).add(float(0.5).mul(sin(time.add(TAU.mul(point_n1n1))))))
+        const diff_n1n1 = neighbor_n1n1.add(point_n1n1).sub(f_uv).toVar('diff_n1n1')
+        const dist_n1n1 = length(diff_n1n1).toVar('dist_n1n1')
+        If(dist_n1n1.lessThan(rta.z), () => {
+                rta.xy.assign(point_n1n1)
+                rta.z.assign(dist_n1n1)
         })
 
         // j=-1, i=0

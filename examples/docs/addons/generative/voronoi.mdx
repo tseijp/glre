@@ -27,15 +27,16 @@ $$d(q, p_i) = \sqrt{(q_x - p_{i,x})^2 + (q_y - p_{i,y})^2}$$
 
 ## Function Variants
 
-| Function        | Input           | Output | Purpose                    |
-| --------------- | --------------- | ------ | -------------------------- |
-| `voronoi`       | `vec2`, `float` | `vec3` | Time-animated Voronoi      |
-| `voronoiVec2`   | `vec2`          | `vec3` | Static 2D Voronoi          |
-| `voronoiVec3`   | `vec3`          | `vec3` | 3D coordinates as time     |
+| Function      | Input           | Output | Purpose                |
+| ------------- | --------------- | ------ | ---------------------- |
+| `voronoi`     | `vec2`, `float` | `vec3` | Time-animated Voronoi  |
+| `voronoiVec2` | `vec2`          | `vec3` | Static 2D Voronoi      |
+| `voronoiVec3` | `vec3`          | `vec3` | 3D coordinates as time |
 
 ## Return Value Structure
 
 The functions return `vec3(seed_x, seed_y, distance)` where:
+
 - `x, y`: Coordinates of the nearest seed point
 - `z`: Distance to the nearest seed point
 
@@ -65,20 +66,21 @@ const fragment = () => {
         const baseScale = 8
         const p = uv.mul(baseScale)
         const time = iTime.mul(0.2)
-        
+
         const cell1 = voronoi(p, time)
         const cell2 = voronoi(p.mul(2), time.mul(1.3))
-        
+
         const distortion = cell1.z.sub(cell2.z).mul(2)
         const ripples = sin(cell1.z.mul(40).sub(time.mul(8))).mul(0.1)
-        
+
         const intensity = distortion.add(ripples).clamp(0, 1)
         const hue = cell1.xy.dot(vec2(0.5, 0.8)).add(time.mul(0.1))
-        
+
         const r = sin(hue.mul(6.28)).mul(0.5).add(0.5)
-        const g = sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5)  
+        const g = sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5)
         const b = sin(hue.mul(6.28).add(4.19)).mul(0.5).add(0.5)
-        
+
         return vec4(vec3(r, g, b).mul(intensity), 1)
+
 }`}
 />

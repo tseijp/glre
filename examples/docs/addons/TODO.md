@@ -10,7 +10,7 @@
 - [x] `generative/snoise.glsl` → TSL
 - [x] `generative/srandom.glsl` → TSL
 - [x] `generative/voronoi.glsl` → TSL
-- [ ] `generative/voronoise.glsl` → TSL
+- [x] `generative/voronoise.glsl` → TSL
 - [ ] `generative/wavelet.glsl` → TSL
 - [ ] `generative/worley.glsl` → TSL
 

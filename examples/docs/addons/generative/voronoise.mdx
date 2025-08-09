@@ -1,0 +1,91 @@
+---
+title: 'voronoise'
+description: 'Hybrid noise combining Voronoi cellular patterns with smooth Perlin-style interpolation'
+keywords: [voronoise, noise, voronoi, perlin, hybrid, cellular, smooth]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# voronoise: Hybrid Voronoi-Perlin Noise
+
+### Controllable Blend Between Cellular and Smooth Patterns
+
+Voronoise bridges the gap between sharp cellular Voronoi patterns and smooth Perlin noise, offering parametric control over pattern characteristics. This hybrid approach enables seamless transitions from hard-edged cellular structures to organic, flowing textures.
+
+## Mathematical Foundation
+
+Voronoise extends traditional Voronoi diagrams by introducing weighted distance calculations and smoothed interpolation. The algorithm:
+
+1. **Grid Sampling**: Sample a 5×5 neighborhood around each point
+2. **Random Displacement**: Apply controlled random offsets to grid points
+3. **Distance Weighting**: Calculate weighted distances using power functions
+4. **Smooth Integration**: Blend contributions using smooth falloff functions
+
+The core weighting function uses:
+$$k = 1 + 63 \cdot (1-v)^6$$
+
+Where parameter $v$ controls the transition between Voronoi-like ($v=0$) and Perlin-like ($v=1$) characteristics.
+
+## Parameter Control
+
+| Parameter | Range | Effect                                    |
+| --------- | ----- | ----------------------------------------- |
+| `u`       | 0-1   | Regularity: 0=chaotic, 1=regular grid    |
+| `v`       | 0-1   | Shape: 0=cellular/sharp, 1=smooth/flowing |
+
+The regularity parameter $u$ controls random displacement magnitude, while the shape parameter $v$ determines the blending kernel's smoothness.
+
+## Function Variants
+
+| Function        | Input               | Output | Purpose                    |
+| --------------- | ------------------- | ------ | -------------------------- |
+| `voronoise`     | `vec2, float, float` | `float` | 2D parametric voronoise   |
+| `voronoiseVec3` | `vec3, float, float` | `float` | 3D parametric voronoise   |
+
+## Implementation Examples
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const scale = 8
+        const p = uv.mul(scale)
+        const time = iTime.mul(0.1)
+        
+        const regularity = sin(time).mul(0.5).add(0.5)
+        const smoothness = cos(time.mul(1.3)).mul(0.5).add(0.5)
+        
+        const noise = voronoise(p, regularity, smoothness)
+        const intensity = noise.mul(0.5).add(0.5)
+        
+        const hue = p.x.add(p.y).mul(0.1).add(time)
+        const r = sin(hue.mul(6.28)).mul(0.5).add(0.5)
+        const g = sin(hue.mul(6.28).add(2.09)).mul(0.5).add(0.5)
+        const b = sin(hue.mul(6.28).add(4.19)).mul(0.5).add(0.5)
+        
+        return vec4(vec3(r, g, b).mul(intensity), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const p = uv.mul(6)
+        const time = iTime.mul(0.05)
+        
+        const layer1 = voronoise(p, 0.1, 0.3)
+        const layer2 = voronoise(p.mul(2), 0.8, 0.7)
+        const layer3 = voronoise(p.mul(0.5), 0.5, 0.9)
+        
+        const combined = layer1.mul(0.6).add(layer2.mul(0.3).add(layer3.mul(0.1)))
+        const normalized = combined.mul(0.5).add(0.5)
+        
+        const gradient = length(p.sub(vec2(3, 3))).div(4)
+        const mask = smoothstep(0.8, 1.2, gradient).oneMinus()
+        
+        const final = normalized.mul(mask)
+        return vec4(vec3(final), 1)
+}`}
+/>
