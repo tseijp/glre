@@ -1,8 +1,8 @@
-import { Fn, Float, Vec2, Vec3, float, Loop } from '../../node'
+import { Fn, Float, Vec2, Vec3, float, Loop, int } from '../../node'
 import { snoiseVec2, snoiseVec3 } from './snoise'
 import { gnoiseVec3Tiled } from './gnoise'
 
-const FBM_OCTAVES = 4
+const FBM_OCTAVES = int(4)
 const FBM_SCALE_SCALAR = 2.0
 const FBM_AMPLITUDE_INITIAL = 0.5
 const FBM_AMPLITUDE_SCALAR = 0.5
@@ -10,10 +10,10 @@ const FBM_AMPLITUDE_SCALAR = 0.5
 export const fbmVec2 = Fn(([st]: [Vec2]): Float => {
         const value = float(0).toVar('value')
         const amplitude = float(FBM_AMPLITUDE_INITIAL).toVar('amplitude')
-        const stVar = st.toVar('st')
+        const coord = st.toVar('coord')
         Loop(FBM_OCTAVES, () => {
-                value.addAssign(amplitude.mul(snoiseVec2(stVar)))
-                stVar.mulAssign(FBM_SCALE_SCALAR)
+                value.addAssign(amplitude.mul(snoiseVec2(coord)))
+                coord.mulAssign(FBM_SCALE_SCALAR)
                 amplitude.mulAssign(FBM_AMPLITUDE_SCALAR)
         })
         return value

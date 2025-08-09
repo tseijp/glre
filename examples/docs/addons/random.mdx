@@ -63,6 +63,7 @@ const fragment = () => {
   const rnd = random4Vec2(coord)
   const pattern = rnd.x.mul(rnd.y).mul(rnd.z).step(0.3)
   const hue = randomVec2(coord.add(vec2(100)))
-  return vec4(pattern.mul(hue), pattern, 1)
+  const color = vec3(pattern.mul(hue))
+  return vec4(color, pattern)
 }`}
 />

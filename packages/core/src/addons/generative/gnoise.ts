@@ -1,7 +1,7 @@
 import { Fn, Float, Vec2, Vec3, vec2, vec3, float, floor, fract, mix, smoothstep, dot } from '../../node'
 import { randomFloat, randomVec2, randomVec3 } from './random'
 import { srandom3Vec3Tiled } from './srandom'
-import { cubic } from '../math/cubic'
+import { cubicVec2 } from '../math/cubic'
 import { quintic } from '../math/quintic'
 
 export const gnoiseFloat = Fn(([x]: [Float]): Float => {
@@ -21,7 +21,7 @@ export const gnoiseVec2 = Fn(([st]: [Vec2]): Float => {
         const b = randomVec2(i.add(vec2(1, 0))).toVar('b')
         const c = randomVec2(i.add(vec2(0, 1))).toVar('c')
         const d = randomVec2(i.add(vec2(1, 1))).toVar('d')
-        const u = cubic(f).toVar('u')
+        const u = cubicVec2(f).toVar('u')
         return mix(a, b, u.x).add(c.sub(a).mul(u.y).mul(float(1).sub(u.x)).add(d.sub(b).mul(u.x).mul(u.y)))
 }).setLayout({
         name: 'gnoiseVec2',

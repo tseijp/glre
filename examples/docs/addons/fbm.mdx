@@ -22,6 +22,7 @@ $$
 $$
 
 Where:
+
 - $A_i = A_0 \cdot r^i$ (amplitude progression)
 - $F_i = F_0 \cdot s^i$ (frequency progression)
 - $r = 0.5$ (amplitude reduction factor, persistence)
@@ -29,26 +30,26 @@ Where:
 
 ## Parameter Configuration
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| Octaves | 4 | Number of noise layers |
-| Initial Amplitude | 0.5 | Starting amplitude value |
-| Amplitude Scalar | 0.5 | Amplitude reduction per octave |
-| Scale Scalar | 2.0 | Frequency increase per octave |
+| Parameter         | Default | Description                    |
+| ----------------- | ------- | ------------------------------ |
+| Octaves           | 4       | Number of noise layers         |
+| Initial Amplitude | 0.5     | Starting amplitude value       |
+| Amplitude Scalar  | 0.5     | Amplitude reduction per octave |
+| Scale Scalar      | 2.0     | Frequency increase per octave  |
 
 ## Function Variants
 
-| Function | Input Type | Purpose |
-|----------|------------|---------|
-| `fbmVec2` | `vec2` | 2D FBM using simplex noise |
-| `fbmVec3` | `vec3` | 3D FBM using simplex noise |
+| Function       | Input Type    | Purpose                              |
+| -------------- | ------------- | ------------------------------------ |
+| `fbmVec2`      | `vec2`        | 2D FBM using simplex noise           |
+| `fbmVec3`      | `vec3`        | 3D FBM using simplex noise           |
 | `fbmVec3Tiled` | `vec3, float` | Tileable 3D FBM using gradient noise |
 
 ## Implementation
 
 <FragmentEditor
-  isFun
-  code={`
+        isFun
+        code={`
 const fragment = () => {
   const p = uv.mul(3)
   const base = fbmVec2(p)
@@ -59,8 +60,8 @@ const fragment = () => {
 />
 
 <FragmentEditor
-  isFun
-  code={`
+        isFun
+        code={`
 const fragment = () => {
   const p = vec3(uv.mul(2), iTime.mul(0.1))
   const layers = fbmVec3(p)

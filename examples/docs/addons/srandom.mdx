@@ -59,7 +59,7 @@ const fragment = () => {
   isFun
   code={`
 const fragment = () => {
-  const coord = uv.mul(4).floor()
+  const coord = vec3(uv.mul(4).floor(), 0)
   const direction = srandom3Vec3(coord)
   const strength = direction.length()
   const color = direction.mul(0.5).add(0.5).mul(strength)
