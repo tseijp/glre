@@ -142,4 +142,4 @@ gl('loop', () => {
 - Learn [Node System](node/04-overview.md) for shader authoring
 - Reference [Functions](node/06-functions.md) for available operations
 
-GLRE provides a complete toolkit for GPU programming in TypeScript, making complex graphics accessible through familiar syntax.
+TSL provides a complete toolkit for GPU programming in TypeScript, making complex graphics accessible through familiar syntax.

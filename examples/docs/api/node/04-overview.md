@@ -1,6 +1,6 @@
 # Node System Overview
 
-GLRE's TypeScript Shading Language (TSL) for GPU programming.
+TypeScript Shading Language (TSL) for GPU programming.
 
 ## Core Concepts
 
@@ -359,4 +359,4 @@ const fragment = () => {
 }
 ```
 
-The GLRE Node System provides a powerful yet familiar way to write GPU shaders using TypeScript syntax and patterns.
+The Node System provides a powerful yet familiar way to write GPU shaders using TypeScript syntax and patterns.

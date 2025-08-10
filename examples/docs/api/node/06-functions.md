@@ -1,6 +1,6 @@
 # Complete Function Reference
 
-Comprehensive reference for all mathematical functions and operations in GLRE.
+Comprehensive reference for all mathematical functions and operations in TSL.
 
 ## Mathematical Functions
 
@@ -347,4 +347,4 @@ const complexPattern = (position, time) => {
 }
 ```
 
-GLRE's Node System provides 150+ mathematical functions covering all aspects of GPU programming, from basic arithmetic to advanced geometric transformations.
+Node System provides 150+ mathematical functions covering all aspects of GPU programming, from basic arithmetic to advanced geometric transformations.
