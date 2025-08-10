@@ -1,6 +1,6 @@
 # Type Systems and Conversions
 
-Complete reference for GLRE's type system and automatic conversions.
+Complete reference for TSL's type system and automatic conversions.
 
 ## Scalar Types
 
@@ -150,7 +150,7 @@ const coord = color4.toVec2() // vec2(1, 0) - takes first two
 
 ### Promotion Rules
 
-When different types are combined, GLRE automatically promotes to the "larger" type:
+When different types are combined, TSL automatically promotes to the "larger" type:
 
 | Operation  | Left Type | Right Type | Result Type | Explanation                             |
 | ---------- | --------- | ---------- | ----------- | --------------------------------------- |
@@ -255,7 +255,7 @@ const inverted = not(positive) // bvec3(false, true, false)
 
 ### How Type Inference Works
 
-GLRE automatically figures out what type each operation should return:
+TSL automatically figures out what type each operation should return:
 
 1. **Operator Type Rules**: Addition of two floats returns float
 2. **Function Return Types**: `sin()` of any type returns same type
@@ -277,7 +277,7 @@ const e = select(d, c, vec3(0)) // vec3 (conditional selection)
 
 ### Compile-Time Checking
 
-GLRE catches type errors before they reach the GPU:
+TSL catches type errors before they reach the GPU:
 
 ```javascript
 // This would cause a type error:
@@ -326,4 +326,4 @@ const gridY = int(position.y.mul(10))
 const gridCoord = ivec2(gridX, gridY)
 ```
 
-The GLRE type system provides safety and convenience while maintaining the performance and flexibility needed for GPU programming.
+The TSL type system provides safety and convenience while maintaining the performance and flexibility needed for GPU programming.

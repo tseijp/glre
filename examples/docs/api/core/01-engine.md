@@ -55,7 +55,7 @@ const createOptimalGL = () => {
 
 ### Automatic Binding
 
-GLRE automatically manages GPU resources:
+TSL automatically manages GPU resources:
 
 ```javascript
 const gl = createGL({
@@ -119,7 +119,7 @@ const createRenderer = (config) => {
 
 ### Automatic Generation
 
-GLRE converts TypeScript to shader code:
+TSL converts TypeScript to shader code:
 
 ```javascript
 // TypeScript Node System
@@ -428,4 +428,4 @@ const createRenderLoop = (gl) => {
 }
 ```
 
-The GLRE core engine handles all low-level GPU operations automatically, letting you focus on creative coding rather than graphics API complexity.
+The TSL core engine handles all low-level GPU operations automatically, letting you focus on creative coding rather than graphics API complexity.
