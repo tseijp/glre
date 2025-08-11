@@ -1,0 +1,59 @@
+---
+title: 'sqTile'
+description: 'Generates square tiling coordinates with fractional and integer components for grid-based patterns'
+keywords: [square, tile, grid, coordinates, fractional, floor]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# sqTile: Square Grid Coordinate System
+
+### Grid Decomposition with Fractional and Integer Components
+
+The sqTile function decomposes 2D coordinates into a 4-component system containing both fractional positions within tiles and integer tile indices. This forms the foundation for various tiling patterns.
+
+#### Mathematical Definition
+
+For input coordinates $\text{st} = (s, t)$:
+
+$$\text{sqTile}(s, t) = (\text{fract}(s), \text{fract}(t), \lfloor s \rfloor, \lfloor t \rfloor)$$
+
+where:
+
+- $(x, y) = (\text{fract}(s), \text{fract}(t))$ provides local coordinates within each tile $[0, 1)$
+- $(z, w) = (\lfloor s \rfloor, \lfloor t \rfloor)$ provides integer tile indices
+
+#### Component Analysis
+
+| Component | Range        | Description                     |
+| --------- | ------------ | ------------------------------- |
+| `x`       | $[0, 1)$     | Horizontal position within tile |
+| `y`       | $[0, 1)$     | Vertical position within tile   |
+| `z`       | $\mathbb{Z}$ | Horizontal tile index           |
+| `w`       | $\mathbb{Z}$ | Vertical tile index             |
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const tileData = sqTile(uv.mul(8))
+        const localCoords = tileData.xy
+        const centerDist = localCoords.sub(0.5).length()
+        const pattern = smoothstep(0.3, 0.35, centerDist)
+        return vec4(vec3(pattern), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const tileData = sqTileScale(uv, 12)
+        const tileIndex = tileData.zw
+        const checker = mod(tileIndex.x.add(tileIndex.y), 2)
+        const border = min(tileData.x, tileData.y).step(0.1)
+        const finalPattern = checker.mul(border)
+        return vec4(vec3(finalPattern), 1)
+}`}
+/>

@@ -1,0 +1,71 @@
+---
+title: 'rotateZ'
+description: 'Z-axis rotation transform functions for 3D and 4D vectors'
+keywords: ['rotation', 'transform', '3d', 'matrix', 'z-axis', 'spatial', 'linear algebra']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotateZ: Z-Axis Vector Rotation Transform
+
+### Matrix-based rotation around the Z-axis
+
+The rotateZ functions provide Z-axis rotation transformations for 3D and 4D vectors using matrix operations. These functions generate rotation matrices that rotate vectors around the Z-axis by a specified angle.
+
+The mathematical foundation uses a 4D rotation matrix:
+
+$$
+R_z(\theta) = \begin{pmatrix}
+\cos\theta & \sin\theta & 0 & 0 \\
+-\sin\theta & \cos\theta & 0 & 0 \\
+0 & 0 & 1 & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+This matrix rotates points in the XY-plane while preserving the Z-coordinate. The rotation follows the right-hand rule, where positive angles rotate counterclockwise when viewed from the positive Z-axis.
+
+### Available Functions
+
+| Function            | Input Types         | Description                                       |
+| ------------------- | ------------------- | ------------------------------------------------- |
+| `rotateZVec3`       | `vec3, float`       | Rotate 3D vector around Z-axis                    |
+| `rotateZVec3Center` | `vec3, float, vec3` | Rotate 3D vector around Z-axis with custom center |
+| `rotateZVec4`       | `vec4, float`       | Rotate 4D vector around Z-axis                    |
+| `rotateZVec4Center` | `vec4, float, vec4` | Rotate 4D vector around Z-axis with custom center |
+
+### Applications
+
+Z-axis rotations create roll motion in 3D space, commonly used for:
+
+- 2D coordinate transformations
+- Screen-space effects
+- Object spinning animations in the XY-plane
+- UI element rotations
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const angle = iTime.mul(1.5)
+        const pos = vec3(uv.sub(0.5).mul(2), 0)
+        const rotated = rotateZVec3(pos, angle)
+        const color = rotated.xy.add(0.5).abs()
+        return vec4(color, rotated.x.mul(0.5).add(0.5), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec3(0.2, 0.3, 0)
+        const angle = sin(iTime.mul(0.8)).mul(3.14)
+        const pos = vec3(uv.sub(0.5).mul(1.5), 0)
+        const rotated = rotateZVec3Center(pos, angle, center)
+        const dist = length(rotated.xy.sub(center.xy))
+        const color = vec3(1).sub(vec3(dist))
+        return vec4(color, 1)
+}`}
+/>

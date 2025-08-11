@@ -1,0 +1,56 @@
+---
+title: 'ratio'
+description: 'Adaptive coordinate transformation that maintains aspect ratios by scaling based on dimension comparison'
+keywords: [ratio, aspect, adaptive, scaling, dimension, viewport]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# ratio: Adaptive Aspect Ratio Transformation
+
+### Dimension-aware coordinate scaling for consistent proportions
+
+The ratio function applies adaptive transformations based on dimensional relationships between coordinate spaces and target sizes. It automatically selects appropriate scaling strategies depending on whether the target space is wider or taller.
+
+#### Adaptive Scaling Logic
+
+Given coordinates $v = (x,y)$ and size vector $s = (w,h)$:
+
+**When width ≥ height** (landscape orientation):
+$$\text{result} = \left(x \cdot \frac{w}{h} - \frac{w-h}{2h}, y\right)$$
+
+**When height > width** (portrait orientation):
+$$\text{result} = \left(x, y \cdot \frac{h}{w} - \frac{h-w}{2w}\right)$$
+
+The selection between these modes uses: $\text{step}(w,h)$
+
+#### Mathematical Foundation
+
+| Aspect Case | Primary Scaling | Secondary Offset | Unchanged Axis   |
+| ----------- | --------------- | ---------------- | ---------------- |
+| Wide format | X-axis stretch  | X-axis centering | Y-axis preserved |
+| Tall format | Y-axis stretch  | Y-axis centering | X-axis preserved |
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const adapted = ratio(uv, iResolution.xy)
+        const waveform = adapted.x.mul(adapted.y).mul(20).sin().abs()
+        const pattern = waveform.pow(adapted.length())
+        return vec4(vec3(pattern), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const target = vec2(800, 600)
+        const normalized = ratio(uv.sub(0.5), target)
+        const distortion = normalized.length().pow(0.3)
+        const rings = distortion.mul(15).fract().step(0.7)
+        return vec4(vec3(rings), 1)
+}`}
+/>

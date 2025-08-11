@@ -1,0 +1,71 @@
+---
+title: 'rotateX'
+description: 'X-axis rotation transform functions for 3D and 4D vectors'
+keywords: ['rotation', 'transform', '3d', 'matrix', 'x-axis', 'spatial', 'linear algebra']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rotateX: X-Axis Vector Rotation Transform
+
+### Matrix-based rotation around the X-axis
+
+The rotateX functions provide X-axis rotation transformations for 3D and 4D vectors using matrix operations. These functions generate rotation matrices that rotate vectors around the X-axis by a specified angle.
+
+The mathematical foundation uses a 4D rotation matrix:
+
+$$
+R_x(\theta) = \begin{pmatrix}
+1 & 0 & 0 & 0 \\
+0 & \cos\theta & \sin\theta & 0 \\
+0 & -\sin\theta & \cos\theta & 0 \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+This matrix rotates points in the YZ-plane while preserving the X-coordinate. The rotation follows the right-hand rule, where positive angles rotate counterclockwise when viewed from the positive X-axis.
+
+### Available Functions
+
+| Function            | Input Types         | Description                                       |
+| ------------------- | ------------------- | ------------------------------------------------- |
+| `rotateXVec3`       | `vec3, float`       | Rotate 3D vector around X-axis                    |
+| `rotateXVec3Center` | `vec3, float, vec3` | Rotate 3D vector around X-axis with custom center |
+| `rotateXVec4`       | `vec4, float`       | Rotate 4D vector around X-axis                    |
+| `rotateXVec4Center` | `vec4, float, vec4` | Rotate 4D vector around X-axis with custom center |
+
+### Applications
+
+X-axis rotations create pitch motion in 3D space, commonly used for:
+
+- Camera pitch control
+- Object tilting animations
+- 3D model orientation adjustments
+- Procedural geometry generation
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const angle = iTime.mul(2)
+        const pos = vec3(uv.x, uv.y, 0).sub(0.5).mul(2)
+        const rotated = rotateXVec3(pos, angle)
+        const color = rotated.add(0.5).abs()
+        return vec4(color, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec3(0, 0, 0)
+        const angle = sin(iTime).mul(1.5)
+        const pos = vec3(uv.x, uv.y, 0.3).sub(0.5).mul(3)
+        const rotated = rotateXVec3Center(pos, angle, center)
+        const depth = rotated.z.add(1).mul(0.5)
+        const color = vec3(depth, rotated.y.add(0.5), rotated.x.add(0.5))
+        return vec4(color, 1)
+}`}
+/>

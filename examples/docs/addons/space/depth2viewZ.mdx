@@ -1,0 +1,84 @@
+---
+title: 'depth2viewZ'
+description: 'Depth buffer value to view space Z coordinate conversion for camera projection systems'
+keywords: [depth, camera, projection, perspective, orthographic, view space, transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# depth2viewZ: Depth Buffer to View Space Conversion
+
+### Camera Projection Depth Transformation Functions
+
+The `depth2viewZ` family of functions converts normalized depth buffer values to linear view space Z coordinates. These functions handle the mathematical transformation required to reconstruct world positions from depth textures in camera projection systems.
+
+## Mathematical Foundation
+
+For perspective projection, the transformation follows:
+
+$$
+Z_{view} = \frac{n \cdot f}{(f - n) \cdot d - f}
+$$
+
+For orthographic projection:
+
+$$
+Z_{view} = d \cdot (n - f) - n
+$$
+
+Where:
+
+- $d$ = normalized depth buffer value [0,1]
+- $n$ = near clipping plane distance
+- $f$ = far clipping plane distance
+- $Z_{view}$ = linear view space Z coordinate
+
+## Function Variants
+
+| Function                  | Purpose                 | Parameters                             |
+| ------------------------- | ----------------------- | -------------------------------------- |
+| `depth2viewZ`             | Perspective projection  | `depth`, `near`, `far`                 |
+| `depth2viewZOrthographic` | Orthographic projection | `depth`, `near`, `far`                 |
+| `depth2viewZCombined`     | Unified function        | `depth`, `near`, `far`, `orthographic` |
+
+## Implementation Details
+
+The perspective projection inverts the standard Z-buffer depth encoding where closer objects have smaller depth values. The orthographic version applies linear interpolation between near and far planes.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const depth = fract(uv.x.mul(10))
+        const near = float(0.1)
+        const far = float(100)
+        const viewZ = depth2viewZ(depth, near, far)
+        const normalized = viewZ.div(far.sub(near)).abs()
+        return vec4(vec3(normalized), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const depth = sin(uv.x.mul(8)).mul(0.5).add(0.5)
+        const near = float(1)
+        const far = float(20)
+        const ortho = step(0.5, uv.y)
+        const viewZ = depth2viewZCombined(depth, near, far, ortho)
+        const color = viewZ.div(far).add(0.5)
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+## Practical Applications
+
+**Position Reconstruction**: Convert screen space coordinates and depth to world positions for deferred rendering pipelines.
+
+**Shadow Mapping**: Transform shadow depth comparisons from non-linear depth buffer space to linear view space for accurate shadow calculations.
+
+**Post-processing Effects**: Enable depth-based effects like depth of field, atmospheric scattering, and volumetric lighting by providing linear depth values.
+
+**Collision Detection**: Convert depth buffer samples to world space positions for ray casting and intersection testing in screen space algorithms.

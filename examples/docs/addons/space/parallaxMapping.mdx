@@ -1,0 +1,89 @@
+---
+title: 'parallaxMapping'
+description: 'Advanced heightmap-based surface displacement with multiple algorithms'
+keywords: [parallax, mapping, heightmap, displacement, steep, relief, occlusion, simple]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# parallaxMapping: Multi-Algorithm Surface Displacement
+
+### Adaptive Heightmap Processing with Four Implementation Variants
+
+The parallaxMapping collection provides four distinct algorithms for heightmap-based surface displacement. Each variant offers different quality-performance characteristics suitable for various rendering scenarios.
+
+## Mathematical Foundation
+
+Given a viewing vector $\mathbf{V}$ and texture coordinate $\mathbf{T}$, parallax mapping adjusts surface coordinates based on heightmap data $h(\mathbf{T})$. The displacement follows:
+
+$$\mathbf{T'} = \mathbf{T} + \Delta\mathbf{T} \cdot h(\mathbf{T}) \cdot S$$
+
+where $S$ represents the scale factor and $\Delta\mathbf{T}$ the displacement direction.
+
+## Algorithm Variants
+
+| Function                   | Quality | Performance | Description                 |
+| -------------------------- | ------- | ----------- | --------------------------- |
+| `parallaxMappingSimple`    | Low     | High        | Single-sample approximation |
+| `parallaxMappingSteep`     | Medium  | Medium      | Layer-based stepping        |
+| `parallaxMappingRelief`    | High    | Low         | Binary refinement           |
+| `parallaxMappingOcclusion` | Highest | Lowest      | Interpolated occlusion      |
+
+## Technical Parameters
+
+The system uses configurable constants for precision control:
+
+- **PARALLAXMAPPING_SCALE**: Displacement magnitude (0.01)
+- **PARALLAXMAPPING_NUMSEARCHES**: Base layer count (10.0)
+
+## Algorithm Details
+
+### Simple Parallax
+
+Direct offset calculation without iteration:
+$$\mathbf{T'} = \mathbf{T} - S \cdot \mathbf{V}_{xy} \cdot h(\mathbf{T})$$
+
+### Steep Parallax
+
+Layer-based stepping with adaptive resolution:
+
+- Layer count: $N = \text{mix}(15, 5, |\mathbf{V} \cdot \mathbf{z}|)$
+- Step size: $\Delta h = 1/N$
+
+### Relief Mapping
+
+Binary refinement after initial stepping for sub-pixel accuracy.
+
+### Occlusion Mapping
+
+Linear interpolation between intersection points:
+$$w = \frac{h_{next}}{h_{next} - h_{prev}}$$
+$$\mathbf{T'} = w \cdot \mathbf{T}_{prev} + (1-w) \cdot \mathbf{T}_{curr}$$
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const viewDir = vec3(uv.sub(0.5).mul(2), 1).normalize()
+        const displaced = parallaxMappingSimple(heightTex, viewDir, uv)
+        return texture(heightTex, displaced)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const angle = iTime.mul(0.3)
+        const viewDir = vec3(angle.sin(), angle.cos(), 2).normalize()
+        const relief = parallaxMappingRelief(heightTex, viewDir, uv)
+        const occlusion = parallaxMappingOcclusion(heightTex, viewDir, uv)
+        const blend = uv.x.step(0.5)
+        const final = relief.mix(occlusion, blend)
+        const depth = final.sub(uv).length().mul(50)
+        return vec4(vec3(depth), 1)
+}`}
+/>

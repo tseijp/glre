@@ -1,0 +1,76 @@
+---
+title: 'perspective'
+description: 'Create perspective projection matrix from field of view and aspect ratio'
+keywords: [perspective, projection, matrix, fov, frustum, camera, 3d]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# perspective: Perspective Projection Matrix
+
+### 3D perspective transformation
+
+The perspective projection creates a 4×4 transformation matrix that maps a 3D frustum to normalized device coordinates with depth perspective. Objects further from the camera appear smaller, creating realistic 3D depth perception:
+
+$$
+f = \frac{1}{\tan(\text{fov}/2)}
+$$
+
+$$
+n_f = \frac{1}{\text{near} - \text{far}}
+$$
+
+$$
+M_{\text{persp}} = \begin{pmatrix}
+\frac{f}{\text{aspect}} & 0 & 0 & 0 \\
+0 & f & 0 & 0 \\
+0 & 0 & (\text{far} + \text{near}) \cdot n_f & -1 \\
+0 & 0 & 2 \cdot \text{far} \cdot \text{near} \cdot n_f & 0
+\end{pmatrix}
+$$
+
+The resulting coordinates require perspective division by the w-component to obtain final NDC.
+
+### Parameter Definitions
+
+| Parameter | Description                      | Range                   |
+| --------- | -------------------------------- | ----------------------- |
+| `fov`     | Vertical field of view (radians) | $(0, \pi)$              |
+| `aspect`  | Width/height aspect ratio        | $(0, \infty)$           |
+| `near`    | Near clipping plane distance     | $(0, \text{far})$       |
+| `far`     | Far clipping plane distance      | $(\text{near}, \infty)$ |
+
+### Perspective Grid Distortion
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const proj = perspective(1.2, iResolution.x.div(iResolution.y), 0.1, 10)
+        const coord = vec3(uv.sub(0.5).mul(4), 3)
+        const projected = proj.mul(vec4(coord, 1))
+        const ndc = projected.xyz.div(projected.w)
+        const gridLines = fract(ndc.xy.mul(8))
+        const gridX = step(gridLines.x, 0.1)
+        const gridY = step(gridLines.y, 0.1)
+        const color = vec3(max(gridX, gridY))
+        return vec4(color, 1)
+}`}
+/>
+
+### Dynamic Field of View
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const fov = sin(iTime).mul(0.8).add(1.5)
+        const proj = perspective(fov, 1, 0.1, 10)
+        const coord = vec3(uv.sub(0.5).mul(2), 2)
+        const transformed = proj.mul(vec4(coord, 1))
+        const depth = transformed.w.div(10)
+        const color = vec3(depth, abs(transformed.xy).mul(0.5))
+        return vec4(color, 1)
+}`}
+/>

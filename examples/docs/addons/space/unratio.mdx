@@ -1,0 +1,68 @@
+---
+title: 'unratio'
+description: 'Inverse aspect ratio correction for coordinate transformation'
+keywords: ['aspect ratio', 'coordinate', 'transform', 'screen space', 'normalization']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# unratio: Aspect Ratio Inverse Transform
+
+### Coordinate denormalization for aspect ratio correction
+
+The unratio function performs the inverse transformation of aspect ratio correction, converting normalized coordinates back to their original aspect ratio space.
+
+Given input coordinates `st` and screen dimensions `s`, the function applies:
+
+$$
+\text{unratio}(st, s) = \begin{pmatrix}
+st.x \\
+st.y \cdot \frac{s.x}{s.y} + \frac{s.y \cdot 0.5 - s.x \cdot 0.5}{s.y}
+\end{pmatrix}
+$$
+
+This transformation adjusts the Y-coordinate to restore the original aspect ratio distortion, undoing previous ratio correction.
+
+### Function Signature
+
+| Function  | Input Types  | Output Type | Description                     |
+| --------- | ------------ | ----------- | ------------------------------- |
+| `unratio` | `vec2, vec2` | `vec2`      | Inverse aspect ratio correction |
+
+### Parameters
+
+- `st`: Input coordinates to transform
+- `s`: Screen dimensions (width, height)
+
+### Applications
+
+Aspect ratio inverse correction is used for:
+
+- Converting from normalized space back to screen space
+- Undoing previous aspect ratio adjustments
+- Screen-to-world coordinate transformations
+- UI element positioning corrections
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const coords = uv.sub(0.5)
+        const restored = unratio(coords, iResolution)
+        const color = restored.add(0.5).abs()
+        return vec4(color, 0.5, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const size = vec2(800, 600)
+        const pos = uv.mul(size)
+        const corrected = unratio(pos.div(size), size)
+        const pattern = sin(corrected.x.mul(20)).mul(0.5).add(0.5)
+        return vec4(vec3(pattern), 1)
+}`}
+/>

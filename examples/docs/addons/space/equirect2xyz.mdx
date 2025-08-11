@@ -1,0 +1,71 @@
+---
+title: 'equirect2xyz'
+description: 'Convert equirectangular UV coordinates to 3D cartesian coordinates'
+keywords: [equirectangular, spherical, coordinate, conversion, 360, panorama]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# equirect2xyz: Equirectangular to Cartesian Conversion
+
+### Spherical coordinate transformation
+
+The equirectangular projection maps a spherical surface onto a rectangular plane. This function converts UV coordinates $(u, v) \in [0,1]^2$ back to 3D Cartesian coordinates on the unit sphere:
+
+$$
+\phi = \pi - v \cdot \pi
+$$
+
+$$
+\theta = u \cdot 2\pi
+$$
+
+$$
+\begin{pmatrix}
+x \\
+y \\
+z
+\end{pmatrix} = \begin{pmatrix}
+\cos(\theta) \sqrt{1 - \cos^2(\phi)} \\
+\cos(\phi) \\
+\sin(\theta) \sqrt{1 - \cos^2(\phi)}
+\end{pmatrix}
+$$
+
+Where $\phi$ represents elevation from the equator and $\theta$ represents azimuth around the sphere.
+
+### Coordinate System Mapping
+
+| UV Input  | Angle Range    | Description         |
+| --------- | -------------- | ------------------- |
+| $u = 0$   | $\theta = 0$   | Front center        |
+| $u = 0.5$ | $\theta = \pi$ | Back center         |
+| $v = 0$   | $\phi = \pi$   | South pole (bottom) |
+| $v = 0.5$ | $\phi = \pi/2$ | Equator (middle)    |
+| $v = 1$   | $\phi = 0$     | North pole (top)    |
+
+### Directional Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const dir = equirect2xyz(uv)
+        const color = iTime.sin().mul(dir).add(0.5)
+        return vec4(color, 1)
+}`}
+/>
+
+### Spherical Normal Mapping
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const dir = equirect2xyz(uv.add(iTime.mul(0.1)).fract())
+        const intensity = abs(dir.y).mul(0.8).add(0.2)
+        const color = vec3(intensity).mul(vec3(0.8, 0.9, 1.2))
+        return vec4(color, 1)
+}`}
+/>

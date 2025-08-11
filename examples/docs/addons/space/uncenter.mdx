@@ -1,0 +1,64 @@
+---
+title: 'uncenter'
+description: 'Coordinate transformation from centered [-1,1] to normalized [0,1] range'
+keywords: ['coordinate', 'transform', 'normalization', 'centered', 'range conversion']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# uncenter: Centered to Normalized Range Transform
+
+### Coordinate transformation from centered to normalized space
+
+The uncenter functions transform coordinates from a centered range [-1, 1] to a normalized range [0, 1]. This is the inverse operation of the center function.
+
+For any input value `v`, the transformation applies:
+
+$$
+\text{uncenter}(v) = v \times 0.5 + 0.5
+$$
+
+This linear transformation maps:
+
+- `-1` → `0`
+- `0` → `0.5`
+- `1` → `1`
+
+### Available Functions
+
+| Function        | Input Type | Output Type | Description            |
+| --------------- | ---------- | ----------- | ---------------------- |
+| `uncenterFloat` | `float`    | `float`     | Transform single value |
+| `uncenterVec2`  | `vec2`     | `vec2`      | Transform 2D vector    |
+| `uncenterVec3`  | `vec3`     | `vec3`      | Transform 3D vector    |
+
+### Applications
+
+Coordinate uncentering is used for:
+
+- Converting from centered coordinate systems to normalized UV space
+- Preparing coordinates for texture sampling
+- Shader output normalization
+- Color range adjustments
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const centered = uv.sub(0.5).mul(2)
+        const normalized = uncenterVec2(centered)
+        return vec4(normalized, 0.5, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const wave = sin(uv.x.mul(10).add(iTime))
+        const centered = wave
+        const normalized = uncenterFloat(centered)
+        return vec4(vec3(normalized), 1)
+}`}
+/>

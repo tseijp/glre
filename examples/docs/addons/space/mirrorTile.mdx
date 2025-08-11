@@ -1,0 +1,65 @@
+---
+title: 'mirrorTile'
+description: 'Mirrored tiling transformation creating seamless reflective pattern repetitions'
+keywords: [mirror, tiling, reflection, seamless, pattern, tessellation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mirrorTile: Reflective Tiling Functions
+
+### Seamless Mirror Pattern Generation
+
+The `mirrorTile` family creates seamless tiling patterns by alternating between normal and mirrored repetitions. This eliminates edge discontinuities that occur with standard tiling, producing smooth, continuous textures across tile boundaries.
+
+## Function Variants
+
+| Function      | Mirror Axis  | Input            | Output                 |
+| ------------- | ------------ | ---------------- | ---------------------- |
+| `mirrorTile`  | Both X and Y | `vec4` tile data | `vec4` mirrored tile   |
+| `mirrorXTile` | X-axis only  | `vec4` tile data | `vec4` X-mirrored tile |
+| `mirrorYTile` | Y-axis only  | `vec4` tile data | `vec4` Y-mirrored tile |
+
+Each function also provides `Vec2` convenience variants that internally use `sqTile` for coordinate preprocessing.
+
+## Mathematical Principle
+
+The mirror transformation alternates between:
+
+- Identity: $f(x) = x$ for even tiles
+- Reflection: $f(x) = 1 - x$ for odd tiles
+
+This creates $C^0$ continuity across tile boundaries, eliminating visible seams in tiled patterns.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const tile = mirrorTileVec2(uv.mul(4))
+        const pattern = sin(tile.x.mul(20)).mul(sin(tile.y.mul(20)))
+        const color = pattern.mul(0.5).add(0.5)
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const tileX = mirrorXTileVec2(uv.mul(vec2(6, 3)))
+        const tileY = mirrorYTileVec2(uv.mul(vec2(3, 6)))
+        const gradX = tileX.x
+        const gradY = tileY.y
+        const combined = gradX.mul(gradY)
+        return vec4(gradX, gradY, combined, 1)
+}`}
+/>
+
+## Seamless Tiling Applications
+
+**Texture Synthesis**: Create infinite, seamless textures from small source patterns without visible repetition artifacts.
+
+**Procedural Surfaces**: Generate continuous surface details like wood grain, marble veins, or fabric weaves across large areas.
+
+**Pattern Design**: Develop wallpaper, carpet, and textile patterns with guaranteed seamless repetition properties.

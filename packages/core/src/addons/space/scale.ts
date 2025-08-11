@@ -8,6 +8,6 @@ export const scale = Fn(([st, s, center]: [X, X, X]): X => {
         inputs: [
                 { name: 'st', type: 'auto' },
                 { name: 's', type: 'auto' },
-                { name: 'center', type: 'auto' }
-        ]
+                { name: 'center', type: 'auto' },
+        ],
 })

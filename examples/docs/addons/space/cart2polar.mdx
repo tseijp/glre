@@ -1,0 +1,50 @@
+---
+title: 'cart2polar'
+description: 'Converts Cartesian coordinates to polar coordinate system with radius and angle components'
+keywords: [cartesian, polar, coordinate, transformation, angle, radius]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cart2polar: Cartesian to Polar Coordinate Transformation
+
+### Converting rectangular coordinates to polar representation
+
+The cart2polar functions transform Cartesian coordinates into polar coordinate systems, providing radius and angular components for both 2D and 3D spaces.
+
+#### 2D Polar Transformation
+
+For 2D Cartesian coordinates $(x, y)$, the polar transformation produces $(\theta, r)$:
+
+$$\theta = \text{atan2}(y, x)$$
+$$r = \sqrt{x^2 + y^2}$$
+
+#### 3D Spherical Transformation
+
+For 3D Cartesian coordinates $(x, y, z)$, the spherical transformation produces $(r, \phi, \theta)$:
+
+$$r = \sqrt{x^2 + y^2 + z^2}$$
+$$\phi = \arccos\left(\frac{z}{r}\right)$$
+$$\theta = \text{atan2}(y, x)$$
+
+#### Function Variants
+
+| Function           | Input  | Output | Description                                  |
+| ------------------ | ------ | ------ | -------------------------------------------- |
+| `cart2polar(st)`   | `vec2` | `vec2` | 2D polar coordinates $(\theta, r)$           |
+| `cart2polar3D(st)` | `vec3` | `vec3` | 3D spherical coordinates $(r, \phi, \theta)$ |
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = uv.sub(0.5)
+        const polar = cart2polar(center)
+        const angle = polar.x
+        const radius = polar.y
+        const pattern = angle.mul(8).sin().mul(0.5).add(0.5)
+        const radialMask = smoothstep(0.02, 0.05, radius)
+        return vec4(vec3(pattern.mul(radialMask)), 1)
+}`}
+/>

@@ -1,0 +1,68 @@
+---
+title: 'hexTile'
+description: 'Hexagonal tiling pattern generator for procedural texture and coordinate mapping'
+keywords: [hexagonal, tiling, tessellation, procedural, pattern, coordinate]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hexTile: Hexagonal Tessellation Function
+
+### Procedural Hexagonal Grid Coordinate System
+
+The `hexTile` function transforms rectangular coordinates into hexagonal tessellation space, returning both local cell coordinates and cell indices. This enables creation of honeycomb patterns and hexagonal grid-based effects.
+
+## Mathematical Foundation
+
+Hexagonal tessellation uses a skewed coordinate system where:
+
+$$
+s = (1, \sqrt{3}) \approx (1, 1.732)
+$$
+
+The transformation maps rectangular UV coordinates to hexagonal cells through distance comparison between adjacent cell centers.
+
+## Return Structure
+
+The function returns a `vec4` containing:
+
+- `.xy`: Local coordinates within the hexagonal cell [0,1]
+- `.zw`: Integer cell indices identifying the specific hexagon
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const hex = hexTile(uv.mul(8))
+        const center = hex.xy.sub(0.5)
+        const dist = length(center)
+        const angle = atan2(center.y, center.x).add(PI).div(TWO_PI)
+        const hue = mod(hex.z.mul(0.3).add(hex.w.mul(0.7)), 1)
+        const brightness = smoothstep(0.4, 0.2, dist)
+        const color = vec3(hue, 0.8, brightness)
+        return vec4(color, 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const hex = hexTile(uv.mul(6).add(iTime.mul(0.2)))
+        const id = hex.z.add(hex.w.mul(7))
+        const localPos = hex.xy.mul(2).sub(1)
+        const pattern = sin(localPos.x.mul(6)).mul(sin(localPos.y.mul(6)))
+        const cellColor = sin(id.mul(2.3)).mul(0.5).add(0.5)
+        const final = pattern.mul(0.5).add(0.5).mul(cellColor)
+        return vec4(vec3(final, cellColor.mul(0.7), float(1).sub(cellColor)), 1)
+}`}
+/>
+
+## Hexagonal Properties
+
+**Uniform Neighbors**: Each hexagon has exactly six equidistant neighbors, creating natural radial symmetry patterns.
+
+**Optimal Packing**: Hexagonal tessellation achieves maximum area coverage with minimal perimeter, making it ideal for natural pattern simulation.
+
+**Distance Preservation**: The transformation maintains relative distances for smooth procedural noise sampling and filtering operations.

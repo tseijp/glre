@@ -1,0 +1,74 @@
+---
+title: 'xyz2equirect'
+description: 'Convert 3D cartesian coordinates to equirectangular UV coordinates'
+keywords: [equirectangular, spherical, coordinate, conversion, 360, panorama, inverse]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# xyz2equirect: Cartesian to Equirectangular Conversion
+
+### Spherical coordinate projection
+
+The xyz2equirect function converts 3D Cartesian coordinates on the unit sphere to equirectangular UV coordinates. This is the inverse operation of equirect2xyz, mapping 3D directions back to panoramic image coordinates:
+
+$$
+\theta = \text{atan2}(z, x) + \pi
+$$
+
+$$
+\phi = \text{acos}(-y)
+$$
+
+$$
+\begin{pmatrix}
+u \\
+v
+\end{pmatrix} = \begin{pmatrix}
+\frac{\theta}{2\pi} \\
+\frac{\phi}{\pi}
+\end{pmatrix}
+$$
+
+Where $\theta$ represents azimuth and $\phi$ represents elevation angle from the north pole.
+
+### Direction Mapping
+
+| 3D Direction | UV Output     | Description         |
+| ------------ | ------------- | ------------------- |
+| $(1, 0, 0)$  | $(0.5, 0.5)$  | East (right)        |
+| $(-1, 0, 0)$ | $(0, 0.5)$    | West (left)         |
+| $(0, 1, 0)$  | $(*, 0)$      | North pole (top)    |
+| $(0, -1, 0)$ | $(*, 1)$      | South pole (bottom) |
+| $(0, 0, 1)$  | $(0.25, 0.5)$ | Forward (front)     |
+
+### Direction to UV Mapping
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const angle = iTime.mul(0.5)
+        const dir = normalize(vec3(cos(angle), sin(uv.y.sub(0.5).mul(2)), sin(angle)))
+        const equiUV = xyz2equirect(dir)
+        const color = vec3(equiUV, 0.5)
+        return vec4(color, 1)
+}`}
+/>
+
+### Spherical Environment Mapping
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const radius = length(uv.sub(center))
+        const dir = normalize(vec3(uv.sub(center), sqrt(max(0, float(0.25).sub(radius.mul(radius))))))
+        const equiUV = xyz2equirect(dir)
+        const pattern = sin(equiUV.x.mul(20)).mul(sin(equiUV.y.mul(15)))
+        const color = vec3(pattern.mul(0.5).add(0.5))
+        return vec4(color, 1)
+}`}
+/>

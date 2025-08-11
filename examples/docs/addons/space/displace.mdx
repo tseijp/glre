@@ -1,0 +1,75 @@
+---
+title: 'displace'
+description: 'Parallax occlusion mapping with raymarching-based displacement'
+keywords: [displacement, parallax, occlusion, mapping, raymarching, heightmap]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# displace: Parallax Occlusion Mapping Function
+
+### Heightmap Surface Displacement with Ray Intersection
+
+The displace function implements parallax occlusion mapping through iterative raymarching. Given a heightmap texture and viewing parameters, it computes surface intersection points by stepping along ray directions until depth discontinuities are detected.
+
+## Mathematical Foundation
+
+For a ray originating at position $\mathbf{r_o}$ with direction $\mathbf{r_d}$, the displacement algorithm samples heightmap values $h(u,v)$ along the parametric line:
+
+$$\mathbf{p}(t) = \mathbf{r_o} + t \cdot \mathbf{r_d}$$
+
+The intersection condition is satisfied when:
+
+$$p_z(t) \leq h(p_x(t), p_y(t)) \cdot D$$
+
+where $D$ is the displacement depth scale factor.
+
+## Function Variants
+
+| Function                  | Input               | Output | Purpose                |
+| ------------------------- | ------------------- | ------ | ---------------------- |
+| `displace(tex, ro, rd)`   | texture, vec3, vec3 | vec3   | Ray-based displacement |
+| `displaceUV(tex, ro, uv)` | texture, vec3, vec2 | vec3   | UV-based displacement  |
+
+## Algorithm Parameters
+
+The implementation uses configurable constants:
+
+- **DISPLACE_DEPTH**: Maximum displacement distance (1.0)
+- **DISPLACE_PRECISION**: Step size for ray advancement (0.01)
+- **DISPLACE_MAX_ITERATIONS**: Maximum sampling steps (120)
+
+## Implementation Details
+
+The function performs binary refinement when depth intersection occurs. The final position interpolates between the last two sample points using distance-based weighting:
+
+$$\mathbf{p_{final}} = \mathbf{p_{prev}} + \frac{d_{prev}}{|d_{curr}| + d_{prev}} \cdot (\mathbf{p_{curr}} - \mathbf{p_{prev}})$$
+
+where $d_{prev}$ and $d_{curr}$ represent signed distances to the heightmap surface.
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const viewPos = vec3(0, 0, 0.5)
+        const displaced = displace(heightTex, viewPos, uv.sub(0.5).mul(2))
+        const depth = displaced.z.mul(0.5).add(0.5)
+        return vec4(vec3(depth), 1)
+}`}
+/>
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const viewAngle = iTime.mul(0.2)
+        const viewPos = vec3(viewAngle.sin().mul(0.3), viewAngle.cos().mul(0.3), 0.8)
+        const surface = displaceUV(heightTex, viewPos, uv)
+        const normal = surface.xyz.normalize()
+        const lighting = normal.z.abs()
+        return vec4(vec3(lighting), 1)
+}`}
+/>

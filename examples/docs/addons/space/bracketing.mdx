@@ -1,0 +1,49 @@
+---
+title: 'bracketing'
+description: 'Angular bracketing decomposition for directional vector interpolation'
+keywords: [bracketing, angle, interpolation, direction, axis, blend]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# bracketing: Angular Bracketing Decomposition
+
+### Directional vector decomposition for smooth angular interpolation
+
+The bracketing functions decompose a directional vector into two adjacent angular axes with a blend factor. Given direction vector $\vec{d}$, the system computes:
+
+$$
+\text{angle} = \text{atan2}(d_y, d_x) + 2\pi
+$$
+
+$$
+\text{fractional} = \text{angle} \bmod \Delta\theta
+$$
+
+Where $\Delta\theta = \frac{\pi}{20}$ represents the angular discretization step.
+
+### Angular Quantization Analysis
+
+| Function          | Output  | Description                    |
+| ----------------- | ------- | ------------------------------ |
+| `bracketingAxis0` | `vec2`  | First quantized axis vector    |
+| `bracketingAxis1` | `vec2`  | Adjacent quantized axis vector |
+| `bracketingBlend` | `float` | Interpolation factor $[0,1]$   |
+
+The system provides smooth transitions between discretized angular segments through linear interpolation of adjacent axis vectors.
+
+### Directional Field Visualization
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const center = uv.sub(0.5).mul(2)
+        const len = center.length()
+        const safeCenter = center.div(max(len, 0.001))
+        const axis0 = bracketingAxis0(safeCenter)
+        const intensity = axis0.x.mul(0.5).add(0.5)
+        return vec4(vec3(intensity), 1)
+}`}
+/>

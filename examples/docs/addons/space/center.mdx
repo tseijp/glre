@@ -1,0 +1,45 @@
+---
+title: 'center'
+description: 'Transforms coordinates from [0,1] range to [-1,1] range, centering around origin'
+keywords: [center, normalize, coordinate, transform, origin, range]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# center: Coordinate Centering Transformation
+
+### Converting unit coordinates to centered coordinate system
+
+The center functions transform coordinates from the unit range $[0,1]$ to the centered range $[-1,1]$. This operation centers coordinates around the origin, essential for symmetric operations and distance calculations.
+
+#### Mathematical Foundation
+
+For any coordinate value $x$ in the range $[0,1]$:
+
+$$x_{centered} = 2x - 1$$
+
+This linear transformation maps:
+
+- $0 \rightarrow -1$ (minimum)
+- $0.5 \rightarrow 0$ (center)
+- $1 \rightarrow 1$ (maximum)
+
+#### Function Variants
+
+| Function         | Input Type | Output Type | Description                  |
+| ---------------- | ---------- | ----------- | ---------------------------- |
+| `centerFloat(x)` | `float`    | `float`     | Centers scalar value         |
+| `centerVec2(v)`  | `vec2`     | `vec2`      | Centers 2D vector components |
+| `centerVec3(v)`  | `vec3`     | `vec3`      | Centers 3D vector components |
+
+<FragmentEditor
+        isFun
+        code={`
+const fragment = () => {
+        const centered = centerVec2(uv)
+        const voronoi = centered.length().mul(centered.x.mul(centered.y).mul(100)).fract()
+        const pattern = voronoi.step(0.8)
+        return vec4(vec3(pattern), 1)
+}`}
+/>
