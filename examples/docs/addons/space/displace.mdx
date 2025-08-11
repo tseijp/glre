@@ -40,14 +40,6 @@ The implementation uses configurable constants:
 - **DISPLACE_PRECISION**: Step size for ray advancement (0.01)
 - **DISPLACE_MAX_ITERATIONS**: Maximum sampling steps (120)
 
-## Implementation Details
-
-The function performs binary refinement when depth intersection occurs. The final position interpolates between the last two sample points using distance-based weighting:
-
-$$\mathbf{p_{final}} = \mathbf{p_{prev}} + \frac{d_{prev}}{|d_{curr}| + d_{prev}} \cdot (\mathbf{p_{curr}} - \mathbf{p_{prev}})$$
-
-where $d_{prev}$ and $d_{curr}$ represent signed distances to the heightmap surface.
-
 <FragmentEditor
         isFun
         code={`

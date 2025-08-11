@@ -34,21 +34,6 @@ The function returns a `vec4` containing:
         isFun
         code={`
 const fragment = () => {
-        const hex = hexTile(uv.mul(8))
-        const center = hex.xy.sub(0.5)
-        const dist = length(center)
-        const angle = atan2(center.y, center.x).add(PI).div(TWO_PI)
-        const hue = mod(hex.z.mul(0.3).add(hex.w.mul(0.7)), 1)
-        const brightness = smoothstep(0.4, 0.2, dist)
-        const color = vec3(hue, 0.8, brightness)
-        return vec4(color, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
         const hex = hexTile(uv.mul(6).add(iTime.mul(0.2)))
         const id = hex.z.add(hex.w.mul(7))
         const localPos = hex.xy.mul(2).sub(1)
@@ -58,11 +43,3 @@ const fragment = () => {
         return vec4(vec3(final, cellColor.mul(0.7), float(1).sub(cellColor)), 1)
 }`}
 />
-
-## Hexagonal Properties
-
-**Uniform Neighbors**: Each hexagon has exactly six equidistant neighbors, creating natural radial symmetry patterns.
-
-**Optimal Packing**: Hexagonal tessellation achieves maximum area coverage with minimal perimeter, making it ideal for natural pattern simulation.
-
-**Distance Preservation**: The transformation maintains relative distances for smooth procedural noise sampling and filtering operations.

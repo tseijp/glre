@@ -43,17 +43,3 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-### Gradient Checkerboard Variation
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const tiled = sqTile(uv.mul(6))
-        const pattern = checkerTile(tiled)
-        const gradient = mix(vec3(0.1, 0.3, 0.7), vec3(0.9, 0.7, 0.2), tiled.x)
-        const color = mix(gradient, vec3(0.95), pattern)
-        return vec4(color, 1)
-}`}
-/>

@@ -42,24 +42,3 @@ const fragment = () => {
         return vec4(vec3(color), 1)
 }`}
 />
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const tileX = mirrorXTileVec2(uv.mul(vec2(6, 3)))
-        const tileY = mirrorYTileVec2(uv.mul(vec2(3, 6)))
-        const gradX = tileX.x
-        const gradY = tileY.y
-        const combined = gradX.mul(gradY)
-        return vec4(gradX, gradY, combined, 1)
-}`}
-/>
-
-## Seamless Tiling Applications
-
-**Texture Synthesis**: Create infinite, seamless textures from small source patterns without visible repetition artifacts.
-
-**Procedural Surfaces**: Generate continuous surface details like wood grain, marble veins, or fabric weaves across large areas.
-
-**Pattern Design**: Develop wallpaper, carpet, and textile patterns with guaranteed seamless repetition properties.

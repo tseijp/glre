@@ -39,24 +39,3 @@ const fragment = () => {
         return vec4(vec3(flipped, 0.5), 1)
 }`}
 />
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const original = vec3(uv, sin(iTime))
-        const flipped = flipYVec3(original)
-        const color = step(0.5, uv.x).select(original, flipped)
-        return vec4(color, 1)
-}`}
-/>
-
-## Coordinate System Applications
-
-**Texture Mapping**: Convert between OpenGL bottom-left origin and DirectX top-left origin coordinate systems.
-
-**Screen Space Processing**: Transform fragment coordinates for consistent rendering across different graphics backends.
-
-**UI Layout Systems**: Implement vertical mirroring for interface elements and layout transformations.
-
-**Image Processing**: Apply vertical flip transformations for computer vision and image manipulation operations.

@@ -42,23 +42,6 @@ Where:
 | `depth2viewZOrthographic` | Orthographic projection | `depth`, `near`, `far`                 |
 | `depth2viewZCombined`     | Unified function        | `depth`, `near`, `far`, `orthographic` |
 
-## Implementation Details
-
-The perspective projection inverts the standard Z-buffer depth encoding where closer objects have smaller depth values. The orthographic version applies linear interpolation between near and far planes.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const depth = fract(uv.x.mul(10))
-        const near = float(0.1)
-        const far = float(100)
-        const viewZ = depth2viewZ(depth, near, far)
-        const normalized = viewZ.div(far.sub(near)).abs()
-        return vec4(vec3(normalized), 1)
-}`}
-/>
-
 <FragmentEditor
         isFun
         code={`
@@ -72,13 +55,3 @@ const fragment = () => {
         return vec4(vec3(color), 1)
 }`}
 />
-
-## Practical Applications
-
-**Position Reconstruction**: Convert screen space coordinates and depth to world positions for deferred rendering pipelines.
-
-**Shadow Mapping**: Transform shadow depth comparisons from non-linear depth buffer space to linear view space for accurate shadow calculations.
-
-**Post-processing Effects**: Enable depth-based effects like depth of field, atmospheric scattering, and volumetric lighting by providing linear depth values.
-
-**Collision Detection**: Convert depth buffer samples to world space positions for ray casting and intersection testing in screen space algorithms.

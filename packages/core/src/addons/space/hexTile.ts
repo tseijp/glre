@@ -1,4 +1,4 @@
-import { Fn, Vec2, Vec4, vec2, vec4, floor, dot, select } from '../../node'
+import { Fn, Vec2, Vec4, vec2, vec4, float, floor, dot, select } from '../../node'
 
 export const hexTile = Fn(([st]: [Vec2]): Vec4 => {
         const s = vec2(1, 1.7320508).toVar('s')
@@ -10,7 +10,7 @@ export const hexTile = Fn(([st]: [Vec2]): Vec4 => {
         const f = vec4(stYX.sub(i.xy.mul(s)), stYX.sub(i.zw.add(0.5).mul(s))).toVar('f')
         const dotXY = dot(f.xy, f.xy)
         const dotZW = dot(f.zw, f.zw)
-        return select(vec4(f.wz.add(0.5), i.zw.add(o)), vec4(f.yx.add(0.5), i.xy), dotXY.lessThan(dotZW))
+        return select(vec4(f.wz.add(float(0.5)), i.zw.add(o)), vec4(f.yx.add(float(0.5)), i.xy), dotXY.lessThan(dotZW))
 }).setLayout({
         name: 'hexTile',
         type: 'vec4',

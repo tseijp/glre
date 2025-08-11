@@ -56,16 +56,3 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-### Spherical Normal Mapping
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const dir = equirect2xyz(uv.add(iTime.mul(0.1)).fract())
-        const intensity = abs(dir.y).mul(0.8).add(0.2)
-        const color = vec3(intensity).mul(vec3(0.8, 0.9, 1.2))
-        return vec4(color, 1)
-}`}
-/>

@@ -58,17 +58,3 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-### Dynamic Fisheye Effect
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const distorted = uv.add(sin(iTime.add(length(uv.sub(0.5)).mul(10))).mul(0.05))
-        const dir = fisheye2xyz(distorted)
-        const intensity = abs(dir.y).pow(0.7)
-        const color = mix(vec3(0.2, 0.4, 0.8), vec3(0.9, 0.7, 0.3), intensity)
-        return vec4(color, 1)
-}`}
-/>

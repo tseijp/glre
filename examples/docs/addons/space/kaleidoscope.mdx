@@ -41,25 +41,3 @@ const fragment = () => {
         return vec4(vec3(color), 1)
 }`}
 />
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const segments = sin(iTime.mul(0.5)).mul(4).add(6)
-        const phase = iTime.mul(0.3)
-        const kaleido = kaleidoscope(uv, segments, phase)
-        const dist = length(kaleido.sub(0.5))
-        const rings = sin(dist.mul(30)).mul(0.5).add(0.5)
-        const hue = atan2(kaleido.y.sub(0.5), kaleido.x.sub(0.5)).div(TWO_PI).add(0.5)
-        return vec4(hue, rings, float(1).sub(rings), 1)
-}`}
-/>
-
-## Symmetry Properties
-
-**Angular Repetition**: Creates $n$-fold rotational symmetry where patterns repeat every $\frac{360°}{n}$ degrees.
-
-**Mirror Boundaries**: Each segment boundary acts as a mirror line, reflecting content across radial divisions.
-
-**Continuous Transformation**: Smooth coordinate mapping preserves texture filtering and interpolation quality across segment boundaries.
