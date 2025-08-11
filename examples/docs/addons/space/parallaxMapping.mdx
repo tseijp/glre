@@ -30,13 +30,6 @@ where $S$ represents the scale factor and $\Delta\mathbf{T}$ the displacement di
 | `parallaxMappingRelief`    | High    | Low         | Binary refinement           |
 | `parallaxMappingOcclusion` | Highest | Lowest      | Interpolated occlusion      |
 
-## Technical Parameters
-
-The system uses configurable constants for precision control:
-
-- **PARALLAXMAPPING_SCALE**: Displacement magnitude (0.01)
-- **PARALLAXMAPPING_NUMSEARCHES**: Base layer count (10.0)
-
 ## Algorithm Details
 
 ### Simple Parallax
@@ -69,21 +62,5 @@ const fragment = () => {
         const viewDir = vec3(uv.sub(0.5).mul(2), 1).normalize()
         const displaced = parallaxMappingSimple(heightTex, viewDir, uv)
         return texture(heightTex, displaced)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
-        const angle = iTime.mul(0.3)
-        const viewDir = vec3(angle.sin(), angle.cos(), 2).normalize()
-        const relief = parallaxMappingRelief(heightTex, viewDir, uv)
-        const occlusion = parallaxMappingOcclusion(heightTex, viewDir, uv)
-        const blend = uv.x.step(0.5)
-        const final = relief.mix(occlusion, blend)
-        const depth = final.sub(uv).length().mul(50)
-        return vec4(vec3(depth), 1)
 }`}
 />

@@ -33,15 +33,6 @@ This linear transformation maps:
 | `uncenterVec2`  | `vec2`     | `vec2`      | Transform 2D vector    |
 | `uncenterVec3`  | `vec3`     | `vec3`      | Transform 3D vector    |
 
-### Applications
-
-Coordinate uncentering is used for:
-
-- Converting from centered coordinate systems to normalized UV space
-- Preparing coordinates for texture sampling
-- Shader output normalization
-- Color range adjustments
-
 <FragmentEditor
         isFun
         code={`
@@ -49,16 +40,5 @@ const fragment = () => {
         const centered = uv.sub(0.5).mul(2)
         const normalized = uncenterVec2(centered)
         return vec4(normalized, 0.5, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const wave = sin(uv.x.mul(10).add(iTime))
-        const centered = wave
-        const normalized = uncenterFloat(centered)
-        return vec4(vec3(normalized), 1)
 }`}
 />

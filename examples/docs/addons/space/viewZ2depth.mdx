@@ -40,21 +40,6 @@ This provides uniform depth precision across the entire view frustum.
 | $[\text{-far}, \text{-near}]$ | $[0, 1]$     | Perspective     |
 | $[\text{near}, \text{far}]$   | $[0, 1]$     | Orthographic    |
 
-### Perspective Depth Distribution
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const viewZ = mix(-10, -0.1, uv.x)
-        const depth = viewZ2depth(viewZ, 0.1, 10)
-        const color = vec3(depth)
-        return vec4(color, 1)
-}`}
-/>
-
-### Orthographic vs Perspective Comparison
-
 <FragmentEditor
         isFun
         code={`

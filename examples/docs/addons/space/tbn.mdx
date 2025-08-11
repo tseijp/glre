@@ -45,8 +45,6 @@ This ensures an orthogonal coordinate system aligned with the surface.
 | Bitangent | Surface vertical direction   | Orthogonal to both    |
 | Normal    | Surface perpendicular        | Unit length preferred |
 
-### Surface Normal Visualization
-
 <FragmentEditor
         isFun
         code={`
@@ -57,23 +55,6 @@ const fragment = () => {
         const localDir = normalize(vec3(uv.sub(0.5), 0.5))
         const worldDir = tbnMatrix.mul(localDir)
         const color = worldDir.mul(0.5).add(0.5)
-        return vec4(color, 1)
-}`}
-/>
-
-### Animated Surface Orientation
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const time = iTime.mul(0.5)
-        const wobble = sin(uv.x.mul(4).add(time)).mul(sin(uv.y.mul(3).add(time.mul(1.3))))
-        const normal = normalize(vec3(wobble.mul(0.3), wobble.mul(0.2), 1))
-        const up = vec3(sin(time), cos(time), 0)
-        const tbnMatrix = tbnFromNormal(normal, up)
-        const intensity = abs(tbnMatrix[2].y)
-        const color = mix(vec3(0.1, 0.2, 0.6), vec3(0.9, 0.5, 0.1), intensity)
         return vec4(color, 1)
 }`}
 />

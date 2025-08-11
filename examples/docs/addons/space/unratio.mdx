@@ -35,15 +35,6 @@ This transformation adjusts the Y-coordinate to restore the original aspect rati
 - `st`: Input coordinates to transform
 - `s`: Screen dimensions (width, height)
 
-### Applications
-
-Aspect ratio inverse correction is used for:
-
-- Converting from normalized space back to screen space
-- Undoing previous aspect ratio adjustments
-- Screen-to-world coordinate transformations
-- UI element positioning corrections
-
 <FragmentEditor
         isFun
         code={`
@@ -52,17 +43,5 @@ const fragment = () => {
         const restored = unratio(coords, iResolution)
         const color = restored.add(0.5).abs()
         return vec4(color, 0.5, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const size = vec2(800, 600)
-        const pos = uv.mul(size)
-        const corrected = unratio(pos.div(size), size)
-        const pattern = sin(corrected.x.mul(20)).mul(0.5).add(0.5)
-        return vec4(vec3(pattern), 1)
 }`}
 />

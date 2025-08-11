@@ -17,12 +17,6 @@ The mathematical expression $f(t) = t^3 - t \cdot \sin(t \cdot \pi)$ where $t \i
 
 The derivative $f'(t) = 3t^2 - \sin(t \cdot \pi) - t \cdot \pi \cdot \cos(t \cdot \pi)$ reveals the velocity profile: negative initial velocity followed by increasing acceleration rate.
 
-### Physical Interpretation and Practical Applications
-
-This easing function simulates realistic motion where objects gather momentum by first moving in the opposite direction. Natural systems exhibit this behavior when overcoming inertia: a pendulum drawing back before swinging forward, or a spring compressing before extending.
-
-The anticipatory undershoot creates visual tension that enhances the perceived power of the subsequent acceleration. This psychological effect makes motion feel more dynamic and intentional compared to standard cubic curves.
-
 ### Implementation Characteristics
 
 The TSL implementation leverages the mathematical constant $\pi$ for precise sinusoidal computation. The function accepts normalized time input $t$ and returns position values that extend below zero initially before transitioning smoothly to unity.

@@ -34,8 +34,8 @@ The function returns a `vec4` containing:
         isFun
         code={`
 const fragment = () => {
-        const hex = hexTile(uv.mul(6).add(iTime.mul(0.2)))
-        const id = hex.z.add(hex.w.mul(7))
+        const hex = hexTile(uv.mul(6))
+        const id = hex.w.mul(iTime).add(hex.z)
         const localPos = hex.xy.mul(2).sub(1)
         const pattern = sin(localPos.x.mul(6)).mul(sin(localPos.y.mul(6)))
         const cellColor = sin(id.mul(2.3)).mul(0.5).add(0.5)

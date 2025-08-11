@@ -37,7 +37,7 @@ const fragment = () => {
         const near = float(1)
         const far = float(50)
         const linear = linearizeDepth(depth, near, far)
-        const color = linear.div(far.sub(near)).mul(2)
+        const color = linear.div(far.sub(near))
         return vec4(color, color.mul(0.5), float(1).sub(color), 1)
 }`}
 />

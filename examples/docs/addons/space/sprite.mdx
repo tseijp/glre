@@ -42,22 +42,6 @@ This maps the input UV coordinates to the appropriate sprite cell within the atl
 | `grid`    | Grid dimensions (width, height) | $(1, \infty)^2$     |
 | `index`   | Sprite frame index              | $[0, \text{total})$ |
 
-### Animated Sprite Sequence
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const frameIndex = floor(iTime.mul(8)).mod(16)
-        const spriteUV = sprite(uv, vec2(4, 4), frameIndex)
-        const checker = mod(floor(spriteUV.mul(8)).x.add(floor(spriteUV.mul(8)).y), 2)
-        const color = mix(vec3(0.2, 0.4, 0.8), vec3(0.8, 0.6, 0.2), checker)
-        return vec4(color, 1)
-}`}
-/>
-
-### Multi-Grid Sprite Display
-
 <FragmentEditor
         isFun
         code={`

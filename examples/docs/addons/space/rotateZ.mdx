@@ -35,15 +35,6 @@ This matrix rotates points in the XY-plane while preserving the Z-coordinate. Th
 | `rotateZVec4`       | `vec4, float`       | Rotate 4D vector around Z-axis                    |
 | `rotateZVec4Center` | `vec4, float, vec4` | Rotate 4D vector around Z-axis with custom center |
 
-### Applications
-
-Z-axis rotations create roll motion in 3D space, commonly used for:
-
-- 2D coordinate transformations
-- Screen-space effects
-- Object spinning animations in the XY-plane
-- UI element rotations
-
 <FragmentEditor
         isFun
         code={`
@@ -53,19 +44,5 @@ const fragment = () => {
         const rotated = rotateZVec3(pos, angle)
         const color = rotated.xy.add(0.5).abs()
         return vec4(color, rotated.x.mul(0.5).add(0.5), 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec3(0.2, 0.3, 0)
-        const angle = sin(iTime.mul(0.8)).mul(3.14)
-        const pos = vec3(uv.sub(0.5).mul(1.5), 0)
-        const rotated = rotateZVec3Center(pos, angle, center)
-        const dist = length(rotated.xy.sub(center.xy))
-        const color = vec3(1).sub(vec3(dist))
-        return vec4(color, 1)
 }`}
 />

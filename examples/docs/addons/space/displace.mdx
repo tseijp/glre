@@ -32,36 +32,21 @@ where $D$ is the displacement depth scale factor.
 | `displace(tex, ro, rd)`   | texture, vec3, vec3 | vec3   | Ray-based displacement |
 | `displaceUV(tex, ro, uv)` | texture, vec3, vec2 | vec3   | UV-based displacement  |
 
-## Algorithm Parameters
+## Implementation Details
 
-The implementation uses configurable constants:
+The function performs binary refinement when depth intersection occurs. The final position interpolates between the last two sample points using distance-based weighting:
 
-- **DISPLACE_DEPTH**: Maximum displacement distance (1.0)
-- **DISPLACE_PRECISION**: Step size for ray advancement (0.01)
-- **DISPLACE_MAX_ITERATIONS**: Maximum sampling steps (120)
+$$\mathbf{p_{final}} = \mathbf{p_{prev}} + \frac{d_{prev}}{|d_{curr}| + d_{prev}} \cdot (\mathbf{p_{curr}} - \mathbf{p_{prev}})$$
 
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
-        const viewPos = vec3(0, 0, 0.5)
-        const displaced = displace(heightTex, viewPos, uv.sub(0.5).mul(2))
-        const depth = displaced.z.mul(0.5).add(0.5)
-        return vec4(vec3(depth), 1)
-}`}
-/>
+where $d_{prev}$ and $d_{curr}$ represent signed distances to the heightmap surface.
 
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
         const heightTex = uniform('https://avatars.githubusercontent.com/u/40712342')
-        const viewAngle = iTime.mul(0.2)
-        const viewPos = vec3(viewAngle.sin().mul(0.3), viewAngle.cos().mul(0.3), 0.8)
+        const viewPos = vec3(iTime.cos(), iTime.sin(), 0.5)
         const surface = displaceUV(heightTex, viewPos, uv)
-        const normal = surface.xyz.normalize()
-        const lighting = normal.z.abs()
-        return vec4(vec3(lighting), 1)
+        return vec4(surface, 1)
 }`}
 />

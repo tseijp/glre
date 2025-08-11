@@ -35,15 +35,6 @@ This matrix rotates points in the YZ-plane while preserving the X-coordinate. Th
 | `rotateXVec4`       | `vec4, float`       | Rotate 4D vector around X-axis                    |
 | `rotateXVec4Center` | `vec4, float, vec4` | Rotate 4D vector around X-axis with custom center |
 
-### Applications
-
-X-axis rotations create pitch motion in 3D space, commonly used for:
-
-- Camera pitch control
-- Object tilting animations
-- 3D model orientation adjustments
-- Procedural geometry generation
-
 <FragmentEditor
         isFun
         code={`
@@ -52,20 +43,6 @@ const fragment = () => {
         const pos = vec3(uv.x, uv.y, 0).sub(0.5).mul(2)
         const rotated = rotateXVec3(pos, angle)
         const color = rotated.add(0.5).abs()
-        return vec4(color, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec3(0, 0, 0)
-        const angle = sin(iTime).mul(1.5)
-        const pos = vec3(uv.x, uv.y, 0.3).sub(0.5).mul(3)
-        const rotated = rotateXVec3Center(pos, angle, center)
-        const depth = rotated.z.add(1).mul(0.5)
-        const color = vec3(depth, rotated.y.add(0.5), rotated.x.add(0.5))
         return vec4(color, 1)
 }`}
 />

@@ -43,22 +43,6 @@ Where $\theta$ represents azimuth and $\phi$ represents elevation angle from the
 | $(0, -1, 0)$ | $(*, 1)$      | South pole (bottom) |
 | $(0, 0, 1)$  | $(0.25, 0.5)$ | Forward (front)     |
 
-### Direction to UV Mapping
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const angle = iTime.mul(0.5)
-        const dir = normalize(vec3(cos(angle), sin(uv.y.sub(0.5).mul(2)), sin(angle)))
-        const equiUV = xyz2equirect(dir)
-        const color = vec3(equiUV, 0.5)
-        return vec4(color, 1)
-}`}
-/>
-
-### Spherical Environment Mapping
-
 <FragmentEditor
         isFun
         code={`

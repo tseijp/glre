@@ -39,26 +39,6 @@ This transforms coordinates from the frustum $(l,r) \times (b,t) \times (n,f)$ t
 | `n`       | Near plane   | Positive      |
 | `f`       | Far plane    | > Near        |
 
-### Orthographic Grid Visualization
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const ortho = orthographic(-2, 2, -2, 2, 0.1, 10)
-        const coord = vec3(uv.sub(0.5).mul(4), 2)
-        const projected = ortho.mul(vec4(coord, 1))
-        const ndc = projected.xyz.div(projected.w)
-        const gridLines = fract(ndc.xy.mul(5))
-        const gridX = step(gridLines.x, 0.05)
-        const gridY = step(gridLines.y, 0.05)
-        const color = vec3(max(gridX, gridY))
-        return vec4(color, 1)
-}`}
-/>
-
-### Animated Orthographic Bounds
-
 <FragmentEditor
         isFun
         code={`

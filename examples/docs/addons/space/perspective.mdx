@@ -41,26 +41,6 @@ The resulting coordinates require perspective division by the w-component to obt
 | `near`    | Near clipping plane distance     | $(0, \text{far})$       |
 | `far`     | Far clipping plane distance      | $(\text{near}, \infty)$ |
 
-### Perspective Grid Distortion
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const proj = perspective(1.2, iResolution.x.div(iResolution.y), 0.1, 10)
-        const coord = vec3(uv.sub(0.5).mul(4), 3)
-        const projected = proj.mul(vec4(coord, 1))
-        const ndc = projected.xyz.div(projected.w)
-        const gridLines = fract(ndc.xy.mul(8))
-        const gridX = step(gridLines.x, 0.1)
-        const gridY = step(gridLines.y, 0.1)
-        const color = vec3(max(gridX, gridY))
-        return vec4(color, 1)
-}`}
-/>
-
-### Dynamic Field of View
-
 <FragmentEditor
         isFun
         code={`

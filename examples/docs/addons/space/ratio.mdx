@@ -42,15 +42,3 @@ const fragment = () => {
         return vec4(vec3(pattern), 1)
 }`}
 />
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const target = vec2(800, 600)
-        const normalized = ratio(uv.sub(0.5), target)
-        const distortion = normalized.length().pow(0.3)
-        const rings = distortion.mul(15).fract().step(0.7)
-        return vec4(vec3(rings), 1)
-}`}
-/>

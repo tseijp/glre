@@ -39,18 +39,6 @@ $$z = r \cos(\phi)$$
         isFun
         code={`
 const fragment = () => {
-        const angle = uv.x.mul(6.28)
-        const radius = uv.y.mul(0.4)
-        const reconstructed = polar2cart(vec2(angle, radius))
-        const pattern = reconstructed.x.mul(reconstructed.y).mul(50).sin().abs()
-        return vec4(vec3(pattern), 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
         const r = 0.3
         const phi = uv.x.mul(3.14)
         const theta = uv.y.mul(6.28)

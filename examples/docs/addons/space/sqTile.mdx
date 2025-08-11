@@ -37,18 +37,6 @@ where:
         isFun
         code={`
 const fragment = () => {
-        const tileData = sqTile(uv.mul(8))
-        const localCoords = tileData.xy
-        const centerDist = localCoords.sub(0.5).length()
-        const pattern = smoothstep(0.3, 0.35, centerDist)
-        return vec4(vec3(pattern), 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
         const tileData = sqTileScale(uv, 12)
         const tileIndex = tileData.zw
         const checker = mod(tileIndex.x.add(tileIndex.y), 2)

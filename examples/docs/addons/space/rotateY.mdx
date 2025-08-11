@@ -35,15 +35,6 @@ This matrix rotates points in the XZ-plane while preserving the Y-coordinate. Th
 | `rotateYVec4`       | `vec4, float`       | Rotate 4D vector around Y-axis                    |
 | `rotateYVec4Center` | `vec4, float, vec4` | Rotate 4D vector around Y-axis with custom center |
 
-### Applications
-
-Y-axis rotations create yaw motion in 3D space, commonly used for:
-
-- Camera yaw control and orbital movement
-- Object spinning animations
-- Procedural environment generation
-- Coordinate system transformations
-
 <FragmentEditor
         isFun
         code={`
@@ -54,18 +45,5 @@ const fragment = () => {
         const intensity = rotated.z.add(1).mul(0.5)
         const color = vec3(intensity, rotated.x.add(0.5), rotated.y.add(0.5))
         return vec4(color, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const center = vec3(0.3, 0, 0)
-        const angle = sin(iTime.mul(2)).mul(2)
-        const pos = vec3(uv, 0.2).sub(0.5).mul(2)
-        const rotated = rotateYVec3Center(pos, angle, center)
-        const depth = rotated.z.add(1).mul(0.5).clamp(0, 1)
-        return vec4(vec3(depth), 1)
 }`}
 />

@@ -38,30 +38,11 @@ Where `t.zw` are the tile coordinates and `turn` controls the rotation amount.
 - `v`: UV coordinates for pattern generation
 - `s`: Scale factor(s)
 
-### Applications
-
-Windmill tiling is used for:
-
-- Decorative pattern generation
-- Textile and wallpaper designs
-- Architectural pattern creation
-- Dynamic rotational animations
-
 <FragmentEditor
         isFun
         code={`
 const fragment = () => {
-        const tile = windmillTileVec2(uv.mul(6))
-        const pattern = tile.xy.sub(0.5).length().sub(0.3).step(0)
-        return vec4(vec3(pattern), 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const scale = sin(iTime.mul(0.3)).mul(2).add(4)
+        const scale = iTime.mul(0.3).sin().mul(2).add(4)
         const tile = windmillTileFloat(uv, scale)
         const color = tile.xy.add(tile.zw.mul(0.1))
         return vec4(color, 0.5, 1)

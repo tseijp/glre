@@ -41,15 +41,6 @@ The returned `vec4` contains:
 - `.xy`: Fractional coordinates within the current triangle
 - `.zw`: Integer tile coordinates for addressing specific triangles
 
-### Applications
-
-Triangular tiling is used for:
-
-- Hexagonal pattern generation
-- Triangular grid systems
-- Procedural texture creation
-- Crystalline structure simulation
-
 <FragmentEditor
         isFun
         code={`
@@ -57,17 +48,5 @@ const fragment = () => {
         const tile = triTile(uv.mul(6))
         const color = vec3(tile.xy, tile.z.mul(0.2).add(0.5))
         return vec4(color, 1)
-}`}
-/>
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const scale = 6
-        const tile = triTileScaled(uv, scale)
-        const dist = tile.xy.length()
-        const pattern = smoothstep(0.2, 0.4, dist).sub(smoothstep(0.6, 0.8, dist))
-        return vec4(vec3(pattern), 1)
 }`}
 />
