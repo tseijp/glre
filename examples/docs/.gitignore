@@ -1,4 +1,5 @@
 ### my created
+.env*
 
 docs/support-*
 !docs/support-react*

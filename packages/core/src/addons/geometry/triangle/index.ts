@@ -1,0 +1,1 @@
+export { triangleArea } from './area'

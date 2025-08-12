@@ -1,8 +1,21 @@
+import 'dotenv/config'
 import { themes } from 'prism-react-renderer'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
 import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
+
+const editUrl = 'https://github.com/tseijp/glre/tree/main/examples/docs'
+const sitemap: Preset.Options['sitemap'] = {
+        lastmod: 'date',
+        changefreq: 'weekly',
+        filename: 'sitemap.xml',
+        createSitemapItems: async (params) => {
+                const { defaultCreateSitemapItems, ...rest } = params
+                const items = await defaultCreateSitemapItems(rest)
+                return items.filter((item) => !item.url.includes('/page/'))
+        },
+}
 
 const config: Config = {
         title: 'glre',
@@ -22,58 +35,21 @@ const config: Config = {
         },
         markdown: { mermaid: true },
         themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-live-codeblock'], // @TODO
-        presets: [
-                [
-                        'classic',
-                        {
-                                docs: {
-                                        path: 'docs/',
-                                        routeBasePath: 'docs',
-                                        editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
-                                },
-                        },
-                ],
-        ],
+        presets: [['@docusaurus/preset-classic', { sitemap, docs: { path: 'docs/', routeBasePath: 'docs', editUrl } }]],
         plugins: [
-                [
-                        '@docusaurus/plugin-content-docs',
-                        {
-                                id: 'api',
-                                path: 'api/',
-                                routeBasePath: 'api',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
-                        },
-                ],
-                [
-                        '@docusaurus/plugin-content-docs',
-                        {
-                                id: 'guide',
-                                path: 'guide/',
-                                routeBasePath: 'guide',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
-                        },
-                ],
+                ['@docusaurus/plugin-content-docs', { id: 'api', path: 'api/', routeBasePath: 'api', editUrl }],
+                ['@docusaurus/plugin-content-docs', { id: 'guide', path: 'guide/', routeBasePath: 'guide', editUrl }],
                 [
                         '@docusaurus/plugin-content-docs',
                         {
                                 id: 'addons',
                                 path: 'addons/',
                                 routeBasePath: 'addons',
-                                editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
+                                editUrl,
                                 remarkPlugins: [remarkMath],
                                 rehypePlugins: [rehypeKatex],
                         },
                 ],
-                // @TODO FIX primitives
-                // [
-                //         '@docusaurus/plugin-content-docs',
-                //         {
-                //                 id: 'primitives',
-                //                 path: 'primitives/',
-                //                 routeBasePath: 'primitives',
-                //                 editUrl: 'https://github.com/tseijp/glre/tree/main/examples/docs',
-                //         },
-                // ],
         ],
         themeConfig: {
                 navbar: {
@@ -84,8 +60,6 @@ const config: Config = {
                                 { position: 'left', to: '/api', label: 'API' },
                                 { position: 'left', to: '/addons', label: 'Addons' },
                                 { position: 'left', to: '/guide', label: 'Guide' },
-                                // @TODO FIX primitives
-                                // { position: 'left', to: '/primitives', label: 'Primitives' },
                                 { position: 'right', type: 'localeDropdown' },
                                 { position: 'right', label: 'GitHub', href: 'https://github.com/tseijp/glre' },
                         ],
@@ -109,11 +83,20 @@ const config: Config = {
                         theme: themes.vsLight,
                         darkTheme: themes.vsDark,
                 },
-                // https://docusaurus.io/docs/api/themes/@docusaurus/theme-live-codeblock
-                themeConfig: {
-                        liveCodeBlock: {
-                                playgroundPosition: 'right', // "top" | "bottom"
+                // https://docusaurus.io/docs/search
+                algolia: {
+                        appId: process.env.ALGOLIA_APP_ID,
+                        apiKey: process.env.ALGOLIA_API_KEY,
+                        indexName: process.env.ALGOLIA_INDEX_NAME,
+                        contextualSearch: true,
+                        externalUrlRegex: 'external\\.com|domain\\.com',
+                        replaceSearchResultPathname: {
+                                from: '/docs/', // or as RegExp: /\/docs\//
+                                to: '/',
                         },
+                        searchParameters: {},
+                        searchPagePath: 'search',
+                        insights: false,
                 },
         } satisfies Preset.ThemeConfig,
         // https://docusaurus.io/docs/next/markdown-features/math-equations#configuration
