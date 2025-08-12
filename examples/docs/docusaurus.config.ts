@@ -54,7 +54,7 @@ const config: Config = {
         themeConfig: {
                 navbar: {
                         title: 'glre',
-                        logo: { alt: ' ', src: 'img/favicon.ico' },
+                        logo: { alt: 'logo', src: 'img/favicon.ico' },
                         items: [
                                 { position: 'left', to: '/docs', label: 'Docs' },
                                 { position: 'left', to: '/api', label: 'API' },

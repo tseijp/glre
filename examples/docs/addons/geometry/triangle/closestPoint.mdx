@@ -1,0 +1,47 @@
+---
+title: 'closestPoint'
+description: 'Find the closest point on a triangle surface to any given 3D position'
+keywords: [geometry, triangle, closest-point, projection, distance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# closestPoint: Triangle Surface Projection
+
+### Point-to-Triangle Distance Minimization
+
+The closestPoint function finds the point on a triangle surface that minimizes distance to any given position in 3D space. This operation involves projecting the query point onto the triangle plane and testing barycentric coordinates to determine the final position.
+
+The algorithm follows a systematic approach:
+
+1. **Plane Projection**: Projects the input point onto the triangle plane using the surface normal
+2. **Barycentric Testing**: Computes barycentric coordinates to determine if the projection lies within triangle bounds
+3. **Edge Clamping**: When projection falls outside triangle boundaries, clamps to the nearest edge segment
+
+For triangle vertices $A$, $B$, $C$ and query point $P$, the projected point $P'$ is computed as:
+
+$$P' = P - \langle \mathbf{n}, P - A \rangle \mathbf{n}$$
+
+where $\mathbf{n} = \frac{(C-A) \times (B-A)}{||(C-A) \times (B-A)||}$ is the unit normal vector.
+
+The barycentric coordinates $(\alpha, \beta, \gamma)$ determine the final result:
+- If all coordinates are non-negative: $P' = \alpha A + \beta B + \gamma C$ 
+- If any coordinate is negative: clamp to the nearest edge using parametric line projection
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+	const triA = vec3(-0.3, -0.2, 0)
+	const triB = vec3(0.3, -0.2, 0)
+	const triC = vec3(0, 0.4, 0)
+	
+	const testPos = vec3(uv, 0)
+	const nearest = closestPoint(triA, triB, triC, testPos)
+	
+	const distField = length(testPos.sub(nearest))
+	const color = vec3(distField.mul(2), nearest.x.add(0.5), nearest.y.add(0.5))
+	
+	return vec4(color, 1)
+}`}
+/>

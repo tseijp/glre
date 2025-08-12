@@ -1,0 +1,86 @@
+---
+title: 'centroid'
+description: 'Calculate the geometric center point of a triangle using vertex coordinates'
+keywords: [triangle, centroid, geometry, barycenter, center]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# centroid: Triangle Geometric Center Calculator
+
+### Mathematical Foundation for Triangle Balance Points
+
+The centroid represents the geometric center where a triangle would balance perfectly if made of uniform material. Mathematically defined as the arithmetic mean of three vertices:
+
+$$
+C = \frac{A + B + C}{3}
+$$
+
+where $A$, $B$, $C$ are the triangle vertices and $C$ is the resulting centroid point.
+
+### Geometric Properties
+
+The centroid divides each median in a 2:1 ratio, creating natural subdivision patterns. This property enables sophisticated tiling and recursive geometric constructions through iterative centroid calculations.
+
+### Visual Distance Field Implementation
+
+The centroid function generates precise reference points for spatial calculations and geometric transformations. Distance fields computed from centroid positions create smooth gradient patterns that reveal underlying triangular structures.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const a = vec3(-0.4, -0.3, 0)
+        const b = vec3(0.5, -0.2, 0)
+        const c = vec3(0.1, 0.4, 0)
+        const center = centroid(a, b, c)
+        const p = vec3(uv, 0)
+        
+        const distToCenter = distance(p, center)
+        const triangleField = min(
+                distance(p, a),
+                min(distance(p, b), distance(p, c))
+        )
+        
+        const pattern = smoothstep(0.01, 0.02, distToCenter)
+                .mul(smoothstep(0.08, 0.09, triangleField))
+        
+        const color = mix(
+                vec3(0.2, 0.8, 0.4),
+                vec3(0.9, 0.3, 0.1),
+                pattern
+        )
+        
+        return vec4(color, 1)
+}`}
+/>
+
+### Recursive Subdivision Patterns
+
+Centroid calculations enable fractal subdivision where each triangle generates three new triangles using its centroid as a shared vertex. This mathematical property creates naturally balanced geometric patterns.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const scale = 4.0
+        const coord = uv.mul(scale)
+        
+        const a = vec3(0, 1, 0)
+        const b = vec3(-0.866, -0.5, 0)
+        const c = vec3(0.866, -0.5, 0)
+        
+        const c1 = centroid(a, b, c)
+        const c2 = centroid(a, c1, c)
+        const c3 = centroid(b, c1, c)
+        
+        const p = vec3(fract(coord), 0)
+        const d1 = distance(p, c1).mul(8)
+        const d2 = distance(p, c2).mul(6)
+        const d3 = distance(p, c3).mul(10)
+        
+        const rings = sin(d1).mul(sin(d2)).mul(sin(d3))
+        const color = vec3(rings.mul(0.5).add(0.5))
+        
+        return vec4(color, 1)
+}`}
+/>

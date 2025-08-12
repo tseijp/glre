@@ -121,10 +121,9 @@ export const Switch = (x: Y) => {
         return ret()
 }
 
-export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: Args) => T, defaultId = getId()) {
-        let layout: FnLayout
+export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: Args) => T, layout?: FnLayout) {
         const ret = (...args: any[]) => {
-                const id = layout?.name || defaultId
+                const id = layout?.name || getId()
                 const x = create('scope')
                 const paramVars: X[] = []
                 const paramDefs: NodeProps[] = []

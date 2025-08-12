@@ -1,0 +1,36 @@
+---
+title: 'area'
+description: 'Calculate the area of a triangle in 3D space'
+keywords: [geometry, triangle, area, cross-product]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# triangleArea: Triangle Area Calculation
+
+### Cross Product Method for Precise Triangle Area
+
+The triangle area function implements the standard cross product formula for computing triangle area in 3D space. Given three vertices $A$, $B$, and $C$, the area is calculated as:
+
+$$\text{Area} = \frac{1}{2} \|\vec{AB} \times \vec{AC}\|$$
+
+where $\vec{AB} = B - A$ and $\vec{AC} = C - A$ represent the edge vectors from vertex $A$ to vertices $B$ and $C$ respectively.
+
+The cross product $\vec{AB} \times \vec{AC}$ produces a vector perpendicular to the triangle plane whose magnitude equals twice the triangle area. Dividing by 2 yields the actual area.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+	const time = iTime.mul(2)
+	const h1 = sin(time).mul(0.2).add(0.3)
+	const h2 = cos(time.mul(1.3)).mul(0.2).add(0.3)
+	const h3 = sin(time.mul(0.7)).mul(0.2).add(0.3)
+	const a1 = area(vec3(-0.8, -0.5, 0), vec3(-0.2, -0.5, 0), vec3(-0.5, h1, 0))
+	const a2 = area(vec3(-0.1, -0.5, 0), vec3(0.5, -0.5, 0), vec3(0.2, h2, 0))
+	const a3 = area(vec3(0.6, -0.5, 0), vec3(1.2, -0.5, 0), vec3(0.9, h3, 0))
+	const col = floor(uv.x.mul(3))
+	const r = select(a1, select(a2, a3, col.equal(1)), col.equal(0))
+	return vec4(r.mul(8), sin(r.mul(30)).mul(0.5).add(0.5), cos(r.mul(20)).mul(0.5).add(0.5), 1)
+}`}
+/>

@@ -1,0 +1,57 @@
+---
+title: 'contain'
+description: 'Determine if a point lies inside a triangle using cross product sign testing'
+keywords: [geometry, triangle, containment, cross-product, point-in-triangle]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# triangleContain: Point-in-Triangle Containment Test
+
+### Cross Product Sign Method for Spatial Inclusion
+
+The triangle containment function determines whether a point lies inside a triangle using cross product sign testing. This method evaluates three cross products between edge vectors formed by translating the triangle relative to the test point.
+
+Given triangle vertices $A$, $B$, $C$ and test point $P$, the algorithm computes local vectors:
+
+$$
+\begin{align}
+\vec{a'} &= A - P \\
+\vec{b'} &= B - P \\
+\vec{c'} &= C - P
+\end{align}
+$$
+
+Three cross products are calculated from these translated vectors:
+
+$$
+\begin{align}
+\vec{u} &= \vec{b'} \times \vec{c'} \\
+\vec{v} &= \vec{c'} \times \vec{a'} \\
+\vec{w} &= \vec{a'} \times \vec{b'}
+\end{align}
+$$
+
+The containment test evaluates the sign consistency of dot products:
+
+$$\text{contained} = (\vec{u} \cdot \vec{v} \geq 0) \land (\vec{u} \cdot \vec{w} \geq 0)$$
+
+When both dot products are non-negative, the cross product vectors point in consistent directions, indicating the point lies within the triangle's boundaries. This method works by verifying that the test point lies on the same side of all triangle edges.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.8)
+        const p = uv.mul(4).sub(2)
+        const v1 = vec3(sin(t).mul(1.2), cos(t.mul(1.1)).mul(0.8).sub(0.3), 0)
+        const v2 = vec3(cos(t.mul(0.7)).mul(1.5).add(0.5), sin(t.mul(1.3)).mul(0.6).add(0.4), 0)
+        const v3 = vec3(sin(t.mul(1.4)).mul(0.9).sub(0.2), cos(t.mul(0.9)).mul(1.1).sub(0.5), 0)
+        const pos = vec3(p, 0)
+        const inside = contain(v1, v2, v3, pos)
+        const edge = length(p.sub(v1.xy)).min(length(p.sub(v2.xy))).min(length(p.sub(v3.xy)))
+        const wireframe = smoothstep(0.02, 0.05, edge).oneMinus()
+        const color = select(vec3(0.1, 0.15, 0.3), vec3(0.8, 0.4, 0.1), inside)
+        return vec4(color.add(wireframe.mul(0.7)), 1)
+}`}
+/>

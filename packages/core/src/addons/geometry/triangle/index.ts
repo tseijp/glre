@@ -1,1 +1,5 @@
-export { triangleArea } from './area'
+export * from './area'
+export * from './barycentric'
+export * from './centroid'
+export * from './closestPoint'
+export * from './contain'
