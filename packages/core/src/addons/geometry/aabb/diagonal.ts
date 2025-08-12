@@ -1,10 +1,10 @@
 import { Fn, Vec3 } from '../../../node'
 import { AABBType } from './aabb'
 
-export const centroid = Fn(([box]: [AABBType]): Vec3 => {
-        return box.minBounds.add(box.maxBounds).mul(0.5)
+export const diagonal = Fn(([box]: [AABBType]): Vec3 => {
+        return box.maxBounds.sub(box.minBounds).abs()
 }).setLayout({
-        name: 'centroid_',
+        name: 'diagonal',
         type: 'vec3',
         inputs: [{ name: 'box', type: 'auto' }],
 })
