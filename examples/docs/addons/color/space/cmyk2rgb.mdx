@@ -28,7 +28,6 @@ $$B = (1 - \text{min}(1, y \cdot \text{invK} + k))$$
 The black component $k$ represents the maximum darkness. The chromatic components $(c, m, y)$ are scaled by the remaining brightness $(1-k)$ and combined with black to determine the final subtractive effect on each RGB channel.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const c = uv.x

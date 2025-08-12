@@ -16,7 +16,6 @@ The `aastep` function creates crisp yet smooth transitions between different val
 This technique eliminates jagged edges while preserving sharp visual boundaries, making it essential for creating clean geometric patterns and professional visual effects.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution)
@@ -37,7 +36,6 @@ const fragment = () => {
 Dynamic shape transitions become fluid and professional when using anti-aliased step functions for morphing between different geometric forms.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(4)
@@ -87,5 +85,5 @@ With $t = \frac{x - a}{b - a}$. This creates smooth transitions that eliminate a
 | Component           | Purpose                           | Implementation                                            |
 | ------------------- | --------------------------------- | --------------------------------------------------------- |
 | Derivative Analysis | Detects pixel boundaries          | `vec2(dFdx(value), dFdy(value))`                          |
-| Smoothing Width     | Calculates anti-alias range       | `derivative.length() * 0.7`                                |
+| Smoothing Width     | Calculates anti-alias range       | `derivative.length() * 0.7`                               |
 | Smooth Transition   | Applies intelligent interpolation | `smoothstep(threshold - width, threshold + width, value)` |

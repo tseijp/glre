@@ -38,7 +38,6 @@ The function creates an S-shaped curve that passes through (0,0), (0.5,0.5), and
 Multiple gain applications with different parameters can create complex contrast effects. Each layer enhances different aspects of the input pattern, useful for creating high-contrast artistic effects or emphasizing specific features.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const coord = uv.sub(0.5).mul(4)
@@ -66,7 +65,6 @@ const fragment = () => {
 Gain can be animated over time to create dynamic contrast effects. By changing the gain parameter continuously, you can create pulsing, breathing, or throbbing visual effects that emphasize different parts of the image at different times.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const quantumTime = iTime.mul(0.8)

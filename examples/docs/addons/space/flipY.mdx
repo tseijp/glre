@@ -32,7 +32,6 @@ This transformation maps the range $[0,1]$ to $[1,0]$, effectively mirroring coo
 | `vec4`     | `vec4` | $(x, y, z, w) \rightarrow (x, 1-y, z, w)$ |
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const flipped = flipYVec2(uv)

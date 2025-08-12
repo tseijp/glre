@@ -24,7 +24,6 @@ The quintic function demonstrates critical mathematical properties: preservation
 The pow5 function simply raises input values to the fifth power ($x^5$). This creates strong non-linear amplification - values near zero become much smaller, while values above 1 become much larger. Unlike even powers, pow5 preserves the sign of negative inputs.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const gridScale = 4
@@ -56,7 +55,6 @@ const fragment = () => {
 This demo shows how pow5 preserves the sign of negative values while amplifying magnitude. Positive and negative regions create different visual patterns due to the asymmetric nature of the fifth power function.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const center = uv.sub(0.5)

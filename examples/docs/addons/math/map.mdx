@@ -22,7 +22,6 @@ The mathematical foundation reveals two transformation modes:
 Where the first transforms values from range $[a, b]$ to $[0, 1]$, while the second creates direct transformation from $[a, b]$ to $[c, d]$, establishing mathematical correspondence between any dimensional scales.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const normalized = map(uv, 0.2, 0.8)
@@ -40,7 +39,6 @@ const fragment = () => {
 Range mapping creates chromatic transformations that exist beyond conventional color boundaries. By systematically mapping color coordinates between mathematical spaces, new chromatic dimensions emerge through calculated scale metamorphosis.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const timePhase = iTime.mul(0.8)

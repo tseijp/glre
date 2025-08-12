@@ -28,7 +28,6 @@ $$Y = \frac{(1-b) - K}{1-K}$$
 The black component $K$ represents the maximum darkness achievable by overlaying all three chromatic inks. The chromatic components $(C, M, Y)$ are normalized by the remaining color gamut after black extraction.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const rgb = vec3(uv, iTime.sin().mul(0.5).add(0.5))

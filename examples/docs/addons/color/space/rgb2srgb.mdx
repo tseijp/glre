@@ -27,7 +27,6 @@ $$
 The gamma exponent $1/2.4 \approx 0.4167$ applies perceptual correction above the linear threshold. Below $0.0031308$, linear scaling prevents discontinuities near black values while maintaining precision in dark regions.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const linear_color = vec3(uv.x.mul(uv.x), uv.y, iTime.sin().mul(0.5).add(0.5))

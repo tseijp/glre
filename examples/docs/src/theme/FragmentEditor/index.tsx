@@ -53,7 +53,7 @@ interface Props {
 
 export const FragmentEditor = ({
         code = 'vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)',
-        isFun = false,
+        isFun = true,
         isLoop = false,
         ...props
 }: Props) => {

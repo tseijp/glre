@@ -40,7 +40,6 @@ The implementation uses finite differences with step size $\epsilon = 0.1$ to ap
 ## Implementation
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const p = uv.mul(4)
@@ -51,7 +50,6 @@ const fragment = () => {
 />
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const p = vec3(uv.mul(3), iTime.mul(0.2))

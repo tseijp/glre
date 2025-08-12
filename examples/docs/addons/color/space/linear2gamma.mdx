@@ -22,7 +22,6 @@ Where $L$ represents linear luminance input and $G$ the gamma-corrected display 
 Display gamma correction compresses linear light values into perceptually uniform distribution matching human visual response characteristics.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const strips = uv.y.mul(12).floor()
@@ -34,7 +33,6 @@ const fragment = () => {
 />
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const cellular = uv.mul(6).floor()

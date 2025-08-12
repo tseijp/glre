@@ -16,7 +16,6 @@ Adaptive threshold filtering creates intelligent boundaries that respond to loca
 The system examines both the current value and a blurred reference, calculating optimal separation points that adapt to varying content density and lighting conditions.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution)
@@ -40,7 +39,6 @@ const fragment = () => {
 Advanced edge detection leverages adaptive thresholding to identify meaningful boundaries while suppressing noise artifacts. The algorithm compares fine detail against smooth background variations, highlighting significant transitions.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(3)

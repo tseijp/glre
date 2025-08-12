@@ -33,7 +33,6 @@ Where $H(x)$ is the Heaviside step function. This quantization creates uniform d
 Quantizing color values to specific levels creates poster-like effects with distinct color bands instead of smooth transitions.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const rainbow = uv.x.mul(6.28).sin().mul(0.5).add(0.5)
@@ -51,7 +50,6 @@ const fragment = () => {
 Creating mathematical wave functions with discrete steps produces unique geometric patterns reminiscent of digital oscilloscopes.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const coord = uv.mul(8).sub(4)
@@ -69,7 +67,6 @@ const fragment = () => {
 Applying decimation to noise functions creates structured patterns with controlled randomness levels.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const p = uv.mul(16)

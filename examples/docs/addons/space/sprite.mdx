@@ -43,7 +43,6 @@ This maps the input UV coordinates to the appropriate sprite cell within the atl
 | `index`   | Sprite frame index              | $[0, \text{total})$ |
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const tileIndex = floor(uv.x.mul(6)).add(floor(uv.y.mul(6)).mul(6))

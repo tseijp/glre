@@ -34,7 +34,6 @@ Parameter $u$ scales the random displacement within each cell, affecting the ran
 Parameter $v$ controls the blend between cellular and noise characteristics. At $v = 0$, the function produces sharp Voronoi cellular patterns with distinct boundaries. At $v = 1$, the output becomes smooth noise-like with gradual transitions between regions.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const p = uv.mul(8)
