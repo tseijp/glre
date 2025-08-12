@@ -26,7 +26,7 @@ Where $\text{rep}$ represents the repetition period vector. This ensures that gr
 The 2D variant creates perfectly tileable patterns suitable for texture synthesis. The repetition vector controls tile dimensions independently for each axis, enabling rectangular tiling patterns.
 
 <FragmentEditor
-isFun
+
 code={`
 const fragment = () => {
         const tileSize = vec2(2, 1.5)
@@ -44,8 +44,7 @@ The 3D and 4D variants extend periodicity to volumetric and spacetime domains. T
 Four-dimensional periodic noise enables seamless animation loops by treating time as the fourth dimension with a specified period, creating infinitely repeating temporal patterns.
 
 <FragmentEditor
-isFun
-code={`
+        code={`
 const fragment = () => {
         const coord3d = vec3(uv.mul(4), iTime.mul(0.2))
         const period3d = vec3(2, 2, 1)

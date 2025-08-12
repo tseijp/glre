@@ -11,7 +11,6 @@ Learn to create various geometric shapes and complex patterns.
 The most fundamental shape
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Distance from center
@@ -28,7 +27,6 @@ const fragment = () => {
 Using `fwidth()` for automatic edge smoothing:
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Distance from center
@@ -47,7 +45,6 @@ const fragment = () => {
 Using multi-sampling for superior edge quality:
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const msaa = Fn(([uv, AA]) => {
@@ -75,7 +72,6 @@ const fragment = () => {
 ### Triangle
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Triangle using polygon generator (keep original function)
@@ -101,7 +97,6 @@ const fragment = () => {
 Create any regular polygon:
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Function to create polygon
@@ -130,7 +125,6 @@ const fragment = () => {
 ### Star Shape
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Pentagram (5-pointed star) using distance field
@@ -166,7 +160,6 @@ const fragment = () => {
 ### Straight Lines
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Horizontal line
@@ -185,7 +178,6 @@ const fragment = () => {
 ### Curves
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Sine wave
@@ -211,7 +203,6 @@ const fragment = () => {
 ### Fractal-like Pattern
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         // Create fractal pattern using Loop with configurable iterations
@@ -242,7 +233,6 @@ const fragment = () => {
 ### Voronoi Pattern
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const st = uv.mul(5)
@@ -282,7 +272,6 @@ const fragment = () => {
 ### Game of Life
 
 <FragmentEditor
-        isFun
         isLoop
         code={`
 const fragment = () => {
@@ -324,7 +313,6 @@ const fragment = () => {
 ### Morphing Patterns
 
 <FragmentEditor
-        isFun
         isLoop
         code={`
 const fragment = () => {
