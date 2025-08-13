@@ -25,33 +25,17 @@ const topological = (headers: Map<string, string>, dependencies: Map<string, Set
         return sorted
 }
 
-const generateHead = (x: X, c: NodeContext) => {
-        if (x.type === 'scope') {
-                const children = x.props.children || []
-                const statements: string[] = []
-                let returnValue = 'vec4(0.0)'
-                for (const child of children) {
-                        const childCode = code(child, c)
-                        if (child.type === 'return') {
-                                returnValue = childCode.replace('return ', '').replace(';', '')
-                        } else {
-                                statements.push(childCode)
-                        }
-                }
-                let head = ''
-                if (c.isWebGL && c.code?.dependencies) {
-                        const sorted = topological(c.code.headers, c.code.dependencies)
-                        head = sorted.map(([, value]) => value).join('\n')
-                } else head = Array.from(c.code?.headers?.values() || []).join('\n')
-                return [head, { statements, returnValue }]
-        }
+const build = (x: X, c: NodeContext) => {
         const body = code(x, c)
         let head = ''
         if (c.isWebGL && c.code?.dependencies) {
                 const sorted = topological(c.code.headers, c.code.dependencies)
                 head = sorted.map(([, value]) => value).join('\n')
         } else head = Array.from(c.code?.headers?.values() || []).join('\n')
-        return [head, body]
+        let [lines, ret] = body.split('return ')
+        if (ret) ret = ret.replace(';', '')
+        else [lines, ret] = ['', body]
+        return [head, lines.trim(), ret]
 }
 
 const generateStruct = (id: string, map: Map<string, string>) => {
@@ -61,33 +45,24 @@ const generateStruct = (id: string, map: Map<string, string>) => {
 export const fragment = (x: X, c: NodeContext = {}) => {
         c.code?.headers?.clear()
         c.label = 'frag' // for varying inputs or outputs
-        const [head, body] = generateHead(x, c)
-        const ret = []
+        const [head, lines, ret] = build(x, c)
+        const result = []
         if (c.isWebGL) {
-                ret.push(GLSL_FRAGMENT_HEAD)
-                for (const code of c.code?.fragInputs?.values() || []) ret.push(`in ${code}`)
-                ret.push(head)
-                if (typeof body === 'object' && body.statements) {
-                        ret.push('void main() {')
-                        body.statements.forEach((stmt) => ret.push(`  ${stmt}`))
-                        ret.push(`  fragColor = ${body.returnValue};`)
-                } else {
-                        ret.push(`void main() {\n  fragColor = ${body};`)
-                }
+                result.push(GLSL_FRAGMENT_HEAD)
+                for (const code of c.code?.fragInputs?.values() || []) result.push(`in ${code}`)
+                result.push(head)
+                result.push('void main() {')
+                result.push(`  ${lines}`)
+                result.push(`  fragColor = ${ret};`)
         } else {
-                if (c.code?.fragInputs?.size) ret.push(generateStruct('Out', c.code.fragInputs))
-                ret.push(head)
-                if (typeof body === 'object' && body.statements) {
-                        ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
-                        body.statements.forEach((stmt) => ret.push(`  ${stmt}`))
-                        ret.push(`  return ${body.returnValue};`)
-                } else {
-                        ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
-                        ret.push(`  return ${body};`)
-                }
+                if (c.code?.fragInputs?.size) result.push(generateStruct('Out', c.code.fragInputs))
+                result.push(head)
+                result.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
+                result.push(`  ${lines}`)
+                result.push(`  return ${ret};`)
         }
-        ret.push('}')
-        const main = ret.filter(Boolean).join('\n').trim()
+        result.push('}')
+        const main = result.filter(Boolean).join('\n').trim()
         // console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
@@ -95,29 +70,31 @@ export const fragment = (x: X, c: NodeContext = {}) => {
 export const vertex = (x: X, c: NodeContext = {}) => {
         c.code?.headers?.clear()
         c.label = 'vert' // for varying inputs or outputs
-        const [head, body] = generateHead(x, c)
-        const ret = []
+        const [head, lines, ret] = build(x, c)
+        const result = []
         if (c.isWebGL) {
-                ret.push('#version 300 es')
-                for (const code of c.code?.vertInputs?.values() || []) ret.push(`in ${code}`)
-                for (const code of c.code?.vertOutputs?.values() || []) ret.push(`out ${code}`)
-                ret.push(head)
-                ret.push('void main() {')
-                ret.push(`  gl_Position = ${body};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) ret.push(`  ${id} = ${code};`)
+                result.push('#version 300 es')
+                for (const code of c.code?.vertInputs?.values() || []) result.push(`in ${code}`)
+                for (const code of c.code?.vertOutputs?.values() || []) result.push(`out ${code}`)
+                result.push(head)
+                result.push('void main() {')
+                if (lines) result.push(`  ${lines}`)
+                result.push(`  gl_Position = ${ret};`)
+                for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  ${id} = ${code};`)
         } else {
-                if (c.code?.vertInputs?.size) ret.push(generateStruct('In', c.code.vertInputs))
-                if (c.code?.vertOutputs?.size) ret.push(generateStruct('Out', c.code.vertOutputs))
-                ret.push(head)
-                ret.push('@vertex')
-                ret.push(`fn main(${c.code?.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
-                ret.push('  var out: Out;')
-                ret.push(`  out.position = ${body};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) ret.push(`  out.${id} = ${code};`)
-                ret.push('  return out;')
+                if (c.code?.vertInputs?.size) result.push(generateStruct('In', c.code.vertInputs))
+                if (c.code?.vertOutputs?.size) result.push(generateStruct('Out', c.code.vertOutputs))
+                result.push(head)
+                result.push('@vertex')
+                result.push(`fn main(${c.code?.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
+                result.push('  var out: Out;')
+                result.push(`  ${lines}`)
+                result.push(`  out.position = ${ret};`)
+                for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  out.${id} = ${code};`)
+                result.push('  return out;')
         }
-        ret.push('}')
-        const main = ret.filter(Boolean).join('\n').trim()
+        result.push('}')
+        const main = result.filter(Boolean).join('\n').trim()
         // console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
@@ -125,24 +102,26 @@ export const vertex = (x: X, c: NodeContext = {}) => {
 export const compute = (x: X, c: NodeContext = {}) => {
         c.code?.headers?.clear()
         c.label = 'compute'
-        const [head, body] = generateHead(x, c)
-        const ret = []
+        const [head, lines, ret] = build(x, c)
+        const result = []
         if (c.isWebGL) {
-                ret.push('#version 300 es')
-                ret.push('precision mediump float;')
-                ret.push(head)
-                ret.push('void main() {')
-                ret.push(`  ${body};`)
-                ret.push('}')
+                result.push('#version 300 es')
+                result.push('precision mediump float;')
+                result.push(head)
+                result.push('void main() {')
+                if (lines) result.push(`  ${lines}`)
+                result.push(`  ${ret};`)
+                result.push('}')
         } else {
-                if (c.code?.computeInputs?.size) ret.push(generateStruct('In', c.code.computeInputs))
-                ret.push(head)
-                ret.push('@compute @workgroup_size(32)')
-                ret.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
-                ret.push(`  ${body};`)
-                ret.push('}')
+                if (c.code?.computeInputs?.size) result.push(generateStruct('In', c.code.computeInputs))
+                result.push(head)
+                result.push('@compute @workgroup_size(32)')
+                result.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
+                result.push(`  ${lines}`)
+                result.push(`  ${ret};`)
+                result.push('}')
         }
-        const main = ret.filter(Boolean).join('\n').trim()
+        const main = result.filter(Boolean).join('\n').trim()
         // console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
