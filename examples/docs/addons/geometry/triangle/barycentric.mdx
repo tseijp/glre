@@ -7,7 +7,7 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# triangleBarycentric: Barycentric Coordinate Computation
+# barycentric: Barycentric Coordinate Computation
 
 ### Mathematical Foundation for Triangle Point Interpolation
 
@@ -29,21 +29,21 @@ $$
 
 Two primary functions handle different coordinate computation scenarios:
 
-**`triangleBarycentric(a, b, c)`** computes normalized barycentric coordinates directly from three vertices. The computation projects vectors onto a coordinate system defined by the triangle edges.
+**`barycentric(a, b, c)`** computes normalized barycentric coordinates directly from three vertices. The computation projects vectors onto a coordinate system defined by the triangle edges.
 
-**`triangleBarycentricFromPosition(a, b, c, pos)`** determines barycentric coordinates of a specific position relative to the triangle using cross product area ratios:
+**`barycentricFromPosition(a, b, c, pos)`** determines barycentric coordinates of a specific position relative to the triangle using cross product area ratios:
 
 $$w_i = \frac{\text{Area}(\text{triangle formed by pos and edge i})}{\text{Area}(\text{triangle})}$$
 
 <FragmentEditor
         code={`
 const fragment = () => {
-	const p = uv.mul(2).sub(1)
-	const v1 = vec3(-0.8, -0.6, 0)
-	const v2 = vec3(0.8, -0.6, 0)
-	const v3 = vec3(0, 0.8, 0)
-	const pos = vec3(p, 0)
-	const bary = barycentricFromPosition(v1, v2, v3, pos)
-	return vec4(abs(bary), 1)
+        const p = uv.mul(2).sub(1)
+        const v1 = vec3(-0.8, -0.6, 0)
+        const v2 = vec3(0.8, -0.6, 0)
+        const v3 = vec3(0, 0.8, 0)
+        const pos = vec3(p, 0)
+        const bary = barycentricFromPosition(v1, v2, v3, pos)
+        return vec4(abs(bary), 1)
 }`}
 />

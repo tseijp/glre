@@ -1,0 +1,71 @@
+---
+title: 'expand'
+description: 'Expand an axis-aligned bounding box by a uniform margin'
+keywords: [geometry, aabb, expand, inflate, margin]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# expand: AABB Uniform Expansion Operation
+
+### Symmetric Margin Addition for Bounding Box Inflation
+
+The AABB expand function creates a new bounding box by uniformly expanding the original box along all axes. This operation adds a constant margin to each face while maintaining the box's center position.
+
+Given an AABB with bounds $[\vec{b_{\min}}, \vec{b_{\max}}]$ and expansion value $\epsilon$, the expanded box is calculated as:
+
+$$
+\begin{align}
+\vec{b'_{\min}} &= \vec{b_{\min}} - \epsilon \\
+\vec{b'_{\max}} &= \vec{b_{\max}} + \epsilon
+\end{align}
+$$
+
+The expansion value applies uniformly to all dimensions, creating symmetric growth around the original volume.
+
+**Geometric Properties**
+
+The expansion operation preserves several geometric relationships:
+- **Center Invariance**: The centroid remains unchanged
+- **Proportional Growth**: Each dimension increases by $2\epsilon$
+- **Volume Scaling**: New volume $V' = (d_x + 2\epsilon)(d_y + 2\epsilon)(d_z + 2\epsilon)$
+
+**Applications**
+
+AABB expansion serves multiple computational purposes:
+- **Collision Detection**: Safety margins for broad-phase collision filtering
+- **Spatial Queries**: Tolerance zones for approximate geometric operations
+- **Level of Detail**: Progressive quality boundaries for rendering optimization
+- **Memory Management**: Buffer zones for dynamic object allocation
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.5)
+        const p = uv.mul(5).sub(2.5)
+        const minBounds = vec3(sin(t).mul(0.6).sub(0.4), cos(t.mul(1.2)).mul(0.5).sub(0.3), 0)
+        const maxBounds = vec3(sin(t.mul(0.9)).mul(0.7).add(0.3), cos(t.mul(0.8)).mul(0.6).add(0.4), 0)
+        const originalBox = AABB({ minBounds, maxBounds })
+        const expansionValue = sin(iTime.mul(2)).mul(0.3).add(0.4)
+        const expandedBox = expand(originalBox, expansionValue)
+        const pos = vec3(p, 0)
+        const inOriginal = contain(originalBox, pos)
+        const inExpanded = contain(expandedBox, pos)
+        const inMargin = inExpanded.and(inOriginal.not())
+        const originalColor = vec3(0.8, 0.2, 0.1)
+        const marginColor = vec3(0.2, 0.6, 0.9)
+        const outsideColor = vec3(0.1, 0.1, 0.2)
+        const color = outsideColor.select(marginColor.select(originalColor, inOriginal), inExpanded)
+        const origEdge = min(
+                min(abs(p.x.sub(originalBox.minBounds.x)), abs(p.x.sub(originalBox.maxBounds.x))),
+                min(abs(p.y.sub(originalBox.minBounds.y)), abs(p.y.sub(originalBox.maxBounds.y)))
+        )
+        const expEdge = min(
+                min(abs(p.x.sub(expandedBox.minBounds.x)), abs(p.x.sub(expandedBox.maxBounds.x))),
+                min(abs(p.y.sub(expandedBox.minBounds.y)), abs(p.y.sub(expandedBox.maxBounds.y)))
+        )
+        const wireframe = smoothstep(0.02, 0.04, origEdge).oneMinus().add(smoothstep(0.01, 0.03, expEdge).oneMinus().mul(0.5))
+        return vec4(color.add(wireframe.mul(0.3)), 1)
+}`}
+/>

@@ -1,0 +1,62 @@
+---
+title: 'diagonal'
+description: 'Calculate the diagonal dimensions of an axis-aligned bounding box'
+keywords: [geometry, aabb, diagonal, dimensions, extent]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# diagonal: AABB Diagonal Vector Calculation
+
+### Extent Measurement for Bounding Box Dimensions
+
+The AABB diagonal function computes the dimensional extent of an axis-aligned bounding box along each coordinate axis. This operation determines the width, height, and depth of the rectangular volume.
+
+Given an AABB with bounds $[\vec{b_{\min}}, \vec{b_{\max}}]$, the diagonal vector is calculated as:
+
+$$\vec{d} = |\vec{b_{\max}} - \vec{b_{\min}}|$$
+
+The absolute value ensures positive dimensions regardless of coordinate system orientation or potential bound swapping.
+
+**Dimensional Analysis**
+
+The diagonal vector provides essential geometric measurements:
+- **X-component**: Width along the X-axis
+- **Y-component**: Height along the Y-axis  
+- **Z-component**: Depth along the Z-axis
+
+Additional derived measurements include:
+- **Volume**: $V = d_x \times d_y \times d_z$
+- **Surface Area**: $S = 2(d_x d_y + d_y d_z + d_z d_x)$
+- **Space Diagonal**: $|\vec{d}| = \sqrt{d_x^2 + d_y^2 + d_z^2}$
+
+**Applications**
+
+Diagonal calculations serve multiple computational purposes:
+- **Level of Detail**: Distance-based quality adjustments using diagonal magnitude
+- **Spatial Indexing**: Grid cell sizing for spatial hash tables
+- **Collision Detection**: Broad-phase filtering using diagonal extents
+- **Memory Allocation**: Buffer sizing based on dimensional requirements
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.3)
+        const p = uv.mul(4).sub(2)
+        const minBounds = vec3(sin(t).mul(0.8).sub(1.2), cos(t.mul(1.4)).mul(0.6).sub(0.8), 0)
+        const maxBounds = vec3(sin(t.mul(1.1)).mul(1.1).add(0.4), cos(t.mul(0.8)).mul(0.9).add(0.6), 0)
+        const box = AABB({ minBounds, maxBounds })
+        const diag = diagonal(box)
+        const center = aabbCentroid(box)
+        const relPos = p.sub(center.xy)
+        const normPos = relPos.div(diag.xy.mul(0.5))
+        const intensity = length(normPos).saturate().oneMinus()
+        const stripes = sin(normPos.x.mul(diag.x).mul(8)).mul(0.5).add(0.5)
+        const edgeX = min(abs(p.x.sub(box.minBounds.x)), abs(p.x.sub(box.maxBounds.x)))
+        const edgeY = min(abs(p.y.sub(box.minBounds.y)), abs(p.y.sub(box.maxBounds.y)))
+        const wireframe = smoothstep(0.02, 0.04, min(edgeX, edgeY)).oneMinus()
+        const color = intensity.mul(vec3(diag.x.mul(0.3), diag.y.mul(0.4), 0.6)).add(stripes.mul(0.2))
+        return vec4(color.add(wireframe.mul(0.5)), 1)
+}`}
+/>

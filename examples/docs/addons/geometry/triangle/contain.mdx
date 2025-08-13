@@ -48,7 +48,7 @@ const fragment = () => {
         const v2 = vec3(cos(t.mul(0.7)).mul(1.5).add(0.5), sin(t.mul(1.3)).mul(0.6).add(0.4), 0)
         const v3 = vec3(sin(t.mul(1.4)).mul(0.9).sub(0.2), cos(t.mul(0.9)).mul(1.1).sub(0.5), 0)
         const pos = vec3(p, 0)
-        const inside = contain(v1, v2, v3, pos)
+        const inside = triangleContain(v1, v2, v3, pos)
         const edge = length(p.sub(v1.xy)).min(length(p.sub(v2.xy))).min(length(p.sub(v3.xy)))
         const wireframe = smoothstep(0.02, 0.05, edge).oneMinus()
         const color = select(vec3(0.1, 0.15, 0.3), vec3(0.8, 0.4, 0.1), inside)

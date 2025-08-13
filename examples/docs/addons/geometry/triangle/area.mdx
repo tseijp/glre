@@ -7,7 +7,7 @@ date: 2025-08-06
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# triangleArea: Triangle Area Calculation
+# area: Triangle Area Calculation
 
 ### Cross Product Method for Precise Triangle Area
 
@@ -22,15 +22,25 @@ The cross product $\vec{AB} \times \vec{AC}$ produces a vector perpendicular to 
 <FragmentEditor
         code={`
 const fragment = () => {
-	const time = iTime.mul(2)
-	const h1 = sin(time).mul(0.2).add(0.3)
-	const h2 = cos(time.mul(1.3)).mul(0.2).add(0.3)
-	const h3 = sin(time.mul(0.7)).mul(0.2).add(0.3)
-	const a1 = area(vec3(-0.8, -0.5, 0), vec3(-0.2, -0.5, 0), vec3(-0.5, h1, 0))
-	const a2 = area(vec3(-0.1, -0.5, 0), vec3(0.5, -0.5, 0), vec3(0.2, h2, 0))
-	const a3 = area(vec3(0.6, -0.5, 0), vec3(1.2, -0.5, 0), vec3(0.9, h3, 0))
-	const col = floor(uv.x.mul(3))
-	const r = select(a1, select(a2, a3, col.equal(1)), col.equal(0))
-	return vec4(r.mul(8), sin(r.mul(30)).mul(0.5).add(0.5), cos(r.mul(20)).mul(0.5).add(0.5), 1)
+        const t = iTime.mul(0.8)
+        const p = uv.mul(4).sub(2)
+        const v1 = vec3(sin(t).mul(1.5), cos(t.mul(1.2)).mul(1.2).sub(0.5), 0)
+        const v2 = vec3(cos(t.mul(0.9)).mul(1.8), sin(t.mul(1.1)).mul(0.9).add(0.6), 0)
+        const v3 = vec3(sin(t.mul(1.3)).mul(1.1).sub(0.3), cos(t.mul(0.8)).mul(1.6).sub(0.8), 0)
+        const triangleArea = area(v1, v2, v3)
+        const bary = barycentricFromPosition(v1, v2, v3, vec3(p, 0))
+        const inside = bary.x.greaterThan(0).and(bary.y.greaterThan(0)).and(bary.z.greaterThan(0))
+        const areaScale = triangleArea.mul(2).saturate()
+        const insideColor = vec3(areaScale, areaScale.mul(0.8), areaScale.mul(0.5))
+        const outsideColor = vec3(0.1, 0.2, 0.4)
+        const triangleColor = outsideColor.select(insideColor, inside)
+        const edges = min(min(
+                length(p.sub(v1.xy)),
+                length(p.sub(v2.xy))
+        ), length(p.sub(v3.xy)))
+        const vertices = smoothstep(0.05, 0.08, edges).oneMinus()
+        const areaText = floor(triangleArea.mul(20)).div(20)
+        const grid = sin(p.x.mul(20)).mul(sin(p.y.mul(20))).mul(0.1).add(0.9)
+        return vec4(triangleColor.add(vertices.mul(0.7)).mul(grid), 1)
 }`}
 />

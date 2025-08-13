@@ -1,86 +1,45 @@
 ---
 title: 'centroid'
-description: 'Calculate the geometric center point of a triangle using vertex coordinates'
-keywords: [triangle, centroid, geometry, barycenter, center]
+description: 'Calculate the geometric center point of a triangle'
+keywords: [geometry, triangle, centroid, center, geometric-mean]
 date: 2025-08-06
 ---
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# centroid: Triangle Geometric Center Calculator
+# centroid: Triangle Geometric Center Calculation
 
-### Mathematical Foundation for Triangle Balance Points
+### Arithmetic Mean Method for Triangle Center Point
 
-The centroid represents the geometric center where a triangle would balance perfectly if made of uniform material. Mathematically defined as the arithmetic mean of three vertices:
+The triangle centroid function computes the geometric center of a triangle by calculating the arithmetic mean of its three vertices. This fundamental operation determines the balance point where the triangle would rest if made of uniform material.
 
-$$
-C = \frac{A + B + C}{3}
-$$
+Given triangle vertices $A$, $B$, and $C$, the centroid formula is:
 
-where $A$, $B$, $C$ are the triangle vertices and $C$ is the resulting centroid point.
+$$\text{Centroid} = \frac{A + B + C}{3}$$
 
-### Geometric Properties
+This simple averaging operation produces the point equidistant from all three vertices in terms of their vector sum. The centroid divides each median line (line from vertex to opposite edge midpoint) in a 2:1 ratio.
 
-The centroid divides each median in a 2:1 ratio, creating natural subdivision patterns. This property enables sophisticated tiling and recursive geometric constructions through iterative centroid calculations.
+**Geometric Properties**
 
-### Visual Distance Field Implementation
+The centroid represents the triangle's center of mass for uniform density distribution. It lies inside the triangle for all non-degenerate triangles and maintains consistent relationships with other triangle features:
 
-The centroid function generates precise reference points for spatial calculations and geometric transformations. Distance fields computed from centroid positions create smooth gradient patterns that reveal underlying triangular structures.
-
-<FragmentEditor
-        code={`
-const fragment = () => {
-        const a = vec3(-0.4, -0.3, 0)
-        const b = vec3(0.5, -0.2, 0)
-        const c = vec3(0.1, 0.4, 0)
-        const center = centroid(a, b, c)
-        const p = vec3(uv, 0)
-        
-        const distToCenter = distance(p, center)
-        const triangleField = min(
-                distance(p, a),
-                min(distance(p, b), distance(p, c))
-        )
-        
-        const pattern = smoothstep(0.01, 0.02, distToCenter)
-                .mul(smoothstep(0.08, 0.09, triangleField))
-        
-        const color = mix(
-                vec3(0.2, 0.8, 0.4),
-                vec3(0.9, 0.3, 0.1),
-                pattern
-        )
-        
-        return vec4(color, 1)
-}`}
-/>
-
-### Recursive Subdivision Patterns
-
-Centroid calculations enable fractal subdivision where each triangle generates three new triangles using its centroid as a shared vertex. This mathematical property creates naturally balanced geometric patterns.
+- Distance from centroid to any vertex equals $\frac{2}{3}$ of the corresponding median length
+- The centroid remains invariant under translation and scales proportionally under uniform scaling
+- Three lines connecting each vertex to the opposite edge midpoint intersect at the centroid
 
 <FragmentEditor
         code={`
 const fragment = () => {
-        const scale = 4.0
-        const coord = uv.mul(scale)
-        
-        const a = vec3(0, 1, 0)
-        const b = vec3(-0.866, -0.5, 0)
-        const c = vec3(0.866, -0.5, 0)
-        
-        const c1 = centroid(a, b, c)
-        const c2 = centroid(a, c1, c)
-        const c3 = centroid(b, c1, c)
-        
-        const p = vec3(fract(coord), 0)
-        const d1 = distance(p, c1).mul(8)
-        const d2 = distance(p, c2).mul(6)
-        const d3 = distance(p, c3).mul(10)
-        
-        const rings = sin(d1).mul(sin(d2)).mul(sin(d3))
-        const color = vec3(rings.mul(0.5).add(0.5))
-        
-        return vec4(color, 1)
+        const t = iTime.mul(0.8)
+        const v1 = vec3(sin(t).mul(1.5), cos(t.mul(1.2)).mul(1.2), 0)
+        const v2 = vec3(cos(t.mul(0.9)).mul(1.8), sin(t.mul(1.1)).mul(0.9), 0)
+        const v3 = vec3(sin(t.mul(1.3)).mul(1.1), cos(t.mul(0.8)).mul(1.6), 0)
+        const center = centroid(v1, v2, v3)
+        const p = uv.mul(4).sub(2)
+        const distToCenter = length(p.sub(center.xy))
+        const pulse = sin(distToCenter.mul(8).sub(iTime.mul(4))).mul(0.5).add(0.5)
+        const edge = min(min(length(p.sub(v1.xy)), length(p.sub(v2.xy))), length(p.sub(v3.xy)))
+        const vertices = smoothstep(0.1, 0.15, edge).oneMinus()
+        return vec4(pulse.mul(0.7), vertices.add(pulse.mul(0.5)), pulse.mul(0.3).add(vertices), 1)
 }`}
 />

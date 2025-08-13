@@ -1,6 +1,6 @@
 import { Fn, Bool, Vec3, cross, dot } from '../../../node'
 
-export const contain = Fn(([a, b, c, pos]: [Vec3, Vec3, Vec3, Vec3]): Bool => {
+export const triangleContain = Fn(([a, b, c, pos]: [Vec3, Vec3, Vec3, Vec3]): Bool => {
         const localA = a.sub(pos).toVar('localA')
         const localB = b.sub(pos).toVar('localB')
         const localC = c.sub(pos).toVar('localC')
@@ -9,7 +9,7 @@ export const contain = Fn(([a, b, c, pos]: [Vec3, Vec3, Vec3, Vec3]): Bool => {
         const w = cross(localA, localB).toVar('w')
         return dot(u, v).greaterThanEqual(0).and(dot(u, w).greaterThanEqual(0))
 }).setLayout({
-        name: 'contain',
+        name: 'triangleContain',
         type: 'bool',
         inputs: [
                 { name: 'a', type: 'vec3' },
@@ -18,3 +18,5 @@ export const contain = Fn(([a, b, c, pos]: [Vec3, Vec3, Vec3, Vec3]): Bool => {
                 { name: 'pos', type: 'vec3' },
         ],
 })
+
+export const contain = triangleContain

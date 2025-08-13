@@ -1,0 +1,56 @@
+---
+title: 'aabb'
+description: 'Axis-Aligned Bounding Box structure for 3D spatial queries'
+keywords: [geometry, aabb, bounding-box, spatial, structure]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# AABB: Axis-Aligned Bounding Box Structure
+
+### Fundamental 3D Spatial Container Definition
+
+The AABB (Axis-Aligned Bounding Box) structure provides a fundamental container for 3D spatial operations. This geometric primitive defines rectangular volumes aligned with coordinate axes, enabling efficient collision detection, spatial queries, and geometric computations.
+
+The AABB structure contains two primary components:
+
+$$
+\text{AABB} = \{
+\begin{align}
+\text{minBounds} &: \text{vec3} \\
+\text{maxBounds} &: \text{vec3}
+\end{align}
+\}
+$$
+
+where $\text{minBounds}$ represents the minimum coordinate values and $\text{maxBounds}$ represents the maximum coordinate values along each axis.
+
+**Geometric Properties**
+
+The AABB defines a rectangular parallelepiped with edges parallel to coordinate axes. This axis-alignment constraint simplifies many geometric operations while maintaining sufficient coverage for most spatial applications.
+
+Key mathematical relationships:
+
+- Volume: $V = (x_{\max} - x_{\min}) \times (y_{\max} - y_{\min}) \times (z_{\max} - z_{\min})$
+- Surface Area: $S = 2[(x_{\max} - x_{\min})(y_{\max} - y_{\min}) + (y_{\max} - y_{\min})(z_{\max} - z_{\min}) + (z_{\max} - z_{\min})(x_{\max} - x_{\min})]$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const t = iTime.mul(0.5)
+        const p = uv.mul(4).sub(2)
+        const minBounds = vec3(sin(t).mul(0.8).sub(0.5), cos(t.mul(1.1)).mul(0.6).sub(0.3), 0)
+        const maxBounds = vec3(sin(t.mul(1.2)).mul(0.9).add(0.7), cos(t.mul(0.9)).mul(0.8).add(0.5), 0)
+        const box = AABB({ minBounds, maxBounds })
+        const pos = vec3(p, 0)
+        const inside = contain(box, pos)
+        const edge = min(
+                min(abs(p.x.sub(box.minBounds.x)), abs(p.x.sub(box.maxBounds.x))),
+                min(abs(p.y.sub(box.minBounds.y)), abs(p.y.sub(box.maxBounds.y)))
+        )
+        const wireframe = smoothstep(0.02, 0.05, edge).oneMinus()
+        const color = vec3(0.2, 0.4, 0.8).select(vec3(0.8, 0.3, 0.1), inside)
+        return vec4(color.add(wireframe.mul(0.5)), 1)
+}`}
+/>
