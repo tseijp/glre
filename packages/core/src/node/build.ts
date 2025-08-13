@@ -26,6 +26,25 @@ const topological = (headers: Map<string, string>, dependencies: Map<string, Set
 }
 
 const generateHead = (x: X, c: NodeContext) => {
+        if (x.type === 'scope') {
+                const children = x.props.children || []
+                const statements: string[] = []
+                let returnValue = 'vec4(0.0)'
+                for (const child of children) {
+                        const childCode = code(child, c)
+                        if (child.type === 'return') {
+                                returnValue = childCode.replace('return ', '').replace(';', '')
+                        } else {
+                                statements.push(childCode)
+                        }
+                }
+                let head = ''
+                if (c.isWebGL && c.code?.dependencies) {
+                        const sorted = topological(c.code.headers, c.code.dependencies)
+                        head = sorted.map(([, value]) => value).join('\n')
+                } else head = Array.from(c.code?.headers?.values() || []).join('\n')
+                return [head, { statements, returnValue }]
+        }
         const body = code(x, c)
         let head = ''
         if (c.isWebGL && c.code?.dependencies) {
@@ -48,12 +67,24 @@ export const fragment = (x: X, c: NodeContext = {}) => {
                 ret.push(GLSL_FRAGMENT_HEAD)
                 for (const code of c.code?.fragInputs?.values() || []) ret.push(`in ${code}`)
                 ret.push(head)
-                ret.push(`void main() {\n  fragColor = ${body};`)
+                if (typeof body === 'object' && body.statements) {
+                        ret.push('void main() {')
+                        body.statements.forEach((stmt) => ret.push(`  ${stmt}`))
+                        ret.push(`  fragColor = ${body.returnValue};`)
+                } else {
+                        ret.push(`void main() {\n  fragColor = ${body};`)
+                }
         } else {
                 if (c.code?.fragInputs?.size) ret.push(generateStruct('Out', c.code.fragInputs))
                 ret.push(head)
-                ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
-                ret.push(`  return ${body};`)
+                if (typeof body === 'object' && body.statements) {
+                        ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
+                        body.statements.forEach((stmt) => ret.push(`  ${stmt}`))
+                        ret.push(`  return ${body.returnValue};`)
+                } else {
+                        ret.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
+                        ret.push(`  return ${body};`)
+                }
         }
         ret.push('}')
         const main = ret.filter(Boolean).join('\n').trim()
