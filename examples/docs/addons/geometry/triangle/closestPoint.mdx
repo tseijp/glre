@@ -40,7 +40,7 @@ const fragment = () => Scope(() => {
         })
         const testPos = vec3(uv.mul(2).sub(1), 0)
         const nearest = closestPoint(tri, testPos)
-        const distField = length(testPos.sub(nearest)).mul(4)
+        const distField = testPos.sub(nearest).length().mul(4)
         const red = distField.saturate()
         const green = nearest.x.add(0.5).saturate()
         const blue = nearest.y.add(0.5).saturate()

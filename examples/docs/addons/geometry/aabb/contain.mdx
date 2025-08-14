@@ -40,17 +40,20 @@ AABB containment testing provides optimal computational efficiency:
 const fragment = () => Scope(() => {
         const t = iTime.mul(0.4)
         const p = uv.mul(4).sub(2)
-        const minBounds = vec3(sin(t).mul(1.5).sub(0.3), cos(t.mul(1.2)).mul(1.2).sub(0.4), 0)
-        const maxBounds = vec3(sin(t.mul(0.9)).mul(1.3).add(0.5), cos(t.mul(0.7)).mul(1.1).add(0.6), 0)
-        const box = AABB({ minBounds, maxBounds })
+        const box = AABB({
+                minBounds: vec3(t.sin().mul(1.5).sub(0.3), t.mul(1.2).cos().mul(1.2).sub(0.4), 0),
+                maxBounds: vec3(t.mul(0.9).sin().mul(1.3).add(0.5), t.mul(0.7).cos().mul(1.1).add(0.6), 0)
+        })
         const testPoint = vec3(p, 0)
         const inside = aabbContain(box, testPoint)
         const distFromCenter = length(p.sub(aabbCentroid(box).xy))
         const gradient = smoothstep(0.5, 1.5, distFromCenter)
         const baseColor = vec3(0.1, 0.2, 0.4).select(vec3(0.8, 0.4, 0.1), inside)
-        const edgeX = min(abs(p.x.sub(box.minBounds.x)), abs(p.x.sub(box.maxBounds.x)))
-        const edgeY = min(abs(p.y.sub(box.minBounds.y)), abs(p.y.sub(box.maxBounds.y)))
-        const edge = min(edgeX, edgeY)
+        const edgeX = p.x.sub(box.minBounds.x).abs()
+                 .min(p.x.sub(box.maxBounds.x).abs())
+        const edgeY = p.y.sub(box.minBounds.y).abs()
+                 .min(p.y.sub(box.maxBounds.y).abs())
+        const edge = edgeX.min(edgeY)
         const wireframe = smoothstep(0.02, 0.05, edge).oneMinus()
         return vec4(baseColor.mul(gradient.oneMinus().add(0.3)).add(wireframe.mul(0.6)), 1)
 })`}

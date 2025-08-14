@@ -52,6 +52,6 @@ const fragment = () => Scope(() => {
         const pos = uv.mul(2).sub(1)
         const isInside = triangleContain(tri, vec3(pos, 0))
         const areaColor = vec3(triArea.mul(2), triArea.mul(1.5), 0.3)
-        return vec4(select(vec3(0.1, 0.1, 0.15), areaColor, isInside), 1)
+        return vec4(vec3(0.1, 0.1, 0.15).select(areaColor, isInside), 1)
 })`}
 />

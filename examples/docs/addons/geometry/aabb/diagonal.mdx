@@ -47,18 +47,21 @@ Diagonal calculations serve multiple computational purposes:
 const fragment = () => Scope(() => {
         const t = iTime.mul(0.3)
         const p = uv.mul(4).sub(2)
-        const minBounds = vec3(sin(t).mul(0.8).sub(1.2), cos(t.mul(1.4)).mul(0.6).sub(0.8), 0)
-        const maxBounds = vec3(sin(t.mul(1.1)).mul(1.1).add(0.4), cos(t.mul(0.8)).mul(0.9).add(0.6), 0)
-        const box = AABB({ minBounds, maxBounds })
+        const box = AABB({
+                minBounds: vec3(t.sin().mul(0.8).sub(1.2), t.mul(1.4).cos().mul(0.6).sub(0.8), 0),
+                maxBounds: vec3(t.mul(1.1).sin().mul(1.1).add(0.4), t.mul(0.8).cos().mul(0.9).add(0.6), 0)
+        })
         const diag = diagonal(box)
         const center = aabbCentroid(box)
         const relPos = p.sub(center.xy)
         const normPos = relPos.div(diag.xy.mul(0.5))
         const intensity = length(normPos).saturate().oneMinus()
-        const stripes = sin(normPos.x.mul(diag.x).mul(8)).mul(0.5).add(0.5)
-        const edgeX = min(abs(p.x.sub(box.minBounds.x)), abs(p.x.sub(box.maxBounds.x)))
-        const edgeY = min(abs(p.y.sub(box.minBounds.y)), abs(p.y.sub(box.maxBounds.y)))
-        const wireframe = smoothstep(0.02, 0.04, min(edgeX, edgeY)).oneMinus()
+        const stripes = normPos.x.mul(diag.x).mul(8).sin().mul(0.5).add(0.5)
+        const edgeX = p.x.sub(box.minBounds.x).abs()
+                 .min(p.x.sub(box.maxBounds.x).abs())
+        const edgeY = p.y.sub(box.minBounds.y).abs()
+                 .min(p.y.sub(box.maxBounds.y).abs())
+        const wireframe = smoothstep(0.02, 0.04, edgeX.min(edgeY)).oneMinus()
         const color = intensity.mul(vec3(diag.x.mul(0.3), diag.y.mul(0.4), 0.6)).add(stripes.mul(0.2))
         return vec4(color.add(wireframe.mul(0.5)), 1)
 })`}

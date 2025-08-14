@@ -59,14 +59,10 @@ const fragment = () => Scope(() => {
         })
         const point = vec3(uv.mul(2).sub(1), 0)
         const isInside = triangleContain(tri, point)
-        const edgeA = length(point.sub(tri.a)).mul(2)
-        const edgeB = length(point.sub(tri.b)).mul(2)
-        const edgeC = length(point.sub(tri.c)).mul(2)
-        const color = select(
-                vec3(edgeA, edgeB, edgeC).mul(0.5),
-                vec3(0.9, 0.9, 0.2),
-                isInside
-        )
+        const edgeA = point.sub(tri.a).length()
+        const edgeB = point.sub(tri.b).length()
+        const edgeC = point.sub(tri.c).length()
+        const color = vec3(edgeA, edgeB, edgeC).select(vec3(0.9, 0.9, 0.2), isInside)
         return vec4(color, 1)
 })`}
 />

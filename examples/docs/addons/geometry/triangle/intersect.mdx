@@ -59,7 +59,7 @@ const fragment = () => Scope(() => {
         const rayOrigin = vec3(uv.mul(2).sub(1), -1)
         const rayDir = vec3(0, 0, 1)
         const dist = triangleIntersect(tri, rayOrigin, rayDir)
-        const hit = step(dist, 1000)
+        const hit = dist.step(1000)
         const depth = hit.mul(0.8).add(0.2)
         return vec4(vec3(depth), 1)
 })`}

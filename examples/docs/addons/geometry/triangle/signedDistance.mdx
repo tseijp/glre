@@ -53,8 +53,8 @@ const fragment = () => Scope(() => {
         })
         const point = vec3(uv.mul(2).sub(1), 0.2)
         const dist = signedDistance(tri, point)
-        const color = select(vec3(0.8, 0.2, 0.2), vec3(0.2, 0.2, 0.8), dist.greaterThan(0))
-        return vec4(color.mul(abs(dist).mul(8).add(0.3)), 1)
+        const color = vec3(0.8, 0.2, 0.2).select(vec3(0.2, 0.2, 0.8), dist.greaterThan(0))
+        return vec4(color.mul(dist.abs().mul(8).add(0.3)), 1)
 })`}
 />
 

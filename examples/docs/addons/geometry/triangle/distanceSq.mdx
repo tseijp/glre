@@ -47,7 +47,7 @@ const fragment = () => Scope(() => {
         })
         const pos = vec3(uv.mul(2).sub(1), 0)
         const dist = distanceSq(tri, pos)
-        const field = sqrt(dist).mul(8)
+        const field = dist.sqrt().mul(8)
         const gradient = field.fract()
         return vec4(vec3(gradient), 1)
 })`}

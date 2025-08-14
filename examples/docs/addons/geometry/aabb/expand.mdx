@@ -46,10 +46,11 @@ AABB expansion serves multiple computational purposes:
 const fragment = () => Scope(() => {
         const t = iTime.mul(0.5)
         const p = uv.mul(5).sub(2.5)
-        const minBounds = vec3(sin(t).mul(0.6).sub(0.4), cos(t.mul(1.2)).mul(0.5).sub(0.3), 0)
-        const maxBounds = vec3(sin(t.mul(0.9)).mul(0.7).add(0.3), cos(t.mul(0.8)).mul(0.6).add(0.4), 0)
-        const originalBox = AABB({ minBounds, maxBounds })
-        const expansionValue = sin(iTime.mul(2)).mul(0.3).add(0.4)
+        const originalBox = AABB({
+                minBounds: vec3(t.sin().mul(0.6).sub(0.4), t.mul(1.2).cos().mul(0.5).sub(0.3), 0),
+                maxBounds: vec3(t.mul(0.9).sin().mul(0.7).add(0.3), t.mul(0.8).cos().mul(0.6).add(0.4), 0)
+        })
+        const expansionValue = iTime.mul(2).sin().mul(0.3).add(0.4)
         const expandedBox = expand(originalBox, expansionValue)
         const pos = vec3(p, 0)
         const inOriginal = aabbContain(originalBox, pos)
@@ -59,14 +60,14 @@ const fragment = () => Scope(() => {
         const marginColor = vec3(0.2, 0.6, 0.9)
         const outsideColor = vec3(0.1, 0.1, 0.2)
         const color = outsideColor.select(marginColor.select(originalColor, inOriginal), inExpanded)
-        const origEdge = min(
-                min(abs(p.x.sub(originalBox.minBounds.x)), abs(p.x.sub(originalBox.maxBounds.x))),
-                min(abs(p.y.sub(originalBox.minBounds.y)), abs(p.y.sub(originalBox.maxBounds.y)))
-        )
-        const expEdge = min(
-                min(abs(p.x.sub(expandedBox.minBounds.x)), abs(p.x.sub(expandedBox.maxBounds.x))),
-                min(abs(p.y.sub(expandedBox.minBounds.y)), abs(p.y.sub(expandedBox.maxBounds.y)))
-        )
+        const origEdge = p.x.sub(originalBox.minBounds.x).abs()
+                    .min(p.x.sub(originalBox.maxBounds.x).abs())
+                    .min(p.y.sub(originalBox.minBounds.y).abs()
+                    .min(p.y.sub(originalBox.maxBounds.y).abs()))
+        const expEdge = p.x.sub(expandedBox.minBounds.x).abs()
+                   .min(p.x.sub(expandedBox.maxBounds.x).abs())
+                   .min(p.y.sub(expandedBox.minBounds.y).abs()
+                   .min(p.y.sub(expandedBox.maxBounds.y).abs()))
         const wireframe = smoothstep(0.02, 0.04, origEdge).oneMinus().add(smoothstep(0.01, 0.03, expEdge).oneMinus().mul(0.5))
         return vec4(color.add(wireframe.mul(0.3)), 1)
 })`}
