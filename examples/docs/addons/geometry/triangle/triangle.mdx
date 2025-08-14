@@ -1,0 +1,74 @@
+---
+title: 'Triangle'
+description: 'Three-dimensional triangle structure with vertex position data'
+keywords: [triangle, geometry, struct, vertex, three-dimensional, spatial structure]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# Triangle: Three-Vertex Geometric Structure
+
+### Foundation for Triangular Geometry Operations
+
+The Triangle structure represents a fundamental three-dimensional geometric primitive consisting of three vertex positions in space. This data structure serves as the foundation for all triangle-based calculations including area computation, distance measurements, and spatial relationship analysis.
+
+Each triangle contains three vec3 vertices labeled a, b, and c, forming a planar surface in three-dimensional coordinate space. The vertex ordering determines surface normal direction through the right-hand rule convention.
+
+## Structure Definition
+
+The Triangle struct encapsulates three essential components:
+
+| Field | Type   | Description                        |
+| ----- | ------ | ---------------------------------- |
+| `a`   | `vec3` | First vertex position coordinates  |
+| `b`   | `vec3` | Second vertex position coordinates |
+| `c`   | `vec3` | Third vertex position coordinates  |
+
+The vertex sequence establishes surface orientation for normal vector calculations and determines which side represents the triangle's front face.
+
+## Geometric Properties
+
+Triangle structures enable various geometric calculations:
+
+$$\vec{n} = \text{normalize}((b - a) \times (c - a))$$
+
+Where the surface normal vector $\vec{n}$ derives from the cross product of two edge vectors, providing orientation information for lighting calculations and spatial analysis.
+
+## Implementation Usage
+
+Triangle creation follows standard struct instantiation patterns:
+
+```typescript
+const triangle = Triangle({
+        a: vec3(x1, y1, z1),
+        b: vec3(x2, y2, z2),
+        c: vec3(x3, y3, z3),
+})
+```
+
+This structure integrates with all triangle-based geometric functions including area calculation, distance measurement, and intersection testing.
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const tri = Triangle({
+                a: vec3(-0.3, -0.4, 0),
+                b: vec3(0.5, -0.2, 0),
+                c: vec3(0.1, 0.6, 0)
+        })
+        const point = vec3(uv.mul(2).sub(1), 0)
+        const isInside = triangleContain(tri, point)
+        const edgeA = length(point.sub(tri.a)).mul(2)
+        const edgeB = length(point.sub(tri.b)).mul(2)
+        const edgeC = length(point.sub(tri.c)).mul(2)
+        const color = select(
+                vec3(edgeA, edgeB, edgeC).mul(0.5),
+                vec3(0.9, 0.9, 0.2),
+                isInside
+        )
+        return vec4(color, 1)
+})`}
+/>
+
+The visualization demonstrates triangle structure usage through vertex proximity mapping. Points inside the triangle appear yellow, while exterior points display color gradients based on distance to each vertex. Red, green, and blue intensities correspond to distances from vertices a, b, and c respectively.

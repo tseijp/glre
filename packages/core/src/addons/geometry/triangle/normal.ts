@@ -1,15 +1,12 @@
 import { Fn, Vec3, cross, normalize } from '../../../node'
+import { TriangleType } from './triangle'
 
-export const triangleNormal = Fn(([a, b, c]: [Vec3, Vec3, Vec3]): Vec3 => {
-        return normalize(cross(b.sub(a), c.sub(a)))
+export const normal = Fn(([tri]: [TriangleType]): Vec3 => {
+        return normalize(cross(tri.b.sub(tri.a), tri.c.sub(tri.a)))
 }).setLayout({
-        name: 'triangleNormal',
+        name: 'normal',
         type: 'vec3',
         inputs: [
-                { name: 'a', type: 'vec3' },
-                { name: 'b', type: 'vec3' },
-                { name: 'c', type: 'vec3' },
+                { name: 'tri', type: 'auto' },
         ],
 })
-
-export const normal = triangleNormal

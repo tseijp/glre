@@ -36,6 +36,7 @@ $$
 **Intersection Interpretation**
 
 The returned vec2 contains $(t_{\text{near}}, t_{\text{far}})$ representing:
+
 - **$t_{\text{near}}$**: Distance to entry point (if positive)
 - **$t_{\text{far}}$**: Distance to exit point
 - **Valid intersection**: $t_{\text{near}} \leq t_{\text{far}}$ and $t_{\text{far}} > 0$
@@ -43,6 +44,7 @@ The returned vec2 contains $(t_{\text{near}}, t_{\text{far}})$ representing:
 **Applications**
 
 Ray-AABB intersection enables multiple rendering techniques:
+
 - **Ray Tracing**: Primary ray-scene intersection testing
 - **Shadow Rays**: Occlusion testing for lighting calculations
 - **Frustum Culling**: Camera view volume intersection testing
@@ -50,7 +52,7 @@ Ray-AABB intersection enables multiple rendering techniques:
 
 <FragmentEditor
         code={`
-const fragment = () => {
+const fragment = () => Scope(() => {
         const t = iTime.mul(0.4)
         const p = uv.mul(6).sub(3)
         const minBounds = vec3(sin(t).mul(1.2).sub(0.5), cos(t.mul(1.1)).mul(0.9).sub(0.2), -1)
@@ -58,13 +60,13 @@ const fragment = () => {
         const box = AABB({ minBounds, maxBounds })
         const rayOrigin = vec3(p, -3)
         const rayDir = vec3(sin(iTime.mul(0.3)).mul(0.1), cos(iTime.mul(0.4)).mul(0.1), 1).normalize()
-        const intersection = intersect(box, rayOrigin, rayDir)
+        const intersection = aabbIntersect(box, rayOrigin, rayDir)
         const tNear = intersection.x
         const tFar = intersection.y
         const validHit = tNear.lessThanEqual(tFar).and(tFar.greaterThan(0))
         const hitPoint = rayOrigin.add(rayDir.mul(max(tNear, 0)))
         const distToHit = length(p.sub(hitPoint.xy))
-        const hitGlow = smoothstep(0.1, 0.05, distToHit).mul(validHit)
+        const hitGlow = smoothstep(0.1, 0.05, distToHit).select(0, validHit)
         const rayPath = abs(dot(vec2(p.sub(rayOrigin.xy)), vec2(rayDir.xy).normalize().yx.mul(vec2(1, -1))))
         const rayVis = smoothstep(0.02, 0.01, rayPath).mul(0.3)
         const boxEdge = min(
@@ -74,5 +76,5 @@ const fragment = () => {
         const wireframe = smoothstep(0.02, 0.04, boxEdge).oneMinus().mul(0.4)
         const color = vec3(0.1, 0.2, 0.4).add(hitGlow.mul(vec3(0.9, 0.6, 0.2))).add(rayVis).add(wireframe)
         return vec4(color, 1)
-}`}
+})`}
 />

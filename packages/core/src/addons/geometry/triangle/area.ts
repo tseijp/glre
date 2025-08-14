@@ -1,13 +1,10 @@
-import { Fn, Float, length, cross, Vec3 } from '../../../node'
+import { Fn, Float, length, cross } from '../../../node'
+import { TriangleType } from './triangle'
 
-export const area = Fn(([a, b, c]: [Vec3, Vec3, Vec3]): Float => {
-        return length(cross(b.sub(a), c.sub(a))).mul(0.5)
+export const area = Fn(([tri]: [TriangleType]): Float => {
+        return length(cross(tri.b.sub(tri.a), tri.c.sub(tri.a))).mul(0.5)
 }).setLayout({
         name: 'area',
         type: 'float',
-        inputs: [
-                { name: 'a', type: 'vec3' },
-                { name: 'b', type: 'vec3' },
-                { name: 'c', type: 'vec3' },
-        ],
+        inputs: [{ name: 'tri', type: 'auto' }],
 })

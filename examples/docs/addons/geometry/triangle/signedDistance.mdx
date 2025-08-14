@@ -1,57 +1,61 @@
 ---
 title: 'signedDistance'
-description: 'Calculate signed distance from point to triangle with inside/outside classification'
-keywords: [geometry, triangle, signed-distance, closest-point, orientation]
+description: 'Calculate signed distance from point to triangle surface with directional information'
+keywords: [triangle, signed distance, geometry, spatial calculation, surface proximity]
 date: 2025-08-06
 ---
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# triangleSignedDistance: Oriented Distance Field Calculation
+# signedDistance: Directional Distance to Triangle Surface
 
-### Signed Distance Function for Triangle Surfaces
+### Geometric Proximity with Surface Orientation
 
-The triangle signed distance function computes the shortest distance from a point to a triangle surface with orientation information. Positive values indicate points outside the triangle surface, negative values indicate points inside or behind the surface.
+The signed distance function determines not only how far a point lies from a triangle surface, but also whether the point exists above or below the triangle plane. This directional information proves essential for spatial calculations involving solid geometry and volumetric operations.
 
-The algorithm combines closest point calculation with normal-based orientation testing:
+Unlike standard distance calculations that return only positive values, signed distance incorporates surface normal direction to distinguish interior and exterior regions. Points positioned on the positive side of the triangle normal yield positive distances, while points on the negative side produce negative values.
 
-**Distance Calculation Process**
+## Mathematical Foundation
 
-1. **Closest Point Determination**: Find the nearest point on the triangle surface using barycentric coordinate projection
-2. **Distance Vector**: Compute $\vec{\delta} = P - P_{\text{closest}}$
-3. **Distance Magnitude**: Calculate $d = \|\vec{\delta}\|$
-4. **Orientation Testing**: Determine side using $\text{sign}(\vec{\delta} \cdot \vec{n})$
+The signed distance calculation follows this sequence:
 
-The complete signed distance formula:
+$$d_{signed}(p, T) = |p - p_{closest}| \cdot \text{sign}(\vec{n} \cdot \frac{p - p_{closest}}{|p - p_{closest}|})$$
 
-$$d_{\text{signed}} = d \cdot \text{sign}\left(\frac{\vec{\delta}}{\|\vec{\delta}\|} \cdot \vec{n}\right)$$
+Where:
 
-where $\vec{n}$ represents the triangle normal vector.
+- $T$ represents the triangle with vertices $a$, $b$, $c$
+- $p_{closest}$ denotes the nearest point on triangle surface to $p$
+- $\vec{n}$ indicates the triangle surface normal vector
+- The sign function determines spatial orientation relative to the surface
 
-**Sign Convention**
+The surface normal calculation employs the cross product of two edge vectors:
 
-The sign indicates spatial relationship relative to the triangle plane:
+$$\vec{n} = \text{normalize}((b - a) \times (c - a))$$
 
-- **Positive**: Point lies on the normal-facing side (outside)
-- **Negative**: Point lies on the opposite side (inside/behind)
-- **Zero**: Point lies exactly on the triangle surface
+## Implementation Analysis
 
-This convention enables level set operations, CSG modeling, and surface reconstruction where consistent orientation matters.
+The TSL implementation provides two function variants:
+
+| Function                   | Parameters              | Description                                      |
+| -------------------------- | ----------------------- | ------------------------------------------------ |
+| `signedDistanceWithNormal` | triangle, normal, point | Direct calculation with precomputed normal       |
+| `signedDistance`           | triangle, point         | Convenience function computing normal internally |
+
+Both functions utilize the closest point calculation to establish the nearest surface position, then apply directional analysis through vector dot product operations.
 
 <FragmentEditor
         code={`
-const fragment = () => {
-        const t = iTime.mul(0.4)
-        const p = uv.mul(6).sub(3)
-        const v1 = vec3(sin(t).mul(2.2), cos(t.mul(1.1)).mul(1.8).sub(0.3), sin(t.mul(0.5)).mul(0.5))
-        const v2 = vec3(cos(t.mul(0.9)).mul(2.4), sin(t.mul(1.3)).mul(1.5).add(0.7), cos(t.mul(0.7)).mul(0.6))
-        const v3 = vec3(sin(t.mul(1.2)).mul(1.9).add(0.5), cos(t.mul(0.8)).mul(2.1).sub(0.9), sin(t.mul(1.1)).mul(0.4))
-        const pos = vec3(p, 0)
-        const sdf = triangleSignedDistance(v1, v2, v3, pos)
-        const inside = sdf.lessThan(0)
-        const field = abs(sdf).saturate()
-        const bands = sin(sdf.mul(12)).mul(0.5).add(0.5)
-        const color = vec3(0.9, 0.4, 0.2).select(vec3(0.2, 0.6, 0.9), inside)
-        return vec4(color.mul(field).add(bands.mul(0.3)), 1)
-}`}
+const fragment = () => Scope(() => {
+        const tri = Triangle({
+                a: vec3(-0.5, -0.3, 0),
+                b: vec3(0.5, -0.3, 0),
+                c: vec3(0, 0.4, 0)
+        })
+        const point = vec3(uv.mul(2).sub(1), 0.2)
+        const dist = signedDistance(tri, point)
+        const color = select(vec3(0.8, 0.2, 0.2), vec3(0.2, 0.2, 0.8), dist.greaterThan(0))
+        return vec4(color.mul(abs(dist).mul(8).add(0.3)), 1)
+})`}
 />
+
+The visualization demonstrates spatial regions through color coding. Red areas indicate positive signed distances (points above triangle surface), while blue areas show negative distances (points below surface). Color intensity reflects distance magnitude, creating clear spatial boundaries around the triangle geometry.

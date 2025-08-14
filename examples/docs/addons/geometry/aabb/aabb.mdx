@@ -37,14 +37,14 @@ Key mathematical relationships:
 
 <FragmentEditor
         code={`
-const fragment = () => {
+const fragment = () => Scope(() => {
         const t = iTime.mul(0.5)
         const p = uv.mul(4).sub(2)
         const minBounds = vec3(sin(t).mul(0.8).sub(0.5), cos(t.mul(1.1)).mul(0.6).sub(0.3), 0)
         const maxBounds = vec3(sin(t.mul(1.2)).mul(0.9).add(0.7), cos(t.mul(0.9)).mul(0.8).add(0.5), 0)
         const box = AABB({ minBounds, maxBounds })
         const pos = vec3(p, 0)
-        const inside = contain(box, pos)
+        const inside = aabbContain(box, pos)
         const edge = min(
                 min(abs(p.x.sub(box.minBounds.x)), abs(p.x.sub(box.maxBounds.x))),
                 min(abs(p.y.sub(box.minBounds.y)), abs(p.y.sub(box.maxBounds.y)))
@@ -52,5 +52,5 @@ const fragment = () => {
         const wireframe = smoothstep(0.02, 0.05, edge).oneMinus()
         const color = vec3(0.2, 0.4, 0.8).select(vec3(0.8, 0.3, 0.1), inside)
         return vec4(color.add(wireframe.mul(0.5)), 1)
-}`}
+})`}
 />

@@ -1,13 +1,10 @@
 import { Fn, Vec3 } from '../../../node'
+import { TriangleType } from './triangle'
 
-export const centroid = Fn(([a, b, c]: [Vec3, Vec3, Vec3]): Vec3 => {
-        return a.add(b).add(c).div(3)
+export const triangleCentroid = Fn(([tri]: [TriangleType]): Vec3 => {
+        return tri.a.add(tri.b).add(tri.c).div(3)
 }).setLayout({
         name: 'triangleCentroid',
         type: 'vec3',
-        inputs: [
-                { name: 'a', type: 'vec3' },
-                { name: 'b', type: 'vec3' },
-                { name: 'c', type: 'vec3' },
-        ],
+        inputs: [{ name: 'tri', type: 'auto' }],
 })

@@ -22,11 +22,13 @@ The absolute value ensures positive dimensions regardless of coordinate system o
 **Dimensional Analysis**
 
 The diagonal vector provides essential geometric measurements:
+
 - **X-component**: Width along the X-axis
-- **Y-component**: Height along the Y-axis  
+- **Y-component**: Height along the Y-axis
 - **Z-component**: Depth along the Z-axis
 
 Additional derived measurements include:
+
 - **Volume**: $V = d_x \times d_y \times d_z$
 - **Surface Area**: $S = 2(d_x d_y + d_y d_z + d_z d_x)$
 - **Space Diagonal**: $|\vec{d}| = \sqrt{d_x^2 + d_y^2 + d_z^2}$
@@ -34,6 +36,7 @@ Additional derived measurements include:
 **Applications**
 
 Diagonal calculations serve multiple computational purposes:
+
 - **Level of Detail**: Distance-based quality adjustments using diagonal magnitude
 - **Spatial Indexing**: Grid cell sizing for spatial hash tables
 - **Collision Detection**: Broad-phase filtering using diagonal extents
@@ -41,7 +44,7 @@ Diagonal calculations serve multiple computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => {
+const fragment = () => Scope(() => {
         const t = iTime.mul(0.3)
         const p = uv.mul(4).sub(2)
         const minBounds = vec3(sin(t).mul(0.8).sub(1.2), cos(t.mul(1.4)).mul(0.6).sub(0.8), 0)
@@ -58,5 +61,5 @@ const fragment = () => {
         const wireframe = smoothstep(0.02, 0.04, min(edgeX, edgeY)).oneMinus()
         const color = intensity.mul(vec3(diag.x.mul(0.3), diag.y.mul(0.4), 0.6)).add(stripes.mul(0.2))
         return vec4(color.add(wireframe.mul(0.5)), 1)
-}`}
+})`}
 />

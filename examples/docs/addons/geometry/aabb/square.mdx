@@ -44,7 +44,7 @@ Cubic bounding volumes serve specific computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => {
+const fragment = () => Scope(() => {
         const t = iTime.mul(0.4)
         const p = uv.mul(5).sub(2.5)
         const minBounds = vec3(sin(t).mul(1.8).sub(0.3), cos(t.mul(1.3)).mul(0.7).sub(0.2), 0)
@@ -52,8 +52,8 @@ const fragment = () => {
         const originalBox = AABB({ minBounds, maxBounds })
         const squaredBox = square(originalBox)
         const pos = vec3(p, 0)
-        const inOriginal = contain(originalBox, pos)
-        const inSquared = contain(squaredBox, pos)
+        const inOriginal = aabbContain(originalBox, pos)
+        const inSquared = aabbContain(squaredBox, pos)
         const inExpanded = inSquared.and(inOriginal.not())
         const originalColor = vec3(0.8, 0.3, 0.1)
         const expandedColor = vec3(0.2, 0.7, 0.9)
@@ -71,5 +71,5 @@ const fragment = () => {
         const sqWire = smoothstep(0.01, 0.03, sqEdge).oneMinus().mul(0.5)
         const wireframe = origWire.add(sqWire)
         return vec4(color.add(wireframe.mul(0.4)), 1)
-}`}
+})`}
 />

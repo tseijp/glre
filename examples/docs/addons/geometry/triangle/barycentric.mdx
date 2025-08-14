@@ -37,13 +37,14 @@ $$w_i = \frac{\text{Area}(\text{triangle formed by pos and edge i})}{\text{Area}
 
 <FragmentEditor
         code={`
-const fragment = () => {
-        const p = uv.mul(2).sub(1)
-        const v1 = vec3(-0.8, -0.6, 0)
-        const v2 = vec3(0.8, -0.6, 0)
-        const v3 = vec3(0, 0.8, 0)
-        const pos = vec3(p, 0)
-        const bary = barycentricFromPosition(v1, v2, v3, pos)
-        return vec4(abs(bary), 1)
-}`}
+const fragment = () => Scope(() => {
+        const tri = Triangle({
+                a: vec3(-0.5, -0.4, 0),
+                b: vec3(0.5, -0.4, 0),
+                c: vec3(0, 0.6, 0)
+        })
+        const pos = vec3(uv, 0)
+        const bary = barycentricFromPosition(tri, pos)
+        return vec4(bary, 1)
+})`}
 />

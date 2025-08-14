@@ -27,6 +27,7 @@ The expansion value applies uniformly to all dimensions, creating symmetric grow
 **Geometric Properties**
 
 The expansion operation preserves several geometric relationships:
+
 - **Center Invariance**: The centroid remains unchanged
 - **Proportional Growth**: Each dimension increases by $2\epsilon$
 - **Volume Scaling**: New volume $V' = (d_x + 2\epsilon)(d_y + 2\epsilon)(d_z + 2\epsilon)$
@@ -34,6 +35,7 @@ The expansion operation preserves several geometric relationships:
 **Applications**
 
 AABB expansion serves multiple computational purposes:
+
 - **Collision Detection**: Safety margins for broad-phase collision filtering
 - **Spatial Queries**: Tolerance zones for approximate geometric operations
 - **Level of Detail**: Progressive quality boundaries for rendering optimization
@@ -41,7 +43,7 @@ AABB expansion serves multiple computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => {
+const fragment = () => Scope(() => {
         const t = iTime.mul(0.5)
         const p = uv.mul(5).sub(2.5)
         const minBounds = vec3(sin(t).mul(0.6).sub(0.4), cos(t.mul(1.2)).mul(0.5).sub(0.3), 0)
@@ -50,8 +52,8 @@ const fragment = () => {
         const expansionValue = sin(iTime.mul(2)).mul(0.3).add(0.4)
         const expandedBox = expand(originalBox, expansionValue)
         const pos = vec3(p, 0)
-        const inOriginal = contain(originalBox, pos)
-        const inExpanded = contain(expandedBox, pos)
+        const inOriginal = aabbContain(originalBox, pos)
+        const inExpanded = aabbContain(expandedBox, pos)
         const inMargin = inExpanded.and(inOriginal.not())
         const originalColor = vec3(0.8, 0.2, 0.1)
         const marginColor = vec3(0.2, 0.6, 0.9)
@@ -67,5 +69,5 @@ const fragment = () => {
         )
         const wireframe = smoothstep(0.02, 0.04, origEdge).oneMinus().add(smoothstep(0.01, 0.03, expEdge).oneMinus().mul(0.5))
         return vec4(color.add(wireframe.mul(0.3)), 1)
-}`}
+})`}
 />

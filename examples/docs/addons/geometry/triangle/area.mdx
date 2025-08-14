@@ -1,46 +1,57 @@
 ---
 title: 'area'
-description: 'Calculate the area of a triangle in 3D space'
-keywords: [geometry, triangle, area, cross-product]
+description: 'Calculate triangle surface area using cross product vector magnitude'
+keywords: [triangle, area, geometry, surface measurement, vector calculation]
 date: 2025-08-06
 ---
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# area: Triangle Area Calculation
+# area: Triangle Surface Area Calculation
 
-### Cross Product Method for Precise Triangle Area
+### Vector-Based Surface Measurement
 
-The triangle area function implements the standard cross product formula for computing triangle area in 3D space. Given three vertices $A$, $B$, and $C$, the area is calculated as:
+Triangle area calculation employs the cross product relationship between two edge vectors to determine surface magnitude. This fundamental geometric operation provides precise measurements regardless of triangle orientation in three-dimensional space.
 
-$$\text{Area} = \frac{1}{2} \|\vec{AB} \times \vec{AC}\|$$
+The calculation utilizes the mathematical property that cross product magnitude equals the parallelogram area formed by two vectors. Since triangles represent half of such parallelograms, the final result requires multiplication by 0.5.
 
-where $\vec{AB} = B - A$ and $\vec{AC} = C - A$ represent the edge vectors from vertex $A$ to vertices $B$ and $C$ respectively.
+## Mathematical Definition
 
-The cross product $\vec{AB} \times \vec{AC}$ produces a vector perpendicular to the triangle plane whose magnitude equals twice the triangle area. Dividing by 2 yields the actual area.
+The area formula derives from vector cross product properties:
+
+$$A = \frac{1}{2} |(\vec{b} - \vec{a}) \times (\vec{c} - \vec{a})|$$
+
+Where:
+
+- $\vec{a}$, $\vec{b}$, $\vec{c}$ represent triangle vertex positions
+- The cross product generates a vector perpendicular to both edge vectors
+- Vector magnitude provides the parallelogram area
+- Division by 2 yields triangle area
+
+## Cross Product Geometry
+
+| Component     | Vector Calculation                        | Geometric Meaning                                 |
+| ------------- | ----------------------------------------- | ------------------------------------------------- |
+| Edge AB       | $\vec{b} - \vec{a}$                       | First triangle edge from vertex A                 |
+| Edge AC       | $\vec{c} - \vec{a}$                       | Second triangle edge from vertex A                |
+| Cross Product | $\vec{AB} \times \vec{AC}$                | Perpendicular vector with parallelogram magnitude |
+| Area Result   | $\frac{1}{2}\|\vec{AB} \times \vec{AC}\|$ | Triangle surface measurement                      |
+
+The cross product direction follows the right-hand rule, indicating surface normal orientation. However, for area calculation, only the magnitude matters.
 
 <FragmentEditor
         code={`
-const fragment = () => {
-        const t = iTime.mul(0.8)
-        const p = uv.mul(4).sub(2)
-        const v1 = vec3(sin(t).mul(1.5), cos(t.mul(1.2)).mul(1.2).sub(0.5), 0)
-        const v2 = vec3(cos(t.mul(0.9)).mul(1.8), sin(t.mul(1.1)).mul(0.9).add(0.6), 0)
-        const v3 = vec3(sin(t.mul(1.3)).mul(1.1).sub(0.3), cos(t.mul(0.8)).mul(1.6).sub(0.8), 0)
-        const triangleArea = area(v1, v2, v3)
-        const bary = barycentricFromPosition(v1, v2, v3, vec3(p, 0))
-        const inside = bary.x.greaterThan(0).and(bary.y.greaterThan(0)).and(bary.z.greaterThan(0))
-        const areaScale = triangleArea.mul(2).saturate()
-        const insideColor = vec3(areaScale, areaScale.mul(0.8), areaScale.mul(0.5))
-        const outsideColor = vec3(0.1, 0.2, 0.4)
-        const triangleColor = outsideColor.select(insideColor, inside)
-        const edges = min(min(
-                length(p.sub(v1.xy)),
-                length(p.sub(v2.xy))
-        ), length(p.sub(v3.xy)))
-        const vertices = smoothstep(0.05, 0.08, edges).oneMinus()
-        const areaText = floor(triangleArea.mul(20)).div(20)
-        const grid = sin(p.x.mul(20)).mul(sin(p.y.mul(20))).mul(0.1).add(0.9)
-        return vec4(triangleColor.add(vertices.mul(0.7)).mul(grid), 1)
-}`}
+const fragment = () => Scope(() => {
+        const scale = iTime.mul(0.5).sin()
+        const tri = Triangle({
+                a: vec3(-0.4, -0.4, 0),
+                b: vec3(0.4, -0.4, 0),
+                c: vec3(0, scale.mul(0.4), 0)
+        })
+        const triArea = area(tri)
+        const pos = uv.mul(2).sub(1)
+        const isInside = triangleContain(tri, vec3(pos, 0))
+        const areaColor = vec3(triArea.mul(2), triArea.mul(1.5), 0.3)
+        return vec4(select(vec3(0.1, 0.1, 0.15), areaColor, isInside), 1)
+})`}
 />
