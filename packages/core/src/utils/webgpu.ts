@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage } from './helpers'
+import { is, loadingImage, getStride } from './helpers'
 import {
         createArrayBuffer,
         createBindGroup,
@@ -88,10 +88,10 @@ export const webgpu = async (gl: GL) => {
 
         const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
-                const stride = value.length / gl.count
+                const { stride, isInstance } = getStride(value.length, gl.count, gl.instance)
                 const { location } = bindings.attrib()
                 const { array, buffer } = createArrayBuffer(device, value, 'attrib')
-                return { array, buffer, location, stride }
+                return { array, buffer, location, stride, isInstance }
         })
 
         const uniforms = cached((_key, value: number[]) => {
@@ -141,7 +141,7 @@ export const webgpu = async (gl: GL) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                         vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                        pass.draw(gl.count, 1, 0, 0)
+                        pass.draw(gl.count, gl.instance, 0, 0)
                         pass.end()
                 }
                 if (gl.cs) cp.update(bindGroups, bindGroupLayouts, comp)

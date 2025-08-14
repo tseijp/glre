@@ -13,6 +13,7 @@ export type GL = EventState<{
         isGL: true
         width?: number
         height?: number
+        instance: number
         size: [number, number]
         mouse: [number, number]
         count: number
@@ -93,6 +94,7 @@ export interface AttribData {
         buffer: GPUBuffer
         location: number
         stride: number
+        isInstance?: boolean
 }
 
 export interface StorageData {

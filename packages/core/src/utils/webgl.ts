@@ -1,9 +1,10 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage } from './helpers'
+import { is, loadingImage, getStride } from './helpers'
 import {
         cleanStorage,
         createAttachment,
         createAttrib,
+        createInstanceAttrib,
         createProgram,
         createStorage,
         createTexture,
@@ -95,8 +96,10 @@ export const webgl = async (gl: GL) => {
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
-                const loc = attribs(key, true)
-                createAttrib(c, loc, gl.count, value, iboValue)
+                const loc = attribs(key)
+                const { isInstance, stride } = getStride(value.length, gl.count, gl.instance, gl.error)
+                if (isInstance) createInstanceAttrib(c, loc, stride, value)
+                else createAttrib(c, loc, stride, value, iboValue)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
@@ -122,7 +125,11 @@ export const webgl = async (gl: GL) => {
                 cp?.render()
                 c.useProgram(pg)
                 c.viewport(0, 0, ...gl.size)
-                c.drawArrays(c.TRIANGLES, 0, gl.count)
+                if (gl.instance > 1) {
+                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instance)
+                } else {
+                        c.drawArrays(c.TRIANGLES, 0, gl.count)
+                }
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
         }
 

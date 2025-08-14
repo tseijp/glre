@@ -6,7 +6,7 @@ import {
         getOperatorResultType,
         validateOperatorTypes,
 } from './const'
-import { is } from '../../utils/helpers'
+import { is, getStride } from '../../utils/helpers'
 import type { Constants as C, NodeContext, X, Y } from '../types'
 
 const inferBuiltin = <T extends C>(id: string | undefined) => {
@@ -28,7 +28,10 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
 }
 
 const inferFromCount = <T extends C>(count: number) => {
-        return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        const ret = COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        if (!ret)
+                throw `glre node system error: Cannot infer type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`
+        return ret
 }
 
 const inferFromArray = <T extends C>(arr: Y<T>[], c: NodeContext) => {
@@ -37,7 +40,7 @@ const inferFromArray = <T extends C>(arr: Y<T>[], c: NodeContext) => {
         if (is.str(x)) return x as T // for struct
         const ret = infer(x, c)
         // for (const x of arr.slice(1))
-        //         if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
+        //         if (ret !== infer(x, c)) throw `glre node system error: defined scope return mismatch`
         return ret
 }
 
@@ -58,7 +61,10 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                 if (!inferFrom || inferFrom.length === 0) return 'void' as T
                 return inferFromArray(inferFrom, c)
         }
-        if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
+        if (type === 'attribute' && is.arr(x) && c.gl?.count) {
+                const { stride } = getStride(x.length, c.gl.count, c.gl.instance)
+                return inferFromCount(stride)
+        }
         if (type === 'member') {
                 if (isSwizzle(y)) return inferFromCount(y.length)
                 if (isX(x)) {
