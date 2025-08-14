@@ -30,7 +30,6 @@ Key mathematical properties:
 - **Gamut preservation**: The transformation maintains valid RGB ranges for displayable colors
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const oklabColor = vec3(0.7, uv.x.sub(0.5), uv.y.sub(0.5))
@@ -40,7 +39,6 @@ const fragment = () => {
 />
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const originalRgb = vec3(uv.x, 0.3, uv.y)

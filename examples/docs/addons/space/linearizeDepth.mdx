@@ -1,0 +1,42 @@
+---
+title: 'linearizeDepth'
+description: 'Non-linear depth buffer to linear depth conversion for perspective projection'
+keywords: [depth, linearization, perspective, projection, z-buffer, transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# linearizeDepth: Depth Buffer Linearization
+
+### Perspective Depth Buffer to Linear Space Conversion
+
+The `linearizeDepth` function converts non-linear depth buffer values to linear depth coordinates. This transformation corrects the perspective projection's non-uniform depth distribution, providing linear interpolation between near and far clipping planes.
+
+## Mathematical Foundation
+
+The linearization formula inverts perspective projection depth encoding:
+
+$$
+z_{linear} = \frac{2 \cdot n \cdot f}{f + n - d' \cdot (f - n)}
+$$
+
+Where:
+
+- $d' = 2d - 1$ (depth mapped from [0,1] to [-1,1])
+- $n$ = near clipping plane distance
+- $f$ = far clipping plane distance
+- $z_{linear}$ = linear depth value
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const radialDepth = length(uv.sub(0.5)).mul(2)
+        const depth = clamp(radialDepth, 0, 1)
+        const near = float(1)
+        const far = float(50)
+        const linear = linearizeDepth(depth, near, far)
+        const color = linear.div(far.sub(near))
+        return vec4(color, color.mul(0.5), float(1).sub(color), 1)
+}`}
+/>

@@ -1,0 +1,81 @@
+---
+title: 'intersect'
+description: 'Calculate ray-AABB intersection distances for 3D ray tracing'
+keywords: [geometry, aabb, intersection, ray-tracing, distance]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# intersect: AABB Ray Intersection Algorithm
+
+### Slab Method for Efficient Ray-Box Testing
+
+The AABB intersection function implements the slab method for computing ray-box intersection distances. This algorithm determines entry and exit points where a ray intersects the rectangular volume defined by the bounding box.
+
+Given an AABB with bounds $[\vec{b_{\min}}, \vec{b_{\max}}]$, ray origin $\vec{o}$, and ray direction $\vec{d}$, the algorithm computes:
+
+$$
+\begin{align}
+\vec{t_{\min}} &= \frac{\vec{b_{\min}} - \vec{o}}{\vec{d}} \\
+\vec{t_{\max}} &= \frac{\vec{b_{\max}} - \vec{o}}{\vec{d}}
+\end{align}
+$$
+
+The slab intersections are ordered and combined:
+
+$$
+\begin{align}
+\vec{t_1} &= \min(\vec{t_{\min}}, \vec{t_{\max}}) \\
+\vec{t_2} &= \max(\vec{t_{\min}}, \vec{t_{\max}}) \\
+t_{\text{near}} &= \max(t_{1,x}, t_{1,y}, t_{1,z}) \\
+t_{\text{far}} &= \min(t_{2,x}, t_{2,y}, t_{2,z})
+\end{align}
+$$
+
+**Intersection Interpretation**
+
+The returned vec2 contains $(t_{\text{near}}, t_{\text{far}})$ representing:
+
+- **$t_{\text{near}}$**: Distance to entry point (if positive)
+- **$t_{\text{far}}$**: Distance to exit point
+- **Valid intersection**: $t_{\text{near}} \leq t_{\text{far}}$ and $t_{\text{far}} > 0$
+
+**Applications**
+
+Ray-AABB intersection enables multiple rendering techniques:
+
+- **Ray Tracing**: Primary ray-scene intersection testing
+- **Shadow Rays**: Occlusion testing for lighting calculations
+- **Frustum Culling**: Camera view volume intersection testing
+- **Spatial Traversal**: Octree and grid acceleration structure navigation
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const t = iTime.mul(0.4)
+        const p = uv.mul(6).sub(3)
+        const box = AABB({
+                minBounds: vec3(t.sin().mul(1.2).sub(0.5), t.mul(1.1).cos().mul(0.9).sub(0.2), -1),
+                maxBounds: vec3(t.mul(0.8).sin().mul(1.3).add(0.4), t.mul(0.9).cos().mul(1).add(0.6), 1)
+        })
+        const rayOrigin = vec3(p, -3)
+        const rayDir = vec3(iTime.mul(0.3).sin().mul(0.1), iTime.mul(0.4).cos().mul(0.1), 1).normalize()
+        const intersection = aabbIntersect(box, rayOrigin, rayDir)
+        const tNear = intersection.x
+        const tFar = intersection.y
+        const validHit = tNear.lessThanEqual(tFar).and(tFar.greaterThan(0))
+        const hitPoint = rayOrigin.add(rayDir.mul(tNear.max(0)))
+        const distToHit = length(p.sub(hitPoint.xy))
+        const hitGlow = float(0).select(smoothstep(0.1, 0.05, distToHit), validHit)
+        const rayPath = dot(vec2(p.sub(rayOrigin.xy)), vec2(rayDir.xy).normalize().yx.mul(vec2(1, -1))).abs()
+        const rayVis = rayPath.smoothstep(0.02, 0.01).mul(0.3)
+        const boxEdge = p.x.sub(box.minBounds.x).abs()
+                   .min(p.x.sub(box.maxBounds.x).abs())
+                   .min(p.y.sub(box.minBounds.y).abs()
+                   .min(p.y.sub(box.maxBounds.y).abs()))
+        const wireframe = boxEdge.smoothstep(0.02, 0.04).oneMinus().mul(0.4)
+        const color = vec3(0.1, 0.2, 0.4).add(hitGlow.mul(vec3(0.9, 0.6, 0.2))).add(rayVis).add(wireframe)
+        return vec4(color, 1)
+})`}
+/>

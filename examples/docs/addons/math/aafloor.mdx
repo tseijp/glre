@@ -29,7 +29,6 @@ $$
 Where $\text{fract}(x) = x - \lfloor x \rfloor$ represents the fractional part.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const coord = uv.mul(20)
@@ -44,7 +43,6 @@ const fragment = () => {
 Anti-aliased floor is particularly useful for creating smooth repeating patterns. Unlike regular floor functions that create harsh edges, aafloor produces smooth transitions that look better when creating grids, tiles, or geometric patterns.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const spiral = uv.y.sub(0.5).atan2(uv.x.sub(0.5))

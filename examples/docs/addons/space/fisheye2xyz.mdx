@@ -1,0 +1,59 @@
+---
+title: 'fisheye2xyz'
+description: 'Convert fisheye projection UV coordinates to 3D cartesian coordinates'
+keywords: [fisheye, projection, spherical, coordinate, conversion, wide-angle]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# fisheye2xyz: Fisheye Projection to Cartesian
+
+### Wide-angle spherical coordinate transformation
+
+Fisheye projection captures a hemispherical view onto a circular image. This function converts UV coordinates from a fisheye image back to 3D Cartesian coordinates on the unit sphere:
+
+$$
+\text{ndc} = 2 \cdot \text{uv} - 1
+$$
+
+$$
+R = \sqrt{\text{ndc}_x^2 + \text{ndc}_y^2}
+$$
+
+$$
+\phi = R \cdot \pi \cdot 0.52
+$$
+
+$$
+\begin{pmatrix}
+x \\
+y \\
+z
+\end{pmatrix} = \begin{pmatrix}
+\frac{\text{ndc}_x}{R} \sqrt{1 - \cos^2(\phi)} \\
+\cos(\phi) \\
+\frac{\text{ndc}_y}{R} \sqrt{1 - \cos^2(\phi)}
+\end{pmatrix}
+$$
+
+The factor 0.52 controls the field of view mapping, approximating a 180° fisheye lens.
+
+### Projection Characteristics
+
+| Radius    | Field of View | Coverage     |
+| --------- | ------------- | ------------ |
+| $R = 0$   | $0°$          | Center point |
+| $R = 0.5$ | $\sim 90°$    | Horizon      |
+| $R = 1$   | $\sim 180°$   | Full fisheye |
+
+### Fisheye Direction Mapping
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const dir = fisheye2xyz(uv)
+        const color = iTime.sin().mul(dir).add(0.5)
+        return vec4(color, 1)
+}`}
+/>

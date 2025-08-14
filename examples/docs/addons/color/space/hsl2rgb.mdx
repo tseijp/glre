@@ -30,7 +30,6 @@ $$B = \text{saturate}(2 - |6h - 4|)$$
 This creates a hexagonal projection from the hue circle to RGB space, where each 60° segment corresponds to transitions between primary and secondary colors.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const t = iTime.mul(0.3)
@@ -41,7 +40,3 @@ const fragment = () => {
         return vec4(color, 1)
 }`}
 />
-
-The HSL model provides intuitive color manipulation through separate control of hue rotation, saturation scaling, and lightness adjustment. This separation enables natural color operations like desaturation (reducing s), darkening (reducing l), and hue shifting (modifying h) that correspond to perceptual color properties.
-
-The mathematical foundation ensures smooth interpolation in HSL space produces visually pleasing color transitions, making it ideal for procedural color generation and artistic applications where perceptual uniformity is desired over linear RGB mixing.

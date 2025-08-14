@@ -27,7 +27,6 @@ This operation creates intermediate quaternion states that can be normalized for
 This example demonstrates quaternion addition applied across spatial coordinates, creating patterns through 4D vector arithmetic operations.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const pos = uv.mul(4)
@@ -39,7 +38,7 @@ const fragment = () => {
 
         const q1 = vec4(hash1.mul(6.28).sin(), hash1.mul(3.14).cos(), hash2.mul(4.71).sin(), hash2.mul(1.57).cos())
         const q2 = vec4(iTime.add(hash1).mul(2).cos(), iTime.add(hash2).mul(1.5).sin(),
-                       iTime.add(hash1).mul(0.8).cos(), iTime.add(hash2).mul(1.2).sin())
+                        iTime.add(hash1).mul(0.8).cos(), iTime.add(hash2).mul(1.2).sin())
 
         const sum = quatAdd(q1, q2).normalize()
         const field = dot(sum, vec4(local.x, local.y, local.x.mul(local.y), 1))
@@ -51,5 +50,3 @@ const fragment = () => {
 
 }`}
 />
-
-The quatAdd function provides basic quaternion arithmetic operations for blending and interpolation applications in rotational mathematics.

@@ -43,7 +43,6 @@ Additional derived constants include:
 `PI` and `TAU` constants enable precise circular motion and wave calculations. `TAU` represents a complete circle rotation, eliminating the need for `2 * PI` calculations.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const angle = iTime.mul(TAU) // Complete rotation per time unit
@@ -64,7 +63,6 @@ const fragment = () => {
 `PHI` and `GOLDEN_RATIO` constants create naturally pleasing proportions. The golden angle creates spiral patterns found in nature.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const center = vec2(0.5)

@@ -1,0 +1,52 @@
+---
+title: 'orthographic'
+description: 'Create orthographic projection matrix from frustum bounds'
+keywords: [orthographic, projection, matrix, frustum, parallel, transform]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# orthographic: Orthographic Projection Matrix
+
+### Parallel projection transformation
+
+The orthographic projection creates a 4×4 transformation matrix that maps a 3D rectangular frustum to the normalized device coordinate (NDC) cube. Unlike perspective projection, orthographic maintains parallel lines and uniform scaling:
+
+$$
+\text{width} = r - l, \quad \text{height} = t - b, \quad \text{depth} = f - n
+$$
+
+$$
+M_{\text{ortho}} = \begin{pmatrix}
+\frac{2}{\text{width}} & 0 & 0 & -\frac{r+l}{\text{width}} \\
+0 & \frac{2}{\text{height}} & 0 & -\frac{t+b}{\text{height}} \\
+0 & 0 & -\frac{2}{\text{depth}} & -\frac{f+n}{\text{depth}} \\
+0 & 0 & 0 & 1
+\end{pmatrix}
+$$
+
+This transforms coordinates from the frustum $(l,r) \times (b,t) \times (n,f)$ to NDC $(-1,1)^3$.
+
+### Frustum Parameter Mapping
+
+| Parameter | Description  | Typical Range |
+| --------- | ------------ | ------------- |
+| `l`       | Left bound   | Negative      |
+| `r`       | Right bound  | Positive      |
+| `b`       | Bottom bound | Negative      |
+| `t`       | Top bound    | Positive      |
+| `n`       | Near plane   | Positive      |
+| `f`       | Far plane    | > Near        |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const scale = sin(iTime).mul(0.5).add(1.5)
+        const ortho = orthographic(scale.negate(), scale, scale.negate(), scale, 0.1, 10)
+        const coord = vec3(uv.sub(0.5).mul(3), 1)
+        const transformed = ortho.mul(vec4(coord, 1)).xyz
+        const color = abs(transformed).clamp(0, 1)
+        return vec4(color, 1)
+}`}
+/>

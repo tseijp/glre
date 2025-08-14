@@ -26,8 +26,7 @@ Where $g_{i,j}$ represents gradient vectors at lattice points and $w$ denotes th
 The 2D variant returns a `vec3` containing the noise value in the x-component and gradient vector in the yz-components. This structure enables immediate surface normal calculation through cross products with tangent vectors.
 
 <FragmentEditor
-isFun
-code={`
+        code={`
 const fragment = () => {
         const noise = noised(uv.mul(8))
         const height = noise.x.mul(0.5).add(0.5)
@@ -44,8 +43,7 @@ The 3D version (`noisedVec3`) returns a `vec4` where the w-component contains th
 The computational complexity increases cubically with dimension due to the eight corner evaluations required for 3D interpolation, but the analytical approach maintains numerical stability across all scales.
 
 <FragmentEditor
-isFun
-code={`
+        code={`
 const fragment = () => {
         const pos = vec3(uv.mul(6), iTime.mul(0.3))
         const noise4d = noisedVec3(pos)

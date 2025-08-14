@@ -71,21 +71,24 @@ export const scoped = (x: X, fun: () => X | void, y = define) => {
         ;[scope, define] = [_scope, _define]
 }
 
+export const Scope = <T extends X>(fun: () => T | void) => {
+        const scope = create('scope')
+        scoped(scope, fun)
+        return scope as T
+}
+
 export const If = (x: Y, fun: () => void) => {
-        const y = create('scope')
-        scoped(y, fun)
+        const y = Scope(fun)
         const ifNode = create('if', null, x, y)
         addToScope(ifNode)
         const ret = () => ({
                 ElseIf: (_x: X, _fun: () => void) => {
-                        const _y = create('scope')
-                        scoped(_y, _fun)
+                        const _y = Scope(_fun)
                         ifNode.props.children!.push(_x, _y)
                         return ret()
                 },
                 Else: (_fun: () => void) => {
-                        const _x = create('scope')
-                        scoped(_x, _fun)
+                        const _x = Scope(_fun)
                         ifNode.props.children!.push(_x)
                 },
         })
@@ -93,9 +96,8 @@ export const If = (x: Y, fun: () => void) => {
 }
 
 export const Loop = (x: Y, fun: (params: { i: Int }) => void) => {
-        const y = create('scope')
         const id = getId()
-        scoped(y, () => fun({ i: create<'int'>('variable', { id, inferFrom: [conversion('int', 0)] }) }))
+        const y = Scope(() => fun({ i: create<'int'>('variable', { id, inferFrom: [conversion('int', 0)] }) }))
         const ret = create('loop', { id }, x, y)
         return addToScope(ret)
 }
@@ -106,26 +108,22 @@ export const Switch = (x: Y) => {
         const ret = () => ({
                 Case: (...values: X[]) => {
                         return (fun: () => void) => {
-                                const y = create('scope')
-                                scoped(y, fun)
+                                const y = Scope(fun)
                                 for (const _x of values) switchNode.props.children!.push(_x, y)
                                 return ret()
                         }
                 },
                 Default: (fun: () => void) => {
-                        const scope = create('scope')
-                        scoped(scope, fun)
+                        const scope = Scope(fun)
                         switchNode.props.children!.push(scope)
                 },
         })
         return ret()
 }
 
-export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: Args) => T, defaultId = getId()) {
-        let layout: FnLayout
+export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: Args) => T, layout?: FnLayout) {
         const ret = (...args: any[]) => {
-                const id = layout?.name || defaultId
-                const x = create('scope')
+                const id = layout?.name || getId()
                 const paramVars: X[] = []
                 const paramDefs: NodeProps[] = []
                 for (let i = 0; i < args.length; i++) {
@@ -139,6 +137,7 @@ export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: 
                                 })
                 }
                 for (const props of paramDefs) paramVars.push(create('variable', props))
+                const x = create('scope')
                 const y = create('define', { id, layout }, x, ...args)
                 scoped(x, () => fun(paramVars as Args) as any, y)
                 return y

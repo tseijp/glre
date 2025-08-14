@@ -1,0 +1,38 @@
+---
+title: 'nearest'
+description: 'Nearest neighbor coordinate quantization for pixelation and discrete sampling effects'
+keywords: [nearest, quantization, pixelation, sampling, discrete, grid]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# nearest: Nearest Neighbor Quantization
+
+### Coordinate Discretization and Pixelation
+
+The `nearest` function quantizes continuous coordinates to discrete grid positions, creating pixelation effects and nearest-neighbor sampling patterns. This transformation maps smooth coordinates to the nearest grid points at a specified resolution.
+
+## Mathematical Foundation
+
+The quantization formula applies discrete sampling with offset correction:
+
+$$
+\text{nearest}(v, r) = \frac{\lfloor v \cdot r \rfloor}{r} + \frac{0.5}{r - 1}
+$$
+
+Where:
+
+- $v$ = input coordinates [0,1]
+- $r$ = resolution vector (grid dimensions)
+- The offset term centers samples within grid cells
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pixelated = nearest(uv, vec2(16, 12))
+        const pattern = sin(pixelated.x.mul(iTime)).mul(cos(pixelated.y.mul(iTime)))
+        const color = pattern.mul(0.5).add(0.5)
+        return vec4(vec3(color), 1)
+}`}
+/>

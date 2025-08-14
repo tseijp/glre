@@ -22,7 +22,6 @@ Where $V$ represents the gamma-corrected input value and $L$ the resulting linea
 Linear space enables accurate color blending, lighting calculations, and physically-based rendering operations that require additive color mathematics.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const bands = uv.x.mul(16).floor()
@@ -34,7 +33,6 @@ const fragment = () => {
 />
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const grid = uv.mul(8).floor()

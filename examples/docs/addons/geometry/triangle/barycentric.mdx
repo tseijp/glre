@@ -1,0 +1,50 @@
+---
+title: 'barycentric'
+description: 'Compute barycentric coordinates for triangles in 3D space'
+keywords: [geometry, triangle, barycentric, coordinates, interpolation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# barycentric: Barycentric Coordinate Computation
+
+### Mathematical Foundation for Triangle Point Interpolation
+
+Barycentric coordinates provide a coordinate system for expressing points relative to a triangle. For any point in the plane of a triangle, barycentric coordinates $(u, v, w)$ satisfy the constraint $u + v + w = 1$, where each component represents the weight of the corresponding triangle vertex.
+
+The mathematical definition involves solving the linear system:
+$$P = u \cdot A + v \cdot B + w \cdot C$$
+
+Where $P$ is the target point and $A$, $B$, $C$ are triangle vertices. The computation uses dot products to solve for the weights:
+
+$$
+\begin{align}
+\text{daa} &= A \cdot A \\
+\text{dab} &= A \cdot B \\
+\text{denom} &= \text{daa} \cdot \text{dbb} - \text{dab}^2 \\
+v &= \frac{\text{dbb} \cdot (C \cdot A) - \text{dab} \cdot (C \cdot B)}{\text{denom}}
+\end{align}
+$$
+
+Two primary functions handle different coordinate computation scenarios:
+
+**`barycentric(a, b, c)`** computes normalized barycentric coordinates directly from three vertices. The computation projects vectors onto a coordinate system defined by the triangle edges.
+
+**`barycentricFromPosition(a, b, c, pos)`** determines barycentric coordinates of a specific position relative to the triangle using cross product area ratios:
+
+$$w_i = \frac{\text{Area}(\text{triangle formed by pos and edge i})}{\text{Area}(\text{triangle})}$$
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const tri = Triangle({
+                a: vec3(-0.5, -0.4, 0),
+                b: vec3(0.5, -0.4, 0),
+                c: vec3(0, 0.6, 0)
+        })
+        const pos = vec3(uv, 0)
+        const bary = barycentricFromPosition(tri, pos)
+        return vec4(bary, 1)
+})`}
+/>

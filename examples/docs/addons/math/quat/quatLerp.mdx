@@ -32,7 +32,6 @@ Where $\theta = \arccos(|q_a \cdot q_b|)$ represents the angular separation betw
 This function ensures smooth rotation transitions without gimbal lock or unwanted rotation artifacts.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const t = iTime.mul(0.5)
@@ -61,7 +60,6 @@ const fragment = () => {
 This example demonstrates quaternion interpolation across multiple rotation targets, creating smooth animation sequences through spherical linear interpolation chains.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const cellPos = uv.mul(6)
@@ -93,5 +91,3 @@ const fragment = () => {
 
 }`}
 />
-
-The quatLerp function provides smooth spherical interpolation for rotation sequences, enabling natural animation transitions and rotation blending in 3D applications.

@@ -41,7 +41,6 @@ The nested trigonometric structure creates angular phase spaces where the divisi
 This example applies the invCubic transformation to radial distances, creating smooth falloff effects with the unique acceleration curve.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const offset = uv.sub(vec2(0.5))
@@ -60,7 +59,6 @@ const fragment = () => {
 This example shows how invCubic can be applied to grid patterns to create smooth cell-based effects with unique easing characteristics.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const lattice = uv.mul(12)

@@ -1,0 +1,57 @@
+---
+title: 'viewZ2depth'
+description: 'Convert view-space Z coordinate to normalized depth value'
+keywords: [depth, viewZ, projection, perspective, orthographic, z-buffer]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# viewZ2depth: View-Space Z to Depth Conversion
+
+### Depth buffer coordinate transformation
+
+The view-space Z to depth conversion transforms view-space Z coordinates to normalized depth buffer values. This is essential for depth testing and z-buffer operations in 3D rendering pipelines.
+
+### Perspective Projection
+
+For perspective projection, the depth conversion follows:
+
+$$
+\text{depth} = \frac{(\text{viewZ} + \text{near}) \cdot \text{far}}{(\text{far} - \text{near}) \cdot \text{viewZ}}
+$$
+
+This accounts for the non-linear depth distribution in perspective projection where near objects have higher precision.
+
+### Orthographic Projection
+
+For orthographic projection, the depth conversion is linear:
+
+$$
+\text{depth} = \frac{\text{viewZ} + \text{near}}{\text{near} - \text{far}}
+$$
+
+This provides uniform depth precision across the entire view frustum.
+
+### Coordinate System Mapping
+
+| Input Range                   | Output Range | Projection Type |
+| ----------------------------- | ------------ | --------------- |
+| $[\text{-far}, \text{-near}]$ | $[0, 1]$     | Perspective     |
+| $[\text{near}, \text{far}]$   | $[0, 1]$     | Orthographic    |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const viewZ = mix(-10, -0.1, uv.x)
+        const perspDepth = viewZ2depth(viewZ, 0.1, 10)
+        const orthoDepth = viewZ2depthOrthographic(viewZ, 0.1, 10)
+        const isTop = uv.y.greaterThan(0.5)
+        const color = select(
+                vec3(perspDepth, 0, 0),
+                vec3(0, orthoDepth, 0),
+                isTop
+        )
+        return vec4(color, 1)
+}`}
+/>

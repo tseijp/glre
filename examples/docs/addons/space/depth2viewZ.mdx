@@ -1,0 +1,56 @@
+---
+title: 'depth2viewZ'
+description: 'Depth buffer value to view space Z coordinate conversion for camera projection systems'
+keywords: [depth, camera, projection, perspective, orthographic, view space, transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# depth2viewZ: Depth Buffer to View Space Conversion
+
+### Camera Projection Depth Transformation Functions
+
+The `depth2viewZ` family of functions converts normalized depth buffer values to linear view space Z coordinates. These functions handle the mathematical transformation required to reconstruct world positions from depth textures in camera projection systems.
+
+## Mathematical Foundation
+
+For perspective projection, the transformation follows:
+
+$$
+Z_{view} = \frac{n \cdot f}{(f - n) \cdot d - f}
+$$
+
+For orthographic projection:
+
+$$
+Z_{view} = d \cdot (n - f) - n
+$$
+
+Where:
+
+- $d$ = normalized depth buffer value [0,1]
+- $n$ = near clipping plane distance
+- $f$ = far clipping plane distance
+- $Z_{view}$ = linear view space Z coordinate
+
+## Function Variants
+
+| Function                  | Purpose                 | Parameters                             |
+| ------------------------- | ----------------------- | -------------------------------------- |
+| `depth2viewZ`             | Perspective projection  | `depth`, `near`, `far`                 |
+| `depth2viewZOrthographic` | Orthographic projection | `depth`, `near`, `far`                 |
+| `depth2viewZCombined`     | Unified function        | `depth`, `near`, `far`, `orthographic` |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const depth = sin(uv.x.mul(8)).mul(0.5).add(0.5)
+        const near = float(1)
+        const far = float(20)
+        const ortho = step(0.5, uv.y)
+        const viewZ = depth2viewZCombined(depth, near, far, ortho)
+        const color = viewZ.div(far).add(0.5)
+        return vec4(vec3(color), 1)
+}`}
+/>

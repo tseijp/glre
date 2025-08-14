@@ -1,0 +1,44 @@
+---
+title: 'checkerTile'
+description: 'Checkerboard pattern tiling for alternating binary patterns'
+keywords: [checker, checkerboard, binary, tile, pattern, alternating]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# checkerTile: Binary Checkerboard Pattern Tiling
+
+### Alternating binary pattern generation
+
+The checker tiling function generates alternating 0/1 patterns from tile coordinates. For tile indices $(z, w)$, the function computes the checkerboard value using modular arithmetic:
+
+$$
+c = (z \bmod 2, w \bmod 2)
+$$
+
+$$
+\text{checker} = |c_x - c_y|
+$$
+
+This produces a binary output where adjacent tiles have opposite values, creating the classic checkerboard pattern.
+
+### Binary Output Mapping
+
+| Tile Index $(z,w)$ | $z \bmod 2$ | $w \bmod 2$ | $   | c_x - c_y | $   | Pattern |
+| ------------------ | ----------- | ----------- | --- | --------- | --- | ------- |
+| $(0,0)$            | $0$         | $0$         | $0$ | Black     |
+| $(1,0)$            | $1$         | $0$         | $1$ | White     |
+| $(0,1)$            | $0$         | $1$         | $1$ | White     |
+| $(1,1)$            | $1$         | $1$         | $0$ | Black     |
+
+### High Contrast Checkerboard
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pattern = checkerTileVec2(uv.mul(8))
+        const color = vec3(pattern)
+        return vec4(color, 1)
+}`}
+/>

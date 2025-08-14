@@ -16,7 +16,6 @@ The `absi` function performs intelligent conditional processing to ensure all nu
 Unlike standard absolute value functions, `absi` maintains computational precision across different numeric types while providing consistent behavior for both scalar and vector operations.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(2)
@@ -35,7 +34,6 @@ const fragment = () => {
 Threshold-based visual effects leverage absolute value operations to create dynamic boundaries that respond to mathematical conditions and time-based parameters.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const uv = position.xy.div(iResolution).sub(0.5).mul(4)

@@ -1,0 +1,42 @@
+---
+title: 'aspect'
+description: 'Coordinate aspect ratio correction for responsive visual elements'
+keywords: [aspect, ratio, coordinate, transform, responsive, scaling]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# aspect: Aspect Ratio Coordinate Correction
+
+### Proportional coordinate scaling for viewport adaptation
+
+The aspect function applies multiplicative scaling to x-coordinates based on dimensional ratios. Given coordinates $st = (x, y)$ and size vector $s = (w, h)$, the transformation operates as:
+
+$$
+aspect(st, s) = \left(x \cdot \frac{w}{h}, y\right)
+$$
+
+This mathematical relationship preserves y-coordinates while scaling x-coordinates by the width-to-height ratio, maintaining geometric proportions across different viewport dimensions.
+
+### Coordinate Transformation Analysis
+
+| Input Domain            | Output Domain          | Scaling Factor    |
+| ----------------------- | ---------------------- | ----------------- |
+| $st \in \mathbb{R}^2$   | $st' \in \mathbb{R}^2$ | $\frac{s_x}{s_y}$ |
+| Square viewport $(1:1)$ | No scaling             | $1.0$             |
+| Wide viewport $(16:9)$  | Horizontal expansion   | $1.78$            |
+| Tall viewport $(9:16)$  | Horizontal compression | $0.56$            |
+
+### Responsive Grid Deformation
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const screenRatio = vec2(iResolution.x, iResolution.y)
+        const corrected = aspect(uv.mul(8), screenRatio)
+        const gridLines = corrected.fract()
+        const grid = step(0.05, gridLines).add(step(0.95, gridLines))
+        return vec4(vec3(grid.x.mul(grid.y)), 1)
+}`}
+/>

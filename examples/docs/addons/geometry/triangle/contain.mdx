@@ -1,0 +1,56 @@
+---
+title: 'contain'
+description: 'Determine if a point lies inside a triangle using cross product sign testing'
+keywords: [geometry, triangle, containment, cross-product, point-in-triangle]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# triangleContain: Point-in-Triangle Containment Test
+
+### Cross Product Sign Method for Spatial Inclusion
+
+The triangle containment function determines whether a point lies inside a triangle using cross product sign testing. This method evaluates three cross products between edge vectors formed by translating the triangle relative to the test point.
+
+Given triangle vertices $A$, $B$, $C$ and test point $P$, the algorithm computes local vectors:
+
+$$
+\begin{align}
+\vec{a'} &= A - P \\
+\vec{b'} &= B - P \\
+\vec{c'} &= C - P
+\end{align}
+$$
+
+Three cross products are calculated from these translated vectors:
+
+$$
+\begin{align}
+\vec{u} &= \vec{b'} \times \vec{c'} \\
+\vec{v} &= \vec{c'} \times \vec{a'} \\
+\vec{w} &= \vec{a'} \times \vec{b'}
+\end{align}
+$$
+
+The containment test evaluates the sign consistency of dot products:
+
+$$\text{contained} = (\vec{u} \cdot \vec{v} \geq 0) \land (\vec{u} \cdot \vec{w} \geq 0)$$
+
+When both dot products are non-negative, the cross product vectors point in consistent directions, indicating the point lies within the triangle's boundaries. This method works by verifying that the test point lies on the same side of all triangle edges.
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const tri = Triangle({
+                a: vec3(-0.4, -0.3, 0),
+                b: vec3(0.4, -0.3, 0),
+                c: vec3(0, 0.5, 0)
+        })
+        const pos = vec3(uv.mul(2).sub(1), 0)
+        const inside = triangleContain(tri, pos)
+        const interior = vec3(0.2, 0.8, 0.4)
+        const exterior = vec3(0.1, 0.2, 0.6)
+        return vec4(exterior.select(interior, inside), 1)
+})`}
+/>

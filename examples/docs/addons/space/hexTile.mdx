@@ -1,0 +1,44 @@
+---
+title: 'hexTile'
+description: 'Hexagonal tiling pattern generator for procedural texture and coordinate mapping'
+keywords: [hexagonal, tiling, tessellation, procedural, pattern, coordinate]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hexTile: Hexagonal Tessellation Function
+
+### Procedural Hexagonal Grid Coordinate System
+
+The `hexTile` function transforms rectangular coordinates into hexagonal tessellation space, returning both local cell coordinates and cell indices. This enables creation of honeycomb patterns and hexagonal grid-based effects.
+
+## Mathematical Foundation
+
+Hexagonal tessellation uses a skewed coordinate system where:
+
+$$
+s = (1, \sqrt{3}) \approx (1, 1.732)
+$$
+
+The transformation maps rectangular UV coordinates to hexagonal cells through distance comparison between adjacent cell centers.
+
+## Return Structure
+
+The function returns a `vec4` containing:
+
+- `.xy`: Local coordinates within the hexagonal cell [0,1]
+- `.zw`: Integer cell indices identifying the specific hexagon
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const hex = hexTile(uv.mul(6))
+        const id = hex.w.mul(iTime).add(hex.z)
+        const localPos = hex.xy.mul(2).sub(1)
+        const pattern = sin(localPos.x.mul(6)).mul(sin(localPos.y.mul(6)))
+        const cellColor = sin(id.mul(2.3)).mul(0.5).add(0.5)
+        const final = pattern.mul(0.5).add(0.5).mul(cellColor)
+        return vec4(vec3(final, cellColor.mul(0.7), float(1).sub(cellColor)), 1)
+}`}
+/>

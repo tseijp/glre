@@ -1,0 +1,51 @@
+---
+title: 'triTile'
+description: 'Triangular tiling coordinate transformation for procedural patterns'
+keywords: ['tiling', 'triangular', 'tessellation', 'coordinate', 'pattern', 'procedural']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# triTile: Triangular Tiling Transform
+
+### Triangular coordinate tessellation system
+
+The triTile functions create triangular tiling patterns by transforming coordinates into a triangular grid system. This transformation maps rectangular coordinates to triangular tiles, enabling the creation of hexagonal and triangular patterns.
+
+The transformation applies a skew matrix to convert rectangular coordinates to triangular space:
+
+$$
+M = \begin{pmatrix}
+1 & 0 \\
+-\frac{1}{\sqrt{3}} & \frac{2}{\sqrt{3}}
+\end{pmatrix}
+$$
+
+The function returns a `vec4` where:
+
+- `xy`: Local coordinates within the triangle (0-1 range)
+- `zw`: Tile indices for pattern identification
+
+### Available Functions
+
+| Function        | Input Types   | Output Type | Description              |
+| --------------- | ------------- | ----------- | ------------------------ |
+| `triTile`       | `vec2`        | `vec4`      | Basic triangular tiling  |
+| `triTileScaled` | `vec2, float` | `vec4`      | Scaled triangular tiling |
+
+### Return Value Structure
+
+The returned `vec4` contains:
+
+- `.xy`: Fractional coordinates within the current triangle
+- `.zw`: Integer tile coordinates for addressing specific triangles
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const tile = triTile(uv.mul(6))
+        const color = vec3(tile.xy, tile.z.mul(0.2).add(0.5))
+        return vec4(color, 1)
+}`}
+/>

@@ -27,7 +27,6 @@ $$
 The linear threshold at $0.04045$ prevents numerical discontinuities near black values. Below this threshold, simple division by $12.92$ provides linear mapping. Above this threshold, the power function removes gamma correction applied for perceptual uniformity.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const web_color = vec3(uv.x, uv.y, iTime.sin().mul(0.3).add(0.7))

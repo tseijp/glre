@@ -1,0 +1,78 @@
+---
+title: 'square'
+description: 'Convert an AABB into a cubic bounding box with equal dimensions'
+keywords: [geometry, aabb, square, cube, normalization]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# square: AABB Cubic Conversion Operation
+
+### Dimension Equalization for Uniform Bounding Volumes
+
+The AABB square function converts a rectangular bounding box into a cubic volume by equalizing all dimensions. This operation creates a cube centered at the original box's centroid with edge length equal to the maximum dimension.
+
+Given an AABB with diagonal vector $\vec{d}$, the square operation computes:
+
+$$
+\begin{align}
+\vec{d} &= \text{diagonal}(\text{box}) \times 0.5 \\
+\vec{c} &= \vec{b_{\min}} + \vec{d} \\
+d_{\max} &= \max(|d_x|, |d_y|, |d_z|) \\
+\vec{b'_{\min}} &= \vec{c} - d_{\max} \\
+\vec{b'_{\max}} &= \vec{c} + d_{\max}
+\end{align}
+$$
+
+where $\vec{c}$ represents the center point and $d_{\max}$ becomes the half-edge length of the resulting cube.
+
+**Geometric Properties**
+
+The square operation maintains several important characteristics:
+
+- **Center Preservation**: The centroid remains unchanged
+- **Volume Expansion**: Always increases or maintains original volume
+- **Aspect Ratio Normalization**: Eliminates dimensional bias
+
+**Applications**
+
+Cubic bounding volumes serve specific computational purposes:
+
+- **Spatial Hashing**: Uniform grid cell sizing for consistent indexing
+- **Level of Detail**: Distance-based quality metrics using sphere-cube approximations
+- **Collision Detection**: Simplified intersection testing with symmetric bounds
+- **Texture Mapping**: Cubic environment mapping and reflection calculations
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const t = iTime.mul(0.4)
+        const p = uv.mul(5).sub(2.5)
+        const originalBox = AABB({
+                minBounds: vec3(t.sin().mul(1.8).sub(0.3), t.mul(1.3).cos().mul(0.7).sub(0.2), 0),
+                maxBounds: vec3(t.mul(0.7).sin().mul(0.9).add(0.6), t.mul(0.9).cos().mul(1.5).add(0.8), 0)
+        })
+        const squaredBox = square(originalBox)
+        const pos = vec3(p, 0)
+        const inOriginal = aabbContain(originalBox, pos)
+        const inSquared = aabbContain(squaredBox, pos)
+        const inExpanded = inSquared.and(inOriginal.not())
+        const originalColor = vec3(0.8, 0.3, 0.1)
+        const expandedColor = vec3(0.2, 0.7, 0.9)
+        const outsideColor = vec3(0.1, 0.1, 0.2)
+        const color = outsideColor.select(expandedColor.select(originalColor, inOriginal), inSquared)
+        const origEdge = p.x.sub(originalBox.minBounds.x).abs()
+                    .min(p.x.sub(originalBox.maxBounds.x).abs())
+                    .min(p.y.sub(originalBox.minBounds.y).abs()
+                    .min(p.y.sub(originalBox.maxBounds.y).abs()))
+        const sqEdge = p.x.sub(squaredBox.minBounds.x).abs()
+                  .min(p.x.sub(squaredBox.maxBounds.x).abs())
+                  .min(p.y.sub(squaredBox.minBounds.y).abs()
+                  .min(p.y.sub(squaredBox.maxBounds.y).abs()))
+        const origWire = smoothstep(0.02, 0.04, origEdge).oneMinus()
+        const sqWire = smoothstep(0.01, 0.03, sqEdge).oneMinus().mul(0.5)
+        const wireframe = origWire.add(sqWire)
+        return vec4(color.add(wireframe.mul(0.4)), 1)
+})`}
+/>

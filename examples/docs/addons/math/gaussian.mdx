@@ -44,7 +44,6 @@ $$
 By manipulating the distance parameter and spread factor, infinite variations of smooth falloff patterns emerge, creating everything from subtle ambient glows to dramatic energy concentrations that pulse with mathematical precision.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const center = vec2(0.5)
@@ -60,7 +59,6 @@ const fragment = () => {
 Multiple Gaussian distributions can be combined to create complex patterns. Each distribution acts as a separate "hotspot" that can move and interact with others, useful for creating organic blob-like effects or modeling multiple light sources.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const time = iTime.mul(0.4)

@@ -41,7 +41,6 @@ The rotation angle at each octave: $\theta_i = random(floor(p \cdot s_i)) \cdot 
 | `waveletVec3K(p, k)`         | 3D with control | vec3 input, frequency control                |
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const pos = uv.mul(8)
@@ -52,7 +51,6 @@ const fragment = () => {
 />
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const grid = uv.mul(4)

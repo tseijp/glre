@@ -1,0 +1,42 @@
+---
+title: 'kaleidoscope'
+description: 'Angular symmetry transformation for creating kaleidoscopic mirror effects'
+keywords: [kaleidoscope, symmetry, mirror, angular, reflection, transformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# kaleidoscope: Angular Symmetry Transformation
+
+### Radial Mirror Reflection System
+
+The `kaleidoscope` functions create angular symmetry by dividing coordinate space into segments and mirroring content across radial boundaries. This produces kaleidoscopic effects with configurable segment counts and rotation phases.
+
+## Mathematical Foundation
+
+The transformation operates in polar coordinates:
+
+$$
+\theta' = \min(\theta \bmod \alpha, \alpha - (\theta \bmod \alpha))
+$$
+
+Where $\alpha = \frac{2\pi}{n}$ is the segment angle for $n$ segments, ensuring each segment contains a mirrored copy of the original pattern.
+
+## Function Variants
+
+| Function              | Parameters                       | Default Values       |
+| --------------------- | -------------------------------- | -------------------- |
+| `kaleidoscope`        | `coord`, `segmentCount`, `phase` | -                    |
+| `kaleidoscopeDefault` | `coord`                          | 8 segments, 0° phase |
+| `kaleidoscopeCount`   | `coord`, `segmentCount`          | 0° phase             |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const kaleido = kaleidoscopeCount(uv, 6)
+        const pattern = sin(kaleido.x.mul(20)).mul(sin(kaleido.y.mul(20)))
+        const color = pattern.mul(0.5).add(0.5)
+        return vec4(vec3(color), 1)
+}`}
+/>

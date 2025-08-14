@@ -37,7 +37,6 @@ This automatically fades high-frequency oscillations to prevent aliasing artifac
 This technique proves invaluable when creating procedural patterns, animated textures, and rhythmic visual effects where standard cosine functions would produce unwanted artifacts or visual noise.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const coord = uv.mul(8)
@@ -53,7 +52,6 @@ const fragment = () => {
 Multiple filtered cosine waves can interact to create sophisticated interference patterns. The filtering prevents aliasing artifacts that would normally occur with rapidly oscillating wave combinations.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const angle = uv.y.sub(0.5).atan2(uv.x.sub(0.5))

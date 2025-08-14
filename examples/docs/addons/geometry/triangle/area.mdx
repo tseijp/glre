@@ -1,0 +1,57 @@
+---
+title: 'area'
+description: 'Calculate triangle surface area using cross product vector magnitude'
+keywords: [triangle, area, geometry, surface measurement, vector calculation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# area: Triangle Surface Area Calculation
+
+### Vector-Based Surface Measurement
+
+Triangle area calculation employs the cross product relationship between two edge vectors to determine surface magnitude. This fundamental geometric operation provides precise measurements regardless of triangle orientation in three-dimensional space.
+
+The calculation utilizes the mathematical property that cross product magnitude equals the parallelogram area formed by two vectors. Since triangles represent half of such parallelograms, the final result requires multiplication by 0.5.
+
+## Mathematical Definition
+
+The area formula derives from vector cross product properties:
+
+$$A = \frac{1}{2} |(\vec{b} - \vec{a}) \times (\vec{c} - \vec{a})|$$
+
+Where:
+
+- $\vec{a}$, $\vec{b}$, $\vec{c}$ represent triangle vertex positions
+- The cross product generates a vector perpendicular to both edge vectors
+- Vector magnitude provides the parallelogram area
+- Division by 2 yields triangle area
+
+## Cross Product Geometry
+
+| Component     | Vector Calculation                        | Geometric Meaning                                 |
+| ------------- | ----------------------------------------- | ------------------------------------------------- |
+| Edge AB       | $\vec{b} - \vec{a}$                       | First triangle edge from vertex A                 |
+| Edge AC       | $\vec{c} - \vec{a}$                       | Second triangle edge from vertex A                |
+| Cross Product | $\vec{AB} \times \vec{AC}$                | Perpendicular vector with parallelogram magnitude |
+| Area Result   | $\frac{1}{2}\|\vec{AB} \times \vec{AC}\|$ | Triangle surface measurement                      |
+
+The cross product direction follows the right-hand rule, indicating surface normal orientation. However, for area calculation, only the magnitude matters.
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const scale = iTime.mul(0.5).sin()
+        const tri = Triangle({
+                a: vec3(-0.4, -0.4, 0),
+                b: vec3(0.4, -0.4, 0),
+                c: vec3(0, scale.mul(0.4), 0)
+        })
+        const triArea = area(tri)
+        const pos = uv.mul(2).sub(1)
+        const isInside = triangleContain(tri, vec3(pos, 0))
+        const areaColor = vec3(triArea.mul(2), triArea.mul(1.5), 0.3)
+        return vec4(vec3(0.1, 0.1, 0.15).select(areaColor, isInside), 1)
+})`}
+/>

@@ -1,0 +1,49 @@
+---
+title: 'polar2cart'
+description: 'Converts polar coordinates back to Cartesian coordinate system for position reconstruction'
+keywords: [polar, cartesian, coordinate, transformation, reconstruction, spherical]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# polar2cart: Polar to Cartesian Coordinate Reconstruction
+
+### Converting polar representation back to rectangular coordinates
+
+The polar2cart functions perform the inverse transformation of cart2polar, reconstructing Cartesian coordinates from polar and spherical representations.
+
+#### 2D Cartesian Reconstruction
+
+For polar coordinates $(\theta, r)$, the Cartesian reconstruction produces $(x, y)$:
+
+$$x = r \cos(\theta)$$
+$$y = r \sin(\theta)$$
+
+#### 3D Cartesian Reconstruction
+
+For spherical coordinates $(r, \phi, \theta)$, the Cartesian reconstruction produces $(x, y, z)$:
+
+$$x = r \cos(\theta) \sin(\phi)$$
+$$y = r \sin(\theta) \sin(\phi)$$
+$$z = r \cos(\phi)$$
+
+#### Function Variants
+
+| Function                    | Input               | Output | Description                                          |
+| --------------------------- | ------------------- | ------ | ---------------------------------------------------- |
+| `polar2cart(polar)`         | `vec2`              | `vec2` | 2D polar to Cartesian $(\theta,r) \rightarrow (x,y)$ |
+| `polar2cart3D(r,phi,theta)` | `float,float,float` | `vec3` | 3D spherical to Cartesian                            |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const r = 0.3
+        const phi = uv.x.mul(3.14)
+        const theta = uv.y.mul(6.28)
+        const sphere3d = polar2cart3D(r, phi, theta)
+        const projection = sphere3d.xy.add(0.5)
+        const depth = sphere3d.z.mul(2).add(0.5)
+        return vec4(vec3(projection, depth), 1)
+}`}
+/>

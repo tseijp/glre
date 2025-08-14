@@ -44,31 +44,9 @@ Resulting in 3D coordinates: $(\cos\phi \sin\theta, \sin\phi \sin\theta, \cos\th
 - Low-discrepancy property ensures even distribution
 - Cosine weighting matches Lambert's law for realistic lighting
 
-### Usage with Hemisphere Sampling
-
-The hammersley function is commonly paired with hemisphereCosSample for efficient Monte Carlo sampling in rendering applications, providing well-distributed sample points for lighting calculations.
-
-<FragmentEditor
-        isFun
-        code={`
-const fragment = () => {
-        const coord = uv.mul(64.0)
-        const index = coord.x.add(coord.y.mul(64.0)).floor().toInt()
-
-        const sample = hammersley(index, int(64))
-        const hemisphere = hemisphereCosSample(sample)
-
-        const color = hemisphere.abs()
-
-        return vec4(color, 1)
-
-}`}
-/>
-
 ### Surface Lighting Simulation
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const gridSize = 16.0

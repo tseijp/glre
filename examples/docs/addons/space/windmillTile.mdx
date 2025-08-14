@@ -1,0 +1,49 @@
+---
+title: 'windmillTile'
+description: 'Windmill pattern tiling with rotational transformations'
+keywords: ['windmill', 'tiling', 'rotation', 'pattern', 'tessellation', 'procedural']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# windmillTile: Windmill Pattern Tiling
+
+### Rotational tiling pattern generation
+
+The windmillTile functions create windmill-like patterns by applying rotational transformations to square tiles based on their grid coordinates. Each tile is rotated by an amount determined by its position in the grid, creating a windmill or pinwheel effect.
+
+The rotation angle for each tile is calculated using:
+
+$$
+\alpha = \left(|mod(t.z, 2) - mod(t.w, 2)| + mod(t.w, 2) \times 2\right) \times 0.25 \times turn
+$$
+
+Where `t.zw` are the tile coordinates and `turn` controls the rotation amount.
+
+### Available Functions
+
+| Function                | Input Types   | Output Type | Description                      |
+| ----------------------- | ------------- | ----------- | -------------------------------- |
+| `windmillTile`          | `vec4, float` | `vec4`      | Windmill with custom turn amount |
+| `windmillTileDefault`   | `vec4`        | `vec4`      | Windmill with TAU rotation       |
+| `windmillTileVec2`      | `vec2`        | `vec4`      | Windmill from UV coordinates     |
+| `windmillTileFloat`     | `vec2, float` | `vec4`      | Scaled windmill pattern          |
+| `windmillTileVec2Scale` | `vec2, vec2`  | `vec4`      | Vector-scaled windmill pattern   |
+
+### Parameters
+
+- `t`: Tile coordinates (from `sqTile`)
+- `turn`: Rotation multiplier (default is `TAU`)
+- `v`: UV coordinates for pattern generation
+- `s`: Scale factor(s)
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const scale = iTime.mul(0.3).sin().mul(2).add(4)
+        const tile = windmillTileFloat(uv, scale)
+        const color = tile.xy.add(tile.zw.mul(0.1))
+        return vec4(color, 0.5, 1)
+}`}
+/>

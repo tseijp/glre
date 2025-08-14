@@ -34,7 +34,6 @@ $$\text{nyquist}(v, \text{afwidth}) = \text{smoothstep}(0, \text{afwidth}, v)$$
 Where $\text{fract}(x) = x - \lfloor x \rfloor$ represents the fractional part, enabling seamless pattern repetition without aliasing artifacts.
 
 <FragmentEditor
-        isFun
         code={`
 const fragment = () => {
         const pattern = aafract(uv.x.mul(20))

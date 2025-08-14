@@ -1,0 +1,40 @@
+---
+title: 'flipY'
+description: 'Y-axis coordinate inversion for texture and screen space transformations'
+keywords: [coordinate, transformation, texture, screen space, inversion, flip]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# flipY: Y-Coordinate Inversion Functions
+
+### Vertical Axis Mirroring Transformations
+
+The `flipY` functions invert the Y-coordinate while preserving other vector components. These functions handle coordinate system conversions between different graphics APIs and rendering contexts where Y-axis orientation differs.
+
+## Mathematical Definition
+
+For any vector $\mathbf{v} = (x, y, z, w)$, the Y-flip transformation produces:
+
+$$
+\text{flipY}(\mathbf{v}) = (x, 1-y, z, w)
+$$
+
+This transformation maps the range $[0,1]$ to $[1,0]$, effectively mirroring coordinates vertically around the center line $y = 0.5$.
+
+## Function Variants
+
+| Input Type | Output | Transformation                            |
+| ---------- | ------ | ----------------------------------------- |
+| `vec2`     | `vec2` | $(x, y) \rightarrow (x, 1-y)$             |
+| `vec3`     | `vec3` | $(x, y, z) \rightarrow (x, 1-y, z)$       |
+| `vec4`     | `vec4` | $(x, y, z, w) \rightarrow (x, 1-y, z, w)$ |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const flipped = flipYVec2(uv)
+        return vec4(vec3(flipped, 0.5), 1)
+}`}
+/>

@@ -1,0 +1,45 @@
+---
+title: 'brickTile'
+description: 'Brick pattern tiling with staggered row offset for masonry layouts'
+keywords: [brick, tile, stagger, offset, pattern, masonry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# brickTile: Staggered Brick Pattern Tiling
+
+### Masonry tiling with alternating row offset
+
+The brick tiling function creates a staggered pattern by applying horizontal offset to alternating rows. Given square tile coordinates $t = (x, y, z, w)$ where $(x,y)$ represents fractional position and $(z,w)$ represents integer indices:
+
+$$
+\text{offset} = \frac{w \bmod 2}{2}
+$$
+
+$$
+x' = x + \text{offset}
+$$
+
+The transformation shifts even rows by half a tile width, creating the characteristic brick masonry pattern.
+
+### Tiling Coordinate System
+
+| Component | Input Domain | Output Domain | Description                    |
+| --------- | ------------ | ------------- | ------------------------------ |
+| `x`       | $[0,1)$      | $[0,1)$       | Horizontal fractional position |
+| `y`       | $[0,1)$      | $[0,1)$       | Vertical fractional position   |
+| `z`       | $\mathbb{Z}$ | $\mathbb{Z}$  | Modified horizontal tile index |
+| `w`       | $\mathbb{Z}$ | $\mathbb{Z}$  | Vertical tile index            |
+
+### Checkerboard Brick Variation
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const tiled = brickTileVec2(uv.mul(6))
+        const checker = mod(tiled.z.add(tiled.w), 2)
+        const color = mix(vec3(0.8, 0.4, 0.2), vec3(0.6, 0.3, 0.1), checker)
+        return vec4(color, 1)
+}`}
+/>

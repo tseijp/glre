@@ -1,0 +1,55 @@
+---
+title: 'sprite'
+description: 'Extract sprite coordinates from sprite sheet grid by index'
+keywords: [sprite, sheet, atlas, texture, animation, frame, index]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# sprite: Sprite Sheet Coordinate Extraction
+
+### Grid-based texture atlas sampling
+
+The sprite function extracts individual sprite coordinates from a sprite sheet organized in a regular grid. Given grid dimensions and a frame index, it calculates the UV coordinates for that specific sprite:
+
+$$
+\text{adjustedIndex} = \text{index} + \text{grid}_x
+$$
+
+$$
+f = \frac{1}{\text{grid}}
+$$
+
+$$
+\text{cell} = \begin{pmatrix}
+\lfloor \text{adjustedIndex} \rfloor \\
+\text{grid}_y - \lfloor \text{adjustedIndex} \cdot f_x \rfloor
+\end{pmatrix}
+$$
+
+$$
+\text{spriteUV} = \text{fract}((\text{st} + \text{cell}) \cdot f)
+$$
+
+This maps the input UV coordinates to the appropriate sprite cell within the atlas.
+
+### Grid Layout System
+
+| Parameter | Description                     | Range               |
+| --------- | ------------------------------- | ------------------- |
+| `st`      | Input UV coordinates            | $[0,1]^2$           |
+| `grid`    | Grid dimensions (width, height) | $(1, \infty)^2$     |
+| `index`   | Sprite frame index              | $[0, \text{total})$ |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const tileIndex = floor(uv.x.mul(6)).add(floor(uv.y.mul(6)).mul(6))
+        const localUV = fract(uv.mul(6))
+        const spriteUV = sprite(localUV, vec2(3, 3), tileIndex.mod(9))
+        const gradient = length(spriteUV.sub(0.5)).mul(2)
+        const color = mix(vec3(gradient), vec3(1).sub(gradient), step(0.5, gradient))
+        return vec4(color, 1)
+}`}
+/>
