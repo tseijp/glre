@@ -28,7 +28,10 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
 }
 
 const inferFromCount = <T extends C>(count: number) => {
-        return COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        const ret = COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        if (!ret)
+                throw `glre node system error: Cannot infer type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`
+        return ret
 }
 
 const inferFromArray = <T extends C>(arr: Y<T>[], c: NodeContext) => {
@@ -37,7 +40,7 @@ const inferFromArray = <T extends C>(arr: Y<T>[], c: NodeContext) => {
         if (is.str(x)) return x as T // for struct
         const ret = infer(x, c)
         // for (const x of arr.slice(1))
-        //         if (ret !== infer(x, c)) throw new Error(`glre node system error: defined scope return mismatch`)
+        //         if (ret !== infer(x, c)) throw `glre node system error: defined scope return mismatch`
         return ret
 }
 

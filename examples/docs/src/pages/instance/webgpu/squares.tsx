@@ -12,8 +12,8 @@ export default function WebGPUInstancing() {
         for (let i = 0; i < numInstances; i++) {
                 const row = Math.floor(i / gridSize)
                 const col = i % gridSize
-                const x = (col - gridSize / 2) * 0.2
-                const y = (row - gridSize / 2) * 0.2
+                const x = (col * 2 + 1) / gridSize - 1
+                const y = (row * 2 + 1) / gridSize - 1
 
                 // Position (vec2)
                 instancePositions.push(x, y)

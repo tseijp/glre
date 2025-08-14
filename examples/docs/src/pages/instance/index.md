@@ -11,8 +11,8 @@ GLRE instancing allows you to render multiple instances of the same geometry eff
 
 ## Examples
 
-- [WebGL Instancing](/instance/webgl) - 100 colored squares using WebGL2 instancing
-- [WebGPU Instancing](/instance/webgpu) - 100 colored squares using WebGPU instancing
+- [WebGL Instancing](/instance/webgl/squares) - 100 colored squares using WebGL2 instancing
+- [WebGPU Instancing](/instance/webgpu/squares) - 100 colored squares using WebGPU instancing
 
 ## Usage
 
@@ -36,19 +36,3 @@ const gl = useGL({
 gl.attribute('instancePosition', instancePositions)
 gl.attribute('instanceColor', instanceColors)
 ```
-
-## Performance Benefits
-
-Instancing reduces:
-
-- Draw calls from N to 1 (where N is instance count)
-- CPU-GPU data transfer overhead
-- Shader program switches
-- State changes between objects
-
-Ideal for:
-
-- Particle systems
-- Vegetation rendering
-- Repeated geometry (buildings, rocks, etc.)
-- UI elements

@@ -12,8 +12,8 @@ export default function WebGLInstancing() {
         for (let i = 0; i < numInstances; i++) {
                 const row = Math.floor(i / gridSize)
                 const col = i % gridSize
-                const x = (col - gridSize / 2) * 0.2
-                const y = (row - gridSize / 2) * 0.2
+                const x = (col * 2 + 1) / gridSize - 1
+                const y = (row * 2 + 1) / gridSize - 1
 
                 // Position (vec3)
                 instancePositions.push(x, y, 0)
@@ -37,24 +37,16 @@ export default function WebGLInstancing() {
                 -0.05, 0.05, 0.0,
         ]
 
-        console.log({
-                numInstances,
-                count: 6,
-                positionsLength: positions.length,
-                instancePositionsLength: instancePositions.length,
-                instanceColorsLength: instanceColors.length,
-        })
-
-        const a_position = attribute(vec3(positions))
-        const instancePosition = attribute(vec2(instancePositions), 'instancePositions')
-        const instanceColor = attribute(vec4(instanceColors), 'instanceColors')
+        const a_position = attribute<'vec3'>(positions, 'positions')
+        const a_instancePositions = attribute(vec2(instancePositions), 'instancePositions')
+        const a_instanceColors = attribute(vec4(instanceColors), 'instanceColors')
 
         const gl = useGL({
                 isWebGL: true,
                 instance: numInstances,
                 count: 6,
-                vert: vec4(a_position.add(vec3(instancePosition, 0)), 1),
-                frag: vertexStage(instanceColor),
+                vert: vec4(a_position.add(vec3(a_instancePositions, 0)), 1),
+                frag: vertexStage(a_instanceColors),
         })
 
         return <canvas ref={gl.ref} width={800} height={600} />

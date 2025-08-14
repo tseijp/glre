@@ -101,10 +101,8 @@ export const webgl = async (gl: GL) => {
                 let flatValue: number[]
                 if (Array.isArray(value[0])) {
                         flatValue = value[0] as number[]
-                        console.log(`Using first sub-array for ${key}: length=${flatValue.length}`)
                 } else {
                         flatValue = value
-                        console.log(`Using flat array for ${key}: length=${flatValue.length}`)
                 }
 
                 // Simple heuristic: if attribute name contains 'instance', treat as instance attribute

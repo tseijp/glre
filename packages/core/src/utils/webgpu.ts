@@ -114,13 +114,9 @@ export const webgpu = async (gl: GL) => {
                 // Handle the case where value is an array of arrays from node system
                 let flatValue: number[]
                 if (Array.isArray(value[0])) {
-                        // If it's an array of arrays, we need the first (and should be only) sub-array
                         flatValue = value[0] as number[]
-                        console.log(`WebGPU using first sub-array for ${key}: length=${flatValue.length}`)
                 } else {
-                        // If it's already a flat array, use as is
                         flatValue = value
-                        console.log(`WebGPU using flat array for ${key}: length=${flatValue.length}`)
                 }
                 const { array, buffer } = attribs(key, flatValue)
                 device.queue.writeBuffer(buffer, 0, array as any)
