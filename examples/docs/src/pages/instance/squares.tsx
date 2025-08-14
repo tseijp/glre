@@ -1,32 +1,5 @@
 import { useGL } from 'glre/src/react'
-
-const vertex = `
-struct In {
-        @location(0) positions: vec2f,
-        @location(1) instancePositions: vec2f,
-        @location(2) instanceColors: vec4f
-}
-struct Out {
-        @builtin(position) position: vec4f,
-        @location(0) vColor: vec4f
-}
-@vertex
-fn main(in: In) -> Out {
-        var out: Out;
-        out.position = vec4f(in.positions + in.instancePositions, 0.0, 1.0);
-        out.vColor = in.instanceColors;
-        return out;
-}`
-
-const fragment = `
-struct Out {
-        @builtin(position) position: vec4f,
-        @location(0) vColor: vec4f
-}
-@fragment
-fn main(out: Out) -> @location(0) vec4f {
-        return out.vColor;
-}`
+import { attribute, vec4, vertexStage } from 'glre/src/node'
 
 export default function WebGLInstancing() {
         const numInstances = 100
@@ -60,17 +33,17 @@ export default function WebGLInstancing() {
                 -0.05, 0.05,
         ]
 
+        const a_position = attribute<'vec2'>(positions, 'positions')
+        const a_instancePositions = attribute<'vec2'>(instancePositions, 'instancePositions')
+        const a_instanceColors = attribute<'vec4'>(instanceColors, 'instanceColors')
+
         const gl = useGL({
                 isWebGL: false,
                 instance: numInstances,
                 count: 6,
-                vertex,
-                fragment,
+                vert: vec4(a_position.add(a_instancePositions), 0, 1),
+                frag: vertexStage(a_instanceColors),
         })
-
-        gl.attribute('positions', positions)
-        gl.attribute('instancePositions', instancePositions)
-        gl.attribute('instanceColors', instanceColors)
 
         return <canvas ref={gl.ref} width={800} height={600} />
 }

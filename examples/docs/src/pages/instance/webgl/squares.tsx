@@ -1,10 +1,27 @@
 import { useGL } from 'glre/src/react'
-import { attribute, vec2, vec3, vec4, vertexStage } from 'glre/src/node'
+
+const vertex = `#version 300 es
+in vec4 instanceColors;
+in vec2 positions;
+in vec2 instancePositions;
+out vec4 vColor;
+void main() {
+        gl_Position = vec4(positions + instancePositions, 0.0, 1.0);
+        vColor = instanceColors;
+}`
+
+const fragment = `#version 300 es
+precision mediump float;
+out vec4 fragColor;
+in vec4 vColor;
+void main() {
+        fragColor = vColor;
+}`
 
 export default function WebGLInstancing() {
         const numInstances = 100
 
-        // Create instance position data - arranged in a grid
+        // Create instance data
         const instancePositions = []
         const instanceColors = []
         const gridSize = Math.ceil(Math.sqrt(numInstances))
@@ -14,11 +31,7 @@ export default function WebGLInstancing() {
                 const col = i % gridSize
                 const x = (col * 2 + 1) / gridSize - 1
                 const y = (row * 2 + 1) / gridSize - 1
-
-                // Position (vec2)
                 instancePositions.push(x, y)
-
-                // Color based on position (vec3)
                 const hue = (i / numInstances) * 360
                 const r = Math.sin((hue * Math.PI) / 180) * 0.5 + 0.5
                 const g = Math.sin((hue * Math.PI) / 180 + 2) * 0.5 + 0.5
@@ -26,28 +39,28 @@ export default function WebGLInstancing() {
                 instanceColors.push(r, g, b, 1)
         }
 
-        // Base quad vertices
+        // Base quad vertices (vec2)
         // prettier-ignore
         const positions = [
-                -0.05, -0.05, 0.0,
-                0.05, -0.05, 0.0,
-                0.05, 0.05, 0.0,
-                -0.05, -0.05, 0.0,
-                0.05, 0.05, 0.0,
-                -0.05, 0.05, 0.0,
+                -0.05, -0.05,
+                0.05, -0.05,
+                0.05, 0.05,
+                -0.05, -0.05,
+                0.05, 0.05,
+                -0.05, 0.05,
         ]
-
-        const a_position = attribute<'vec3'>(positions, 'positions')
-        const a_instancePositions = attribute<'vec2'>(instancePositions, 'instancePositions')
-        const a_instanceColors = attribute<'vec4'>(instanceColors, 'instanceColors')
 
         const gl = useGL({
                 isWebGL: true,
                 instance: numInstances,
                 count: 6,
-                vert: vec4(a_position.add(vec3(a_instancePositions, 0)), 1),
-                frag: vertexStage(a_instanceColors),
+                vertex,
+                fragment,
         })
+
+        gl.attribute('positions', positions)
+        gl.attribute('instancePositions', instancePositions)
+        gl.attribute('instanceColors', instanceColors)
 
         return <canvas ref={gl.ref} width={800} height={600} />
 }
