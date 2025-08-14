@@ -13,6 +13,7 @@ export type GL = EventState<{
         isGL: true
         width?: number
         height?: number
+        instance: number
         size: [number, number]
         mouse: [number, number]
         count: number
