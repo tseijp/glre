@@ -74,9 +74,6 @@ export const createInstanceAttrib = (
         const vbo = createVbo(c, value)
         const componentsPerInstance = Math.floor(value.length / instance)
         const size = Math.min(Math.max(componentsPerInstance, 1), 4)
-        
-        console.log(`Instance attribute: loc=${loc}, length=${value.length}, instances=${instance}, components=${componentsPerInstance}, size=${size}`)
-        
         c.bindBuffer(c.ARRAY_BUFFER, vbo)
         c.enableVertexAttribArray(loc)
         c.vertexAttribPointer(loc, size, c.FLOAT, false, 0, 0)

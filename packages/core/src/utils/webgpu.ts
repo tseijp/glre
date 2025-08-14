@@ -93,11 +93,6 @@ export const webgpu = async (gl: GL) => {
                 const stride = isInstanceAttribute ? value.length / gl.instance : value.length / gl.count
                 const { location } = bindings.attrib()
                 const { array, buffer } = createArrayBuffer(device, value, 'attrib')
-                console.log(
-                        `WebGPU attrib ${_key}: length=${value.length}, ${
-                                isInstanceAttribute ? 'instance=' + gl.instance : 'count=' + gl.count
-                        }, stride=${stride}, location=${location}`
-                )
                 return { array, buffer, location, stride, isInstance: isInstanceAttribute }
         })
 
