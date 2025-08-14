@@ -97,17 +97,9 @@ export const webgl = async (gl: GL) => {
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
                 const loc = attribs(key)
-
-                let flatValue: number[]
-                if (Array.isArray(value[0])) {
-                        flatValue = value[0] as number[]
-                } else {
-                        flatValue = value
-                }
-
-                const { isInstance, stride } = getStride(flatValue.length, gl.count, gl.instance, gl.error)
-                if (isInstance) createInstanceAttrib(c, loc, stride, flatValue)
-                else createAttrib(c, loc, stride, flatValue, iboValue)
+                const { isInstance, stride } = getStride(value.length, gl.count, gl.instance, gl.error)
+                if (isInstance) createInstanceAttrib(c, loc, stride, value)
+                else createAttrib(c, loc, stride, value, iboValue)
         }
 
         const _uniform = (key: string, value: number | number[]) => {

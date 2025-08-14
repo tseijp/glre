@@ -109,14 +109,7 @@ export const webgpu = async (gl: GL) => {
         })
 
         const _attribute = (key = '', value: number[]) => {
-                // Handle the case where value is an array of arrays from node system
-                let flatValue: number[]
-                if (Array.isArray(value[0])) {
-                        flatValue = value[0] as number[]
-                } else {
-                        flatValue = value
-                }
-                const { array, buffer } = attribs(key, flatValue)
+                const { array, buffer } = attribs(key, value)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
