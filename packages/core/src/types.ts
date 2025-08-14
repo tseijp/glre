@@ -65,6 +65,16 @@ export type GL = EventState<{
         _storage?(key: string, value: Storage): GL
         storage(key: string, value: Storage): GL
         storage(target: { [key: string]: Storage }): GL
+        
+        /**
+         * multi-pipeline system
+         */
+        createPipeline?(id: string, vs: string | Vec4, fs: string | Vec4): string
+        setPipelineUniform?(id: string, key: string, value: Uniform): GL
+        setPipelineAttribute?(id: string, key: string, value: Attribute): GL
+        pipeline?(id: string, vs: string | Vec4, fs: string | Vec4): string
+        pipelineUniform?(id: string, key: string, value: Uniform): GL
+        pipelineAttribute?(id: string, key: string, value: Attribute): GL
 }>
 
 type Uniform = number | number[] | Float32Array
@@ -110,6 +120,7 @@ export interface WebGPUState {
         textures: Nested<TextureData>
         attribs: Nested<AttribData>
         storages: Nested<StorageData>
+        multiPipeline?: any
 }
 
 /**

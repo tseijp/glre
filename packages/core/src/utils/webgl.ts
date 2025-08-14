@@ -10,6 +10,8 @@ import {
         createTexture,
         createUniform,
 } from './program'
+import { createMultiProgramManager } from './multi-program'
+import { createPipelineOptimizer } from './pipeline-optimizer'
 import type { GL, WebGLState } from '../types'
 
 const DEFAULT_FRAGMENT = /* cpp */ `
@@ -84,12 +86,15 @@ export const webgl = async (gl: GL) => {
         const config = { isWebGL: true, gl }
         const c = gl.el!.getContext('webgl2')!
         const cp = computeProgram(gl, c)
+        const multiProgram = createMultiProgramManager(c, gl)
+        const optimizer = createPipelineOptimizer()
         const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs!.fragment(config)) : DEFAULT_FRAGMENT
         const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs!.vertex(config)) : DEFAULT_VERTEX
         const pg = createProgram(c, fs, vs, gl)!
         c.useProgram(pg)
 
         let activeUnit = 0 // for texture units
+        let activePrograms: string[] = []
 
         const units = cached(() => activeUnit++)
         const attribs = cached((key) => c.getAttribLocation(pg, key))
@@ -115,7 +120,25 @@ export const webgl = async (gl: GL) => {
                 })
         }
 
+        const createProgram = (id: string, vs: string, fs: string) => {
+                const config = { isWebGL: true, gl }
+                const vertexShader = is.str(vs) ? vs : vs.vertex ? vs.vertex(config) : DEFAULT_VERTEX
+                const fragmentShader = is.str(fs) ? fs : fs.fragment ? fs.fragment(config) : DEFAULT_FRAGMENT
+                multiProgram.createProgramConfig(id, vertexShader, fragmentShader)
+                if (!activePrograms.includes(id)) activePrograms.push(id)
+                return id
+        }
+
+        const setProgramUniform = (id: string, key: string, value: number | number[]) => {
+                multiProgram.addUniform(id, key, value)
+        }
+
+        const setProgramAttribute = (id: string, key: string, value: number[]) => {
+                multiProgram.addAttribute(id, key, value)
+        }
+
         const clean = () => {
+                multiProgram.clean()
                 cp?.clean()
                 c.deleteProgram(pg)
                 c.getExtension('WEBGL_lose_context')?.loseContext()
@@ -123,17 +146,38 @@ export const webgl = async (gl: GL) => {
 
         const render = () => {
                 cp?.render()
-                c.useProgram(pg)
                 c.viewport(0, 0, ...gl.size)
-                if (gl.instance > 1) {
-                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instance)
+                
+                if (activePrograms.length > 0) {
+                        optimizer.optimizeWebGLRender(
+                                activePrograms,
+                                { ...multiProgram, gl: c },
+                                gl.instance,
+                                gl.count
+                        )
                 } else {
-                        c.drawArrays(c.TRIANGLES, 0, gl.count)
+                        c.useProgram(pg)
+                        if (gl.instance > 1) {
+                                c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instance)
+                        } else {
+                                c.drawArrays(c.TRIANGLES, 0, gl.count)
+                        }
                 }
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
         }
 
         const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }
 
-        return { webgl, render, clean, _attribute, _uniform, _texture, _storage: cp?._storage }
+        return { 
+                webgl, 
+                render, 
+                clean, 
+                _attribute, 
+                _uniform, 
+                _texture, 
+                _storage: cp?._storage,
+                createPipeline: createProgram,
+                setPipelineUniform: setProgramUniform,
+                setPipelineAttribute: setProgramAttribute
+        }
 }

@@ -54,6 +54,9 @@ export const createGL = (props?: Partial<GL>) => {
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
         gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
+        gl.pipeline = durable((id, vs, fs) => gl.queue(() => gl.createPipeline?.(id, vs, fs)), gl)
+        gl.pipelineUniform = durable((id, k, v) => gl.queue(() => gl.setPipelineUniform?.(id, k, v)), gl)
+        gl.pipelineAttribute = durable((id, k, v) => gl.queue(() => gl.setPipelineAttribute?.(id, k, v)), gl)
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async () => {

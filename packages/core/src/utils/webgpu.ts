@@ -12,6 +12,8 @@ import {
         createTextureSampler,
         createVertexBuffers,
 } from './pipeline'
+import { createMultiPipelineManager } from './multi-pipeline'
+import { createPipelineOptimizer } from './pipeline-optimizer'
 import type { GL, WebGPUState } from '../types'
 
 const WORKING_GROUP_SIZE = 32
@@ -79,12 +81,15 @@ export const webgpu = async (gl: GL) => {
         const { device, format } = await createDevice(context, gl.error)
         const bindings = createBindings()
         const cp = computeProgram(gl, device, bindings)
+        const multiPipeline = createMultiPipelineManager(device, format)
+        const optimizer = createPipelineOptimizer()
         let frag: string
         let comp: string
         let vert: string
         let flush = (_pass: GPURenderPassEncoder) => {}
         let needsUpdate = true
         let depthTexture: GPUTexture
+        let activePipelines: string[] = []
 
         const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
@@ -147,19 +152,52 @@ export const webgpu = async (gl: GL) => {
                 if (gl.cs) cp.update(bindGroups, bindGroupLayouts, comp)
         }
 
+        const createPipeline = (id: string, vs: string, fs: string) => {
+                const config = { isWebGL: false, gl }
+                const vertexShader = is.str(vs) ? vs : vs.vertex ? vs.vertex(config) : DEFAULT_VERTEX
+                const fragmentShader = is.str(fs) ? fs : fs.fragment ? fs.fragment(config) : DEFAULT_FRAGMENT
+                multiPipeline.createPipelineConfig(id, vertexShader, fragmentShader)
+                if (!activePipelines.includes(id)) activePipelines.push(id)
+                return id
+        }
+
+        const setPipelineUniform = (id: string, key: string, value: number | number[]) => {
+                multiPipeline.addUniform(id, key, value)
+        }
+
+        const setPipelineAttribute = (id: string, key: string, value: number[]) => {
+                multiPipeline.addAttribute(id, key, value)
+        }
+
         const render = () => {
-                if (!frag || !vert) {
-                        const config = { isWebGL: false, gl }
-                        frag = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : DEFAULT_FRAGMENT
-                        vert = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : DEFAULT_VERTEX
-                        comp = gl.cs ? (is.str(gl.cs) ? gl.cs : gl.cs.compute(config)) : ''
-                }
-                if (gl.loading) return // MEMO: loading after build node
-                if (needsUpdate) update()
-                needsUpdate = false
+                if (gl.loading) return
+                
                 const encoder = device.createCommandEncoder()
                 if (gl.cs) cp.render(encoder.beginComputePass())
-                flush(encoder.beginRenderPass(createDescriptor(context, depthTexture)))
+                
+                const renderPass = encoder.beginRenderPass(createDescriptor(context, depthTexture))
+                
+                if (activePipelines.length > 0) {
+                        optimizer.optimizeWebGPURender(
+                                activePipelines,
+                                multiPipeline,
+                                renderPass,
+                                gl.instance,
+                                gl.count
+                        )
+                } else {
+                        if (!frag || !vert) {
+                                const config = { isWebGL: false, gl }
+                                frag = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : DEFAULT_FRAGMENT
+                                vert = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : DEFAULT_VERTEX
+                                comp = gl.cs ? (is.str(gl.cs) ? gl.cs : gl.cs.compute(config)) : ''
+                        }
+                        if (needsUpdate) update()
+                        needsUpdate = false
+                        flush(renderPass)
+                }
+                
+                renderPass.end()
                 device.queue.submit([encoder.finish()])
         }
 
@@ -170,6 +208,7 @@ export const webgpu = async (gl: GL) => {
         }
 
         const clean = () => {
+                multiPipeline.clean()
                 device.destroy()
                 depthTexture?.destroy()
                 for (const { texture } of textures.map.values()) texture.destroy()
@@ -180,7 +219,26 @@ export const webgpu = async (gl: GL) => {
 
         resize()
 
-        const webgpu = { device, uniforms, textures, attribs, storages: cp.storages } as WebGPUState
+        const webgpu = { 
+                device, 
+                uniforms, 
+                textures, 
+                attribs, 
+                storages: cp.storages,
+                multiPipeline 
+        } as WebGPUState
 
-        return { webgpu, render, resize, clean, _attribute, _uniform, _texture, _storage: cp._storage }
+        return { 
+                webgpu, 
+                render, 
+                resize, 
+                clean, 
+                _attribute, 
+                _uniform, 
+                _texture, 
+                _storage: cp._storage,
+                createPipeline,
+                setPipelineUniform,
+                setPipelineAttribute
+        }
 }
