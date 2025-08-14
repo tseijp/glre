@@ -58,18 +58,21 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-export const createVertexBuffers = (attribs: Iterable<AttribData>) => {
+export const createVertexBuffers = (attribs: Iterable<AttribData & { isInstance?: boolean }>) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
-        for (const { buffer, location, stride } of attribs) {
+        for (const { buffer, location, stride, isInstance } of attribs) {
                 vertexBuffers[location] = buffer
+                const componentSize = Math.min(Math.max(Math.floor(stride), 1), 4)
+                const arrayStride = Math.max(4, Math.ceil((componentSize * 4) / 4) * 4)
                 bufferLayouts[location] = {
-                        arrayStride: stride * 4,
+                        arrayStride,
+                        stepMode: isInstance ? 'instance' : 'vertex',
                         attributes: [
                                 {
                                         shaderLocation: location,
                                         offset: 0,
-                                        format: getVertexFormat(stride),
+                                        format: getVertexFormat(componentSize),
                                 },
                         ],
                 }

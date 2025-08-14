@@ -63,7 +63,7 @@ export const fragment = (x: X, c: NodeContext = {}) => {
         }
         result.push('}')
         const main = result.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
@@ -78,7 +78,7 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 for (const code of c.code?.vertOutputs?.values() || []) result.push(`out ${code}`)
                 result.push(head)
                 result.push('void main() {')
-                if (lines) result.push(`  ${lines}`)
+                result.push(`  ${lines}`)
                 result.push(`  gl_Position = ${ret};`)
                 for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  ${id} = ${code};`)
         } else {
@@ -95,7 +95,7 @@ export const vertex = (x: X, c: NodeContext = {}) => {
         }
         result.push('}')
         const main = result.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
@@ -109,7 +109,7 @@ export const compute = (x: X, c: NodeContext = {}) => {
                 result.push('precision mediump float;')
                 result.push(head)
                 result.push('void main() {')
-                if (lines) result.push(`  ${lines}`)
+                result.push(`  ${lines}`)
                 result.push(`  ${ret};`)
                 result.push('}')
         } else {

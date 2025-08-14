@@ -88,10 +88,17 @@ export const webgpu = async (gl: GL) => {
 
         const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
-                const stride = value.length / gl.count
+                // Check if this is an instance attribute
+                const isInstanceAttribute = _key.toLowerCase().includes('instance')
+                const stride = isInstanceAttribute ? value.length / gl.instance : value.length / gl.count
                 const { location } = bindings.attrib()
                 const { array, buffer } = createArrayBuffer(device, value, 'attrib')
-                return { array, buffer, location, stride }
+                console.log(
+                        `WebGPU attrib ${_key}: length=${value.length}, ${
+                                isInstanceAttribute ? 'instance=' + gl.instance : 'count=' + gl.count
+                        }, stride=${stride}, location=${location}`
+                )
+                return { array, buffer, location, stride, isInstance: isInstanceAttribute }
         })
 
         const uniforms = cached((_key, value: number[]) => {
@@ -109,7 +116,18 @@ export const webgpu = async (gl: GL) => {
         })
 
         const _attribute = (key = '', value: number[]) => {
-                const { array, buffer } = attribs(key, value)
+                // Handle the case where value is an array of arrays from node system
+                let flatValue: number[]
+                if (Array.isArray(value[0])) {
+                        // If it's an array of arrays, we need the first (and should be only) sub-array
+                        flatValue = value[0] as number[]
+                        console.log(`WebGPU using first sub-array for ${key}: length=${flatValue.length}`)
+                } else {
+                        // If it's already a flat array, use as is
+                        flatValue = value
+                        console.log(`WebGPU using flat array for ${key}: length=${flatValue.length}`)
+                }
+                const { array, buffer } = attribs(key, flatValue)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
@@ -141,7 +159,7 @@ export const webgpu = async (gl: GL) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                         vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                        pass.draw(gl.count, 1, 0, 0)
+                        pass.draw(gl.count, gl.instance, 0, 0)
                         pass.end()
                 }
                 if (gl.cs) cp.update(bindGroups, bindGroupLayouts, comp)

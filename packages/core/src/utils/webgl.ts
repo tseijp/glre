@@ -4,6 +4,7 @@ import {
         cleanStorage,
         createAttachment,
         createAttrib,
+        createInstanceAttrib,
         createProgram,
         createStorage,
         createTexture,
@@ -95,8 +96,24 @@ export const webgl = async (gl: GL) => {
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
-                const loc = attribs(key, true)
-                createAttrib(c, loc, gl.count, value, iboValue)
+                const loc = attribs(key)
+
+                let flatValue: number[]
+                if (Array.isArray(value[0])) {
+                        flatValue = value[0] as number[]
+                        console.log(`Using first sub-array for ${key}: length=${flatValue.length}`)
+                } else {
+                        flatValue = value
+                        console.log(`Using flat array for ${key}: length=${flatValue.length}`)
+                }
+
+                // Simple heuristic: if attribute name contains 'instance', treat as instance attribute
+                const isInstanceAttribute = key.toLowerCase().includes('instance')
+                if (isInstanceAttribute && gl.instance > 1) {
+                        createInstanceAttrib(c, loc, flatValue, gl.instance)
+                } else {
+                        createAttrib(c, loc, gl.count, flatValue, iboValue)
+                }
         }
 
         const _uniform = (key: string, value: number | number[]) => {
@@ -122,7 +139,11 @@ export const webgl = async (gl: GL) => {
                 cp?.render()
                 c.useProgram(pg)
                 c.viewport(0, 0, ...gl.size)
-                c.drawArrays(c.TRIANGLES, 0, gl.count)
+                if (gl.instance > 1) {
+                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instance)
+                } else {
+                        c.drawArrays(c.TRIANGLES, 0, gl.count)
+                }
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
         }
 

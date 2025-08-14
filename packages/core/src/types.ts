@@ -94,6 +94,7 @@ export interface AttribData {
         buffer: GPUBuffer
         location: number
         stride: number
+        isInstance?: boolean
 }
 
 export interface StorageData {

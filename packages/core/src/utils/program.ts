@@ -64,6 +64,26 @@ export const createAttrib = (
         if (ibo) c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, ibo)
 }
 
+export const createInstanceAttrib = (
+        c: WebGL2RenderingContext,
+        loc: number,
+        value: number[],
+        instance: number,
+        divisor: number = 1
+) => {
+        const vbo = createVbo(c, value)
+        const componentsPerInstance = Math.floor(value.length / instance)
+        const size = Math.min(Math.max(componentsPerInstance, 1), 4)
+        
+        console.log(`Instance attribute: loc=${loc}, length=${value.length}, instances=${instance}, components=${componentsPerInstance}, size=${size}`)
+        
+        c.bindBuffer(c.ARRAY_BUFFER, vbo)
+        c.enableVertexAttribArray(loc)
+        c.vertexAttribPointer(loc, size, c.FLOAT, false, 0, 0)
+        c.vertexAttribDivisor(loc, divisor)
+        return vbo
+}
+
 export const createUniform = (c: WebGLRenderingContext, loc: WebGLUniformLocation, value: number | number[]) => {
         if (is.num(value)) return c.uniform1f(loc, value)
         let l = value.length
