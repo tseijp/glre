@@ -23,16 +23,7 @@ export default function WebGLInstancing() {
         }
 
         // Base quad vertices (vec2)
-        // prettier-ignore
-        const positions = [
-                -0.05, -0.05,
-                0.05, -0.05,
-                0.05, 0.05,
-                -0.05, -0.05,
-                0.05, 0.05,
-                -0.05, 0.05,
-        ]
-
+        const positions = [-0.05, -0.05, 0.05, -0.05, 0.05, 0.05, -0.05, -0.05, 0.05, 0.05, -0.05, 0.05]
         const a_position = attribute<'vec2'>(positions, 'positions')
         const a_instancePositions = attribute<'vec2'>(instancePositions, 'instancePositions')
         const a_instanceColors = attribute<'vec4'>(instanceColors, 'instanceColors')

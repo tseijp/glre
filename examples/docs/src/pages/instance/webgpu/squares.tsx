@@ -50,16 +50,7 @@ export default function WebGLInstancing() {
         }
 
         // Base quad vertices (vec2)
-        // prettier-ignore
-        const positions = [
-                -0.05, -0.05,
-                0.05, -0.05,
-                0.05, 0.05,
-                -0.05, -0.05,
-                0.05, 0.05,
-                -0.05, 0.05,
-        ]
-
+        const positions = [-0.05, -0.05, 0.05, -0.05, 0.05, 0.05, -0.05, -0.05, 0.05, 0.05, -0.05, 0.05]
         const gl = useGL({
                 isWebGL: false,
                 instance: numInstances,
