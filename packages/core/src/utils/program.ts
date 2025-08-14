@@ -42,41 +42,34 @@ const createIbo = (c: WebGLRenderingContext, data: number[]) => {
         return buffer
 }
 
-const getStride = (count: number, value: number[], iboValue?: number[]) => {
-        if (iboValue) count = Math.max(...iboValue) + 1
-        const stride = value.length / count
-        return Math.floor(stride)
-}
-
 export const createAttrib = (
         c: WebGLRenderingContext,
         loc: number,
-        count: number,
+        stride: number,
         value: number[],
-        iboValue: number[]
+        iboValue?: number[]
 ) => {
         const vbo = createVbo(c, value)
-        const ibo = createIbo(c, iboValue)
-        const str = getStride(count, value, iboValue)
         c.bindBuffer(c.ARRAY_BUFFER, vbo)
         c.enableVertexAttribArray(loc)
-        c.vertexAttribPointer(loc, str, c.FLOAT, false, 0, 0)
-        if (ibo) c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, ibo)
+        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
+        if (iboValue) {
+                const ibo = createIbo(c, iboValue)
+                c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, ibo)
+        }
 }
 
 export const createInstanceAttrib = (
         c: WebGL2RenderingContext,
         loc: number,
+        stride: number,
         value: number[],
-        instance: number,
         divisor: number = 1
 ) => {
         const vbo = createVbo(c, value)
-        const componentsPerInstance = Math.floor(value.length / instance)
-        const size = Math.min(Math.max(componentsPerInstance, 1), 4)
         c.bindBuffer(c.ARRAY_BUFFER, vbo)
         c.enableVertexAttribArray(loc)
-        c.vertexAttribPointer(loc, size, c.FLOAT, false, 0, 0)
+        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
         c.vertexAttribDivisor(loc, divisor)
         return vbo
 }

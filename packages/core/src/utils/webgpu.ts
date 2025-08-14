@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage } from './helpers'
+import { is, loadingImage, getStride } from './helpers'
 import {
         createArrayBuffer,
         createBindGroup,
@@ -88,12 +88,10 @@ export const webgpu = async (gl: GL) => {
 
         const attribs = cached((_key, value: number[]) => {
                 needsUpdate = true
-                // Check if this is an instance attribute
-                const isInstanceAttribute = _key.toLowerCase().includes('instance')
-                const stride = isInstanceAttribute ? value.length / gl.instance : value.length / gl.count
+                const { stride, isInstance } = getStride(value.length, gl.count, gl.instance)
                 const { location } = bindings.attrib()
                 const { array, buffer } = createArrayBuffer(device, value, 'attrib')
-                return { array, buffer, location, stride, isInstance: isInstanceAttribute }
+                return { array, buffer, location, stride, isInstance }
         })
 
         const uniforms = cached((_key, value: number[]) => {

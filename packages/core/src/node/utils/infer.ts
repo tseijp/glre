@@ -6,7 +6,7 @@ import {
         getOperatorResultType,
         validateOperatorTypes,
 } from './const'
-import { is } from '../../utils/helpers'
+import { is, getStride } from '../../utils/helpers'
 import type { Constants as C, NodeContext, X, Y } from '../types'
 
 const inferBuiltin = <T extends C>(id: string | undefined) => {
@@ -61,7 +61,10 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                 if (!inferFrom || inferFrom.length === 0) return 'void' as T
                 return inferFromArray(inferFrom, c)
         }
-        if (type === 'attribute' && is.arr(x) && c.gl?.count) return inferFromCount(x.length / c.gl.count)
+        if (type === 'attribute' && is.arr(x) && c.gl?.count) {
+                const { stride } = getStride(x.length, c.gl.count, c.gl.instance)
+                return inferFromCount(stride)
+        }
         if (type === 'member') {
                 if (isSwizzle(y)) return inferFromCount(y.length)
                 if (isX(x)) {

@@ -15,8 +15,8 @@ export default function WebGLInstancing() {
                 const x = (col * 2 + 1) / gridSize - 1
                 const y = (row * 2 + 1) / gridSize - 1
 
-                // Position (vec3)
-                instancePositions.push(x, y, 0)
+                // Position (vec2)
+                instancePositions.push(x, y)
 
                 // Color based on position (vec3)
                 const hue = (i / numInstances) * 360
@@ -38,8 +38,8 @@ export default function WebGLInstancing() {
         ]
 
         const a_position = attribute<'vec3'>(positions, 'positions')
-        const a_instancePositions = attribute(vec2(instancePositions), 'instancePositions')
-        const a_instanceColors = attribute(vec4(instanceColors), 'instanceColors')
+        const a_instancePositions = attribute<'vec2'>(instancePositions, 'instancePositions')
+        const a_instanceColors = attribute<'vec4'>(instanceColors, 'instanceColors')
 
         const gl = useGL({
                 isWebGL: true,

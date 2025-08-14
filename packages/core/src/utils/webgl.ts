@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage } from './helpers'
+import { is, loadingImage, getStride } from './helpers'
 import {
         cleanStorage,
         createAttachment,
@@ -105,13 +105,9 @@ export const webgl = async (gl: GL) => {
                         flatValue = value
                 }
 
-                // Simple heuristic: if attribute name contains 'instance', treat as instance attribute
-                const isInstanceAttribute = key.toLowerCase().includes('instance')
-                if (isInstanceAttribute && gl.instance > 1) {
-                        createInstanceAttrib(c, loc, flatValue, gl.instance)
-                } else {
-                        createAttrib(c, loc, gl.count, flatValue, iboValue)
-                }
+                const { isInstance, stride } = getStride(flatValue.length, gl.count, gl.instance, gl.error)
+                if (isInstance) createInstanceAttrib(c, loc, stride, flatValue)
+                else createAttrib(c, loc, stride, flatValue, iboValue)
         }
 
         const _uniform = (key: string, value: number | number[]) => {

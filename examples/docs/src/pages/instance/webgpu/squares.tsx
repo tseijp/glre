@@ -37,9 +37,9 @@ export default function WebGPUInstancing() {
                 -0.05, 0.05, 0.0,
         ]
 
-        const a_position = attribute(vec3(positions))
-        const instancePosition = attribute(vec2(instancePositions), 'instancePositions')
-        const instanceColor = attribute(vec4(instanceColors), 'instanceColors')
+        const a_position = attribute<'vec3'>(positions)
+        const instancePosition = attribute<'vec2'>(instancePositions, 'instancePositions')
+        const instanceColor = attribute<'vec4'>(instanceColors, 'instanceColors')
 
         const gl = useGL({
                 isWebGL: false,
