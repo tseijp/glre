@@ -7,6 +7,7 @@ import {
         parseDefine,
         parseGather,
         parseIf,
+        parseLoop,
         parseScatter,
         parseStorageHead,
         parseStruct,
@@ -84,10 +85,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'break') return 'break;'
         if (type === 'continue') return 'continue;'
-        if (type === 'loop')
-                return c.isWebGL
-                        ? `for (int ${id} = 0; ${id} < ${code(x, c)}; ${id} += 1) {\n${code(y, c)}\n}`
-                        : `for (var ${id}: i32 = 0; ${id} < ${code(x, c)}; ${id}++) {\n${code(y, c)}\n}`
+        if (type === 'loop') return parseLoop(c, x, y, id)
         if (type === 'if') return parseIf(c, x, y, children)
         if (type === 'switch') return parseSwitch(c, x, children)
         if (type === 'declare') return parseDeclare(c, x, y)
