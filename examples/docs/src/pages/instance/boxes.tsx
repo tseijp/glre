@@ -1,11 +1,12 @@
 import { useGL } from 'glre/src/react'
-import { attribute, uniform, vec4 } from 'glre/src/node'
+import { attribute, instance, uniform, mat4, Scope, vertexStage } from 'glre/src/node'
 
 const col = 4
 const row = 4
 const instanceCount = col * row
 
-const createProjectionMatrix = (aspect = 1, fov = (2 * Math.PI) / 5, near = 1, far = 100) => {
+const createProjectionMatrix = (fov = (2 * Math.PI) / 5, near = 1, far = 100) => {
+        const aspect = window.innerWidth / window.innerHeight
         const t = Math.tan(Math.PI * 0.5 - 0.5 * fov)
         const r = 1.0 / (near - far)
         // prettier-ignore
@@ -27,17 +28,22 @@ const createViewMatrix = (x = 0, y = 0, z = -12) => {
         ]
 }
 
-const createInstanceMatrices = () => {
+const createPosition = () => {
         const step = 4.0
-        const matrices = []
+        const positions = [] as number[]
         for (let i = 0; i < col; i++)
                 for (let j = 0; j < row; j++) {
                         const x = step * (i - col / 2 + 0.5)
                         const y = step * (j - row / 2 + 0.5)
-                        const z = 0
-                        matrices.push(...createViewMatrix(x, y, z))
+                        positions.push(x, y)
                 }
-        return matrices
+        return positions
+}
+
+const createRotations = () => {
+        const rotations = []
+        for (let i = 0; i < instanceCount; i++) rotations.push(0)
+        return rotations
 }
 
 const p = 1
@@ -54,52 +60,47 @@ const cubePositions = [
 ]
 
 export default function InstancedBoxes() {
-        const aspect = 800 / 600
+        const rotation = createRotations()
+        const box = attribute<'vec4'>(cubePositions, 'box') // 144 len
+        const pos = instance<'vec2'>(createPosition()) // 32 len (16 instances * 2 components)
+        const rot = instance<'float'>(rotation) // 16 len (16 instances * 1 component)
 
-        const pos = attribute<'vec4'>(cubePositions) // 144 len
-        const mat = attribute<'mat4'>(createInstanceMatrices()) // 256 len
-
-        const projectionMatrix = uniform<'mat4'>(createProjectionMatrix(aspect))
+        const projectionMatrix = uniform<'mat4'>(createProjectionMatrix())
         const viewMatrix = uniform<'mat4'>(createViewMatrix())
 
         const gl = useGL({
-                isWebGL: true,
                 instanceCount, // 16
+                isWebGL: true,
+                isDepth: true,
                 count: 36,
-                vert: projectionMatrix.mul(viewMatrix).mul(mat).mul(pos),
-                frag: vec4(0.7, 0.4, 0.9, 1.0),
-                // loop() {
-                //         const matrices = []
-                //         const col = 4
-                //         const row = 4
-                //         const step = 4.0
-                //         const time = iTime.value
-
-                //         for (let x = 0; x < col; x++) {
-                //                 for (let y = 0; y < row; y++) {
-                //                         const posX = step * (x - col / 2 + 0.5)
-                //                         const posY = step * (y - row / 2 + 0.5)
-                //                         const posZ = 0
-
-                //                         const rotX = Math.sin((x + 0.5) * time)
-                //                         const rotY = Math.cos((y + 0.5) * time)
-
-                //                         const cosX = Math.cos(rotX),
-                //                                 sinX = Math.sin(rotX)
-                //                         const cosY = Math.cos(rotY),
-                //                                 sinY = Math.sin(rotY)
-
-                //                         // prettier-ignore
-                //                         matrices.push(
-                //                                 cosY, sinX * sinY, cosX * sinY, 0,
-                //                                 0, cosX, -sinX, 0,
-                //                                 -sinY, sinX * cosY, cosX * cosY, 0,
-                //                                 posX, posY, posZ, 1
-                //                         )
-                //                 }
-                //         }
-                //         // gl.attribute(mat.id, matrices)
-                // },
+                loop() {
+                        for (let i = 0; i < instanceCount; i++) rotation[i] += 0.01 + i * 0.005
+                        rot.value = rotation
+                },
+                resize() {
+                        projectionMatrix.value = createProjectionMatrix()
+                },
+                frag: vertexStage(box),
+                vert: Scope(() => {
+                        const c = rot.cos().toVar('c')
+                        const s = rot.sin().toVar('s')
+                        // prettier-ignore
+                        const rotationMatrix = mat4(
+                                c, s.negate(), 0, 0,
+                                s, c, 0, 0,
+                                0, 0, 1, 0,
+                                0, 0, 0, 1
+                        )
+                        // prettier-ignore
+                        const translationMatrix = mat4(
+                                1, 0, 0, 0,
+                                0, 1, 0, 0,
+                                0, 0, 1, 0,
+                                pos.x, pos.y, 0, 1
+                        )
+                        const instanceMatrix = translationMatrix.mul(rotationMatrix)
+                        return projectionMatrix.mul(viewMatrix).mul(instanceMatrix).mul(box)
+                }),
         })
 
         return <canvas ref={gl.ref} width={800} height={600} />

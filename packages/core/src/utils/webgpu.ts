@@ -113,16 +113,7 @@ export const webgpu = async (gl: GL) => {
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
-        const _instance = (key: string, value: number[], at?: number) => {
-                // if (at !== undefined) {
-                //         const { buffers, array, buffer } = instances(key, [])
-                //         buffers.set(at, value)
-                //         const stride = value.length
-                //         const offset = at * stride
-                //         for (let i = 0; i < stride; i++) array[offset + i] = value[i]
-                //         device.queue.writeBuffer(buffer, offset * 4, new Float32Array(value))
-                //         return
-                // }
+        const _instance = (key: string, value: number[]) => {
                 const { array, buffer } = attribs(key, value, true)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }

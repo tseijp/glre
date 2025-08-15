@@ -30,6 +30,7 @@ export const createGL = (props?: Partial<GL>) => {
                 isWebGL: true,
                 isError: false,
                 isLoop: true,
+                isDepth: false,
                 isGL: true,
                 size: [0, 0],
                 mouse: [0, 0],

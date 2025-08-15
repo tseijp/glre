@@ -107,10 +107,6 @@ export const webgl = async (gl: GL) => {
         }
 
         const _instance = (key: string, value: number[], at?: number) => {
-                // if (at !== undefined) {
-                //         buffers.set(at, value)
-                //         return
-                // }
                 const stride = value.length / gl.instanceCount
                 createInstanceAttrib(c, attribs(key), stride, value)
         }
@@ -138,6 +134,11 @@ export const webgl = async (gl: GL) => {
                         c.drawArrays(c.TRIANGLES, 0, gl.count)
                 }
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
+        }
+
+        if (gl.isDepth) {
+                c.depthFunc(c.LEQUAL)
+                c.enable(c.CULL_FACE)
         }
 
         const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }

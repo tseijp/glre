@@ -10,6 +10,7 @@ export type GL = EventState<{
         isWebGL: boolean
         isError: boolean
         isLoop: boolean
+        isDepth: boolean
         isGL: true
         width?: number
         height?: number

@@ -22,7 +22,7 @@ export default function WebGLInstancing() {
                 instanceColors.push(r, g, b, 1)
         }
 
-        const Pos = attribute<'vec2'>(positions)
+        const box = attribute<'vec2'>(positions)
         const pos = instance<'vec2'>(instancePositions)
         const col = instance<'vec4'>(instanceColors)
 
@@ -30,7 +30,7 @@ export default function WebGLInstancing() {
                 isWebGL: false,
                 instanceCount,
                 count: 6,
-                vert: vec4(Pos.add(pos), 0, 1),
+                vert: vec4(box.add(pos), 0, 1),
                 frag: vertexStage(col),
         })
 
