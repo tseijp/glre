@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage, getStride } from './helpers'
+import { is, loadingImage, getStride, WGSL_FS, WGSL_VS } from './helpers'
 import {
         createArrayBuffer,
         createBindGroup,
@@ -15,28 +15,6 @@ import {
 import type { GL, WebGPUState } from '../types'
 
 const WORKING_GROUP_SIZE = 32
-
-const DEFAULT_VERTEX = /* rust */ `
-struct In { @builtin(vertex_index) vertex_index: u32 }
-struct Out { @builtin(position) position: vec4f }
-@vertex
-fn main(in: In) -> Out {
-  var out: Out;
-  var x = f32(in.vertex_index % 2) * 4.0 - 1.0;
-  var y = f32(in.vertex_index / 2) * 4.0 - 1.0;
-  out.position = vec4f(x, y, 0.0, 1.0);
-  return out;
-}
-`.trim()
-
-const DEFAULT_FRAGMENT = /* rust */ `
-struct Out { @builtin(position) position: vec4f }
-@group(0) @binding(0) var<uniform> iResolution: vec2f;
-@fragment
-fn main(out: Out) -> @location(0) vec4f {
-  return vec4f(fract((out.position.xy / iResolution)), 0.0, 1.0);
-}
-`
 
 const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
@@ -110,18 +88,20 @@ export const webgpu = async (gl: GL) => {
 
         const _attribute = (key = '', value: number[]) => {
                 const { array, buffer } = attribs(key, value)
+                array.set(value)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
         const _instance = (key: string, value: number[]) => {
                 const { array, buffer } = attribs(key, value, true)
+                array.set(value)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
                 if (is.num(value)) value = [value]
                 const { array, buffer } = uniforms(key, value)
-                array.set(value) // needs to set leatest value
+                array.set(value)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
@@ -155,8 +135,8 @@ export const webgpu = async (gl: GL) => {
         const render = () => {
                 if (!frag || !vert) {
                         const config = { isWebGL: false, gl }
-                        frag = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : DEFAULT_FRAGMENT
-                        vert = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : DEFAULT_VERTEX
+                        frag = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : WGSL_FS
+                        vert = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : WGSL_VS
                         comp = gl.cs ? (is.str(gl.cs) ? gl.cs : gl.cs.compute(config)) : ''
                 }
                 if (gl.loading) return // MEMO: loading after build node

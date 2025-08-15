@@ -1,34 +1,18 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage, getStride } from './helpers'
+import { is, loadingImage, getStride, GLSL_VS, GLSL_FS } from './helpers'
 import {
+        createArrayBuffer,
         cleanStorage,
         createAttachment,
-        createAttrib,
-        createInstanceAttrib,
         createProgram,
         createStorage,
         createTexture,
-        createUniform,
+        setArrayBuffer,
+        updateAttrib,
+        updateInstance,
+        updateUniform,
 } from './program'
 import type { GL, WebGLState } from '../types'
-
-const DEFAULT_FRAGMENT = /* cpp */ `
-#version 300 es
-precision mediump float;
-out vec4 fragColor;
-uniform vec2 iResolution;
-void main() {
-  fragColor = vec4(fract((gl_FragCoord.xy / iResolution)), 0.0, 1.0);
-}
-`
-
-const DEFAULT_VERTEX = /* cpp */ `
-#version 300 es
-void main() {
-  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
-  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
-  gl_Position = vec4(x, y, 0.0, 1.0);
-}`
 
 const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         if (!gl.cs) return null // ignore if no compute shader
@@ -39,7 +23,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
 
         const units = cached(() => activeUnit++)
         const cs = is.str(gl.cs) ? gl.cs : gl.cs!.compute({ isWebGL: true, gl, units })
-        const pg = createProgram(c, cs, DEFAULT_VERTEX, gl)!
+        const pg = createProgram(c, cs, GLSL_VS, gl)!
         const size = Math.ceil(Math.sqrt(gl.particles))
 
         const uniforms = cached((key) => c.getUniformLocation(pg, key)!)
@@ -52,7 +36,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
 
         const _uniform = (key: string, value: number | number[]) => {
                 c.useProgram(pg)
-                createUniform(c, uniforms(key), value)
+                updateUniform(c, uniforms(key), value)
         }
 
         const _storage = (key: string, value: number[]) => {
@@ -84,31 +68,39 @@ export const webgl = async (gl: GL) => {
         const config = { isWebGL: true, gl }
         const c = gl.el!.getContext('webgl2')!
         const cp = computeProgram(gl, c)
-        const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs!.fragment(config)) : DEFAULT_FRAGMENT
-        const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs!.vertex(config)) : DEFAULT_VERTEX
+        const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs!.fragment(config)) : GLSL_FS
+        const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs!.vertex(config)) : GLSL_VS
         const pg = createProgram(c, fs, vs, gl)!
         c.useProgram(pg)
 
         let activeUnit = 0 // for texture units
 
         const units = cached(() => activeUnit++)
-        const attribs = cached((key) => c.getAttribLocation(pg, key))
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
 
-        const _attribute = (key = '', value: number[], iboValue: number[]) => {
-                const stride = getStride(value.length, gl.count, gl.error)
-                createAttrib(c, attribs(key), stride, value, iboValue)
+        const attribs = cached((key, value: number[], isInstance = false) => {
+                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error)
+                const location = c.getAttribLocation(pg, key)
+                const { array, buffer } = createArrayBuffer(c, value)
+                return { array, buffer, location, stride }
+        })
+
+        const _attribute = (key = '', value: number[]) => {
+                const { array, buffer, location, stride } = attribs(key, value)
+                setArrayBuffer(c, array, buffer, value)
+                updateAttrib(c, location, stride, buffer)
+        }
+
+        const _instance = (key: string, value: number[]) => {
+                const { array, buffer, location, stride } = attribs(key, value, true)
+                setArrayBuffer(c, array, buffer, value)
+                updateInstance(c, location, stride, buffer)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
                 c.useProgram(pg)
-                createUniform(c, uniforms(key)!, value)
+                updateUniform(c, uniforms(key)!, value)
                 cp?._uniform(key, value)
-        }
-
-        const _instance = (key: string, value: number[], at?: number) => {
-                const stride = value.length / gl.instanceCount
-                createInstanceAttrib(c, attribs(key), stride, value)
         }
 
         const _texture = (key: string, src: string) => {
@@ -130,9 +122,7 @@ export const webgl = async (gl: GL) => {
                 c.viewport(0, 0, ...gl.size)
                 if (gl.instanceCount > 1) {
                         c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
-                } else {
-                        c.drawArrays(c.TRIANGLES, 0, gl.count)
-                }
+                } else c.drawArrays(c.TRIANGLES, 0, gl.count)
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
         }
 

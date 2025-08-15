@@ -74,3 +74,43 @@ export const getStride = (arrayLength: number, count = 1, error = console.warn) 
                 )
         return ret
 }
+
+export const GLSL_FS = /* cpp */ `
+#version 300 es
+precision mediump float;
+out vec4 fragColor;
+uniform vec2 iResolution;
+void main() {
+  fragColor = vec4(fract((gl_FragCoord.xy / iResolution)), 0.0, 1.0);
+}
+`
+
+export const GLSL_VS = /* cpp */ `
+#version 300 es
+void main() {
+  float x = float(gl_VertexID % 2) * 4.0 - 1.0;
+  float y = float(gl_VertexID / 2) * 4.0 - 1.0;
+  gl_Position = vec4(x, y, 0.0, 1.0);
+}`
+
+export const WGSL_VS = /* rust */ `
+struct In { @builtin(vertex_index) vertex_index: u32 }
+struct Out { @builtin(position) position: vec4f }
+@vertex
+fn main(in: In) -> Out {
+  var out: Out;
+  var x = f32(in.vertex_index % 2) * 4.0 - 1.0;
+  var y = f32(in.vertex_index / 2) * 4.0 - 1.0;
+  out.position = vec4f(x, y, 0.0, 1.0);
+  return out;
+}
+`.trim()
+
+export const WGSL_FS = /* rust */ `
+struct Out { @builtin(position) position: vec4f }
+@group(0) @binding(0) var<uniform> iResolution: vec2f;
+@fragment
+fn main(out: Out) -> @location(0) vec4f {
+  return vec4f(fract((out.position.xy / iResolution)), 0.0, 1.0);
+}
+`

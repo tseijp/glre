@@ -1,7 +1,7 @@
 import { is } from './helpers'
 import type { GL } from '../types'
 
-const createShader = (c: WebGLRenderingContext, source: string, type: number, onError = console.warn) => {
+const createShader = (c: WebGL2RenderingContext, source: string, type: number, onError = console.warn) => {
         const shader = c.createShader(type)
         if (!shader) return onError('Failed to create shader')
         c.shaderSource(shader, source.trim())
@@ -12,7 +12,7 @@ const createShader = (c: WebGLRenderingContext, source: string, type: number, on
         onError(`Could not compile shader: ${error}\n\n↓↓↓generated↓↓↓\n${source}`)
 }
 
-export const createProgram = (c: WebGLRenderingContext, frag: string, vert: string, gl: GL) => {
+export const createProgram = (c: WebGL2RenderingContext, frag: string, vert: string, gl: GL) => {
         const pg = c.createProgram()
         const fs = createShader(c, frag, c.FRAGMENT_SHADER, gl.error)
         const vs = createShader(c, vert, c.VERTEX_SHADER, gl.error)
@@ -26,55 +26,38 @@ export const createProgram = (c: WebGLRenderingContext, frag: string, vert: stri
         gl.error(`Could not link program: ${error}`)
 }
 
-const createVbo = (c: WebGLRenderingContext, data: number[]) => {
+export const createArrayBuffer = (c: WebGL2RenderingContext, data: number[]) => {
+        const array = new Float32Array(data)
         const buffer = c.createBuffer()
-        c.bindBuffer(c.ARRAY_BUFFER, buffer)
-        c.bufferData(c.ARRAY_BUFFER, new Float32Array(data), c.STATIC_DRAW)
-        c.bindBuffer(c.ARRAY_BUFFER, null)
-        return buffer
+        return { array, buffer }
 }
 
-const createIbo = (c: WebGLRenderingContext, data: number[]) => {
-        const buffer = c.createBuffer()
-        c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, buffer)
-        c.bufferData(c.ELEMENT_ARRAY_BUFFER, new Int16Array(data), c.STATIC_DRAW)
-        c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, null)
-        return buffer
-}
-
-export const createAttrib = (
-        c: WebGLRenderingContext,
-        loc: number,
-        stride: number,
-        value: number[],
-        iboValue?: number[]
-) => {
-        const vbo = createVbo(c, value)
-        c.bindBuffer(c.ARRAY_BUFFER, vbo)
-        c.enableVertexAttribArray(loc)
-        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
-        if (iboValue) {
-                const ibo = createIbo(c, iboValue)
-                c.bindBuffer(c.ELEMENT_ARRAY_BUFFER, ibo)
-        }
-}
-
-export const createInstanceAttrib = (
+export const setArrayBuffer = (
         c: WebGL2RenderingContext,
-        loc: number,
-        stride: number,
-        value: number[],
-        divisor: number = 1
+        array: Float32Array,
+        buffer: WebGLBuffer,
+        value: number[]
 ) => {
-        const vbo = createVbo(c, value)
-        c.bindBuffer(c.ARRAY_BUFFER, vbo)
-        c.enableVertexAttribArray(loc)
-        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
-        c.vertexAttribDivisor(loc, divisor)
-        return vbo
+        array.set(value)
+        c.bindBuffer(c.ARRAY_BUFFER, buffer)
+        c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
+        c.bindBuffer(c.ARRAY_BUFFER, null)
 }
 
-export const createUniform = (c: WebGLRenderingContext, loc: WebGLUniformLocation, value: number | number[]) => {
+export const updateAttrib = (c: WebGL2RenderingContext, loc: number, stride: number, buffer: WebGLBuffer) => {
+        c.bindBuffer(c.ARRAY_BUFFER, buffer)
+        c.enableVertexAttribArray(loc)
+        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
+}
+
+export const updateInstance = (c: WebGL2RenderingContext, loc: number, stride: number, buffer: WebGLBuffer) => {
+        c.bindBuffer(c.ARRAY_BUFFER, buffer)
+        c.enableVertexAttribArray(loc)
+        c.vertexAttribPointer(loc, stride, c.FLOAT, false, 0, 0)
+        c.vertexAttribDivisor(loc, 1) // divisor is 1
+}
+
+export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation, value: number | number[]) => {
         if (is.num(value)) return c.uniform1f(loc, value)
         let l = value.length
         if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)
@@ -83,7 +66,7 @@ export const createUniform = (c: WebGLRenderingContext, loc: WebGLUniformLocatio
 }
 
 export const createTexture = (
-        c: WebGLRenderingContext,
+        c: WebGL2RenderingContext,
         img: HTMLImageElement,
         loc: WebGLUniformLocation,
         unit: number

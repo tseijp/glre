@@ -27,7 +27,7 @@ export default function WebGLInstancing() {
         const col = instance<'vec4'>(instanceColors)
 
         const gl = useGL({
-                isWebGL: false,
+                isWebGL: true,
                 instanceCount,
                 count: 6,
                 vert: vec4(box.add(pos), 0, 1),
