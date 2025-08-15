@@ -36,6 +36,7 @@ export interface StructFactory<T extends StructFields> {
 export type NodeTypes =
         // headers
         | 'attribute'
+        | 'instance'
         | 'storage'
         | 'uniform'
         | 'constant'

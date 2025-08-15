@@ -8,7 +8,17 @@ import {
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
 import { is } from '../../utils/helpers'
-import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, X, Y } from '../types'
+import type {
+        Constants as C,
+        Conversions,
+        Functions,
+        NodeContext,
+        NodeTypes,
+        Operators,
+        Swizzles,
+        X,
+        Y,
+} from '../types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)
@@ -73,26 +83,6 @@ export const getConstant = (conversionKey: string): C => {
         return index !== -1 ? CONSTANTS[index] : 'float'
 }
 
-export const getEventFun = (c: NodeContext, id: string, isAttribute = false, isTexture = false) => {
-        if (c.isWebGL) {
-                if (isAttribute) return (value: any) => c.gl?.attribute?.(id, value)
-                if (isTexture) return (value: any) => c.gl?.texture?.(id, value)
-                return (value: any) => c.gl?.uniform?.(id, value)
-        }
-        if (isAttribute) return (value: any) => c.gl?._attribute?.(id, value)
-        if (isTexture) return (value: any) => c.gl?._texture?.(id, value)
-        return (value: any) => c.gl?._uniform?.(id, value)
-}
-
-export const safeEventCall = <T extends C>(x: X<T>, fun: (value: unknown) => void) => {
-        if (is.und(x)) return
-        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1])
-        if (x.type !== 'conversion') return
-        const args = x.props.children?.slice(1)
-        if (is.und(args?.[0])) return // ignore if uniform(vec2())
-        fun(args.map((x) => x ?? args[0])) // for uniform(vec2(1)) or uniform(vec2(1, 1))
-}
-
 export const initNodeContext = (c: NodeContext) => {
         if (c.code) return c
         c.code = {
@@ -118,4 +108,36 @@ export const isArrayAccess = (key: unknown): boolean => {
 export const addDependency = (c: NodeContext, id = '', type: string) => {
         if (!c.code?.dependencies?.has(id)) c.code!.dependencies.set(id, new Set())
         if (!isConstants(type)) c.code!.dependencies.get(id)!.add(type)
+}
+
+/**
+ * uniform ant attribute event listeners
+ */
+const getEventFun = (c: NodeContext, id: string, type: string) => {
+        if (c.isWebGL) {
+                if (type === 'attribute') return (value: any) => c.gl?.attribute?.(id, value)
+                if (type === 'instance') return (value: any) => c.gl?.instance?.(id, value)
+                if (type === 'texture') return (value: any) => c.gl?.texture?.(id, value)
+                return (value: any) => c.gl?.uniform?.(id, value)
+        }
+        if (type === 'attribute') return (value: any) => c.gl?._attribute?.(id, value)
+        if (type === 'instance') return (value: any) => c.gl?._instance?.(id, value)
+        if (type === 'texture') return (value: any) => c.gl?._texture?.(id, value)
+        return (value: any) => c.gl?._uniform?.(id, value)
+}
+
+const safeEventCall = <T extends C>(x: X<T>, fun: (value: unknown) => void) => {
+        if (is.und(x)) return
+        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1])
+        if (x.type !== 'conversion') return
+        const args = x.props.children?.slice(1)
+        if (is.und(args?.[0])) return // ignore if uniform(vec2())
+        fun(args.map((x) => x ?? args[0])) // for uniform(vec2(1)) or uniform(vec2(1, 1))
+}
+
+export const setupEvent = (c: NodeContext, id: string, type: string, target: X, child: X) => {
+        const fun = getEventFun(c, id, type)
+        safeEventCall(child, fun)
+        target.listeners.add(fun)
+        return fun
 }

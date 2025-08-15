@@ -61,8 +61,12 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                 if (!inferFrom || inferFrom.length === 0) return 'void' as T
                 return inferFromArray(inferFrom, c)
         }
-        if (type === 'attribute' && is.arr(x) && c.gl?.count) {
-                const { stride } = getStride(x.length, c.gl.count, c.gl.instance)
+        if (type === 'attribute' && is.arr(x)) {
+                const stride = getStride(x.length, c.gl?.count, c.gl?.error)
+                return inferFromCount(stride)
+        }
+        if (type === 'instance' && is.arr(x)) {
+                const stride = getStride(x.length, c.gl?.instanceCount, c.gl?.error)
                 return inferFromCount(stride)
         }
         if (type === 'member') {

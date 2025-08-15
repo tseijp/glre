@@ -63,8 +63,7 @@ const gl = createGL({
 ```javascript
 const gl = createGL({
         fragment: () => {
-                const time = uniform('iTime')
-                const color = sin(time).mul(0.5).add(0.5)
+                const color = sin(iTime).mul(0.5).add(0.5)
                 return vec4(color, color, color, 1.0)
         },
 })

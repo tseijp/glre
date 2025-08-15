@@ -96,16 +96,23 @@ export const webgl = async (gl: GL) => {
         const uniforms = cached((key) => c.getUniformLocation(pg, key))
 
         const _attribute = (key = '', value: number[], iboValue: number[]) => {
-                const loc = attribs(key)
-                const { isInstance, stride } = getStride(value.length, gl.count, gl.instance, gl.error)
-                if (isInstance) createInstanceAttrib(c, loc, stride, value)
-                else createAttrib(c, loc, stride, value, iboValue)
+                const stride = getStride(value.length, gl.count, gl.error)
+                createAttrib(c, attribs(key), stride, value, iboValue)
         }
 
         const _uniform = (key: string, value: number | number[]) => {
                 c.useProgram(pg)
                 createUniform(c, uniforms(key)!, value)
                 cp?._uniform(key, value)
+        }
+
+        const _instance = (key: string, value: number[], at?: number) => {
+                // if (at !== undefined) {
+                //         buffers.set(at, value)
+                //         return
+                // }
+                const stride = value.length / gl.instanceCount
+                createInstanceAttrib(c, attribs(key), stride, value)
         }
 
         const _texture = (key: string, src: string) => {
@@ -125,8 +132,8 @@ export const webgl = async (gl: GL) => {
                 cp?.render()
                 c.useProgram(pg)
                 c.viewport(0, 0, ...gl.size)
-                if (gl.instance > 1) {
-                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instance)
+                if (gl.instanceCount > 1) {
+                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
                 } else {
                         c.drawArrays(c.TRIANGLES, 0, gl.count)
                 }
@@ -135,5 +142,5 @@ export const webgl = async (gl: GL) => {
 
         const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }
 
-        return { webgl, render, clean, _attribute, _uniform, _texture, _storage: cp?._storage }
+        return { webgl, render, clean, _attribute, _instance, _uniform, _texture, _storage: cp?._storage }
 }

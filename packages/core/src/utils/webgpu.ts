@@ -86,9 +86,9 @@ export const webgpu = async (gl: GL) => {
         let needsUpdate = true
         let depthTexture: GPUTexture
 
-        const attribs = cached((_key, value: number[]) => {
+        const attribs = cached((_key, value: number[], isInstance = false) => {
                 needsUpdate = true
-                const { stride, isInstance } = getStride(value.length, gl.count, gl.instance)
+                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)
                 const { location } = bindings.attrib()
                 const { array, buffer } = createArrayBuffer(device, value, 'attrib')
                 return { array, buffer, location, stride, isInstance }
@@ -110,6 +110,20 @@ export const webgpu = async (gl: GL) => {
 
         const _attribute = (key = '', value: number[]) => {
                 const { array, buffer } = attribs(key, value)
+                device.queue.writeBuffer(buffer, 0, array as any)
+        }
+
+        const _instance = (key: string, value: number[], at?: number) => {
+                // if (at !== undefined) {
+                //         const { buffers, array, buffer } = instances(key, [])
+                //         buffers.set(at, value)
+                //         const stride = value.length
+                //         const offset = at * stride
+                //         for (let i = 0; i < stride; i++) array[offset + i] = value[i]
+                //         device.queue.writeBuffer(buffer, offset * 4, new Float32Array(value))
+                //         return
+                // }
+                const { array, buffer } = attribs(key, value, true)
                 device.queue.writeBuffer(buffer, 0, array as any)
         }
 
@@ -141,7 +155,7 @@ export const webgpu = async (gl: GL) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                         vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                        pass.draw(gl.count, gl.instance, 0, 0)
+                        pass.draw(gl.count, gl.instanceCount, 0, 0)
                         pass.end()
                 }
                 if (gl.cs) cp.update(bindGroups, bindGroupLayouts, comp)
@@ -182,5 +196,5 @@ export const webgpu = async (gl: GL) => {
 
         const webgpu = { device, uniforms, textures, attribs, storages: cp.storages } as WebGPUState
 
-        return { webgpu, render, resize, clean, _attribute, _uniform, _texture, _storage: cp._storage }
+        return { webgpu, render, resize, clean, _attribute, _instance, _uniform, _texture, _storage: cp._storage }
 }

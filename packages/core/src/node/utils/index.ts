@@ -16,7 +16,7 @@ import {
         parseUniformHead,
         parseVaryingHead,
 } from './parse'
-import { getBluiltin, getConversions, getEventFun, getOperator, initNodeContext, safeEventCall } from './utils'
+import { getBluiltin, getConversions, getOperator, initNodeContext, setupEvent } from './utils'
 import { is } from '../../utils/helpers'
 import { mod } from '..'
 import type { Constants as C, NodeContext, Y } from '../types'
@@ -119,10 +119,8 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 else if (c.label === 'vert') c.code?.vertInputs.set(id, field)
                 return `in.${id}`
         }
-        if (type === 'attribute') {
-                const fun = getEventFun(c, id, true)
-                safeEventCall(x, fun)
-                target.listeners.add(fun)
+        if (type === 'attribute' || type === 'instance') {
+                setupEvent(c, id, type, target, x)
                 c.code?.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
                 return c.isWebGL ? `${id}` : `in.${id}`
         }
@@ -130,9 +128,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         let head = ''
         if (type === 'uniform') {
                 const varType = infer(target, c)
-                const fun = getEventFun(c, id, false, varType === 'texture')
-                safeEventCall(x, fun)
-                target.listeners.add(fun)
+                setupEvent(c, id, varType, target, x)
                 head = parseUniformHead(c, id, varType)
         }
         if (type === 'storage') head = parseStorageHead(c, id, infer(target, c))

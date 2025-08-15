@@ -13,7 +13,7 @@ export type GL = EventState<{
         isGL: true
         width?: number
         height?: number
-        instance: number
+        instanceCount: number
         size: [number, number]
         mouse: [number, number]
         count: number
@@ -62,6 +62,9 @@ export type GL = EventState<{
         _attribute?(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(target: { [key: string]: Attribute }): GL
+        _instance?(key: string, value: Attribute, at?: number): GL
+        instance(key: string, value: Attribute, at?: number): GL
+        instance(target: { [key: string]: Attribute }): GL
         _storage?(key: string, value: Storage): GL
         storage(key: string, value: Storage): GL
         storage(target: { [key: string]: Storage }): GL

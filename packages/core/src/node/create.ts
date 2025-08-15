@@ -25,6 +25,7 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
                 if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
                 if (key === 'listeners') return listeners
                 if (key === 'attribute') return (id = getId()) => attribute(x, id)
+                if (key === 'instance') return (id = getId()) => instance(x, id)
                 if (key === 'constant') return (id = getId()) => constant(x, id)
                 if (key === 'uniform') return (id = getId()) => uniform(x, id)
                 if (key === 'variable') return (id = getId()) => variable(id)
@@ -54,6 +55,7 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
 
 // headers with proper type inference
 export const attribute = <T extends C>(x: Y<T>, id = getId()) => create<T>('attribute', { id }, x)
+export const instance = <T extends C>(x: Y<T>, id = getId()) => create<T>('instance', { id }, x)
 export const constant = <T extends C>(x: Y<T>, id = getId()) => create<T>('constant', { id }, x)
 export const uniform = <T extends C>(x: Y<T>, id = getId()) => create<T>('uniform', { id }, x)
 export const storage = <T extends C>(x: Y<T>, id = getId()) => create<T>('storage', { id }, x)

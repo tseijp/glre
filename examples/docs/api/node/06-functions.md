@@ -24,7 +24,7 @@ Comprehensive reference for all mathematical functions and operations in TSL.
 
 ```javascript
 // Basic trigonometry
-const angle = uniform('angle')
+const angle = uniform(0, 'angle')
 const wave = sin(angle.mul(PI))
 const circle = vec2(cos(angle), sin(angle))
 

@@ -14,7 +14,6 @@ gl('mount', () => {
 
         // Setup initial uniforms
         gl.uniform('startTime', performance.now())
-        gl.uniform('iResolution', [gl.canvas.width, gl.canvas.height])
 })
 ```
 
@@ -39,10 +38,8 @@ Responds to canvas size changes:
 ```javascript
 gl('resize', () => {
         const [width, height] = gl.size
-        gl.uniform('iResolution', [width, height])
-
-        // Update aspect ratio
         const aspect = width / height
+        // Update aspect ratio
         gl.uniform('aspectRatio', aspect)
 })
 ```
@@ -225,35 +222,6 @@ appState.subscribe((state) => {
         gl.uniform('mode', state.mode === 'normal' ? 0 : 1)
         gl.uniform('intensity', state.intensity)
         gl.uniform('baseColor', state.color)
-})
-```
-
-### Durable Functions
-
-GLRE's durable functions prevent unnecessary updates:
-
-```javascript
-const createDurableUpdate = () => {
-        let lastValues = new Map()
-
-        const durableUniform = (name, value) => {
-                const lastValue = lastValues.get(name)
-
-                // Only update if value changed
-                if (lastValue !== value) {
-                        gl.uniform(name, value)
-                        lastValues.set(name, value)
-                }
-        }
-
-        return { durableUniform }
-}
-
-const { durableUniform } = createDurableUpdate()
-
-gl('loop', () => {
-        const time = performance.now() / 1000
-        durableUniform('iTime', time) // Only updates when time changes
 })
 ```
 

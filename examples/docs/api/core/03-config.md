@@ -45,11 +45,10 @@ const gl = createGL({
 ```javascript
 // Node system shader
 const gl = createGL({
-        fragment: () => {
-                const time = uniform('iTime')
-                const color = sin(time).mul(0.5).add(0.5)
+        fragment: Scope(() => {
+                const color = sin(iTime).mul(0.5).add(0.5)
                 return vec4(color, color, color, 1.0)
-        },
+        }),
 })
 
 // Raw shader strings
@@ -227,10 +226,7 @@ const createDefaultShaders = () => {
         }
 
         const defaultFragment = () => {
-                const position = builtin('position')
-                const resolution = uniform('iResolution')
-
-                const uv = position.xy.div(resolution)
+                const uv = position.xy.div(iResolution)
                 return vec4(uv, 0, 1)
         }
 

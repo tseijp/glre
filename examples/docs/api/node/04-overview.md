@@ -13,9 +13,7 @@ It provides familiar programming constructs while generating efficient GLSL/WGSL
 // TypeScript Node System
 const fragment = () => {
         const position = builtin('position')
-        const time = uniform('iTime')
-
-        const wave = sin(position.x.add(time))
+        const wave = sin(position.x.add(iTime))
         const color = wave.mul(0.5).add(0.5)
 
         return vec4(color, color, color, 1.0)
@@ -242,16 +240,12 @@ const fragment = () => {
 
 ```javascript
 // CPU side
-gl.uniform('time', performance.now() / 1000)
-gl.uniform('resolution', [800, 600])
+gl.uniform('startTime', performance.now() / 1000)
 
 // GPU side
 const fragment = () => {
-        const time = uniform('time')
-        const resolution = uniform('resolution')
-
-        const uv = builtin('position').xy.div(resolution)
-        const wave = sin(uv.x.mul(10).add(time))
+        const uv = position.xy.div(iResolution)
+        const wave = sin(uv.x.mul(10).add(iTime))
 
         return vec4(wave, wave, wave, 1.0)
 }

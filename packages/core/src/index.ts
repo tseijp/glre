@@ -34,7 +34,7 @@ export const createGL = (props?: Partial<GL>) => {
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,
-                instance: 1,
+                instanceCount: 1,
                 particles: 1024,
                 webgl: {},
                 webgpu: {},
@@ -51,6 +51,7 @@ export const createGL = (props?: Partial<GL>) => {
         gl.frame = createFrame()
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
+        gl.instance = durable((k, v, at) => gl.queue(() => gl._instance?.(k, v, at)), gl)
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
         gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)

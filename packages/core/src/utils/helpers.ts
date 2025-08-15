@@ -66,22 +66,11 @@ const calcStride = (arrayLength: number, count = 3) => {
         return -1
 }
 
-export const getStride = (arrayLength: number, vertexCount = 3, instanceCount = 1, error = console.warn) => {
-        const vertexStride = calcStride(arrayLength, vertexCount)
-        let instanceStride = -1
-        if (instanceCount > 1) instanceStride = calcStride(arrayLength, instanceCount)
-        const isVertex = isValidStride(vertexStride)
-        const isInstance = isValidStride(instanceStride)
-        if (isVertex && isInstance && vertexCount !== instanceCount) {
+export const getStride = (arrayLength: number, count = 1, error = console.warn) => {
+        const ret = calcStride(arrayLength, count)
+        if (!isValidStride(ret))
                 error(
-                        `glre attribute warning: Ambiguous attribute length ${arrayLength}. Could be vertex (stride=${vertexStride}) or instance (stride=${instanceStride}). Using vertex by default.`
+                        `glre attribute error: Invalid attribute length ${arrayLength}. Must divide by vertex count (${count}) with valid stride (1,2,3,4,9,16)`
                 )
-                return { stride: vertexStride, isInstance: false }
-        }
-        if (isInstance) return { stride: instanceStride, isInstance: true }
-        if (!isVertex)
-                error(
-                        `glre attribute error: Invalid attribute length ${arrayLength}. Must divide by vertex count (${vertexCount}) or instance count (${instanceCount}) with valid stride (1,2,3,4,9,16)`
-                )
-        return { stride: vertexStride, isInstance: false }
+        return ret
 }

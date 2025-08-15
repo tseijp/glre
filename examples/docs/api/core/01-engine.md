@@ -59,20 +59,12 @@ TSL automatically manages GPU resources:
 
 ```javascript
 const gl = createGL({
-        fragment: () => {
-                // Automatic uniform binding
-                const time = uniform('iTime')
-                const resolution = uniform('iResolution')
-
+        fragment: Scope(() => {
                 // Automatic type inference
-                const color = sin(time).mul(0.5).add(0.5)
+                const color = sin(iTime).mul(0.5).add(0.5)
                 return vec4(color, 0.5, 1.0, 1.0)
-        },
+        }),
 })
-
-// Engine handles binding automatically
-gl.uniform('iTime', performance.now() / 1000)
-gl.uniform('iResolution', [800, 600])
 ```
 
 ### Memory Management
@@ -124,8 +116,7 @@ TSL converts TypeScript to shader code:
 ```javascript
 // TypeScript Node System
 const nodeShader = () => {
-        const pos = builtin('position')
-        const uv = pos.xy.mul(0.5).add(0.5)
+        const uv = position.xy.mul(0.5).add(0.5)
         const pattern = sin(uv.x.mul(10)).mul(sin(uv.y.mul(10)))
         return vec4(pattern, pattern, pattern, 1.0)
 }

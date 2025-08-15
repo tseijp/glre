@@ -1,5 +1,5 @@
 import { hex2rgb } from './utils'
-import { builtin as b, conversion as c, function_ as f, uniform as u } from './create'
+import { builtin as b, conversion as c, function_ as f, uniform as u, instance as i, texture as t } from './create'
 import { is } from '../utils/helpers'
 import type { Constants as C, Float, X, Y } from './types'
 export * from './build'
