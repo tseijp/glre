@@ -1,4 +1,4 @@
-import { isFloat32 } from './helpers'
+import { is, isFloat32 } from './helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 /**
@@ -205,4 +205,17 @@ export const createDepthTexture = (device: GPUDevice, width: number, height: num
                 format: 'depth24plus',
                 usage: GPUTextureUsage.RENDER_ATTACHMENT,
         })
+}
+
+/**
+ * utils
+ */
+export const workgroupCount = (particles: number | number[], workgroupSize = 32) => {
+        if (is.num(particles)) particles = [particles]
+        const [x, y = 1, z = 1] = particles
+        return {
+                x: (x * y * z) / workgroupSize,
+                y: 1,
+                z: 1,
+        }
 }

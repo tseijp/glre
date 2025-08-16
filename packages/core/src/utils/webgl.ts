@@ -8,6 +8,7 @@ import {
         createStorage,
         createTexture,
         setArrayBuffer,
+        storageSize,
         updateAttrib,
         updateInstance,
         updateUniform,
@@ -24,11 +25,11 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         const units = cached(() => activeUnit++)
         const cs = is.str(gl.cs) ? gl.cs : gl.cs!.compute({ isWebGL: true, gl, units })
         const pg = createProgram(c, cs, GLSL_VS, gl)!
-        const size = Math.ceil(Math.sqrt(gl.particles))
+        const size = storageSize(gl.particles)
 
         const uniforms = cached((key) => c.getUniformLocation(pg, key)!)
         const storages = cached((key) => {
-                const array = new Float32Array(size * size * 4) // RGBA texture data
+                const array = new Float32Array(size.x * size.y * 4) // RGBA texture data
                 const ping = { texture: c.createTexture(), buffer: c.createFramebuffer() }
                 const pong = { texture: c.createTexture(), buffer: c.createFramebuffer() }
                 return { ping, pong, array, loc: uniforms(key), unit: units(key) }
@@ -41,7 +42,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
 
         const _storage = (key: string, value: number[]) => {
                 const { ping, pong, unit, array } = storages(key)
-                createStorage(c, value, size, ping, pong, unit, array)
+                createStorage(c, value, size.x, size.y, ping, pong, unit, array)
         }
 
         const clean = () => {

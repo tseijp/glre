@@ -1,5 +1,4 @@
 import { useGL } from 'glre/src/react'
-import { useMemo } from 'react'
 
 const particleCompute = /* rust */ `
 @group(0) @binding(0) var<uniform> iTime: f32;
@@ -59,28 +58,29 @@ fn main(in: In) -> @location(0) vec4f {
 }
 `
 
+const particles = 1024
+
 export default function () {
         const gl = useGL({
+                particles,
                 isWebGL: false,
-                particles: 1024,
                 cs: particleCompute,
                 fs: particleFragment,
+                mount() {
+                        const positions = [] as number[]
+                        const velocities = [] as number[]
+
+                        for (let i = 0; i < particles; i++) {
+                                positions[i * 2] = Math.random()
+                                positions[i * 2 + 1] = Math.random()
+                                velocities[i * 2] = (Math.random() - 0.5) * 0.5
+                                velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.5
+                        }
+
+                        gl.storage('positions', positions)
+                        gl.storage('velocities', velocities)
+                },
         })
-
-        useMemo(() => {
-                const positions = []
-                const velocities = []
-
-                for (let i = 0; i < gl.particles; i++) {
-                        positions[i * 2] = Math.random()
-                        positions[i * 2 + 1] = Math.random()
-                        velocities[i * 2] = (Math.random() - 0.5) * 0.5
-                        velocities[i * 2 + 1] = (Math.random() - 0.5) * 0.5
-                }
-
-                gl.storage('positions', positions)
-                gl.storage('velocities', velocities)
-        }, [])
 
         return <canvas ref={gl.ref} />
 }

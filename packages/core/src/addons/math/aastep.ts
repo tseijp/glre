@@ -1,4 +1,4 @@
-import { Fn, X, Float, fwidth, length, vec2, dFdx, dFdy, smoothstep, step } from '../../node'
+import { Fn, Float, length, vec2, dFdx, dFdy, smoothstep } from '../../node'
 
 export const aastep = Fn(([threshold, value]: [Float, Float]): Float => {
         const derivative = vec2(dFdx(value), dFdy(value))

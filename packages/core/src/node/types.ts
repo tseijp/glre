@@ -246,7 +246,7 @@ interface _X<T extends C> {
         // System properties
         readonly __nodeType?: T
         assign(x: any): X<T>
-        select(x: X<T>, y: Y): X<T>
+        select(x: number | X<T>, y: X<'bool'>): X<T>
         fragment(c: NodeContext): string
         toVar(name?: string): X<T>
         toString(c?: NodeContext): string
@@ -302,20 +302,20 @@ interface _X<T extends C> {
 
         // Conversion methods
         toBool(): Bool
-        toUint(): UInt
+        toUInt(): UInt
         toInt(): Int
         toFloat(): Float
-        toBvec2(): BVec2
-        toIvec2(): IVec2
-        toUvec2(): UVec2
+        toBVec2(): BVec2
+        toIVec2(): IVec2
+        toUVec2(): UVec2
         toVec2(): Vec2
-        toBvec3(): BVec3
-        toIvec3(): IVec3
-        toUvec3(): UVec3
+        toBVec3(): BVec3
+        toIVec3(): IVec3
+        toUVec3(): UVec3
         toVec3(): Vec3
-        toBvec4(): BVec4
-        toIvec4(): IVec4
-        toUvec4(): UVec4
+        toBVec4(): BVec4
+        toIVec4(): IVec4
+        toUVec4(): UVec4
         toVec4(): Vec4
         toColor(): Color
         toMat2(): Mat2

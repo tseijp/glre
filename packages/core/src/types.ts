@@ -10,6 +10,7 @@ export type GL = EventState<{
         isWebGL: boolean
         isError: boolean
         isLoop: boolean
+        isDebug: boolean
         isDepth: boolean
         isGL: true
         width?: number
@@ -19,7 +20,7 @@ export type GL = EventState<{
         mouse: [number, number]
         count: number
         loading: number
-        particles: 64 | 256 | 576 | 1024 | 1600 | 2304 | 3136 | 4096 | 4096 | 5184 | 6400 // (8k)^2
+        particles: number | [number, number] | [number, number, number]
         el: HTMLCanvasElement
         vs?: string | Vec4
         cs?: string | Void
@@ -48,7 +49,7 @@ export type GL = EventState<{
         error(e?: string): void
         render(): void
         resize(e?: Event): void
-        mousemove(e: Event): void
+        mousemove(e: MouseEvent): void
         loop(): void
 
         /**

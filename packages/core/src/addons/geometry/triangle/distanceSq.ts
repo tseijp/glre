@@ -1,4 +1,4 @@
-import { Fn, Float, Vec3, cross, dot, sign, sqrt, min, length } from '../../../node'
+import { Fn, Float, Vec3, cross, dot, sign, sqrt, min } from '../../../node'
 import { lengthSq } from '../../math/lengthSq'
 import { TriangleType } from './triangle'
 
@@ -26,7 +26,8 @@ export const distanceSq = Fn(([tri, pos]: [TriangleType, Vec3]): Float => {
 
         const planeDistance = dot(nor, p1).mul(dot(nor, p1)).div(lengthSq(nor))
 
-        return sqrt(edgeDistance.select(planeDistance as any, signSum.lessThan(2))) as Float
+        // @ts-ignore
+        return sqrt(edgeDistance.select(planeDistance, signSum.lessThan(2))) as Float
 }).setLayout({
         name: 'distanceSq',
         type: 'float',

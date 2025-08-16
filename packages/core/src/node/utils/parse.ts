@@ -198,6 +198,24 @@ export const parseStorageHead = (c: NodeContext, id: string, type: Constants) =>
         return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`
 }
 
+export const parseLoop = (c: NodeContext, x: Y, y: Y, id: string) => {
+        const conditionType = infer(x, c)
+        const bodyCode = code(y, c)
+        const conditionCode = code(x, c)
+        if (c.isWebGL) {
+                if (conditionType === 'int') return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
+                if (conditionType === 'float') return `for (float ${id} = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
+                if (conditionType === 'vec2') return `for (vec2 ${id} = vec2(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2(1.0)) {\n${bodyCode}\n}`
+                if (conditionType === 'vec3') return `for (vec3 ${id} = vec3(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3(1.0)) {\n${bodyCode}\n}`
+                return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
+        }
+        if (conditionType === 'int') return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
+        if (conditionType === 'float') return `for (var ${id}: f32 = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
+        if (conditionType === 'vec2') return `for (var ${id}: vec2f = vec2f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2f(1.0)) {\n${bodyCode}\n}`
+        if (conditionType === 'vec3') return `for (var ${id}: vec3f = vec3f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3f(1.0)) {\n${bodyCode}\n}`
+        return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
+}
+
 export const parseConstantHead = (c: NodeContext, id: string, type: Constants, value: string) => {
         return c.isWebGL ? `const ${type} ${id} = ${value};` : `const ${id}: ${getConversions(type, c)} = ${value};`
 }
