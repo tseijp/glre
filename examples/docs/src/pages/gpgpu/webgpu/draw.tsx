@@ -1,8 +1,8 @@
-import { useGL } from 'glre/src/react'
+import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
 export default function GPGPUDrawApp() {
-        const [w, h] = [window.innerWidth, window.innerHeight]
+        const [w, h] = isServer() ? [1280, 800] : [window.innerWidth, window.innerHeight]
         const gl = useGL({
                 particles: [w, h],
                 isWebGL: false,

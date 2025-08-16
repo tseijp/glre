@@ -15,7 +15,7 @@ import {
         Vec2,
         Return,
 } from 'glre/src/node'
-import { isServer, useGL } from 'glre/src/react'
+import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
 const isWebGL = false
@@ -36,7 +36,6 @@ export default function GPGPUDrawApp() {
                         const x = index.mod(w).toVar('x')
                         const y = index.div(w).toVar('y')
                         const uv = vec2(x, y).toVar('uv')
-                        // draw
                         const isBrush = lineSDF(asp(uv), asp(m0), asp(m1)).lessThan(0.01)
                         If(isBrush, () => {
                                 data.element(id.x).assign(0)

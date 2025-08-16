@@ -65,8 +65,8 @@ export default function InstancedBoxes() {
         const pos = instance<'vec2'>(createPosition()) // 32 len (16 instances * 2 components)
         const rot = instance<'float'>(rotation) // 16 len (16 instances * 1 component)
 
-        const projectionMatrix = uniform<'mat4'>(createProjectionMatrix())
-        const viewMatrix = uniform<'mat4'>(createViewMatrix())
+        const projectionMatrix = uniform<'mat4'>(mat4())
+        const viewMatrix = uniform<'mat4'>(mat4())
 
         const gl = useGL({
                 instanceCount, // 16
@@ -79,6 +79,7 @@ export default function InstancedBoxes() {
                 },
                 resize() {
                         projectionMatrix.value = createProjectionMatrix()
+                        viewMatrix.value = createViewMatrix()
                 },
                 frag: vertexStage(box),
                 vert: Scope(() => {

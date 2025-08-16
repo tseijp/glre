@@ -1,5 +1,5 @@
 import { useGL } from 'glre/src/react'
-import { attribute, instance, uniform, vec2, vec4, If, Scope, Fn, vertexStage } from 'glre/src/node'
+import { attribute, instance, uniform, vec4, If, Fn, vertexStage } from 'glre/src/node'
 
 export default function ParticleSystem() {
         const gridSize = 100
