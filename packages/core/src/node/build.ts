@@ -63,7 +63,7 @@ export const fragment = (x: X, c: NodeContext = {}) => {
         }
         result.push('}')
         const main = result.filter(Boolean).join('\n').trim()
-        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        if (c.gl?.isDebug) console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
@@ -95,7 +95,7 @@ export const vertex = (x: X, c: NodeContext = {}) => {
         }
         result.push('}')
         const main = result.filter(Boolean).join('\n').trim()
-        console.log(`↓↓↓generated↓↓↓\n${main}`)
+        if (c.gl?.isDebug) console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }
 
@@ -122,6 +122,6 @@ export const compute = (x: X, c: NodeContext = {}) => {
                 result.push('}')
         }
         const main = result.filter(Boolean).join('\n').trim()
-        // console.log(`↓↓↓generated↓↓↓\n${main}`)
+        if (c.gl?.isDebug) console.log(`↓↓↓generated↓↓↓\n${main}`)
         return main
 }

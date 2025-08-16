@@ -1,10 +1,10 @@
-import { float, Fn, id, If, int, Loop, storage, uv, Vec2, vec2, Vec3, vec3, vec4 } from 'glre/src/node'
+import { float, Fn, id, If, int, Loop, storage, uv, UVec3, Vec2, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
 
 const positions = storage(vec2(), 'positions')
 const velocities = storage(vec2(), 'velocities')
 
-const compute = Fn(([id]: [Vec3]) => {
+const compute = Fn(([id]: [UVec3]) => {
         const index = id.x
         const pos = positions.element(index).toVar('pos')
         const vel = velocities.element(index).toVar('vel')
@@ -34,7 +34,7 @@ const fragment = Fn(([uv]: [Vec2]) => {
         return vec4(color, 1.0)
 })
 
-export default function () {
+export default function GPGPUParticlesApp() {
         const gl = useGL({
                 particles: 1024,
                 isWebGL: false,

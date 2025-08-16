@@ -1,5 +1,5 @@
 import { hex2rgb } from './utils'
-import { builtin as b, conversion as c, function_ as f, uniform as u, instance as i, texture as t } from './create'
+import { builtin as b, conversion as c, function_ as f, uniform as u } from './create'
 import { is } from '../utils/helpers'
 import type { Constants as C, Float, X, Y } from './types'
 export * from './build'
@@ -16,7 +16,7 @@ export const fragDepth = b<'float'>('frag_depth')
 export const sampleIndex = b<'uint'>('sample_index')
 export const sampleMask = b<'uint'>('sample_mask')
 export const pointCoord = b<'vec2'>('point_coord')
-export const id = b<'vec3'>('global_invocation_id')
+export const id = b<'uvec3'>('global_invocation_id')
 
 // TSL Compatible Builtin Variables
 export const positionLocal = b<'vec3'>('position')
