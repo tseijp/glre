@@ -56,7 +56,6 @@ export default function GPGPUDrawApp() {
 
         const gl = useGL({
                 particles: [w, h],
-                isDebug: true,
                 isWebGL,
                 cs: cs(id),
                 fs: fs(uv),

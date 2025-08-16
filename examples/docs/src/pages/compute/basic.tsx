@@ -44,8 +44,7 @@ export default function GPGPUBasicApp() {
         })
 
         const gl = useGL({
-                particles,
-                isDebug: true,
+                particles: [w, h],
                 isWebGL: false,
                 cs: cs(id),
                 fs: fs(uv),
@@ -53,7 +52,7 @@ export default function GPGPUBasicApp() {
 
         const init = new Float32Array(particles)
         for (let i = 0; i < particles; i++) init[i] = Math.random() < 0.1 ? 0 : 1
-        gl.storage('data', init)
+        gl.storage(data.props.id!, init)
 
         return <canvas ref={gl.ref} />
 }
