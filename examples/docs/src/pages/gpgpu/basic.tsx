@@ -30,7 +30,7 @@ export default function GPGPUBasicApp() {
                 fs: fs(uv),
         })
 
-        gl.storage(data.props.id, new Float32Array(gl.particles * 2))
+        gl.storage(data.props.id, new Float32Array(particles * 2))
 
         return <canvas ref={gl.ref} />
 }

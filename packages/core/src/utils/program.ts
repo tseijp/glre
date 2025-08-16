@@ -96,13 +96,14 @@ interface TextureBuffer {
 export const createStorage = (
         c: WebGL2RenderingContext,
         value: number[],
-        size: number,
+        width: number,
+        height: number,
         ping: TextureBuffer,
         pong: TextureBuffer,
         unit: number,
         array: Float32Array
 ) => {
-        const particles = size * size
+        const particles = width * height
         const vectorSize = value.length / particles
         for (let i = 0; i < particles; i++) {
                 for (let j = 0; j < Math.min(vectorSize, 4); j++) {
@@ -111,13 +112,13 @@ export const createStorage = (
         }
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, ping.texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, array)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, width, height, 0, c.RGBA, c.FLOAT, array)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
         c.bindTexture(c.TEXTURE_2D, pong.texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, size, size, 0, c.RGBA, c.FLOAT, array)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA32F, width, height, 0, c.RGBA, c.FLOAT, array)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.NEAREST)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
@@ -151,4 +152,29 @@ export const createAttachment = (
         const attachment = c.COLOR_ATTACHMENT0 + index
         c.framebufferTexture2D(c.FRAMEBUFFER, attachment, c.TEXTURE_2D, o.texture, 0)
         return attachment
+}
+
+/**
+ * utils
+ */
+export const storageSize = (particles: number | number[]) => {
+        if (is.num(particles)) {
+                const sqrt = Math.sqrt(particles)
+                const size = Math.ceil(sqrt)
+                if (!Number.isInteger(sqrt)) {
+                        console.warn(
+                                `GLRE Storage Warning: particles count (${particles}) is not a square. Using ${size}x${size} texture may waste GPU memory. Consider using [width, height] format for optimal storage.`
+                        )
+                }
+                return { x: size, y: size }
+        }
+        const [x, y, z] = particles
+        if (z !== undefined) {
+                const yz = y * z
+                console.warn(
+                        `GLRE Storage Warning: 3D particles [${x}, ${y}, ${z}] specified but WebGL storage textures only support 2D. Flattening to 2D by multiplying height=${y} * depth=${z} = ${yz}.`
+                )
+                return { x, y: yz }
+        }
+        return { x, y }
 }

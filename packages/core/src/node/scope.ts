@@ -42,7 +42,7 @@ export const assign = <T extends C>(x: X<T>, isScatter = false, y: Y<T>): X<T> =
         return x
 }
 
-export const Return = <T extends C>(x: Y<T>): Y<T> => {
+export const Return = <T extends C>(x?: Y<T>): Y<T> => {
         return addToScope(create<T>('return', { inferFrom: [x] }, x))
 }
 

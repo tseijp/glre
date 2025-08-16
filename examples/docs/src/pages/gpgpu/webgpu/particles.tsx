@@ -59,10 +59,12 @@ fn main(in: In) -> @location(0) vec4f {
 }
 `
 
+const particles = 1024
+
 export default function () {
         const gl = useGL({
+                particles,
                 isWebGL: false,
-                particles: 1024,
                 cs: particleCompute,
                 fs: particleFragment,
         })
@@ -71,7 +73,7 @@ export default function () {
                 const positions = []
                 const velocities = []
 
-                for (let i = 0; i < gl.particles; i++) {
+                for (let i = 0; i < particles; i++) {
                         positions[i * 2] = Math.random()
                         positions[i * 2 + 1] = Math.random()
                         velocities[i * 2] = (Math.random() - 0.5) * 0.5

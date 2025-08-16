@@ -11,10 +11,9 @@ import {
         createPipeline,
         createTextureSampler,
         createVertexBuffers,
+        workgroupCount,
 } from './pipeline'
 import type { GL, WebGPUState } from '../types'
-
-const WORKING_GROUP_SIZE = 32
 
 const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
@@ -35,8 +34,8 @@ const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                        const workgroupCount = Math.ceil(gl.particles / WORKING_GROUP_SIZE)
-                        pass.dispatchWorkgroups(workgroupCount, 1, 1)
+                        const { x, y, z } = workgroupCount(gl.particles)
+                        pass.dispatchWorkgroups(x, y, z)
                         pass.end()
                 }
         }
