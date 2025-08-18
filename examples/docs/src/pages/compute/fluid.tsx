@@ -13,15 +13,20 @@ export default function FluidSimulationApp() {
         const forceRadius = uniform(float(0.1))
         const forceStrength = uniform(float(10))
 
-        const ind2uv = (idx: Float) => vec2(idx.mod(w).div(w), idx.div(w).floor().div(h))
-        const uv2ind = (uv: Vec2) => uv.y.mul(h).floor().add(uv.x).mul(w).floor().toUInt()
-
-        const getVelocity = (uv: Vec2, dx: number, dy: number) => {
-                return velocity.element(uv2ind(uv.add(vec2(dx / w, dy / h)))) as unknown as Vec2
+        const ind2uv = (idx: Float) => {
+                return vec2(idx.mod(w).div(w), idx.div(w).floor().div(h))
         }
 
-        const getPressure = (uv: Vec2, dx: number, dy: number) => {
-                return pressure.element(uv2ind(uv.add(vec2(dx / w, dy / h))))
+        const uv2ind = (uv: Vec2, dx = 0, dy = 0) => {
+                return uv.y.add(dy).mul(h).floor().add(uv.x).add(dx).mul(w).floor().toUInt()
+        }
+
+        const getVelocity = (uv: Vec2, dx = 0, dy = 0) => {
+                return velocity.element(uv2ind(uv, dx, dy)) as unknown as Vec2
+        }
+
+        const getPressure = (uv: Vec2, dx = 0, dy = 0) => {
+                return pressure.element(uv2ind(uv, dx, dy))
         }
 
         const fluid = Fn(([uv]: [Vec2]) => {
@@ -34,14 +39,14 @@ export default function FluidSimulationApp() {
                 const pc = getPressure(uv, 0, -1).toVar()
                 const pd = getPressure(uv, 0, 1).toVar()
                 const div = vb.sub(va).add(vd.sub(vc)).div(2)
-                const press = pa.add(pb).add(pc).add(pd).sub(div).mul(0.1)
+                const press = pa.add(pb).add(pc).add(pd).sub(div).mul(0.05)
                 const grad = vec2(pb.sub(pa), pd.sub(pc)).div(2)
                 return vec3(grad, press)
         })
 
         const cs = Fn(([id]: [UVec3]) => {
                 const idx = id.x.toFloat()
-                const uv = ind2uv(idx)
+                const uv = ind2uv(idx).toVar()
                 const prevVel = velocity.element(id.x) as unknown as Vec2
                 const prevPos = uv.sub(prevVel.mul(0.01))
                 const nextVel = getVelocity(prevPos, 0, 0).mul(0.99).toVar()
@@ -56,11 +61,11 @@ export default function FluidSimulationApp() {
         })
 
         const fs = Fn(([uv]: [Vec2]) => {
-                const pressure = getPressure(uv, 0, 0)
-                const vel = getVelocity(uv, 0, 0)
+                const pre = getPressure(uv)
+                const vel = getVelocity(uv)
                 const speed = vel.length()
                 const velColor = vec3(vel.mul(8).abs(), speed.mul(10.0))
-                const finalColor = vec3(pressure).div(2).add(velColor)
+                const finalColor = vec3(pre).div(2).add(velColor)
                 return vec4(finalColor, 1)
         })
 
