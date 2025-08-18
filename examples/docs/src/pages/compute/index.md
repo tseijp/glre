@@ -2,9 +2,15 @@ tsl
 
 [basic](/compute/basic)
 
+[diffusion](/compute/diffusion)
+
 [draw](/compute/draw)
 
 [particles](/compute/particles)
+
+[pathtracing](/compute/pathtracing)
+
+[raytracing](/compute/raytracing)
 
 webgl
 
