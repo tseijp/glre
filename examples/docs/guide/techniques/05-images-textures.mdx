@@ -219,37 +219,31 @@ const fragment = () => {
 }`}
 />
 
-### Particle Texture
+### Glass Texture
 
 <FragmentEditor
         isLoop
         code={`
 const fragment = () => {
+        // ref: https://www.shadertoy.com/view/33yXzd
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
-        // Particle texture effect using Loop for efficient layering
-        const generateParticleLayers = Fn(([uv]) => {
-                const finalColor = vec4(0, 0, 0, 0).toVar()
-                // Generate multiple particle layers using Loop
-                Loop(int(4), ({ i }) => {
-                        const idx = float(i)
-                        // Calculate layer properties based on index
-                        const speedBase = idx.mul(0.08).add(0.05)
-                        const speed = vec2(speedBase, speedBase.mul(0.6))
-                        const scale = idx.mul(1.5).add(1.5)
-                        // Calculate layer offset and UV
-                        const offset = iTime.mul(speed)
-                        const layerUV = uv.mul(scale).add(offset).fract()
-                        // Sample texture for this layer
-                        const layerColor = iTexture.texture(layerUV)
-                        // Calculate alpha based on layer depth
-                        const alpha = idx.mul(0.1).add(0.3)
-                        // Accumulate layers
-                        const layerContribution = layerColor.mul(alpha)
-                        finalColor.addAssign(layerContribution)
-                })
-                return finalColor
-        })
-        return generateParticleLayers(uv, iTime)
+        const circleRadius = iTime.sin().add(1).div(8).add(0.2)
+        const center = iMouse.div(4).add(0.5)
+        const distance = uv.distance(center)
+        // Calculate refraction effect
+        const refraction = distance.div(circleRadius).pow(6).mul(0.1)
+        const offset = center.sub(uv).normalize().mul(refraction)
+        const dispersion = offset.mul(0.1)
+        // Sample texture with chromatic aberration
+        const r = iTexture.texture(uv.add(offset).sub(dispersion)).r
+        const g = iTexture.texture(uv.add(offset)).g
+        const b = iTexture.texture(uv.add(offset).add(dispersion)).b
+        // Create smooth circle mask
+        const edge = fwidth(distance)
+        const alpha = circleRadius.sub(edge).smoothstep(circleRadius.add(edge), distance)
+        // Mix background and effect
+        const backgroundColor = iTexture.texture(uv)
+        return vec4(r, g, b, 1).mix(backgroundColor, alpha)
 }`}
 />
 
