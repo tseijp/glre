@@ -214,7 +214,7 @@ export const workgroupCount = (particles: number | number[], workgroupSize = 32)
         if (is.num(particles)) particles = [particles]
         const [x, y = 1, z = 1] = particles
         return {
-                x: (x * y * z) / workgroupSize,
+                x: Math.min((x * y * z) / workgroupSize, 65535),
                 y: 1,
                 z: 1,
         }

@@ -1,4 +1,4 @@
-import { Float, Fn, id, storage, uv, vec3, vec4, Vec2, UVec3, float } from 'glre/src/node'
+import { float, Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4 } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
 
 export default function GPGPUBasicApp() {
