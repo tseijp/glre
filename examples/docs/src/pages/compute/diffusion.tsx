@@ -1,50 +1,70 @@
 /**
  * ref: https://www.shadertoy.com/view/tsXGW4
  */
-import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, iMouse } from 'glre/src/node'
+import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, uniform, float, If, Return } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
+import { useDrag } from 'rege/react'
 
 export default function ReactionDiffusionApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]
         const particleCount = w * h
         const data = storage(vec2(), 'data')
-        const pos = (idx: Float) => vec2(idx.mod(w), idx.div(w).floor())
-        const cell = (uv: Vec2) => data.element(index(uv).toUInt())
-        const index = (uv: Vec2) => uv.y.mul(h).add(uv.x).mul(w)
+        const mousePos = uniform(vec2(-1, -1))
+        const isDragging = uniform(float(0))
+
+        const idx2uv = (idx: Float) => {
+                return vec2(idx.mod(w).div(w), idx.div(w).floor().div(h))
+        }
+
+        const uv2idx = (uv: Vec2, dx = 0, dy = 0) => {
+                return uv.y.mul(h).add(dy).floor().add(uv.x).mul(w).add(dx).floor()
+        }
+
+        const idx2cell = (idx: Float) => data.element(idx.toUInt())
+
+        const uv2cell = (uv: Vec2, dx = 0, dy = 0) => idx2cell(uv2idx(uv, dx, dy))
 
         const cs = Fn(([id]: [UVec3]) => {
                 const idx = id.x.toFloat().toVar('idx')
-                const s = vec2(1).div(vec2(w, h)).toVar('s')
-                const uv = pos(idx).mul(s).toVar('uv')
-                const conv = (dx: number, dy: number, c: number) => cell(vec2(dx, dy).mul(s).add(uv)).mul(c)
+                const uv = idx2uv(idx).toVar('uv')
+                If(isDragging.greaterThan(0), () => {
+                        const dist = uv.sub(mousePos).length().toVar()
+                        If(dist.lessThan(0.05), () => {
+                                data.element(id.x).assign(vec2(0, 1))
+                                Return()
+                        })
+                })
+                const conv = (dx: number, dy: number, c: number) => {
+                        return uv2cell(uv, dx, dy).mul(c)
+                }
                 // prettier-ignore
                 const L = conv(-1, -1,  0.05).add(conv(-1, 0, 0.2)).add(conv(-1, 1, 0.05))
                      .add(conv( 0, -1,  0.2)).add(conv( 0, 0,  -1)).add(conv( 0, 1, 0.2))
                      .add(conv( 1, -1, 0.05)).add(conv( 1, 0, 0.2)).add(conv( 1, 1, 0.05))
-                const current = cell(uv).toVar()
+                const current = idx2cell(id.x).toVar()
                 const diffusion = vec2(1, 0.5)
                 const feed = vec2(0.055, 0)
                 const kill = vec2(0, 0.055 + 0.062)
                 const AB2 = current.y.pow(2).mul(current.x)
                 const reaction = vec2(AB2.negate(), AB2)
-                const result = L.mul(diffusion)
+                let result = L.mul(diffusion)
                         .add(reaction)
                         .add(kill.oneMinus().mul(current))
                         .add(current.oneMinus().mul(feed))
                         .clamp(vec2(0, 0), vec2(1, 1))
+                        .toVar()
+
                 data.element(id.x).assign(result)
         })
 
-        // Fragment shader for visualization
         const fs = Fn(([uv]: [Vec2]) => {
-                const t = cell(uv)
+                const t = uv2cell(uv)
                 const dx = t.x.dFdx()
                 const dy = t.x.dFdy()
                 const dz = dx.pow(2).add(dy.pow(2)).oneMinus()
                 const n = vec3(dx, dy, dz)
-                const li = vec3(iMouse, 0.3).sub(vec3(uv, 0)).normalize()
-                const a = li.dot(n).clamp(0, 1)
-                return vec4(a, a.pow(2), 0.4, 1)
+                const li = mousePos.sub(uv)
+                return vec4(vec3(li, 1).normalize().dot(n).pow(2).toVec3(), 1)
         })
 
         const gl = useGL({
@@ -55,32 +75,21 @@ export default function ReactionDiffusionApp() {
                 mount() {
                         const initData = new Float32Array(particleCount * 2)
                         for (let i = 0; i < particleCount; i++) {
-                                const x = (i % w) / w
-                                const y = Math.floor(i / w) / h
-                                const box1 = boxJS(x, y, 0.5, 0.5, 0.5, 0.5, -4)
-                                const box2 = boxJS(x, y, 0.6, 0.3, 0.4, 0.5, -1)
-                                const box3 = boxJS(x, y, 0.4, 0.7, 0.5, 0.4, -2)
-                                const pattern = -box1 + box2 + box3
-                                initData[i * 2] = 1
-                                initData[i * 2 + 1] = pattern > 1 ? 1 : 0
+                                initData[i * 2] = 1 // A component (chemical A)
+                                initData[i * 2 + 1] = 0 // B component (chemical B) - start empty
                         }
                         gl.storage(data.props.id!, initData)
                 },
         })
 
-        const boxJS = (px: number, py: number, cx: number, cy: number, dx: number, dy: number, a: number) => {
-                const c = Math.cos(a)
-                const s = Math.sin(a)
-                const ex = (px - 0.5) * c + (py - 0.5) * -s + 0.5
-                const ey = (px - 0.5) * s + (py - 0.5) * c + 0.5
-                const hx = dx / 2
-                const hy = dy / 2
-                const stepX1 = ex >= cx - hx ? 1 : 0
-                const stepX2 = ex >= cx + hx ? 1 : 0
-                const stepY1 = ey >= cy - hy ? 1 : 0
-                const stepY2 = ey >= cy + hy ? 1 : 0
-                return stepX1 - stepX2 + (stepY1 - stepY2)
-        }
+        const drag = useDrag(() => {
+                mousePos.value = [drag.value[0] / w, drag.value[1] / h]
+                isDragging.value = drag.isDragging ? 1 : 0
+        })
 
-        return <canvas ref={gl.ref} />
+        return (
+                <div ref={drag.ref} style={{ position: 'fixed', cursor: 'crosshair' }}>
+                        <canvas ref={gl.ref} />
+                </div>
+        )
 }
