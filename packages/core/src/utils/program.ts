@@ -103,9 +103,9 @@ export const createStorage = (
         unit: number,
         array: Float32Array
 ) => {
-        const particles = width * height
-        const vectorSize = value.length / particles
-        for (let i = 0; i < particles; i++) {
+        const particleCount = width * height
+        const vectorSize = value.length / particleCount
+        for (let i = 0; i < particleCount; i++) {
                 for (let j = 0; j < Math.min(vectorSize, 4); j++) {
                         array[4 * i + j] = value[i * vectorSize + j] || 0
                 }
@@ -157,22 +157,22 @@ export const createAttachment = (
 /**
  * utils
  */
-export const storageSize = (particles: number | number[]) => {
-        if (is.num(particles)) {
-                const sqrt = Math.sqrt(particles)
+export const storageSize = (particleCount: number | number[] = 1024) => {
+        if (is.num(particleCount)) {
+                const sqrt = Math.sqrt(particleCount)
                 const size = Math.ceil(sqrt)
                 if (!Number.isInteger(sqrt)) {
                         console.warn(
-                                `GLRE Storage Warning: particles count (${particles}) is not a square. Using ${size}x${size} texture may waste GPU memory. Consider using [width, height] format for optimal storage.`
+                                `GLRE Storage Warning: particleCount (${particleCount}) is not a square. Using ${size}x${size} texture may waste GPU memory. Consider using [width, height] format for optimal storage.`
                         )
                 }
                 return { x: size, y: size }
         }
-        const [x, y, z] = particles
+        const [x, y, z] = particleCount
         if (z !== undefined) {
                 const yz = y * z
                 console.warn(
-                        `GLRE Storage Warning: 3D particles [${x}, ${y}, ${z}] specified but WebGL storage textures only support 2D. Flattening to 2D by multiplying height=${y} * depth=${z} = ${yz}.`
+                        `GLRE Storage Warning: 3D particleCount [${x}, ${y}, ${z}] specified but WebGL storage textures only support 2D. Flattening to 2D by multiplying height=${y} * depth=${z} = ${yz}.`
                 )
                 return { x, y: yz }
         }

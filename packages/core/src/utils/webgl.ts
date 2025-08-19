@@ -25,7 +25,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         const units = cached(() => activeUnit++)
         const cs = is.str(gl.cs) ? gl.cs : gl.cs!.compute({ isWebGL: true, gl, units })
         const pg = createProgram(c, cs, GLSL_VS, gl)!
-        const size = storageSize(gl.particles)
+        const size = storageSize(gl.particleCount)
 
         const uniforms = cached((key) => c.getUniformLocation(pg, key)!)
         const storages = cached((key) => {

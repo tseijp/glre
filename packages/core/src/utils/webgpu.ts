@@ -34,7 +34,7 @@ const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
                 flush = (pass) => {
                         pass.setPipeline(pipeline)
                         bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                        const { x, y, z } = workgroupCount(gl.particles)
+                        const { x, y, z } = workgroupCount(gl.particleCount)
                         pass.dispatchWorkgroups(x, y, z)
                         pass.end()
                 }

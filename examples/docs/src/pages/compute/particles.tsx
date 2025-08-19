@@ -1,7 +1,7 @@
 import { float, Fn, id, If, int, Loop, storage, uv, UVec3, Vec2, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
 
-const particles = 1024
+const particleCount = 1024
 
 export default function GPGPUParticlesApp() {
         const positions = storage(vec2(), 'positions')
@@ -38,7 +38,7 @@ export default function GPGPUParticlesApp() {
         })
 
         const gl = useGL({
-                particles,
+                particleCount,
                 isWebGL: false,
                 cs: compute(id),
                 fs: fragment(uv),
@@ -46,7 +46,7 @@ export default function GPGPUParticlesApp() {
                         const positions = [] as number[]
                         const velocities = [] as number[]
 
-                        for (let i = 0; i < particles; i++) {
+                        for (let i = 0; i < particleCount; i++) {
                                 positions[i * 2] = Math.random()
                                 positions[i * 2 + 1] = Math.random()
                                 velocities[i * 2] = (Math.random() - 0.5) * 0.5

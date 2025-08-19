@@ -55,7 +55,7 @@ export default function GPGPUDrawApp() {
         })
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount: [w, h],
                 isWebGL,
                 cs: cs(id),
                 fs: fs(uv),

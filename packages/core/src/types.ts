@@ -15,12 +15,12 @@ export type GL = EventState<{
         isGL: true
         width?: number
         height?: number
-        instanceCount: number
         size: [number, number]
         mouse: [number, number]
         count: number
+        instanceCount: number
+        particleCount: number | [number, number] | [number, number, number]
         loading: number
-        particles: number | [number, number] | [number, number, number]
         el: HTMLCanvasElement
         vs?: string | Vec4
         cs?: string | Void

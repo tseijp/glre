@@ -4,7 +4,7 @@ import { useDrag } from 'rege/react'
 
 export default function FluidSimulationApp() {
         const [w, h] = isServer() ? [256, 256] : [window.innerWidth, window.innerHeight]
-        const particles = w * h
+        const particleCount = w * h
         const velocity = storage(vec2(), 'velocity')
         const pressure = storage(float(), 'pressure')
         const mousePos = uniform(vec2(0, 0))
@@ -13,20 +13,20 @@ export default function FluidSimulationApp() {
         const forceRadius = uniform(float(0.1))
         const forceStrength = uniform(float(10))
 
-        const ind2uv = (idx: Float) => {
+        const idx2uv = (idx: Float) => {
                 return vec2(idx.mod(w).div(w), idx.div(w).floor().div(h))
         }
 
-        const uv2ind = (uv: Vec2, dx = 0, dy = 0) => {
+        const uv2idx = (uv: Vec2, dx = 0, dy = 0) => {
                 return uv.y.add(dy).mul(h).floor().add(uv.x).add(dx).mul(w).floor().toUInt()
         }
 
         const getVelocity = (uv: Vec2, dx = 0, dy = 0) => {
-                return velocity.element(uv2ind(uv, dx, dy)) as unknown as Vec2
+                return velocity.element(uv2idx(uv, dx, dy)) as unknown as Vec2
         }
 
         const getPressure = (uv: Vec2, dx = 0, dy = 0) => {
-                return pressure.element(uv2ind(uv, dx, dy))
+                return pressure.element(uv2idx(uv, dx, dy))
         }
 
         const fluid = Fn(([uv]: [Vec2]) => {
@@ -46,7 +46,7 @@ export default function FluidSimulationApp() {
 
         const cs = Fn(([id]: [UVec3]) => {
                 const idx = id.x.toFloat()
-                const uv = ind2uv(idx).toVar()
+                const uv = idx2uv(idx).toVar()
                 const prevVel = velocity.element(id.x) as unknown as Vec2
                 const prevPos = uv.sub(prevVel.mul(0.01))
                 const nextVel = getVelocity(prevPos, 0, 0).mul(0.99).toVar()
@@ -70,13 +70,13 @@ export default function FluidSimulationApp() {
         })
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount,
                 isWebGL: false,
                 cs: cs(id),
                 fs: fs(uv),
                 mount() {
-                        gl.storage(velocity.props.id!, new Float32Array(particles * 2).fill(0))
-                        gl.storage(pressure.props.id!, new Float32Array(particles).fill(0))
+                        gl.storage(velocity.props.id!, new Float32Array(particleCount * 2).fill(0))
+                        gl.storage(pressure.props.id!, new Float32Array(particleCount).fill(0))
                 },
         })
 

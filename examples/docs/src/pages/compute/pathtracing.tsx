@@ -293,7 +293,7 @@ export default function PathtracingApp() {
         let i = 0
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount: [w, h],
                 isWebGL: false,
                 cs: cs(id),
                 fs: fs(uv),

@@ -210,9 +210,9 @@ export const createDepthTexture = (device: GPUDevice, width: number, height: num
 /**
  * utils
  */
-export const workgroupCount = (particles: number | number[], workgroupSize = 32) => {
-        if (is.num(particles)) particles = [particles]
-        const [x, y = 1, z = 1] = particles
+export const workgroupCount = (particleCount: number | number[], workgroupSize = 32) => {
+        if (is.num(particleCount)) particleCount = [particleCount]
+        const [x, y = 1, z = 1] = particleCount
         return {
                 x: Math.min((x * y * z) / workgroupSize, 65535),
                 y: 1,

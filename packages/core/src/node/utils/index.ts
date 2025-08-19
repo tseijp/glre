@@ -72,11 +72,13 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'negate') return `(-${code(y, c)})`
                 if (x === 'reciprocal') return `(1.0 / ${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
-                if (x === 'dFdx') return `dpdx(${code(y, c)})`
-                if (x === 'dFdy') return `dpdy(${code(y, c)})`
                 if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
+                if (!c.isWebGL) {
+                        if (x === 'dFdx') return `dpdx(${code(y, c)})`
+                        if (x === 'dFdy') return `dpdy(${code(y, c)})`
+                }
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
         /**

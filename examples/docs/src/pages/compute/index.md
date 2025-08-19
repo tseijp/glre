@@ -6,6 +6,8 @@ tsl
 
 [draw](/compute/draw)
 
+[fluid](/compute/fluid)
+
 [particles](/compute/particles)
 
 [pathtracing](/compute/pathtracing)

@@ -6,7 +6,7 @@ import { useGL, isServer } from 'glre/src/react'
 
 export default function ReactionDiffusionApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]
-        const particles = w * h
+        const particleCount = w * h
         const data = storage(vec2(), 'data')
         const pos = (idx: Float) => vec2(idx.mod(w), idx.div(w).floor())
         const cell = (uv: Vec2) => data.element(index(uv).toUInt())
@@ -17,15 +17,10 @@ export default function ReactionDiffusionApp() {
                 const s = vec2(1).div(vec2(w, h)).toVar('s')
                 const uv = pos(idx).mul(s).toVar('uv')
                 const conv = (dx: number, dy: number, c: number) => cell(vec2(dx, dy).mul(s).add(uv)).mul(c)
-                const L = conv(-1, -1, 0.05)
-                        .add(conv(0, -1, 0.2))
-                        .add(conv(1, -1, 0.05))
-                        .add(conv(-1, 0, 0.2))
-                        .add(conv(0, 0, -1))
-                        .add(conv(1, 0, 0.2))
-                        .add(conv(-1, 1, 0.05))
-                        .add(conv(0, 1, 0.2))
-                        .add(conv(1, 1, 0.05))
+                // prettier-ignore
+                const L = conv(-1, -1,  0.05).add(conv(-1, 0, 0.2)).add(conv(-1, 1, 0.05))
+                     .add(conv( 0, -1,  0.2)).add(conv( 0, 0,  -1)).add(conv( 0, 1, 0.2))
+                     .add(conv( 1, -1, 0.05)).add(conv( 1, 0, 0.2)).add(conv( 1, 1, 0.05))
                 const current = cell(uv).toVar()
                 const diffusion = vec2(1, 0.5)
                 const feed = vec2(0.055, 0)
@@ -53,13 +48,13 @@ export default function ReactionDiffusionApp() {
         })
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount: [w, h],
                 isWebGL: false,
                 cs: cs(id),
                 fs: fs(uv),
                 mount() {
-                        const initData = new Float32Array(particles * 2)
-                        for (let i = 0; i < particles; i++) {
+                        const initData = new Float32Array(particleCount * 2)
+                        for (let i = 0; i < particleCount; i++) {
                                 const x = (i % w) / w
                                 const y = Math.floor(i / w) / h
                                 const box1 = boxJS(x, y, 0.5, 0.5, 0.5, 0.5, -4)

@@ -5,7 +5,7 @@ export default function GPGPUDrawApp() {
         const [w, h] = isServer() ? [1280, 800] : [window.innerWidth, window.innerHeight]
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount: [w, h],
                 isWebGL: true,
                 compute: /* c */ `
                 #version 300 es

@@ -3,7 +3,7 @@ import { useGL, isServer } from 'glre/src/react'
 
 export default function GPGPUBasicApp() {
         const [w, h] = isServer() ? [0, 0].fill(Math.pow(2, 8)) : [window.innerWidth, window.innerHeight]
-        const particles = w * h
+        const particleCount = w * h
 
         const data = storage(float(), 'data')
 
@@ -44,14 +44,14 @@ export default function GPGPUBasicApp() {
         })
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount: [w, h],
                 isWebGL: false,
                 cs: cs(id),
                 fs: fs(uv),
         })
 
-        const init = new Float32Array(particles)
-        for (let i = 0; i < particles; i++) init[i] = Math.random() < 0.1 ? 0 : 1
+        const init = new Float32Array(particleCount)
+        for (let i = 0; i < particleCount; i++) init[i] = Math.random() < 0.1 ? 0 : 1
         gl.storage(data.props.id!, init)
 
         return <canvas ref={gl.ref} />

@@ -246,7 +246,7 @@ export default function RaytracingApp() {
         })
 
         const gl = useGL({
-                particles: [w, h],
+                particleCount: [w, h],
                 isWebGL: false,
                 isDebug: true,
                 cs: cs(id),

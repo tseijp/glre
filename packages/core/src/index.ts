@@ -37,7 +37,7 @@ export const createGL = (props?: Partial<GL>) => {
                 mouse: [0, 0],
                 count: 6,
                 instanceCount: 1,
-                particles: 1024,
+                particleCount: 1024,
                 webgl: {},
                 webgpu: {},
                 loading: 0,
