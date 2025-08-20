@@ -1,4 +1,4 @@
-import { position, Fn, iResolution, mat3, uniform, uv, vec2, vec3, vec4 } from 'glre/src/node'
+import { Fn, iResolution, mat3, uniform, uv, vec2, vec3, vec4 } from 'glre/src/node'
 import { createGL } from 'glre/src'
 import { useEffect, useRef } from 'react'
 
