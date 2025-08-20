@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage, getStride, WGSL_FS, WGSL_VS } from './helpers'
+import { is, getStride, WGSL_FS, WGSL_VS, loadingTexture } from './helpers'
 import {
         createArrayBuffer,
         createBindGroup,
@@ -105,10 +105,18 @@ export const webgpu = async (gl: GL) => {
         }
 
         const _texture = (key: string, src: string) => {
-                loadingImage(gl, src, (source) => {
-                        const { width, height } = source
+                gl.loading++
+                loadingTexture(src, (source, isVideo) => {
+                        const [width, height] = isVideo
+                                ? [source.videoWidth, source.videoHeight]
+                                : [source.width, source.height]
                         const { texture } = textures(key, width, height)
-                        device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
+                        const loop = () => {
+                                device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
+                        }
+                        loop()
+                        if (isVideo) gl({ loop })
+                        gl.loading--
                 })
         }
 

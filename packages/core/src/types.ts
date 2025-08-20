@@ -58,9 +58,9 @@ export type GL = EventState<{
         _uniform?(key: string, value: Uniform, isMatrix?: boolean): GL
         uniform(key: string, value: Uniform, isMatrix?: boolean): GL
         uniform(target: { [key: string]: Uniform }): GL
-        _texture?(key: string, value: string): GL
-        texture(key: string, value: string): GL
-        texture(target: { [key: string]: string }): GL
+        _texture?(key: string, value: Texture): GL
+        texture(key: string, value: Texture): GL
+        texture(target: { [key: string]: Texture }): GL
         _attribute?(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(key: string, value: Attribute, iboValue?: Attribute): GL
         attribute(target: { [key: string]: Attribute }): GL
@@ -73,6 +73,7 @@ export type GL = EventState<{
 }>
 
 type Uniform = number | number[] | Float32Array
+type Texture = string | HTMLImageElement | HTMLVideoElement
 type Attribute = number[] | Float32Array
 type Storage = number[] | Float32Array
 

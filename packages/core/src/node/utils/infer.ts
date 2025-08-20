@@ -1,4 +1,4 @@
-import { isConstants, isX, isSwizzle } from './utils'
+import { isConstants, isElement, isX, isSwizzle } from './utils'
 import {
         BUILTIN_TYPES,
         COMPONENT_COUNT_TO_TYPE,
@@ -24,6 +24,7 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
         if (is.str(x)) return 'texture' as T
         if (is.num(x)) return 'float' as T // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
         if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        if (isElement(x)) return 'texture' as T
         return 'void' as T
 }
 

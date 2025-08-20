@@ -1,5 +1,5 @@
 import { nested as cached } from 'reev'
-import { is, loadingImage, getStride, GLSL_VS, GLSL_FS } from './helpers'
+import { is, getStride, GLSL_VS, GLSL_FS, loadingTexture } from './helpers'
 import {
         createArrayBuffer,
         cleanStorage,
@@ -105,9 +105,13 @@ export const webgl = async (gl: GL) => {
         }
 
         const _texture = (key: string, src: string) => {
+                gl.loading++
                 c.useProgram(pg)
-                loadingImage(gl, src, (source) => {
-                        createTexture(c, source, uniforms(key)!, units(key))
+                loadingTexture(src, (source, isVideo) => {
+                        const unit = units(key)
+                        const loop = createTexture(c, source, uniforms(key)!, unit, isVideo)
+                        if (loop) gl({ loop })
+                        gl.loading--
                 })
         }
 

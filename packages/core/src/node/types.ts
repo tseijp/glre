@@ -224,7 +224,7 @@ type XImpl<T extends C> = _X<T> & {
 type C = Constants
 
 export type X<T extends C = C> = T extends keyof ConstantsToType ? ConstantsToType[T] : _X<T>
-export type Y<T extends C = C> = number | number[] | string | boolean | undefined | X<T>
+export type Y<T extends C = C> = number | number[] | string | boolean | undefined | HTMLElement | X<T>
 
 type Methods =
         | Functions

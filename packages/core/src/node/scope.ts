@@ -1,4 +1,3 @@
-import { getId } from './utils'
 import { conversion, create } from './create'
 import type {
         FnLayout,
@@ -12,6 +11,7 @@ import type {
         X,
         Y,
 } from './types'
+import { getId } from './utils'
 
 let scope: X | null = null
 let define: X | null = null
@@ -122,8 +122,9 @@ export const Switch = (x: Y) => {
 }
 
 export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: Args) => T, layout?: FnLayout) {
+        const defaultId = getId()
         const ret = (...args: any[]) => {
-                const id = layout?.name || getId()
+                const id = layout?.name || defaultId
                 const paramVars: X[] = []
                 const paramDefs: NodeProps[] = []
                 for (let i = 0; i < args.length; i++) {
