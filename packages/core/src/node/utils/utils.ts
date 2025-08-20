@@ -8,17 +8,7 @@ import {
         WGSL_TO_GLSL_BUILTIN,
 } from './const'
 import { is } from '../../utils/helpers'
-import type {
-        Constants as C,
-        Conversions,
-        Functions,
-        NodeContext,
-        NodeTypes,
-        Operators,
-        Swizzles,
-        X,
-        Y,
-} from '../types'
+import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, X, Y } from '../types'
 import { storageSize } from '../../utils/program'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
@@ -31,6 +21,11 @@ export const isOperator = (key: unknown): key is Operators => {
 
 export const isFunction = (key: unknown): key is Functions => {
         return FUNCTIONS.includes(key as Functions)
+}
+
+export const isElement = (x: unknown): x is Element => {
+        if (is.obj(x)) return false
+        return x instanceof Element
 }
 
 export const isConversion = (key: unknown): key is Conversions => {

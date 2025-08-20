@@ -69,7 +69,7 @@ export function loadingTexture(src: string, fun: (source: HTMLVideoElement, isVi
 export function loadingTexture(src: string, fun: (source: HTMLImageElement, isVideo: false) => void): void
 
 export function loadingTexture(src: string | HTMLImageElement | HTMLVideoElement, fun: Function) {
-        if (!is.str(src)) return fun(src)
+        if (!is.str(src)) return fun(src, src instanceof HTMLVideoElement)
         const isVideo = /\.(mp4|webm|ogg|avi|mov)$/i.test(src)
         const loader = isVideo ? loadingVideo : loadingImage
         loader(src, (el: HTMLImageElement | HTMLVideoElement) => {
