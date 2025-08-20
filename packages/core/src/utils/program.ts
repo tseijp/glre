@@ -67,14 +67,15 @@ export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocati
 
 export const createTexture = (
         c: WebGL2RenderingContext,
-        img: HTMLImageElement,
+        el: HTMLImageElement | HTMLVideoElement,
         loc: WebGLUniformLocation,
-        unit: number
+        unit: number,
+        isVideo = false
 ) => {
         const texture = c.createTexture()
         c.bindTexture(c.TEXTURE_2D, texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img)
-        c.generateMipmap(c.TEXTURE_2D)
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+        if (!isVideo) c.generateMipmap(c.TEXTURE_2D)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
@@ -83,6 +84,12 @@ export const createTexture = (
         c.uniform1i(loc, unit)
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, texture)
+        if (isVideo)
+                return () => {
+                        c.activeTexture(c.TEXTURE0 + unit)
+                        c.bindTexture(c.TEXTURE_2D, texture)
+                        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                }
 }
 
 /**

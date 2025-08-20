@@ -1,5 +1,3 @@
-import type { GL } from './../types'
-
 export const is = {
         arr: Array.isArray,
         bol: (a: unknown): a is boolean => typeof a === 'boolean',
@@ -49,16 +47,35 @@ export const isFloat32 = (value: unknown): value is Float32Array => {
         return value instanceof Float32Array
 }
 
-export const loadingImage = (gl: GL, src: string, fun: (source: HTMLImageElement) => void) => {
-        gl.loading++
+const loadingImage = (src: string, fun: (source: HTMLImageElement) => void) => {
         const source = new Image()
         Object.assign(source, { src, crossOrigin: 'anonymous' })
-        source.decode().then(() => {
-                fun(source)
-                gl.loading--
-        })
+        source.decode().then(() => fun(source))
 }
 
+const loadingVideo = (src: string, fun: (source: HTMLVideoElement) => void) => {
+        const source = document.createElement('video')
+        source.crossOrigin = 'anonymous'
+        source.muted = true
+        source.loop = true
+        source.src = src
+        source.load()
+        source.play()
+        source.addEventListener('canplay', fun.bind(null, source), { once: true })
+}
+
+export function loadingTexture(src: string, fun: (source: HTMLVideoElement, isVideo: true) => void): void
+
+export function loadingTexture(src: string, fun: (source: HTMLImageElement, isVideo: false) => void): void
+
+export function loadingTexture(src: string | HTMLImageElement | HTMLVideoElement, fun: Function) {
+        if (!is.str(src)) return fun(src)
+        const isVideo = /\.(mp4|webm|ogg|avi|mov)$/i.test(src)
+        const loader = isVideo ? loadingVideo : loadingImage
+        loader(src, (el: HTMLImageElement | HTMLVideoElement) => {
+                fun(el as HTMLVideoElement, isVideo)
+        })
+}
 const isValidStride = (stride: number) => [1, 2, 3, 4, 9, 16].includes(stride)
 
 const calcStride = (arrayLength: number, count = 3) => {
