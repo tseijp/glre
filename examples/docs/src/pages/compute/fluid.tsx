@@ -18,7 +18,9 @@ export default function FluidSimulationApp() {
         }
 
         const uv2idx = (uv: Vec2, dx = 0, dy = 0) => {
-                return uv.y.mul(h).add(dy).floor().add(uv.x).mul(w).add(dx).floor().toUInt()
+                const x = uv.x.mul(w).add(dx).clamp(0, w).floor()
+                const y = uv.y.mul(h).add(dy).clamp(0, h).floor()
+                return y.mul(w).add(x).toUInt()
         }
 
         const getVelocity = (uv: Vec2, dx = 0, dy = 0) => {

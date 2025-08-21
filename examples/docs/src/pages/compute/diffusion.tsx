@@ -17,7 +17,9 @@ export default function ReactionDiffusionApp() {
         }
 
         const uv2idx = (uv: Vec2, dx = 0, dy = 0) => {
-                return uv.y.mul(h).add(dy).floor().add(uv.x).mul(w).add(dx).floor()
+                const x = uv.x.mul(w).add(dx).floor()
+                const y = uv.y.mul(h).add(dy).floor()
+                return y.mul(w).add(x)
         }
 
         const idx2cell = (idx: Float) => data.element(idx.toUInt())
