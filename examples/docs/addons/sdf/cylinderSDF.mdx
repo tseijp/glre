@@ -1,0 +1,76 @@
+---
+title: 'cylinderSDF'
+description: 'Cylindrical signed distance field with multiple parameter configurations'
+keywords: [SDF, cylinder, 3D, geometry, capsule, tube]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cylinderSDF: Cylindrical Distance Field Variations
+
+### Versatile Tube Geometry with Multiple Parameterization Methods
+
+The `cylinderSDF` function family generates signed distance fields for cylindrical geometries with various parameterization options. These functions support standard cylinders, uniform height cylinders, height-radius specification, and arbitrary orientation with caps.
+
+## Mathematical Foundation
+
+The basic cylinder distance function operates on radial and axial components:
+
+$$
+d_{\text{cylinder}} = \min(\max(d_x, d_y), 0) + |\max(\vec{d}, 0)|
+$$
+
+where $\vec{d} = |\vec{q}| - \vec{h}$ and $\vec{q} = (|\vec{p}_{xz}|, p_y)$ represents the radial-axial projection.
+
+For arbitrary orientation cylinders with caps, the distance involves projection calculations:
+
+$$
+x = |\vec{pa} \cdot ba_{ba} - \vec{ba} \cdot pa_{ba}| - r \cdot ba_{ba}
+$$
+
+$$
+y = |pa_{ba} - \frac{ba_{ba}}{2}| - \frac{ba_{ba}}{2}
+$$
+
+## Function Variants
+
+| Function                  | Parameters         | Description                              |
+| ------------------------- | ------------------ | ---------------------------------------- |
+| `cylinderSDF`             | `p`, `h`           | Vector height parameter (radius, height) |
+| `cylinderSDFHeight`       | `p`, `h`           | Uniform radius with height specification |
+| `cylinderSDFHeightRadius` | `p`, `h`, `r`      | Explicit height and radius parameters    |
+| `cylinderSDFCaps`         | `p`, `a`, `b`, `r` | Arbitrary orientation with endpoint caps |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [1.5, 0.8]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = cylinderSDFHeightRadius(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = cylinderSDFHeightRadius(p.add(eps.xyy), ...args).sub(d)
+                                const dy = cylinderSDFHeightRadius(p.add(eps.yxy), ...args).sub(d)
+                                const dz = cylinderSDFHeightRadius(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(cylinderSDFHeightRadius(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

@@ -15,7 +15,6 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
         const get = (_: unknown, key: string | Symbol) => {
                 if (key === 'type') return type
                 if (key === 'props') return props
-                if (key === '__nodeType') return undefined // Will be inferred by TypeScript
                 if (key === 'toVar') return toVar.bind(null, x)
                 if (key === 'isProxy') return true
                 if (key === 'toString') return code.bind(null, x)
