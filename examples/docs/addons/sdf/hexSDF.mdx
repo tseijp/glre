@@ -1,0 +1,49 @@
+---
+title: 'hexSDF'
+description: '2D hexagonal signed distance field for regular six-sided shapes'
+keywords: [SDF, hexagon, 2D, geometry, regular, polygon]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hexSDF: Regular Hexagon Distance Field
+
+### Six-Sided Polygon Geometry in Two Dimensions
+
+The `hexSDF` function generates a signed distance field for a regular hexagon. This function transforms input coordinates to a normalized space and computes distance using hexagonal symmetry properties.
+
+## Mathematical Foundation
+
+The hexagon distance field utilizes geometric symmetry principles:
+
+$$
+d_{\text{hex}} = \max(|y|, \frac{\sqrt{3}}{2} x + \frac{1}{2} y)
+$$
+
+where the input coordinates are first normalized to the range $[-1, 1]$ and then made absolute to exploit the hexagon's symmetry.
+
+The coefficient $\frac{\sqrt{3}}{2} \approx 0.866025$ represents the geometric relationship in a regular hexagon where:
+
+- The angle between adjacent sides is $120°$
+- The slope of hexagon edges creates this specific ratio
+
+## Function Signature
+
+| Parameter | Type   | Description                                       |
+| --------- | ------ | ------------------------------------------------- |
+| `st`      | `vec2` | 2D coordinate position (typically UV coordinates) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pos = uv.sub(0.5).mul(2)
+        const dist = hexSDF(pos.add(0.5))
+        const inside = step(dist, 1)
+        const edge = smoothstep(0.05, 0, dist.sub(1).abs())
+        const color = inside.mul(0.8).add(edge.mul(0.6))
+        return vec4(color.mul(vec3(0.3, 0.7, 1)), 1)
+}`}
+/>
