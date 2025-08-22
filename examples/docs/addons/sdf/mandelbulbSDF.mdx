@@ -1,0 +1,87 @@
+---
+title: 'mandelbulbSDF'
+description: 'Three-dimensional Mandelbrot fractal distance field with iteration-based computation'
+keywords: [SDF, mandelbulb, fractal, 3D, iteration, complex]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# mandelbulbSDF: Three-Dimensional Mandelbrot Fractal
+
+### Iterative Fractal Geometry in Distance Field Space
+
+The `mandelbulbSDF` function generates a signed distance field for the Mandelbulb fractal, a three-dimensional extension of the classic Mandelbrot set. This function returns both distance information and iteration count, enabling complex fractal visualization with detailed surface properties.
+
+## Mathematical Foundation
+
+The Mandelbulb extends the Mandelbrot iteration formula to three dimensions using spherical coordinates:
+
+$$
+z_{n+1} = z_n^n + c
+$$
+
+where $z_n^n$ is computed in spherical coordinates $(r, \phi, \theta)$:
+
+$$
+\begin{align}
+x_{new} &= r^n \sin(n\phi) \cos(n\theta) \\
+y_{new} &= r^n \sin(n\phi) \sin(n\theta) \\
+z_{new} &= r^n \cos(n\phi)
+\end{align}
+$$
+
+The distance estimation uses the derivative method:
+
+$$
+d = \frac{1}{4} \log(|z_n|) \frac{\sqrt{|z_n|}}{|z_n'|}
+$$
+
+## Function Parameters
+
+| Parameter | Type   | Description                       |
+| --------- | ------ | --------------------------------- |
+| `st`      | `vec3` | Sample point position in 3D space |
+
+## Return Value
+
+| Component | Type    | Description                          |
+| --------- | ------- | ------------------------------------ |
+| `.x`      | `float` | Distance estimate to fractal surface |
+| `.y`      | `float` | Number of iterations performed       |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(3)
+        const eps = vec3(0.001, 0, 0)
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const result = mandelbulbSDF(p).toVar()
+                const d = result.x.toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = mandelbulbSDF(p.add(eps.xyy)).x.sub(d)
+                                const dy = mandelbulbSDF(p.add(eps.yxy)).x.sub(d)
+                                const dz = mandelbulbSDF(p.add(eps.yyx)).x.sub(d)
+                                const normal = vec3(dx, dy, dz).normalize()
+                                const iterations = result.y.div(20)
+                                return vec4(normal.mul(0.5).add(0.5).mul(iterations.add(0.3)), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        result.assign(mandelbulbSDF(p))
+                        d.assign(result.x)
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 1.5)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
