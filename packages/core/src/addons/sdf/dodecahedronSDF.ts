@@ -1,4 +1,4 @@
-import { Fn, Vec3, Float, vec3, float } from '../../node'
+import { Fn, Vec3, Float, vec3 } from '../../node'
 
 const PHI = 1.618033988749894848204586834
 

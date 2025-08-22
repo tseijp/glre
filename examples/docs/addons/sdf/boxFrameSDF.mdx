@@ -42,20 +42,6 @@ The transformation $\vec{q} = ||\vec{p} + e|| - e$ creates the interior cutout w
 <FragmentEditor
         code={`
 const fragment = () => {
-        const pos = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), 0)
-        const size = vec3(1.5, 1, 0.5)
-        const thickness = 0.2
-        const dist = boxFrameSDF(pos, size, thickness)
-        const inside = step(dist, 0)
-        const edge = smoothstep(0.02, 0, dist.abs())
-        const color = inside.mul(0.7).add(edge.mul(0.5))
-        return vec4(vec3(color), 1)
-}`}
-/>
-
-<FragmentEditor
-        code={`
-const fragment = () => {
         const up = vec3(0, 1, 0)
         const eye = vec3(5)
         const eps = vec3(0.01, 0, 0)
