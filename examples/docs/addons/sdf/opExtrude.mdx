@@ -44,30 +44,30 @@ const fragment = () => {
         const args = [1.2]
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
-                const d2d = circleSDF(vec2(p.x, p.y), 0.8).min(
+                const d2d = circleSDF(p, vec2(0.8)).min(
                         rectSDF(vec2(p.x.add(0.3), p.y), vec2(0.3, 0.6))
-                ).max(circleSDF(vec2(p.x.sub(0.2), p.y.add(0.1)), 0.25).negate())
+                ).max(circleSDF(vec2(p.x.sub(0.2), p.y.add(0.1)), vec2(0.25)).negate())
                 const d = opExtrude(p, d2d, ...args).toVar()
                 Loop(16, ({ i }) => {
                         If(d.lessThanEqual(eps.x), () => {
-                                const dx2d = circleSDF(vec2(p.add(eps.xyy).x, p.add(eps.xyy).y), 0.8).min(
-                                        rectSDF(vec2(p.add(eps.xyy).x.add(0.3), p.add(eps.xyy).y), vec2(0.3, 0.6))
-                                ).max(circleSDF(vec2(p.add(eps.xyy).x.sub(0.2), p.add(eps.xyy).y.add(0.1)), 0.25).negate())
-                                const dy2d = circleSDF(vec2(p.add(eps.yxy).x, p.add(eps.yxy).y), 0.8).min(
-                                        rectSDF(vec2(p.add(eps.yxy).x.add(0.3), p.add(eps.yxy).y), vec2(0.3, 0.6))
-                                ).max(circleSDF(vec2(p.add(eps.yxy).x.sub(0.2), p.add(eps.yxy).y.add(0.1)), 0.25).negate())
-                                const dz2d = circleSDF(vec2(p.add(eps.yyx).x, p.add(eps.yyx).y), 0.8).min(
-                                        rectSDF(vec2(p.add(eps.yyx).x.add(0.3), p.add(eps.yyx).y), vec2(0.3, 0.6))
-                                ).max(circleSDF(vec2(p.add(eps.yyx).x.sub(0.2), p.add(eps.yyx).y.add(0.1)), 0.25).negate())
+                                const dx2d = circleSDF(vec2(p.add(eps.xyy).x, p.add(eps.xyy).y), vec2(0.8)).min(
+                                               rectSDF(vec2(p.add(eps.xyy).x.add(0.3), p.add(eps.xyy).y), vec2(0.3, 0.6))
+                                       ).max(circleSDF(vec2(p.add(eps.xyy).x.sub(0.2), p.add(eps.xyy).y.add(0.1)), vec2(0.25)).negate())
+                                const dy2d = circleSDF(vec2(p.add(eps.yxy).x, p.add(eps.yxy).y), vec2(0.8)).min(
+                                               rectSDF(vec2(p.add(eps.yxy).x.add(0.3), p.add(eps.yxy).y), vec2(0.3, 0.6))
+                                       ).max(circleSDF(vec2(p.add(eps.yxy).x.sub(0.2), p.add(eps.yxy).y.add(0.1)), vec2(0.25)).negate())
+                                const dz2d = circleSDF(vec2(p.add(eps.yyx).x, p.add(eps.yyx).y), vec2(0.8)).min(
+                                               rectSDF(vec2(p.add(eps.yyx).x.add(0.3), p.add(eps.yyx).y), vec2(0.3, 0.6))
+                                       ).max(circleSDF(vec2(p.add(eps.yyx).x.sub(0.2), p.add(eps.yyx).y.add(0.1)), vec2(0.25)).negate())
                                 const dx = opExtrude(p.add(eps.xyy), dx2d, ...args).sub(d)
                                 const dy = opExtrude(p.add(eps.yxy), dy2d, ...args).sub(d)
                                 const dz = opExtrude(p.add(eps.yyx), dz2d, ...args).sub(d)
                                 return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
                         })
                         p.assign(p.add(d.mul(dir)))
-                        const d2dNew = circleSDF(vec2(p.x, p.y), 0.8).min(
+                        const d2dNew = circleSDF(p, vec2(0.8)).min(
                                 rectSDF(vec2(p.x.add(0.3), p.y), vec2(0.3, 0.6))
-                        ).max(circleSDF(vec2(p.x.sub(0.2), p.y.add(0.1)), 0.25).negate())
+                        ).max(circleSDF(vec2(p.x.sub(0.2), p.y.add(0.1)), vec2(0.25)).negate())
                         d.assign(opExtrude(p, d2dNew, ...args))
                 })
                 return vec4(0)
