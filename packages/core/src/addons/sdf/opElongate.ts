@@ -1,4 +1,4 @@
-import { Fn, Vec2, Vec3, Vec4, vec3, vec4 } from '../../node'
+import { Fn, Vec2, Vec3, Vec4, vec4 } from '../../node'
 
 export const opElongateVec2 = Fn(([p, h]: [Vec2, Vec2]): Vec2 => {
         return p.sub(p.clamp(h.negate(), h))
@@ -24,10 +24,7 @@ export const opElongateVec3 = Fn(([p, h]: [Vec3, Vec3]): Vec3 => {
 
 export const opElongateVec4 = Fn(([p, h]: [Vec4, Vec4]): Vec4 => {
         const q = p.abs().sub(h).toVar('q')
-        return vec4(
-                vec3(q.x, q.y, q.z).max(0),
-                q.x.max(q.y.max(q.z)).min(0)
-        )
+        return vec4(q.max(0), q.x.max(q.y.max(q.z)).min(0))
 }).setLayout({
         name: 'opElongateVec4',
         type: 'vec4',
