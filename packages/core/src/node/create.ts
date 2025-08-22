@@ -2,7 +2,7 @@ import { compute, fragment, vertex } from './build'
 import { addToScope, assign, toVar } from './scope'
 import { code, getConstant, isConversion, isFunction, isOperator, getId, isArrayAccess } from './utils'
 import { is } from '../utils/helpers'
-import type { Constants as C, Functions, NodeProps, NodeTypes, Operators, X, Y } from './types'
+import type { Bool, Constants as C, Functions, NodeProps, NodeTypes, Operators, X, Y } from './types'
 
 const toPrimitive = (x: Y, hint: string) => {
         if (hint === 'string') return code(x as any, null)
@@ -69,7 +69,7 @@ export const member = <T extends C>(x: X, index: Y) => create<T>('member', null,
 export const element = <T extends C>(x: X, index: Y) => create<T>('element', null, x, index)
 export const gather = <T extends C>(x: X, index: Y) => create<T>('gather', null, x, index)
 export const scatter = <T extends C>(x: X, index: Y) => create<T>('scatter', null, x, index)
-export const select = <T extends C>(x: Y, y: Y, z: Y) => create<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
+export const select = <T extends C>(x: Y<T>, y: Y<T>, z: Bool) => create<T>('ternary', null, x, y, z) // z ? x : y @TODO REMOVE
 export const operator = <T extends C>(key: Operators, ...x: Y[]) => create<T>('operator', null, key, ...x)
 export const function_ = <T extends C>(key: Functions, ...x: Y[]) => create<T>('function', null, key, ...x)
 export const conversion = <T extends C>(key: T, ...x: Y[]) => create<T>('conversion', null, key, ...x)

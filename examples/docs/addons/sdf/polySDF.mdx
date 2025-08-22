@@ -42,7 +42,7 @@ The floor operation discretizes the angle into $V$ equal segments, creating the 
         code={`
 const fragment = () => Scope(() => {
         const center = vec2(0.5)
-        const minDist = float(1000).toVar()
+        const minDist = float(1).toVar()
         Loop(4, ({ i }) => {
                 const sides = i.add(3)
                 const offset = vec2(

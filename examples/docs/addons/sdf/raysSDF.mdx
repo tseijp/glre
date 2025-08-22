@@ -1,0 +1,69 @@
+---
+title: 'raysSDF'
+description: 'Radial ray pattern generator for creating star and spoke designs'
+keywords: [SDF, rays, radial, pattern, star, spoke, polar]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# raysSDF: Radial Ray Pattern Generator
+
+### Angular Division Pattern for Spoke and Star Designs
+
+The `raysSDF` function creates radial ray patterns by dividing polar coordinates into equal angular segments. This primitive generates spoke-like patterns radiating from a center point, useful for creating star bursts, wheel spokes, and radial navigation interfaces.
+
+## Mathematical Foundation
+
+The ray pattern is generated through polar coordinate transformation and angular division:
+
+$$
+\theta = \text{atan2}(p_y - 0.5, p_x - 0.5)
+$$
+
+The normalized angle is divided by the number of rays and fractional part extracted:
+
+$$
+\text{rays} = \text{fract}\left(\frac{\theta}{2\pi} \times N\right)
+$$
+
+where $N$ is the number of rays and the result creates repeating angular segments from 0 to 1.
+
+## Function Signature
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `st` | `vec2` | Input texture coordinates (0-1 range) |
+| `N` | `int` | Number of rays to generate |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const rays8 = raysSDF(uv, 8)
+        const pattern = step(0.6, rays8)
+        const gradient = rays8.mul(0.8).add(0.2)
+        const color = pattern.mul(gradient)
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+<FragmentEditor
+code={`
+const fragment = () => Scope(() => {
+        const center = vec2(0.5)
+        const dist = uv.sub(center).length()
+        const fadeOut = smoothstep(0.5, 0.3, dist)
+        const minBrightness = float(0).toVar()
+        Loop(4, ({ i }) => {
+                const rayCount = i.add(4).mul(2)
+                const rayPattern = raysSDF(uv, rayCount)
+                const threshold = i.toFloat().mul(0.15).add(0.4)
+                const rays = step(threshold, rayPattern).mul(fadeOut)
+                minBrightness.assign(minBrightness.max(rays.mul(i.add(1).toFloat().div(8))))
+        })
+        const hue = raysSDF(uv, 16).mul(0.3).add(0.1)
+        return vec4(minBrightness.mul(vec3(1, hue, 0.8)), 1)
+})`}
+/>
