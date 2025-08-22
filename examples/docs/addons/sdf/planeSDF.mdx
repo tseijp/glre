@@ -47,11 +47,12 @@ const fragment = () => {
         const sceneMap = Fn(([p]: [Vec3]) => {
                 const ground = planeSDF(p.add(vec3(0, 2, 0)))
                 const cube = cubeSDF(p, 1)
+                return ground.min(cube)
         })
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const d = sceneMap(p).toVar()
-                Loop(16, ({ i }) => {
+                Loop(64, ({ i }) => {
                         If(d.lessThanEqual(eps.x), () => {
                                 const dx = sceneMap(p.add(eps.xyy)).sub(d)
                                 const dy = sceneMap(p.add(eps.yxy)).sub(d)

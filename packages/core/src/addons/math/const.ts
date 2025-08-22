@@ -1,12 +1,12 @@
-import { float } from "../../node"
+import { float } from '../../node'
 
 // Mathematical constants as float nodes
 export const EIGHTH_PI = float(0.39269908169)
 export const QTR_PI = float(0.78539816339)
 export const HALF_PI = float(1.5707963267948966192313216916398)
 export const PI = float(3.1415926535897932384626433832795)
-export const TWO_PI = float(6.2831853071795864769252867665590)
-export const TAU = float(6.2831853071795864769252867665590)
+export const TWO_PI = float(6.283185307179586476925286766559)
+export const TAU = float(6.283185307179586476925286766559)
 export const INV_PI = float(0.31830988618379067153776752674503)
 export const INV_SQRT_TAU = float(0.39894228040143267793994605993439)
 export const SQRT_HALF_PI = float(1.25331413732)
