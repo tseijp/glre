@@ -42,8 +42,8 @@ const fragment = () => {
         const eye = vec3(4)
         const eps = vec3(0.01, 0, 0)
         const sdf = Fn(([p]: [Vec3]) => {
-                const sphere = sphereSDFRadius(p, 1.2)
-                const box = cubeSDF(p, 0.8)
+                const sphere = sphereSDFRadius(p, 1)
+                const box = cubeSDF(p, 0.25)
                 return opExtrude(p, sphere, box)
         })
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {

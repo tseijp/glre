@@ -22,6 +22,7 @@ $$
 $$
 
 where:
+
 - $d$ is the input distance from the base SDF function
 - $h$ is the shell thickness parameter
 
@@ -29,18 +30,18 @@ This transformation creates a shell around the zero isosurface of the original s
 
 ## Function Signature
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `d` | `float` | Input distance from base SDF |
-| `h` | `float` | Shell thickness (half-thickness) |
+| Parameter | Type    | Description                      |
+| --------- | ------- | -------------------------------- |
+| `d`       | `float` | Input distance from base SDF     |
+| `h`       | `float` | Shell thickness (half-thickness) |
 
 ## Implementation Demonstration
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(4)
+        const eye = vec3(5)
         const eps = vec3(0.01, 0, 0)
         const sdf = Fn(([p]: [Vec3]) => {
                 const sphere = sphereSDF(p)
