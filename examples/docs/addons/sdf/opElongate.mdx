@@ -45,12 +45,11 @@ $$
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(4)
+        const eye = vec3(5)
         const eps = vec3(0.01, 0, 0)
         const sdf = Fn(([p]: [Vec3]) => {
                 const elongatedPos = opElongateVec3(p, vec3(1.5, 0.3, 0.8))
-                const box = cubeSDF(p, 0.6)
-                return box
+                return cubeSDF(p, 0.6)
         })
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
