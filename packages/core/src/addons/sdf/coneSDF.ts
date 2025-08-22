@@ -10,8 +10,8 @@ export const coneSDF = Fn(([p, c]: [Vec3, Vec3]): Float => {
         type: 'float',
         inputs: [
                 { name: 'p', type: 'vec3' },
-                { name: 'c', type: 'vec3' }
-        ]
+                { name: 'c', type: 'vec3' },
+        ],
 })
 
 export const coneSDFVec2Height = Fn(([p, c, h]: [Vec3, Vec2, Float]): Float => {
@@ -21,7 +21,10 @@ export const coneSDFVec2Height = Fn(([p, c, h]: [Vec3, Vec2, Float]): Float => {
         const b = w.sub(q.mul(vec2(w.x.div(q.x).clamp(0, 1), 1))).toVar('b')
         const k = q.y.sign().toVar('k')
         const d = a.dot(a).min(b.dot(b)).toVar('d')
-        const s = k.mul(w.x.mul(q.y).sub(w.y.mul(q.x))).max(k.mul(w.y.sub(q.y))).toVar('s')
+        const s = k
+                .mul(w.x.mul(q.y).sub(w.y.mul(q.x)))
+                .max(k.mul(w.y.sub(q.y)))
+                .toVar('s')
         return d.sqrt().mul(s.sign())
 }).setLayout({
         name: 'coneSDFVec2Height',
@@ -29,8 +32,8 @@ export const coneSDFVec2Height = Fn(([p, c, h]: [Vec3, Vec2, Float]): Float => {
         inputs: [
                 { name: 'p', type: 'vec3' },
                 { name: 'c', type: 'vec2' },
-                { name: 'h', type: 'float' }
-        ]
+                { name: 'h', type: 'float' },
+        ],
 })
 
 export const coneSDFRadii = Fn(([p, r1, r2, h]: [Vec3, Float, Float, Float]): Float => {
@@ -52,6 +55,6 @@ export const coneSDFRadii = Fn(([p, r1, r2, h]: [Vec3, Float, Float, Float]): Fl
                 { name: 'p', type: 'vec3' },
                 { name: 'r1', type: 'float' },
                 { name: 'r2', type: 'float' },
-                { name: 'h', type: 'float' }
-        ]
+                { name: 'h', type: 'float' },
+        ],
 })

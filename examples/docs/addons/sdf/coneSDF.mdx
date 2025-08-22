@@ -25,33 +25,21 @@ where projection vectors $a$ and $b$ represent optimal distance candidates from 
 
 ## Function Variants
 
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `coneSDF` | `p`, `c` | Vector-based cone with direction parameter |
-| `coneSDFVec2Height` | `p`, `c`, `h` | 2D angle parameter with explicit height |
-| `coneSDFRadii` | `p`, `r1`, `r2`, `h` | Truncated cone with dual radius specification |
+| Function            | Parameters           | Description                                   |
+| ------------------- | -------------------- | --------------------------------------------- |
+| `coneSDF`           | `p`, `c`             | Vector-based cone with direction parameter    |
+| `coneSDFVec2Height` | `p`, `c`, `h`        | 2D angle parameter with explicit height       |
+| `coneSDFRadii`      | `p`, `r1`, `r2`, `h` | Truncated cone with dual radius specification |
 
 ## Implementation Demonstrations
 
 <FragmentEditor
-code={`
-const fragment = () => {
-        const pos = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), 0)
-        const coneParam = vec3(0.7, 1.2, 0.8)
-        const dist = coneSDF(pos, coneParam)
-        const inside = step(dist, 0).mul(0.9)
-        const edge = smoothstep(0.03, 0, dist.abs()).mul(0.5)
-        return vec4(inside.add(edge).mul(vec3(1, 0.6, 0.2)), 1)
-}`}
-/>
-
-<FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
         const eye = vec3(5)
         const eps = vec3(0.01, 0, 0)
-        const args = [0.8, 0.2, 2.5]
+        const args = [0.8, 0.2, 1.5]
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const d = coneSDFRadii(p, ...args).toVar()
