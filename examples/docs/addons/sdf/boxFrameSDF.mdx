@@ -1,0 +1,85 @@
+---
+title: 'boxFrameSDF'
+description: '3D hollow box frame signed distance field with uniform border thickness'
+keywords: [SDF, box, frame, hollow, border, 3D]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# boxFrameSDF: Three-Dimensional Hollow Frame Distance Field
+
+### Architectural Border Structure in Signed Distance Space
+
+The `boxFrameSDF` function computes the signed distance to a hollow box frame structure. This primitive creates a border-only box geometry where the interior is carved out, useful for wireframe visualizations and architectural elements.
+
+## Mathematical Foundation
+
+The box frame SDF operates through coordinate manipulation and selective edge computation:
+
+$$
+d_{\text{frame}} = \min\{d_x, d_y, d_z\}
+$$
+
+where each component evaluates the distance along one primary axis:
+
+$$
+d_x = \|max(\vec{p}_x, 0)\| + \min(\max(p_x, \max(q_y, q_z)), 0)
+$$
+
+The transformation $\vec{q} = ||\vec{p} + e|| - e$ creates the interior cutout where $e$ defines the frame thickness.
+
+## Function Signature
+
+| Parameter | Type    | Description                             |
+| --------- | ------- | --------------------------------------- |
+| `p`       | `vec3`  | Sample point position                   |
+| `b`       | `vec3`  | Box half-extents (width, height, depth) |
+| `e`       | `float` | Frame thickness parameter               |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pos = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), 0)
+        const size = vec3(1.5, 1, 0.5)
+        const thickness = 0.2
+        const dist = boxFrameSDF(pos, size, thickness)
+        const inside = step(dist, 0)
+        const edge = smoothstep(0.02, 0, dist.abs())
+        const color = inside.mul(0.7).add(edge.mul(0.5))
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [vec3(1), 0.1]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = boxFrameSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = boxFrameSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = boxFrameSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = boxFrameSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(boxFrameSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

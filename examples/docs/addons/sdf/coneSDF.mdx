@@ -1,0 +1,77 @@
+---
+title: 'coneSDF'
+description: 'Three-dimensional cone signed distance field with multiple parameterization methods'
+keywords: [SDF, cone, 3D, geometry, radial, parametric]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# coneSDF: Parametric Cone Distance Field System
+
+### Multi-Form Conical Geometry Distance Computation
+
+The coneSDF family provides three distinct parameterization methods for cone distance field calculation. Each function addresses different geometric requirements through vector parameters, radius specifications, and height-width ratios.
+
+## Mathematical Foundation
+
+Cone distance fields utilize cylindrical coordinate transformations and linear interpolation between circular cross-sections:
+
+$$
+d_{\text{cone}} = \sqrt{\min(|a|^2, |b|^2)} \cdot \text{sign}(s)
+$$
+
+where projection vectors $a$ and $b$ represent optimal distance candidates from the sample point to the cone surface.
+
+## Function Variants
+
+| Function | Parameters | Description |
+|----------|------------|-------------|
+| `coneSDF` | `p`, `c` | Vector-based cone with direction parameter |
+| `coneSDFVec2Height` | `p`, `c`, `h` | 2D angle parameter with explicit height |
+| `coneSDFRadii` | `p`, `r1`, `r2`, `h` | Truncated cone with dual radius specification |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const pos = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), 0)
+        const coneParam = vec3(0.7, 1.2, 0.8)
+        const dist = coneSDF(pos, coneParam)
+        const inside = step(dist, 0).mul(0.9)
+        const edge = smoothstep(0.03, 0, dist.abs()).mul(0.5)
+        return vec4(inside.add(edge).mul(vec3(1, 0.6, 0.2)), 1)
+}`}
+/>
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [0.8, 0.2, 2.5]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = coneSDFRadii(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = coneSDFRadii(p.add(eps.xyy), ...args).sub(d)
+                                const dy = coneSDFRadii(p.add(eps.yxy), ...args).sub(d)
+                                const dz = coneSDFRadii(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(coneSDFRadii(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

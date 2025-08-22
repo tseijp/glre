@@ -1,0 +1,88 @@
+---
+title: 'capsuleSDF'
+description: '3D capsule signed distance field defined by two endpoints and radius'
+keywords: [SDF, capsule, cylinder, rounded, 3D, line segment]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# capsuleSDF: Three-Dimensional Capsule Distance Field
+
+### Cylindrical Form with Rounded Endpoints
+
+The `capsuleSDF` function computes the signed distance from any 3D point to a capsule shape. A capsule is essentially a cylinder with hemispherical caps, defined by two endpoint positions and a radius value.
+
+## Mathematical Foundation
+
+The capsule SDF operates through line segment projection and distance calculation:
+
+$$
+d_{\text{capsule}} = \|\vec{pa} - \vec{ba} \cdot h\| - r
+$$
+
+where the projection parameter is computed as:
+
+$$
+h = \text{clamp}\left(\frac{\vec{pa} \cdot \vec{ba}}{\vec{ba} \cdot \vec{ba}}, 0, 1\right)
+$$
+
+The vectors are defined as $\vec{pa} = p - a$ and $\vec{ba} = b - a$, where $a$ and $b$ are the capsule endpoints.
+
+## Function Signature
+
+| Parameter | Type    | Description                     |
+| --------- | ------- | ------------------------------- |
+| `p`       | `vec3`  | Sample point position           |
+| `a`       | `vec3`  | First endpoint of capsule axis  |
+| `b`       | `vec3`  | Second endpoint of capsule axis |
+| `r`       | `float` | Capsule radius                  |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pos = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), 0)
+        const startPoint = vec3(-1, -0.5, 0)
+        const endPoint = vec3(1, 0.5, 0)
+        const radius = 0.3
+        const dist = capsuleSDF(pos, startPoint, endPoint, radius)
+        const inside = step(dist, 0)
+        const edge = smoothstep(0.02, 0, dist.abs())
+        const color = inside.mul(0.8).add(edge.mul(0.4))
+        return vec4(vec3(color), 1)
+}`}
+/>
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [vec3(-1, -1, 0), vec3(1, 1, 0), 0.4]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = capsuleSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const e = vec3(0.001, 0, 0)
+                                const dx = capsuleSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = capsuleSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = capsuleSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(capsuleSDF(p, ...args))
+                })
+                return vec4(0.2, 0.2, 0.2, 1)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
