@@ -1,4 +1,4 @@
-import { Fn, Vec4, Float, vec4, If, Return, float } from '../../../node'
+import { Fn, Vec4, Float, If, Return, float } from '../../../node'
 
 export const quatLerp = Fn(([qa, qb, t]: [Vec4, Vec4, Float]): Vec4 => {
         const cosHalfTheta = qa.w.mul(qb.w).add(qa.xyz.dot(qb.xyz)).toVar('cosHalfTheta')

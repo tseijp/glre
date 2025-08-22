@@ -31,26 +31,15 @@ where $N$ is the number of rays and the result creates repeating angular segment
 
 ## Function Signature
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `st` | `vec2` | Input texture coordinates (0-1 range) |
-| `N` | `int` | Number of rays to generate |
+| Parameter | Type   | Description                           |
+| --------- | ------ | ------------------------------------- |
+| `st`      | `vec2` | Input texture coordinates (0-1 range) |
+| `N`       | `int`  | Number of rays to generate            |
 
 ## Implementation Demonstrations
 
 <FragmentEditor
-code={`
-const fragment = () => {
-        const rays8 = raysSDF(uv, 8)
-        const pattern = step(0.6, rays8)
-        const gradient = rays8.mul(0.8).add(0.2)
-        const color = pattern.mul(gradient)
-        return vec4(vec3(color), 1)
-}`}
-/>
-
-<FragmentEditor
-code={`
+        code={`
 const fragment = () => Scope(() => {
         const center = vec2(0.5)
         const dist = uv.sub(center).length()
@@ -58,12 +47,12 @@ const fragment = () => Scope(() => {
         const minBrightness = float(0).toVar()
         Loop(4, ({ i }) => {
                 const rayCount = i.add(4).mul(2)
-                const rayPattern = raysSDF(uv, rayCount)
+                const rayPattern = raysSDF(uv, int(rayCount))
                 const threshold = i.toFloat().mul(0.15).add(0.4)
                 const rays = step(threshold, rayPattern).mul(fadeOut)
                 minBrightness.assign(minBrightness.max(rays.mul(i.add(1).toFloat().div(8))))
         })
-        const hue = raysSDF(uv, 16).mul(0.3).add(0.1)
+        const hue = raysSDF(uv, int(16)).mul(0.3).add(0.1)
         return vec4(minBrightness.mul(vec3(1, hue, 0.8)), 1)
 })`}
 />

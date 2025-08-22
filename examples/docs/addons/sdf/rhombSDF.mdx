@@ -1,0 +1,46 @@
+---
+title: 'rhombSDF'
+description: '2D rhombus shaped signed distance field using triangle composition'
+keywords: [SDF, rhombus, diamond, 2D, triangle, geometry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rhombSDF: Diamond Shape Distance Field
+
+### Composite Geometry from Triangle Intersection
+
+The `rhombSDF` function creates a rhombus (diamond) shape by combining two triangular distance fields. This approach demonstrates geometric composition through the maximum operation of transformed triangle primitives.
+
+## Mathematical Foundation
+
+The rhombus is constructed by taking the maximum distance of two triangles:
+
+$$
+d_{rhombus}(p) = \max(d_{tri}(p), d_{tri}(p'))
+$$
+
+where $p'$ represents the vertically flipped coordinate $(p_x, 1 - p_y)$ for the second triangle.
+
+The maximum operation creates the intersection of the two triangular half-spaces, forming the characteristic diamond shape with four equal sides meeting at right angles.
+
+## Function Signature
+
+| Parameter | Type   | Description            |
+| --------- | ------ | ---------------------- |
+| `st`      | `vec2` | 2D coordinate position |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const coord =  uv.mul(2).sub(1).mul(0.005).add(0.5)
+        const dist = rhombSDF(coord)
+        const inside = step(dist, 0)
+        const edge = smoothstep(0.02, 0, dist.abs())
+        const color = inside.mul(0.8).add(edge.mul(0.6))
+        return vec4(vec3(color), 1)
+}`}
+/>
