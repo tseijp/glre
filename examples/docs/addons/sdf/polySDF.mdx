@@ -22,6 +22,7 @@ d_{\text{poly}} = \cos\left(\lfloor\frac{a}{v} + 0.5\rfloor \cdot v - a\right) \
 $$
 
 where:
+
 - $a = \arctan(p_x, p_y) + \pi$ is the angle from point to origin
 - $r = |p|$ is the radial distance
 - $v = \frac{2\pi}{V}$ is the angular step for $V$ vertices
@@ -30,26 +31,26 @@ The floor operation discretizes the angle into $V$ equal segments, creating the 
 
 ## Function Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `st` | `vec2` | Sample point in normalized coordinates |
-| `V` | `int` | Number of polygon vertices |
+| Parameter | Type   | Description                            |
+| --------- | ------ | -------------------------------------- |
+| `st`      | `vec2` | Sample point in normalized coordinates |
+| `V`       | `int`  | Number of polygon vertices             |
 
 ## Implementation Demonstrations
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => Scope(() => {
         const center = vec2(0.5)
         const minDist = float(1000).toVar()
         Loop(4, ({ i }) => {
                 const sides = i.add(3)
                 const offset = vec2(
-                        i.mod(2).toFloat().mul(0.4).add(0.2),
-                        i.div(2).floor().toFloat().mul(0.4).add(0.2)
+                        i.mod(2).mul(0.5).add(0.25),
+                        i.div(2).floor().mul(0.5).add(0.25)
                 )
-                const p = uv.sub(offset).mul(3)
-                const d = polySDF(p.add(0.5), sides).sub(0.2).abs().sub(0.02)
+                const p = uv.sub(offset)
+                const d = polySDFFloat(p.add(0.5), sides.toFloat()).sub(0.2).abs().sub(0.02)
                 minDist.assign(minDist.min(d))
         })
         const brightness = step(minDist, 0).mul(0.9).add(smoothstep(0.02, 0, minDist.abs()).mul(0.3))

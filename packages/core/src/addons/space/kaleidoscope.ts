@@ -1,5 +1,5 @@
 import { Fn, Vec2, Float, vec2, float, length, atan2, floor, min, max, cos, sin } from '../../node'
-import { TWO_PI } from '../math/constant'
+import { TWO_PI } from '../math/const'
 
 const kaleidoscopeCore = (coord: Vec2, segmentCount: Float, phase: Float) => {
         const uv = coord.sub(0.5).toVar('uv')
