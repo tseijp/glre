@@ -1,0 +1,77 @@
+---
+title: 'torusSDF'
+description: 'Torus (donut) signed distance field with standard and sector variants'
+keywords: [SDF, torus, donut, 3D, geometry, ring]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# torusSDF: Three-Dimensional Torus Distance Field
+
+### Donut-Shaped Geometry with Parametric Variations
+
+The `torusSDF` function family generates signed distance fields for torus (donut) geometries with both standard circular torus and sector-based variants. These primitives enable the creation of ring-shaped objects with precise radial control.
+
+## Mathematical Foundation
+
+The standard torus distance function operates through radial projection:
+
+$$
+d_{\text{torus}} = |\vec{q}| - t_y
+$$
+
+where $\vec{q} = (|\vec{p}_{xz}| - t_x, p_y)$ represents the distance from the torus center line.
+
+For sector torus with angular constraints:
+
+$$
+k = \begin{cases}
+\text{dot}(\vec{p}_{xy}, \vec{sc}) & \text{if } sc_y \cdot |p_x| > sc_x \cdot p_y \\
+|\vec{p}_{xy}| & \text{otherwise}
+\end{cases}
+$$
+
+$$
+d_{\text{sector}} = \sqrt{|\vec{p}|^2 + r_a^2 - 2r_a k} - r_b
+$$
+
+## Function Variants
+
+| Function         | Parameters            | Description                                       |
+| ---------------- | --------------------- | ------------------------------------------------- |
+| `torusSDF`       | `p`, `t`              | Standard torus with major/minor radii             |
+| `torusSDFSector` | `p`, `sc`, `ra`, `rb` | Angular sector torus with sine/cosine constraints |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [1, 0.25]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = torusSDF(p, vec2(...args)).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = torusSDF(p.add(eps.xyy), vec2(...args)).sub(d)
+                                const dy = torusSDF(p.add(eps.yxy), vec2(...args)).sub(d)
+                                const dz = torusSDF(p.add(eps.yyx), vec2(...args)).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(torusSDF(p, vec2(...args)))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
