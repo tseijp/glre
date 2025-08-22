@@ -1,0 +1,77 @@
+---
+title: 'opUnion'
+description: 'Boolean union operation for combining SDF shapes into unified geometry'
+keywords: [SDF, union, boolean, combine, merge, operation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opUnion: Boolean Union Operation
+
+### Geometric Composition for Distance Field Combination
+
+The `opUnion` operations perform boolean union by combining multiple SDF shapes into unified geometry. This creates merged effects where shapes blend together, enabling complex geometric compositions through additive modeling.
+
+## Mathematical Foundation
+
+Basic union uses the minimum distance between shapes:
+
+$$
+d_{\text{union}} = \min(d_1, d_2)
+$$
+
+Smooth union creates seamless transitions using interpolation:
+
+$$
+h = \text{clamp}\left(\frac{1}{2} + \frac{d_2 - d_1}{2k}, 0, 1\right)
+$$
+
+$$
+d_{\text{smooth}} = \text{mix}(d_2, d_1, h) - kh(1-h)
+$$
+
+## Function Variants
+
+| Function            | Parameters      | Description                          |
+| ------------------- | --------------- | ------------------------------------ |
+| `opUnion`           | `d1`, `d2`      | Sharp boolean union                  |
+| `opUnionSmooth`     | `d1`, `d2`, `k` | Smoothed union with blending factor  |
+| `opUnionSmoothVec4` | `d1`, `d2`, `k` | Smooth vec4 union with material info |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(4)
+        const eps = vec3(0.01, 0, 0)
+        const sdf = Fn(([p]: [Vec3]) => {
+                const sphere = sphereSDFRadius(p.add(vec3(-0.5, 0, 0)), 0.7)
+                const cube = cubeSDF(p.add(vec3(0.5, 0, 0)), 0.6)
+                return opUnion(sphere, cube)
+        })
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sdf(p).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sdf(p.add(eps.xyy)).sub(d)
+                                const dy = sdf(p.add(eps.yxy)).sub(d)
+                                const dz = sdf(p.add(eps.yyx)).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(sdf(p))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
