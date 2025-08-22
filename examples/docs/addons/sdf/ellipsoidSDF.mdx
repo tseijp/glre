@@ -1,0 +1,74 @@
+---
+title: 'ellipsoidSDF'
+description: 'Ellipsoidal signed distance field with independent axis scaling'
+keywords: [SDF, ellipsoid, 3D, geometry, scaling, oval]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# ellipsoidSDF: Three-Dimensional Ellipsoidal Distance Field
+
+### Non-Uniform Spherical Geometry with Axis-Independent Scaling
+
+The `ellipsoidSDF` function generates signed distance fields for ellipsoidal shapes by applying independent scaling factors along each coordinate axis. This primitive extends spherical geometry to accommodate stretched or compressed forms in any direction.
+
+## Mathematical Foundation
+
+The ellipsoid distance function operates through normalized coordinate transformation:
+
+$$
+k_0 = \left|\frac{\vec{p}}{\vec{r}}\right|
+$$
+
+$$
+k_1 = \left|\frac{\vec{p}}{\vec{r}^2}\right|
+$$
+
+$$
+d_{\text{ellipsoid}} = \frac{k_0(k_0 - 1)}{k_1}
+$$
+
+where $\vec{r} = (r_x, r_y, r_z)$ defines the semi-axis lengths along each coordinate direction.
+
+The function approximates the exact distance through iterative refinement, providing accuracy suitable for raymarching applications while maintaining computational efficiency.
+
+## Function Signature
+
+| Parameter | Type   | Description                               |
+| --------- | ------ | ----------------------------------------- |
+| `p`       | `vec3` | Sample point position                     |
+| `r`       | `vec3` | Semi-axis radii (x, y, z scaling factors) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [vec3(1.5, 0.8, 1.2)]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = ellipsoidSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = ellipsoidSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = ellipsoidSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = ellipsoidSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(ellipsoidSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
