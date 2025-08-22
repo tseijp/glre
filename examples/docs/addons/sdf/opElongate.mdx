@@ -1,0 +1,75 @@
+---
+title: 'opElongate'
+description: 'SDF elongation operation for stretching shapes along specified axes'
+keywords: [SDF, elongation, deformation, operation, stretching]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opElongate: Shape Elongation Transformation Operation
+
+### Axis-Aligned Stretching for Geometric Extension
+
+The `opElongate` functions apply elongation transformations to signed distance fields, stretching shapes along specified axes. This operation creates extended geometries by clamping coordinate components, effectively creating "stretched" versions of base shapes.
+
+## Mathematical Foundation
+
+The elongation operation modifies coordinates through clamping:
+
+For 2D and 3D variants:
+
+$$
+\vec{p}' = \vec{p} - \text{clamp}(\vec{p}, -\vec{h}, \vec{h})
+$$
+
+For the 4D variant with distance field calculation:
+
+$$
+\vec{q} = |\vec{p}| - \vec{h}
+$$
+
+$$
+d = |\max(\vec{q}, 0)| + \min(\max(q_x, \max(q_y, q_z)), 0)
+$$
+
+## Function Variants
+
+| Function         | Input Types    | Description                             |
+| ---------------- | -------------- | --------------------------------------- |
+| `opElongateVec2` | `vec2`, `vec2` | 2D coordinate elongation                |
+| `opElongateVec3` | `vec3`, `vec3` | 3D coordinate elongation                |
+| `opElongateVec4` | `vec4`, `vec4` | 4D elongation with distance calculation |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const elongation = vec3(0.4, 0.8, 1.2)
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sphereSDF(opElongateVec3(p, elongation), 0.5).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sphereSDF(opElongateVec3(p.add(eps.xyy), elongation), 0.5).sub(d)
+                                const dy = sphereSDF(opElongateVec3(p.add(eps.yxy), elongation), 0.5).sub(d)
+                                const dz = sphereSDF(opElongateVec3(p.add(eps.yyx), elongation), 0.5).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(sphereSDF(opElongateVec3(p, elongation), 0.5))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
