@@ -1,0 +1,73 @@
+---
+title: 'opRevolve'
+description: 'Revolve 2D cross-section around Y-axis to create radially symmetric 3D shapes'
+keywords: [SDF, revolution, lathe, rotation, symmetry, operation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opRevolve: Radial Revolution Operation
+
+### 2D to 3D Transformation Through Axis Revolution
+
+The `opRevolve` operation transforms 3D coordinates for evaluating 2D cross-sections revolved around the Y-axis. This technique creates radially symmetric shapes from 2D profiles, effectively implementing a computational lathe operation.
+
+## Mathematical Foundation
+
+The revolution operation maps 3D coordinates to 2D cross-section space:
+
+$$
+\text{opRevolve}(\vec{p}, w) = (|\vec{p}_{xz}| - w, p_y)
+$$
+
+where $|\vec{p}_{xz}| = \sqrt{p_x^2 + p_z^2}$ represents the radial distance from the Y-axis, and $w$ defines the revolution radius offset.
+
+This transformation allows any 2D SDF function $f(x, y)$ to be evaluated as:
+
+$$
+d_{\text{revolved}} = f(\text{opRevolve}(\vec{p}, w))
+$$
+
+## Function Signature
+
+| Parameter | Type    | Description              |
+| --------- | ------- | ------------------------ |
+| `p`       | `vec3`  | 3D sample point          |
+| `w`       | `float` | Revolution radius offset |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(6)
+        const eps = vec3(0.01, 0, 0)
+        const sdf = Fn(([p]: [Vec3]) => {
+                const revolvedPos = opRevolve(p, 1.5)
+                return circleSDF(revolvedPos, vec2(0.8))
+        })
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sdf(p).toVar()
+                Loop(128, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sdf(p.add(eps.xyy)).sub(d)
+                                const dy = sdf(p.add(eps.yxy)).sub(d)
+                                const dz = sdf(p.add(eps.yyx)).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(sdf(p))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

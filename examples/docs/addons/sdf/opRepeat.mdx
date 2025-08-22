@@ -57,7 +57,7 @@ const fragment = () => {
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const d = sdf(p).toVar()
-                Loop(16, ({ i }) => {
+                Loop(128, ({ i }) => {
                         If(d.lessThanEqual(eps.x), () => {
                                 const dx = sdf(p.add(eps.xyy)).sub(d)
                                 const dy = sdf(p.add(eps.yxy)).sub(d)
