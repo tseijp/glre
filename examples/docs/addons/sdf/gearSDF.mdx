@@ -1,0 +1,76 @@
+---
+title: 'gearSDF'
+description: 'Mechanical gear-shaped signed distance field with parametric teeth control'
+keywords: [SDF, gear, 2D, mechanical, teeth, parametric]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# gearSDF: Parametric Mechanical Gear Distance Field
+
+### Complex Radial Tooth Geometry Through Hyperbolic Functions
+
+The `gearSDF` function generates signed distance fields for mechanical gear shapes with parametrically controlled teeth. The function employs hyperbolic tangent modulation to create precise tooth profiles based on angular position and gear parameters.
+
+## Mathematical Foundation
+
+The gear distance calculation combines radial base geometry with hyperbolic tooth modulation:
+
+$$
+d_{\text{gear}} = d_{\text{base}} + \min(d_{\text{base}}, r_{\text{teeth}})
+$$
+
+where the base distance is:
+
+$$
+d_{\text{base}} = |\vec{p} - 0.5| \cdot 3 - s
+$$
+
+and the teeth modulation uses hyperbolic functions:
+
+$$
+\omega = b \cdot \sin(N \cdot \arctan(p_y, p_x))
+$$
+
+$$
+r_{\text{teeth}} = \frac{1}{b} \cdot \tanh(2\omega)
+$$
+
+The parameter mapping follows:
+
+$$
+s = \text{map}(b, 1, 15, 0.066, 0.5)
+$$
+
+## Function Signature
+
+| Parameter | Type    | Description                             |
+| --------- | ------- | --------------------------------------- |
+| `st`      | `vec2`  | 2D coordinate position                  |
+| `b`       | `float` | Base radius and teeth sharpness control |
+| `N`       | `int`   | Number of gear teeth                    |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const gearSystem = float(1000).toVar()
+        Loop(4, ({ i }) => {
+                const angle = i.toFloat().mul(1.57)
+                const offset = vec2(sin(angle).mul(0.25), cos(angle).mul(0.25))
+                const rotation = iTime.mul(i.add(1).toFloat())
+                const rotatedUV = vec2(
+                        uv.x.sub(0.5).mul(rotation.cos()).sub(uv.y.sub(0.5).mul(rotation.sin())).add(0.5),
+                        uv.x.sub(0.5).mul(rotation.sin()).add(uv.y.sub(0.5).mul(rotation.cos())).add(0.5)
+                )
+                const teeth = int(i.mul(2).add(6))
+                const size = i.toFloat().mul(0.5).add(2)
+                const d = gearSDF(rotatedUV.add(offset), size, teeth)
+                gearSystem.assign(gearSystem.min(d))
+        })
+        const brightness = step(gearSystem, 0).mul(0.9).add(smoothstep(0.02, 0, gearSystem.abs()).mul(0.4))
+        return vec4(brightness.mul(vec3(0.7, 0.5, 0.3)), 1)
+})`}
+/>

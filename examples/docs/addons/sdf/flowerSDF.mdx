@@ -22,23 +22,24 @@ d_{\text{flower}} = 1 - \frac{|\cos(\frac{N \cdot \theta}{2})| \cdot 0.5 + 0.5}{
 $$
 
 where:
+
 - $r = 2|\vec{p} - 0.5| \cdot 4$ represents the radial distance from center
-- $\theta = \arctan(p_y, p_x)$ gives the angular position  
+- $\theta = \arctan(p_y, p_x)$ gives the angular position
 - $N$ controls the number of petals
 
 The cosine modulation creates regular undulations in the radial function, forming petal structures. The absolute value ensures positive petal formation, while the scaling factors control shape smoothness.
 
 ## Function Signature
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `st` | `vec2` | 2D coordinate position |
-| `N` | `int` | Number of flower petals |
+| Parameter | Type   | Description             |
+| --------- | ------ | ----------------------- |
+| `st`      | `vec2` | 2D coordinate position  |
+| `N`       | `int`  | Number of flower petals |
 
 ## Implementation Demonstrations
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const petalCount = int(iTime.mul(2).sin().mul(3).add(6))
         const dist = flowerSDF(uv, petalCount)
@@ -50,7 +51,7 @@ const fragment = () => {
 />
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => Scope(() => {
         const flowerField = float(1000).toVar()
         Loop(5, ({ i }) => {
