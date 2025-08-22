@@ -5,12 +5,7 @@ function fun(x: Vec2): Vec2
 function fun(x: Vec3): Vec3
 function fun(x: Vec4): Vec4
 function fun(x: X): X {
-        return x.sub(
-                x
-                        .div(289)
-                        .floor()
-                        .mul(289)
-        )
+        return x.sub(x.div(289).floor().mul(289))
 }
 
 export const mod289 = Fn(([x]: [Float]): Float => {

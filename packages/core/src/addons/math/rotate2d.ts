@@ -7,10 +7,5 @@ export const rotate2d = Fn(([r]: [Float]): Mat2 => {
 }).setLayout({
         name: 'rotate2d',
         type: 'mat2',
-        inputs: [
-                {
-                        name: 'r',
-                        type: 'float',
-                },
-        ],
+        inputs: [{ name: 'r', type: 'float' }],
 })

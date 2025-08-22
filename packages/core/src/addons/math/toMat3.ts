@@ -5,10 +5,5 @@ export const toMat3 = Fn(([m]: [Mat4]): Mat3 => {
 }).setLayout({
         name: 'toMat3',
         type: 'mat3',
-        inputs: [
-                {
-                        name: 'm',
-                        type: 'mat4',
-                },
-        ],
+        inputs: [{ name: 'm', type: 'mat4' }],
 })

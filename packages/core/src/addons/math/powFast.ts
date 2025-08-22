@@ -6,13 +6,7 @@ export const powFast = Fn(([a, b]: [X, X]): X => {
         name: 'powFast',
         type: 'auto',
         inputs: [
-                {
-                        name: 'a',
-                        type: 'auto'
-                },
-                {
-                        name: 'b', 
-                        type: 'auto'
-                }
-        ]
+                { name: 'a', type: 'auto' },
+                { name: 'b', type: 'auto' },
+        ],
 })
