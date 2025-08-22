@@ -1,0 +1,92 @@
+---
+title: 'octogonPrismSDF'
+description: 'Octagonal prism signed distance field with regular eight-sided geometry'
+keywords: [SDF, octagon, prism, polygon, geometry]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# octogonPrismSDF: Regular Octagonal Prism Distance Field
+
+### Eight-Sided Polygonal Extrusion with Geometric Precision
+
+The `octogonPrismSDF` function computes the signed distance to a regular octagonal prism. This geometry features eight equal sides arranged in a regular octagon, extruded to a specified height. The function uses reflection operations to construct the octagonal cross-section efficiently.
+
+## Mathematical Foundation
+
+The octagon construction employs reflection planes defined by precise geometric constants:
+
+$$
+\vec{k} = \begin{pmatrix}
+-0.9238795325 \\
+0.3826834323 \\
+0.4142135623
+\end{pmatrix}
+$$
+
+The distance calculation involves multiple reflection operations:
+$$
+\vec{p}_{xy} \leftarrow \vec{p}_{xy} - 2 \min(\vec{k}_{xy} \cdot \vec{p}_{xy}, 0) \vec{k}_{xy}
+$$
+
+Where the reflection process creates the eight-fold symmetry characteristic of regular octagons.
+
+## Function Signature
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `p` | `vec3` | Sample point position |
+| `r` | `float` | Octagon radius (circumradius) |
+| `h` | `float` | Prism height (half-height from center) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eye = vec3(5)
+        const eps = vec3(0.01, 0, 0)
+        const args = [1.2, 0.8]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = octogonPrismSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = octogonPrismSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = octogonPrismSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = octogonPrismSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(octogonPrismSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
+
+<FragmentEditor
+code={`
+const fragment = () => Scope(() => {
+        const p = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), sin(iTime.mul(0.5)))
+        const minDist = float(1000).toVar()
+        Loop(3, ({ i }) => {
+                const scale = i.toFloat().mul(0.3).add(0.5)
+                const height = i.toFloat().mul(0.4).add(0.6)
+                const offset = i.toFloat().sub(1).mul(1.8)
+                const pos = p.sub(vec3(offset, 0, 0))
+                const d = octogonPrismSDF(pos, scale, height)
+                minDist.assign(minDist.min(d))
+        })
+        const brightness = step(minDist, 0).mul(0.8).add(smoothstep(0.03, 0, minDist.abs()).mul(0.5))
+        return vec4(brightness.mul(vec3(0.9, 0.5, 0.2)), 1)
+})`}
+/>
