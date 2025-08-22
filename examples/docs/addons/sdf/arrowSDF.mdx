@@ -1,0 +1,61 @@
+---
+title: 'arrowSDF'
+description: '3D arrow-shaped signed distance field with customizable dimensions and orientation'
+keywords: [SDF, arrow, 3D, geometry, vector, directional]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# arrowSDF: Three-Dimensional Directional Arrow Distance Field
+
+### Geometric Vector Representation in Signed Distance Space
+
+The `arrowSDF` function computes the signed distance from any 3D point to an arrow-shaped geometry. This primitive combines cylindrical shaft geometry with conical tip mathematics, enabling directional visualization and vector field representation.
+
+## Mathematical Foundation
+
+The arrow SDF operates through coordinate transformation and geometric decomposition:
+
+$$
+d_{\text{arrow}} = \min\{d_{\text{shaft}}, d_{\text{tip}}\} \cdot \text{sign}(s)
+$$
+
+where the transformation matrix aligns the local coordinate system with the arrow direction vector:
+
+$$
+\mathbf{M} = \begin{pmatrix}
+t_z^2k + t_y & t_x & -t_xt_zk \\
+-t_x & t_y & -t_z \\
+-t_xt_zk & t_z & t_x^2k + t_y
+\end{pmatrix}
+$$
+
+with $k = \frac{1}{1 + t_y}$ and $\mathbf{t} = \frac{\text{start} - \text{end}}{|\text{start} - \text{end}|}$.
+
+## Function Signature
+
+| Parameter    | Type    | Description           |
+| ------------ | ------- | --------------------- |
+| `v`          | `vec3`  | Sample point position |
+| `start`      | `vec3`  | Arrow tail position   |
+| `end`        | `vec3`  | Arrow head position   |
+| `baseRadius` | `float` | Shaft cylinder radius |
+| `tipRadius`  | `float` | Arrowhead base radius |
+| `tipHeight`  | `float` | Arrowhead cone height |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pos = vec3(uv.x.mul(4).sub(2), uv.y.mul(4).sub(2), 0)
+        const start = vec3(-1.5, 0, 0)
+        const end = vec3(1.5, 0, 0)
+        const dist = arrowSDF(pos, start, end, 0.25, 0.6, 0.8)
+        const arrowShape = smoothstep(0.05, 0, dist)
+        const arrowFill = step(0, dist.negate())
+        const color = arrowFill.mul(vec3(1, 0.3, 0.1)).add(arrowShape.mul(vec3(1, 0.8, 0.2)))
+        return vec4(color, 1)
+}`}
+/>

@@ -17,7 +17,7 @@ import {
         parseUniformHead,
         parseVaryingHead,
 } from './parse'
-import { getBluiltin, getConversions, getOperator, initNodeContext, isElement, setupEvent } from './utils'
+import { getBluiltin, getConversions, getOperator, initNodeContext, isElement, isX, setupEvent } from './utils'
 import { is } from '../../utils/helpers'
 import { mod } from '..'
 import type { Constants as C, NodeContext, Y } from '../types'
@@ -37,8 +37,8 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 return ret + '.0'
         }
         if (is.bol(target)) return target ? 'true' : 'false'
-        if (isElement(target)) throw `` // IGNORE
         if (!target) return ''
+        if (!isX(target)) return ''
         const { type, props = {} } = target
         const { id = 'i', children = [], fields, initialValues } = props
         const [x, y, z, w] = children

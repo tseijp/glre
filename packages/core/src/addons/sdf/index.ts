@@ -1,3 +1,4 @@
+export * from './arrowSDF'
 export * from './circleSDF'
 export * from './sphereSDF'
 export * from './rectSDF'
