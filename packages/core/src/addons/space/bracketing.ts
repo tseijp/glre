@@ -1,7 +1,6 @@
 import { Fn, Vec2, Float, mat2, atan2, cos, sin, mod, vec2, float } from '../../node'
+import { PI, TWO_PI } from '../math/const'
 
-const PI = float(3.1415926535897932384626433832795)
-const TWO_PI = float(6.283185307179586476925286766559)
 const BRACKETING_ANGLE_DELTA = PI.div(20.0)
 
 export const bracketingAxis0 = Fn(([dir]: [Vec2]): Vec2 => {

@@ -1,0 +1,51 @@
+---
+title: 'flowerSDF'
+description: '2D flower-shaped signed distance field with petal count parameter'
+keywords: [SDF, flower, 2D, petals, polar, organic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# flowerSDF: Parametric Flower Distance Field
+
+### Organic Petal Generation through Polar Mathematics
+
+The `flowerSDF` function creates flower-like shapes with configurable petal count using polar coordinate transformations. This 2D distance field generates smooth, organic forms through cosine modulation of angular components.
+
+## Mathematical Foundation
+
+The flower shape emerges from polar coordinate manipulation:
+
+$$
+d_{\text{flower}} = 1 - \frac{|\cos(\frac{N \cdot \theta}{2})| \cdot 0.5 + 0.5}{r}
+$$
+
+where:
+
+- $r = 2|\vec{p} - 0.5| \cdot 4$ represents the radial distance from center
+- $\theta = \arctan(p_y, p_x)$ gives the angular position
+- $N$ controls the number of petals
+
+The cosine modulation creates regular undulations in the radial function, forming petal structures. The absolute value ensures positive petal formation, while the scaling factors control shape smoothness.
+
+## Function Signature
+
+| Parameter | Type   | Description             |
+| --------- | ------ | ----------------------- |
+| `st`      | `vec2` | 2D coordinate position  |
+| `N`       | `int`  | Number of flower petals |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const petalCount = int(iTime.mul(2).sin().mul(3).add(6))
+        const dist = flowerSDF(uv, petalCount)
+        const inside = step(dist, 0)
+        const edge = smoothstep(0.02, 0, dist.abs())
+        const color = inside.mul(0.9).add(edge.mul(0.6))
+        return vec4(color.mul(vec3(1, 0.7, 0.8)), 1)
+}`}
+/>

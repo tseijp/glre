@@ -7,10 +7,5 @@ export const rotate4dY = Fn(([r]: [Float]): Mat4 => {
 }).setLayout({
         name: 'rotate4dY',
         type: 'mat4',
-        inputs: [
-                {
-                        name: 'r',
-                        type: 'float',
-                },
-        ],
+        inputs: [{ name: 'r', type: 'float' }],
 })

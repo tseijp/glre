@@ -1,0 +1,55 @@
+---
+title: 'vesicaSDF'
+description: 'Vesica piscis signed distance field from two intersecting circles'
+keywords: [SDF, vesica, piscis, circles, intersection, bladder]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# vesicaSDF: Vesica Piscis Distance Field
+
+### Sacred Geometry through Circular Intersection
+
+The `vesicaSDF` function generates the signed distance field for a vesica piscis (fish bladder) shape. This ancient geometric form emerges from the intersection of two equal circles, creating a lens-shaped region with profound mathematical properties.
+
+## Mathematical Foundation
+
+A vesica piscis is formed by the maximum operation of two offset circles:
+
+$$
+d_{\text{vesica}}(p, w) = \max(d_{\text{circle}}(p - \text{offset}), d_{\text{circle}}(p + \text{offset}))
+$$
+
+where $\text{offset} = (w/2, 0)$ represents the horizontal separation between circle centers.
+
+The width parameter $w$ controls the overlap between circles:
+
+- $w = 0$: Complete overlap (single circle)
+- $w = 1$: Circles touch at center
+- $w > 1$: Circles separate with lens narrowing
+
+## Function Signature
+
+| Parameter | Type    | Description                             |
+| --------- | ------- | --------------------------------------- |
+| `st`      | `vec2`  | Sample point coordinates                |
+| `w`       | `float` | Width separation between circle centers |
+
+### Alternative Forms
+
+- `vesicaSDF(st, w)`: Customizable width parameter
+- `vesicaSDFDefault(st)`: Fixed width at 0.5
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const p = uv.sub(0.5).mul(2)
+        const width = sin(iTime).mul(0.3).add(0.6)
+        const dist = vesicaSDF(p, width)
+        const brightness = step(0, dist.negate()).mul(0.8).add(0.2)
+        return vec4(vec3(brightness), 1)
+}`}
+/>

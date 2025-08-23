@@ -1,0 +1,70 @@
+---
+title: 'cubeSDF'
+description: 'Uniform cube signed distance field with single size parameter'
+keywords: [SDF, cube, 3D, geometry, uniform, size]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# cubeSDF: Uniform Cubic Distance Field
+
+### Simplified Box Geometry with Equal Dimensions
+
+The `cubeSDF` function generates a signed distance field for a cube with uniform dimensions. This function is a convenience wrapper around `boxSDFSize`, automatically creating a cube by applying the same size value to all three dimensions.
+
+## Mathematical Foundation
+
+A cube is defined as a box where all dimensions are equal:
+
+$$
+d_{\text{cube}}(p, s) = d_{\text{box}}(p, \vec{s})
+$$
+
+where $\vec{s} = (s, s, s)$ represents the uniform size vector.
+
+The distance calculation follows the standard box SDF formula:
+
+$$
+d = \max(0, |\vec{p}| - \vec{s}) + \min(0, \max(|p_x| - s, |p_y| - s, |p_z| - s))
+$$
+
+## Function Signature
+
+| Parameter | Type    | Description                                 |
+| --------- | ------- | ------------------------------------------- |
+| `p`       | `vec3`  | Sample point position                       |
+| `s`       | `float` | Cube half-size (radius from center to face) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
+        const args = [1]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = cubeSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = cubeSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = cubeSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = cubeSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(cubeSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

@@ -1,0 +1,78 @@
+---
+title: 'sphereSDF'
+description: '3D spherical signed distance field with unit and custom radius options'
+keywords: [SDF, sphere, 3D, geometry, radius, ball]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# sphereSDF: Three-Dimensional Spherical Distance Field
+
+### Fundamental 3D Primitive with Radial Distance
+
+The `sphereSDF` function computes the signed distance from any 3D point to a spherical surface. This essential 3D primitive provides both unit spheres and custom-radius spheres, forming the foundation for many organic and geometric forms.
+
+## Mathematical Foundation
+
+The sphere SDF uses the Euclidean distance formula:
+
+$$
+d_{\text{sphere}}(p) = \|p\|
+$$
+
+For spheres with custom radius, the formula becomes:
+
+$$
+d_{\text{sphere}}(p, s) = \|p\| - s
+$$
+
+where $s$ represents the sphere radius.
+
+## Function Signatures
+
+### sphereSDF (Unit Sphere)
+
+| Parameter | Type   | Description           |
+| --------- | ------ | --------------------- |
+| `p`       | `vec3` | Sample point position |
+
+### sphereSDFRadius (Custom Radius)
+
+| Parameter | Type    | Description           |
+| --------- | ------- | --------------------- |
+| `p`       | `vec3`  | Sample point position |
+| `s`       | `float` | Sphere radius         |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime.mul(0.3)).mul(vec3(5))
+        const args = [sin(iTime).mul(0.3).add(0.8)]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sphereSDFRadius(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sphereSDFRadius(p.add(eps.xyy), ...args).sub(d)
+                                const dy = sphereSDFRadius(p.add(eps.yxy), ...args).sub(d)
+                                const dz = sphereSDFRadius(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(sphereSDFRadius(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

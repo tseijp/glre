@@ -1,0 +1,80 @@
+---
+title: 'pyramidSDF'
+description: 'Square pyramid signed distance field with height parameter'
+keywords: [SDF, pyramid, 3D, geometry, height, square, cone]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# pyramidSDF: Square Pyramid Distance Field
+
+### Geometric Apex Structure with Symmetric Base
+
+The `pyramidSDF` function generates a signed distance field for a square pyramid geometry. This primitive combines linear tapering from a square base to an apex point, creating architectural and geometric visualizations with precise mathematical control over height and proportions.
+
+## Mathematical Foundation
+
+The pyramid distance calculation involves coordinate transformation and multi-dimensional optimization:
+
+$$
+m^2 = h^2 + 0.25
+$$
+
+The algorithm performs symmetry folding and coordinate remapping:
+
+$$
+\vec{q} = (p_z, h \cdot p_y - 0.5 \cdot p_x, h \cdot p_x + 0.5 \cdot p_y)
+$$
+
+Distance optimization uses two candidate calculations:
+
+$$
+a = m^2(q_x + s)^2 + q_y^2
+$$
+
+$$
+b = m^2(q_x + 0.5t)^2 + (q_y - m^2t)^2
+$$
+
+where $s = \max(-q_x, 0)$ and $t$ is the clamped projection parameter.
+
+## Function Signature
+
+| Parameter | Type    | Description                              |
+| --------- | ------- | ---------------------------------------- |
+| `p`       | `vec3`  | Sample point position                    |
+| `h`       | `float` | Pyramid height (apex distance from base) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(2))
+        const args = [0.7]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = pyramidSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = pyramidSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = pyramidSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = pyramidSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(pyramidSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

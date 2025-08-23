@@ -29,13 +29,7 @@ export const rotate4d = Fn(([a, r]: [Vec3, Float]): Mat4 => {
         name: 'rotate4d',
         type: 'mat4',
         inputs: [
-                {
-                        name: 'a',
-                        type: 'vec3'
-                },
-                {
-                        name: 'r',
-                        type: 'float'
-                }
-        ]
+                { name: 'a', type: 'vec3' },
+                { name: 'r', type: 'float' },
+        ],
 })

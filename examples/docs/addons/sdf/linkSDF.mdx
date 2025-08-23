@@ -1,0 +1,74 @@
+---
+title: 'linkSDF'
+description: 'Chain link signed distance field for creating interlocked toroidal geometries'
+keywords: [SDF, link, chain, torus, cylinder, ring]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# linkSDF: Chain Link Distance Field
+
+### Toroidal Ring Geometry with Cylindrical Extension
+
+The `linkSDF` function generates a chain link geometry by combining cylindrical extension with toroidal curvature. This primitive is ideal for creating interlocked rings, chains, and linked mechanical components.
+
+## Mathematical Foundation
+
+The link SDF operates through coordinate transformation and dual-radius distance calculation:
+
+$$
+\vec{q} = (p_x, \max(|p_y| - l_e, 0), p_z)
+$$
+
+The final distance combines radial and axial components:
+
+$$
+d_{\text{link}} = |\vec{d}| - r_2
+$$
+
+where $\vec{d} = (|\vec{q}_{xy}| - r_1, q_z)$ represents the intermediate distance vector.
+
+The geometry effectively creates a torus that is extended along the Y-axis by the length parameter $l_e$.
+
+## Function Parameters
+
+| Parameter | Type    | Description                         |
+| --------- | ------- | ----------------------------------- |
+| `p`       | `vec3`  | Sample point position               |
+| `le`      | `float` | Link extension length (half-height) |
+| `r1`      | `float` | Major radius (ring radius)          |
+| `r2`      | `float` | Minor radius (tube thickness)       |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
+        const args = [0.8, 0.6, 0.2]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = linkSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = linkSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = linkSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = linkSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(linkSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

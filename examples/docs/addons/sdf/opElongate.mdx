@@ -1,0 +1,79 @@
+---
+title: 'opElongate'
+description: 'Elongation operation for stretching SDF shapes along specified axes'
+keywords: [SDF, elongation, operation, stretch, deformation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opElongate: Shape Elongation Operation
+
+### Geometric Stretching Transform for Distance Fields
+
+The `opElongate` operation transforms the coordinate space to create elongated versions of SDF primitives. This operation stretches shapes along specified axes by clamping the input coordinates, effectively creating infinite extrusions in the specified directions.
+
+## Mathematical Foundation
+
+The elongation operation modifies the input coordinates before passing them to the base SDF function:
+
+$$
+\text{opElongate}(\vec{p}, \vec{h}) = \vec{p} - \text{clamp}(\vec{p}, -\vec{h}, \vec{h})
+$$
+
+This coordinate transformation creates regions where the original shape is repeated infinitely along the elongation axes. For vec4 operations, the function returns both the transformed position and distance information:
+
+$$
+\vec{q} = |\vec{p}| - \vec{h}
+$$
+
+$$
+\text{result} = (\max(\vec{q}, 0), \min(\max(q_x, \max(q_y, q_z)), 0))
+$$
+
+## Function Variants
+
+| Function         | Parameters | Description                             |
+| ---------------- | ---------- | --------------------------------------- |
+| `opElongateVec2` | `p`, `h`   | 2D coordinate elongation                |
+| `opElongateVec3` | `p`, `h`   | 3D coordinate elongation                |
+| `opElongateVec4` | `p`, `h`   | 4D elongation with distance information |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
+        const sdf = Fn(([p]: [Vec3]) => {
+                const elongatedPos = opElongateVec3(p, vec3(1.5, 0.3, 0.8))
+                return cubeSDF(p, 0.6)
+        })
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sdf(p).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sdf(p.add(eps.xyy)).sub(d)
+                                const dy = sdf(p.add(eps.yxy)).sub(d)
+                                const dz = sdf(p.add(eps.yyx)).sub(d)
+                                const normal = vec3(dx, dy, dz).normalize()
+                                const light = vec3(2, 4, 3).sub(p).normalize()
+                                const diffuse = normal.dot(light).max(0.1)
+                                return vec4(vec3(diffuse.mul(0.8).add(0.2)), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(sdf(p))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

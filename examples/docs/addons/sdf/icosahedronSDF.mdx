@@ -1,0 +1,75 @@
+---
+title: 'icosahedronSDF'
+description: '3D icosahedral signed distance field for regular twenty-sided polyhedron'
+keywords: [SDF, icosahedron, 3D, geometry, polyhedron, platonic-solid]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# icosahedronSDF: Regular Icosahedron Distance Field
+
+### Twenty-Faced Platonic Solid with Golden Ratio Geometry
+
+The `icosahedronSDF` function generates a signed distance field for a regular icosahedron, one of the five Platonic solids. This polyhedron features 20 equilateral triangular faces and utilizes the golden ratio in its geometric construction.
+
+## Mathematical Foundation
+
+The icosahedron distance field leverages the golden ratio φ ≈ 1.618 and its relationship:
+
+$$
+\phi + 1 = 2.618...
+$$
+
+The distance calculation involves projecting the point onto characteristic planes:
+
+$$
+d_{\text{icosa}} = \max\left(\max(a, b, c) - \phi, d\right) \cdot \text{radius}
+$$
+
+where:
+
+- $a, b, c$ represent dot products with rotated normal vectors
+- $d$ represents the distance to the circumscribed sphere
+- $\vec{n_1} = \text{normalize}(\phi + 1, 1, 0)$ defines the primary orientation
+- $\vec{n_2} = \frac{1}{\sqrt{3}}$ represents the uniform sphere distance
+
+## Function Signature
+
+| Parameter | Type    | Description              |
+| --------- | ------- | ------------------------ |
+| `p`       | `vec3`  | Sample point position    |
+| `radius`  | `float` | Icosahedron circumradius |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
+        const args = [1.2]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = icosahedronSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = icosahedronSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = icosahedronSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = icosahedronSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(icosahedronSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

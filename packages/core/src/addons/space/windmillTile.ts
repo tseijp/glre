@@ -1,4 +1,5 @@
 import { Fn, Vec2, Vec4, Float, mod, abs, vec4 } from '../../node'
+import { TWO_PI } from '../math'
 import { rotate2DBasic } from './rotate'
 import { sqTile } from './sqTile'
 
@@ -20,7 +21,7 @@ export const windmillTileDefault = Fn(([t]: [Vec4]): Vec4 => {
         const a = abs(mod(t.z, 2).sub(mod(t.w, 2)))
                 .add(mod(t.w, 2).mul(2))
                 .mul(0.25)
-        return vec4(rotate2DBasic(t.xy, a.mul(6.283185307179586)), t.zw)
+        return vec4(rotate2DBasic(t.xy, a.mul(TWO_PI)), t.zw)
 }).setLayout({
         name: 'windmillTileDefault',
         type: 'vec4',

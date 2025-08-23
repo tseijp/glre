@@ -1,0 +1,77 @@
+---
+title: 'opOnion'
+description: 'Onion operation for creating hollow/shell versions of SDF shapes'
+keywords: [SDF, onion, operation, shell, hollow, thickness]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opOnion: Shell Creation Operation
+
+### Hollow Interior Transform for Distance Fields
+
+The `opOnion` operation creates hollow shells from solid SDF shapes by applying an absolute value transformation to the distance field. This operation converts any solid shape into a hollow version with controllable wall thickness.
+
+## Mathematical Foundation
+
+The onion operation transforms the distance field using:
+
+$$
+\text{opOnion}(d, h) = |d| - h
+$$
+
+where:
+
+- $d$ is the input distance from the base SDF function
+- $h$ is the shell thickness parameter
+
+This transformation creates a shell around the zero isosurface of the original shape. The absolute value ensures that both interior and exterior distances contribute to the shell formation, effectively creating walls of thickness $2h$ around the original surface.
+
+## Function Signature
+
+| Parameter | Type    | Description                      |
+| --------- | ------- | -------------------------------- |
+| `d`       | `float` | Input distance from base SDF     |
+| `h`       | `float` | Shell thickness (half-thickness) |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
+        const sdf = Fn(([p]: [Vec3]) => {
+                const sphere = sphereSDF(p)
+                const box = cubeSDF(p, 0.8)
+                const base = sphere.min(box)
+                return opOnion(base, 0.15)
+        })
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sdf(p).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sdf(p.add(eps.xyy)).sub(d)
+                                const dy = sdf(p.add(eps.yxy)).sub(d)
+                                const dz = sdf(p.add(eps.yyx)).sub(d)
+                                const normal = vec3(dx, dy, dz).normalize()
+                                const light = vec3(2, 4, 3).sub(p).normalize()
+                                const diffuse = normal.dot(light).max(0.1)
+                                return vec4(vec3(diffuse.mul(0.8).add(0.2)), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(sdf(p))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

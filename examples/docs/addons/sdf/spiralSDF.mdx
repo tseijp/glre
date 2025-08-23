@@ -1,0 +1,53 @@
+---
+title: 'spiralSDF'
+description: '2D spiral pattern generator using logarithmic and angular transformations'
+keywords: [SDF, spiral, 2D, pattern, logarithmic, angular, polar]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# spiralSDF: Logarithmic Spiral Pattern Generator
+
+### Mathematical Spiral Construction in 2D Space
+
+The `spiralSDF` function creates intricate spiral patterns by combining logarithmic radius transformation with angular positioning. This function generates distance fields that follow logarithmic spiral mathematics, producing visually appealing rotational patterns.
+
+## Mathematical Foundation
+
+The spiral function operates through polar coordinate transformation:
+
+$$
+d_{\text{spiral}} = |\sin(\text{fract}(\log(r) \cdot t + \theta \cdot k))|
+$$
+
+where:
+
+- $r = ||\mathbf{st} - \mathbf{center}||^2$ represents the squared distance from center
+- $\theta = \arctan(y, x)$ provides angular position
+- $t$ controls spiral tightness and frequency
+- $k = 0.159 \approx \frac{1}{2\pi}$ normalizes angular scaling
+
+The logarithmic transformation creates exponentially expanding spiral arms, while the fractional component generates periodic repetition.
+
+## Function Signature
+
+| Parameter | Type    | Description                            |
+| --------- | ------- | -------------------------------------- |
+| `st`      | `vec2`  | 2D coordinate position                 |
+| `t`       | `float` | Spiral frequency and tightness control |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const coord = uv.mul(2).sub(1)
+        const time = iTime.mul(0.1)
+        const spiral1 = spiralSDF(coord.mul(0.5).add(0.5), time.add(2))
+        const spiral2 = spiralSDF(coord.mul(0.7).add(0.5), time.mul(1.3).add(4))
+        const pattern = spiral1.mul(spiral2)
+        const color = pattern.pow(0.5).mul(vec3(1, 0.7, 0.4))
+        return vec4(color, 1)
+}`}
+/>

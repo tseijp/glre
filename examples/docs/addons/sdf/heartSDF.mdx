@@ -1,0 +1,58 @@
+---
+title: 'heartSDF'
+description: '2D heart-shaped signed distance field with mathematical curve equation'
+keywords: [SDF, heart, 2D, shape, curve, romantic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# heartSDF: Two-Dimensional Heart Shape Distance Field
+
+### Parametric Heart Curve with Polar Coordinate Mathematics
+
+The `heartSDF` function generates a signed distance field for a heart shape using a mathematical equation that combines polar coordinates with power functions. This creates the characteristic heart silhouette through careful manipulation of radial distance and angular components.
+
+## Mathematical Foundation
+
+The heart shape is constructed using a polar-based equation with power scaling:
+
+$$
+r = \frac{y \cdot |x|^{0.67}}{y + 1.5} - 2y + 1.26
+$$
+
+where the coordinates are first centered and normalized. The heart equation combines several mathematical components:
+
+- Power function scaling: $|x|^{0.67}$ creates the curved top lobes
+- Rational function: $\frac{1}{y + 1.5}$ controls the heart's width
+- Linear term: $-2y$ creates the pointed bottom
+- Constant offset: $+1.26$ adjusts the overall shape scaling
+
+## Function Signature
+
+| Parameter | Type   | Description                                       |
+| --------- | ------ | ------------------------------------------------- |
+| `st`      | `vec2` | 2D coordinate position (typically UV coordinates) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => Scope(() => {
+        const heartColor = vec3(0).toVar()
+        Loop(5, ({ i }) => {
+                const scale = i.toFloat().mul(0.3).add(0.4)
+                const offset = vec2(i.toFloat().mul(0.1).sub(0.2), 0)
+                const pos = uv.sub(offset).div(scale)
+                const d = heartSDF(pos)
+                const brightness = smoothstep(0.1, 0, d.abs()).mul(scale)
+                const hue = i.toFloat().mul(0.2)
+                heartColor.assign(heartColor.add(brightness.mul(vec3(
+                        sin(hue).mul(0.5).add(0.5),
+                        cos(hue.add(2.094)).mul(0.5).add(0.5),
+                        sin(hue.add(4.188)).mul(0.5).add(0.5)
+                ))))
+        })
+        return vec4(heartColor.clamp(0, 1), 1)
+})`}
+/>

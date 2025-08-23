@@ -1,0 +1,76 @@
+---
+title: 'dodecahedronSDF'
+description: 'Regular dodecahedron signed distance field based on golden ratio geometry'
+keywords: [SDF, dodecahedron, 3D, geometry, golden ratio, platonic solid]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# dodecahedronSDF: Golden Ratio Dodecahedral Distance Field
+
+### Platonic Solid Geometry with Divine Proportion Mathematics
+
+The `dodecahedronSDF` function generates signed distance fields for regular dodecahedra, one of the five Platonic solids. This geometry leverages the golden ratio (φ ≈ 1.618) to construct the characteristic twelve-sided polyhedron with pentagonal faces.
+
+## Mathematical Foundation
+
+The dodecahedron distance calculation relies on the golden ratio-based normal vector:
+
+$$
+\vec{n} = \frac{(\phi, 1, 0)}{|\vec{(\phi, 1, 0)}|}
+$$
+
+where $\phi = \frac{1 + \sqrt{5}}{2} \approx 1.618033988749895$ represents the golden ratio.
+
+The distance function evaluates three symmetry planes:
+
+$$
+d = \max(\max(a, b), c) - n_x
+$$
+
+where:
+
+- $a = |\vec{p}| \cdot (n_x, n_y, n_z)$
+- $b = |\vec{p}| \cdot (n_z, n_x, n_y)$
+- $c = |\vec{p}| \cdot (n_y, n_z, n_x)$
+
+## Function Variants
+
+| Function                | Parameters    | Description                               |
+| ----------------------- | ------------- | ----------------------------------------- |
+| `dodecahedronSDF`       | `p`           | Unit dodecahedron centered at origin      |
+| `dodecahedronSDFRadius` | `p`, `radius` | Scaled dodecahedron with specified radius |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
+        const args = [1.5]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = dodecahedronSDFRadius(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = dodecahedronSDFRadius(p.add(eps.xyy), ...args).sub(d)
+                                const dy = dodecahedronSDFRadius(p.add(eps.yxy), ...args).sub(d)
+                                const dz = dodecahedronSDFRadius(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(dodecahedronSDFRadius(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

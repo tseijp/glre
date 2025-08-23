@@ -1,0 +1,74 @@
+---
+title: 'triPrismSDF'
+description: 'Triangular prism signed distance field with height and width parameters'
+keywords: [SDF, triangular, prism, 3D, geometry, extrusion]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# triPrismSDF: Triangular Prism Distance Field
+
+### Extruded Triangle Geometry
+
+The `triPrismSDF` function computes the signed distance from any 3D point to a triangular prism. This primitive represents a triangular base extruded along the Z-axis, creating a three-sided prism with flat triangular ends.
+
+## Mathematical Foundation
+
+The triangular prism SDF combines triangular cross-section constraints with height bounds:
+
+$$
+d_{\text{tri}} = \max(|q_x| \cdot \sqrt{3}/2 + p_y \cdot 0.5, -p_y) - h_x \cdot 0.5
+$$
+
+$$
+d_{\text{height}} = |q_z| - h_y
+$$
+
+$$
+d_{\text{prism}} = \max(d_{\text{height}}, d_{\text{tri}})
+$$
+
+where $\vec{q} = |p|$ represents absolute coordinates and $\sqrt{3}/2 \approx 0.866025$ is the geometric coefficient for the triangular profile.
+
+## Function Signature
+
+| Parameter | Type   | Description                      |
+| --------- | ------ | -------------------------------- |
+| `p`       | `vec3` | Sample point position            |
+| `h`       | `vec2` | Prism dimensions (width, height) |
+
+The `h.x` parameter controls the triangular base size, while `h.y` controls the extrusion height along the Z-axis.
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(4))
+        const args = [vec2(0.8, 0.9)]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = triPrismSDF(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = triPrismSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = triPrismSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = triPrismSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(triPrismSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

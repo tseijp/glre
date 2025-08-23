@@ -1,0 +1,72 @@
+---
+title: 'superShapeSDF'
+description: 'Gielis superformula-based signed distance field for parametric shape generation'
+keywords: [SDF, supershape, superformula, Gielis, parametric, organic]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# superShapeSDF: Parametric Superformula Distance Field
+
+### Gielis Superformula for Organic Shape Generation
+
+The `superShapeSDF` function implements the Gielis superformula, a mathematical equation capable of generating a wide variety of natural and geometric shapes through parametric control. This function creates complex organic forms ranging from flowers to starfish through precise mathematical parametrization.
+
+## Mathematical Foundation
+
+The superformula is defined in polar coordinates:
+
+$$
+r(\theta) = \left[ \left| \frac{1}{a} \cos\left(\frac{m\theta}{4}\right) \right|^{n_2} + \left| \frac{1}{b} \sin\left(\frac{m\theta}{4}\right) \right|^{n_3} \right]^{-1/n_1}
+$$
+
+The distance calculation converts the point to polar coordinates, computes the superformula radius, and measures deviation:
+
+$$
+d = |p| \cdot 5 - |s \cdot r(\theta) \cdot (\cos\theta, \sin\theta)|
+$$
+
+## Function Signatures
+
+### superShapeSDF
+
+| Parameter | Type    | Description               |
+| --------- | ------- | ------------------------- |
+| `st`      | `vec2`  | Sample point position     |
+| `s`       | `float` | Overall scale factor      |
+| `a`       | `float` | X-axis scaling parameter  |
+| `b`       | `float` | Y-axis scaling parameter  |
+| `n1`      | `float` | Primary shape exponent    |
+| `n2`      | `float` | Cosine term exponent      |
+| `n3`      | `float` | Sine term exponent        |
+| `m`       | `float` | Rotational symmetry order |
+
+### superShapeSDFCenter
+
+Same parameters as `superShapeSDF` plus:
+
+| Parameter | Type   | Description           |
+| --------- | ------ | --------------------- |
+| `center`  | `vec2` | Shape center position |
+
+## Parameter Effects
+
+| Parameter  | Range  | Effect                                            |
+| ---------- | ------ | ------------------------------------------------- |
+| `m`        | 1-20   | Rotational symmetry (m=4 creates 4-fold symmetry) |
+| `n1`       | 0.1-10 | Overall shape roundness/sharpness                 |
+| `n2`, `n3` | 0.1-10 | Cosine/sine term sharpness                        |
+| `a`, `b`   | 0.1-2  | Axis scaling ratios                               |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const p = uv.mul(2).sub(1).mul(0.1)
+        const dist = superShapeSDFCenter(p, vec2(0), 0.5, 1, 1, 1, 1, 1, 5)
+        const color = step(0, dist).oneMinus()
+        return vec4(vec3(color), 1)
+}`}
+/>

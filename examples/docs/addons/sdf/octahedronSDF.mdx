@@ -1,0 +1,84 @@
+---
+title: 'octahedronSDF'
+description: 'Eight-sided regular polyhedron distance field with fast and exact variants'
+keywords: [SDF, octahedron, polyhedron, 3D, geometry, exact]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# octahedronSDF: Regular Octahedral Distance Field
+
+### Eight-Sided Polyhedron with Dual Precision Methods
+
+The `octahedronSDF` function family generates signed distance fields for regular octahedral geometry. This implementation provides both a fast approximation and an exact distance calculation, offering flexibility between computational efficiency and mathematical precision.
+
+## Mathematical Foundation
+
+The octahedron can be defined as the set of points where the sum of absolute coordinates equals the size parameter:
+
+$$
+|x| + |y| + |z| = s
+$$
+
+For the fast approximation:
+
+$$
+d_{\text{fast}} = \frac{(|x| + |y| + |z| - s)}{\sqrt{3}}
+$$
+
+where $\frac{1}{\sqrt{3}} \approx 0.57735027$ provides the correct scaling factor.
+
+For exact distance calculation:
+
+$$
+\vec{o} = \min(3\vec{p} - m, 0)
+$$
+
+$$
+\vec{o} = \max(6\vec{p} - 2m - 3\vec{o} + (o_x + o_y + o_z), 0)
+$$
+
+$$
+d_{\text{exact}} = |\vec{p} - s \cdot \frac{\vec{o}}{o_x + o_y + o_z}|
+$$
+
+## Function Variants
+
+| Function             | Method             | Description                                |
+| -------------------- | ------------------ | ------------------------------------------ |
+| `octahedronSDF`      | Fast approximation | Efficient calculation using scaling factor |
+| `octahedronSDFExact` | Exact distance     | Precise distance with iterative refinement |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(4))
+        const args = [1.2]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = octahedronSDF(p, ...args).toVar()
+                Loop(32, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = octahedronSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = octahedronSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = octahedronSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(octahedronSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

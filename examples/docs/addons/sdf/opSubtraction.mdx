@@ -1,0 +1,81 @@
+---
+title: 'opSubtraction'
+description: 'Boolean subtraction operation for carving shapes from SDF primitives'
+keywords: [SDF, subtraction, boolean, carve, cut, operation]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opSubtraction: Boolean Subtraction Operation
+
+### Geometric Carving for Distance Field Composition
+
+The `opSubtraction` operations perform boolean subtraction by removing one SDF shape from another. This creates carved or cut-out effects, enabling complex geometric compositions through subtractive modeling.
+
+## Mathematical Foundation
+
+Basic subtraction uses the maximum of the negated first distance and the second distance:
+
+$$
+d_{\text{subtraction}} = \max(-d_1, d_2)
+$$
+
+Smooth subtraction blends the transition using a smoothstep interpolation:
+
+$$
+h = \text{clamp}\left(\frac{1}{2} - \frac{d_2 + d_1}{2k}, 0, 1\right)
+$$
+
+$$
+d_{\text{smooth}} = \text{mix}(d_2, -d_1, h) + kh(1-h)
+$$
+
+## Function Variants
+
+| Function                  | Parameters      | Description                               |
+| ------------------------- | --------------- | ----------------------------------------- |
+| `opSubtraction`           | `d1`, `d2`      | Sharp boolean subtraction                 |
+| `opSubtractionVec4`       | `d1`, `d2`      | Vec4 distance with material info          |
+| `opSubtractionSmooth`     | `d1`, `d2`, `k` | Smoothed subtraction with blending factor |
+| `opSubtractionSmoothVec4` | `d1`, `d2`, `k` | Smooth vec4 subtraction                   |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(4))
+        const sdf = Fn(([p]: [Vec3]) => {
+                const sphere = sphereSDFRadius(p, 1)
+                const cylinder = cylinderSDFHeightRadius(p, 0.5, 2)
+                return opSubtraction(cylinder, sphere)
+        })
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sdf(p).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sdf(p.add(eps.xyy)).sub(d)
+                                const dy = sdf(p.add(eps.yxy)).sub(d)
+                                const dz = sdf(p.add(eps.yyx)).sub(d)
+                                const normal = vec3(dx, dy, dz).normalize()
+                                const light = vec3(2, 4, 3).sub(p).normalize()
+                                const diffuse = normal.dot(light).max(0.1)
+                                return vec4(vec3(diffuse.mul(0.8).add(0.2)), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(sdf(p))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

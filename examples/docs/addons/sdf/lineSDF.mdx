@@ -1,0 +1,70 @@
+---
+title: 'lineSDF'
+description: '2D and 3D line segment signed distance field with endpoint specification'
+keywords: [SDF, line, segment, 2D, 3D, geometry, endpoints]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# lineSDF: Linear Segment Distance Field
+
+### Point-to-Line Distance Calculation in 2D and 3D Space
+
+The `lineSDF` function family computes the shortest distance from any point to a line segment defined by two endpoints. This primitive enables line rendering, path tracing, and geometric analysis in both 2D and 3D coordinate systems.
+
+## Mathematical Foundation
+
+### 2D Line Segment Distance
+
+The 2D line distance uses orthogonal projection onto the line segment:
+
+$$
+d_{\text{line2D}}(st, a, b) = \|st - a - h \cdot (b - a)\|
+$$
+
+where:
+
+$$
+h = \text{clamp}\left(\frac{(st - a) \cdot (b - a)}{(b - a) \cdot (b - a)}, 0, 1\right)
+$$
+
+### 3D Line Distance
+
+The 3D version uses the cross product for perpendicular distance:
+
+$$
+d_{\text{line3D}}(p, a, b) = \frac{\|(p - a) \times (p - b)\|}{\|b - a\|}
+$$
+
+## Function Signatures
+
+### lineSDF2D (2D Line Segment)
+
+| Parameter | Type   | Description              |
+| --------- | ------ | ------------------------ |
+| `st`      | `vec2` | Sample point position    |
+| `a`       | `vec2` | Line segment start point |
+| `b`       | `vec2` | Line segment end point   |
+
+### lineSDF3D (3D Line)
+
+| Parameter | Type   | Description           |
+| --------- | ------ | --------------------- |
+| `p`       | `vec3` | Sample point position |
+| `a`       | `vec3` | Line start point      |
+| `b`       | `vec3` | Line end point        |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const a = vec2(0.2, 0.3).add(sin(iTime).mul(0.1))
+        const b = vec2(0.8, 0.7).add(cos(iTime.mul(1.3)).mul(0.1))
+        const dist = lineSDF2D(uv, a, b)
+        const line = smoothstep(0.02, 0.005, dist)
+        const endpoints = step(distance(uv, a), 0.03).max(step(distance(uv, b), 0.03))
+        return vec4(line.mul(vec3(0.8, 0.4, 1)).add(endpoints.mul(vec3(1, 0.2, 0.3))), 1)
+}`}
+/>

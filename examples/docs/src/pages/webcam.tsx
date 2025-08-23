@@ -35,7 +35,7 @@ const fragment = (video: HTMLVideoElement) => {
         const sobelY = mat3(-1, -2, -1, 0, 0, 0, 1, 2, 1).constant()
         const gx = matDot(sample, sobelX)
         const gy = matDot(sample, sobelY)
-        const edge = vec2(gx, gy).length()
+        const edge = vec2(gx, gy).length().oneMinus().sqrt()
         return vec4(vec3(edge), 1)
 }
 

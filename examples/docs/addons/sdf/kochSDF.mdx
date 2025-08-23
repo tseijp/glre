@@ -1,0 +1,57 @@
+---
+title: 'kochSDF'
+description: 'Koch snowflake fractal signed distance field with iterative detail generation'
+keywords: [SDF, Koch, snowflake, fractal, iterative, recursive]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# kochSDF: Koch Snowflake Fractal Distance Field
+
+### Iterative Fractal Boundary Generation through Recursive Subdivision
+
+The `kochSDF` function generates the Koch snowflake fractal, a classic example of self-similar geometric structures. Through iterative subdivision and transformation, it constructs the characteristic spiky boundary pattern that defines this mathematical fractal.
+
+## Mathematical Foundation
+
+The Koch snowflake construction follows a recursive subdivision process:
+
+$$
+K_{n+1} = T(K_n)
+$$
+
+where $T$ represents the transformation that replaces each line segment with four segments arranged in a triangular spike pattern. The transformation matrix:
+
+$$
+M = \frac{1}{2} \begin{pmatrix} \sqrt{3} & 3 \\ -3 & \sqrt{3} \end{pmatrix}
+$$
+
+The distance calculation involves iterative coordinate transformations:
+
+$$
+\vec{st}_{n+1} = \frac{1}{2}\vec{r_3} - M \cdot (st_y, |st_x|)
+$$
+
+where $\vec{r_3} = (-\sqrt{3}, 3)$ and the width scaling factor $w_{n+1} = \frac{w_n}{\sqrt{3}}$.
+
+## Function Variants
+
+| Function        | Parameters          | Description                                           |
+| --------------- | ------------------- | ----------------------------------------------------- |
+| `kochSDF`       | `st`, `center`, `N` | Full parameterization with center and iteration count |
+| `kochSDFSimple` | `st`, `N`           | Simplified version with default center at (0.5, 0.5)  |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pos = uv.sub(0.5)
+        const dist = kochSDF(pos.add(0.5), vec2(0.5), int(10))
+        const inside = step(dist, 0)
+        const edge = smoothstep(0.005, 0, dist.abs())
+        const color = inside.mul(0.9).add(edge.mul(0.7))
+        return vec4(color.mul(vec3(0.2, 0.8, 1)), 1)
+}`}
+/>

@@ -1,0 +1,82 @@
+---
+title: 'opRepeat'
+description: 'Repetition operation for creating infinite patterns of SDF shapes'
+keywords: [SDF, repeat, operation, pattern, tile, infinite]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# opRepeat: Infinite Pattern Repetition Operation
+
+### Spatial Tiling Transform for Distance Fields
+
+The `opRepeat` operations transform coordinate space to create infinite repetitions of SDF primitives. These functions enable the creation of regular patterns, grids, and tiled arrangements by folding space into repeating cells.
+
+## Mathematical Foundation
+
+The basic repetition operation uses modular arithmetic to fold space:
+
+$$
+\text{opRepeat}(\vec{p}, s) = \text{mod}(\vec{p} + \frac{s}{2}, s) - \frac{s}{2}
+$$
+
+For multi-dimensional repetition:
+
+$$
+\text{opRepeat}(\vec{p}, \vec{c}) = \text{mod}(\vec{p} + \frac{\vec{c}}{2}, \vec{c}) - \frac{\vec{c}}{2}
+$$
+
+Limited repetition constrains the pattern to a finite region:
+
+$$
+\text{opRepeatLimited}(\vec{p}, \vec{a}, \vec{b}, s) = \vec{p} - s \cdot \text{clamp}(\lfloor\frac{\vec{p}}{s}\rfloor, \vec{a}, \vec{b})
+$$
+
+## Function Variants
+
+| Function              | Parameters               | Description                            |
+| --------------------- | ------------------------ | -------------------------------------- |
+| `opRepeatVec2`        | `p`, `s`                 | 2D uniform repetition with spacing `s` |
+| `opRepeatVec3`        | `p`, `c`                 | 3D repetition with per-axis spacing    |
+| `opRepeatVec2Limited` | `p`, `lima`, `limb`, `s` | 2D repetition within bounds            |
+| `opRepeatVec3Limited` | `p`, `lima`, `limb`, `s` | 3D repetition within bounds            |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(4))
+        const sdf = Fn(([p]: [Vec3]) => {
+                const repeatedPos = opRepeatVec3(p, vec3(5))
+                return sphereSDFRadius(repeatedPos, 0.2)
+        })
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = sdf(p).toVar()
+                Loop(128, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = sdf(p.add(eps.xyy)).sub(d)
+                                const dy = sdf(p.add(eps.yxy)).sub(d)
+                                const dz = sdf(p.add(eps.yyx)).sub(d)
+                                const normal = vec3(dx, dy, dz).normalize()
+                                const light = vec3(2, 4, 3).sub(p).normalize()
+                                const diffuse = normal.dot(light).max(0.1)
+                                return vec4(vec3(diffuse.mul(0.8).add(0.2)), 1)
+                        })
+                        p.addAssign(d.mul(dir))
+                        d.assign(sdf(p))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>
