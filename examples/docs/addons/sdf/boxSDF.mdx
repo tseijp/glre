@@ -1,0 +1,78 @@
+---
+title: 'boxSDF'
+description: 'Rectangular box signed distance field with unit and custom dimensions'
+keywords: [SDF, box, rectangle, 3D, geometry, rectangular]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# boxSDF: Three-Dimensional Rectangular Distance Field
+
+### Fundamental Cubic and Rectangular Primitive Geometry
+
+The `boxSDF` function computes the signed distance from any point to a rectangular box. This fundamental SDF primitive supports both unit cubes and custom-sized boxes, forming the foundation for many complex geometric constructions.
+
+## Mathematical Foundation
+
+The box SDF operates through coordinate space analysis and distance decomposition:
+
+$$
+d_{\text{box}}(p, b) = \|\max(\mathbf{0}, |p| - b)\| + \min(0, \max_i(|p_i| - b_i))
+$$
+
+where $|p|$ represents the absolute coordinates and $b$ defines the box half-extents.
+
+For a unit box (no size parameter), the formula simplifies to:
+
+$$
+d_{\text{box}}(p) = \|\max(\mathbf{0}, |p|)\| + \min(0, \max_i(|p_i|))
+$$
+
+## Function Signatures
+
+### boxSDF (Unit Box)
+
+| Parameter | Type   | Description           |
+| --------- | ------ | --------------------- |
+| `p`       | `vec3` | Sample point position |
+
+### boxSDFSize (Custom Box)
+
+| Parameter | Type   | Description           |
+| --------- | ------ | --------------------- |
+| `p`       | `vec3` | Sample point position |
+| `b`       | `vec3` | Box half-dimensions   |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime.mul(0.5)).mul(vec3(6))
+        const args = [vec3(0.8, 1.2, 0.6)]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = boxSDFSize(p, ...args).toVar()
+                Loop(16, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = boxSDFSize(p.add(eps.xyy), ...args).sub(d)
+                                const dy = boxSDFSize(p.add(eps.yxy), ...args).sub(d)
+                                const dz = boxSDFSize(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(boxSDFSize(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

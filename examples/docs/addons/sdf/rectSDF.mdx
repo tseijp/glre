@@ -1,0 +1,66 @@
+---
+title: 'rectSDF'
+description: '2D rectangular signed distance field with multiple size and rounding options'
+keywords: [SDF, rectangle, 2D, geometry, rounded, uniform]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rectSDF: Two-Dimensional Rectangular Distance Field
+
+### Flexible Rectangle Generation with Size and Rounding Control
+
+The `rectSDF` function family provides comprehensive 2D rectangular primitives with support for custom dimensions, uniform sizing, and corner rounding. This versatile primitive forms the foundation for UI elements and geometric compositions.
+
+## Mathematical Foundation
+
+The rectangular SDF uses coordinate normalization and maximum distance selection:
+
+$$
+d_{\text{rect}}(st, s) = \max\left(\frac{|st_x - 0.5|}{s_x}, \frac{|st_y - 0.5|}{s_y}\right)
+$$
+
+For rounded rectangles, the distance incorporates corner radius:
+
+$$
+d_{\text{rounded}}(p, b, r) = \|\max(\mathbf{0}, |p - 0.5| \cdot 4.2 - b + r)\| + \min(0, \max(d_x, d_y)) - r
+$$
+
+## Function Signatures
+
+### rectSDF (Custom Dimensions)
+
+| Parameter | Type   | Description               |
+| --------- | ------ | ------------------------- |
+| `st`      | `vec2` | Sample point coordinates  |
+| `s`       | `vec2` | Rectangle half-dimensions |
+
+### rectSDFUniform (Square)
+
+| Parameter | Type    | Description              |
+| --------- | ------- | ------------------------ |
+| `st`      | `vec2`  | Sample point coordinates |
+| `s`       | `float` | Uniform half-size        |
+
+### rectSDFRounded (Rounded Corners)
+
+| Parameter | Type    | Description              |
+| --------- | ------- | ------------------------ |
+| `p`       | `vec2`  | Sample point coordinates |
+| `b`       | `vec2`  | Rectangle dimensions     |
+| `r`       | `float` | Corner radius            |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const size = vec2(0.6, 0.3).mul(sin(iTime).mul(0.3).add(1))
+        const dist = rectSDF(uv, size)
+        const inside = step(dist, 1)
+        const edge = smoothstep(1.02, 0.98, dist)
+        const color = inside.mul(0.7).add(edge.mul(0.4))
+        return vec4(color.mul(vec3(1, 0.5, 0.3)), 1)
+}`}
+/>

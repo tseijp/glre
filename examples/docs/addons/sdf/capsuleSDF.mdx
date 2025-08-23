@@ -61,7 +61,7 @@ const fragment = () => {
         const up = vec3(0, 1, 0)
         const eps = vec3(0.01, 0, 0)
         const eye = rotate3dY(iTime).mul(vec3(5))
-        const args = [vec3(-1, -1, 0), vec3(1, 1, 0), 0.4]
+        const args = [vec3(-1, -1, 0), vec3(1, 1, 0), 0.3]
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const d = capsuleSDF(p, ...args).toVar()

@@ -1,0 +1,61 @@
+---
+title: 'circleSDF'
+description: '2D circle signed distance field with customizable center positioning'
+keywords: [SDF, circle, 2D, geometry, radius, center]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circleSDF: Two-Dimensional Circular Distance Field
+
+### Fundamental Circular Primitive for 2D Graphics
+
+The `circleSDF` function computes the signed distance from any 2D point to a circular boundary. This essential 2D primitive provides both centered and custom-positioned circle generation with automatic radius scaling.
+
+## Mathematical Foundation
+
+The circle SDF is based on the Euclidean distance formula with radius normalization:
+
+$$
+d_{\text{circle}}(v, c) = 2 \cdot \|v - c\|
+$$
+
+where $v$ represents the sample point and $c$ is the circle center.
+
+For the basic centered circle, the formula simplifies to:
+
+$$
+d_{\text{circle}}(v) = 2 \cdot \|v - (0.5, 0.5)\|
+$$
+
+The factor of 2 normalizes the distance relative to a unit coordinate system.
+
+## Function Signatures
+
+### circleSDF (Custom Center)
+
+| Parameter | Type   | Description            |
+| --------- | ------ | ---------------------- |
+| `v`       | `vec2` | Sample point position  |
+| `center`  | `vec2` | Circle center position |
+
+### circleSDFBasic (Centered)
+
+| Parameter | Type   | Description           |
+| --------- | ------ | --------------------- |
+| `v`       | `vec2` | Sample point position |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5).add(sin(iTime).mul(0.2))
+        const dist = circleSDF(uv, center)
+        const inside = step(dist, 0.4)
+        const edge = smoothstep(0.42, 0.38, dist)
+        const color = inside.mul(0.8).add(edge.mul(0.3))
+        return vec4(vec3(color), 1)
+}`}
+/>

@@ -1,0 +1,49 @@
+---
+title: 'crossSDF'
+description: '2D cross-shaped signed distance field generated from perpendicular rectangles'
+keywords: [SDF, cross, 2D, geometry, intersection, perpendicular]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# crossSDF: Cross-Shaped Distance Field Composition
+
+### Geometric Intersection of Perpendicular Rectangles
+
+The `crossSDF` function generates a cross-shaped signed distance field by computing the minimum distance between two perpendicular rectangular strips. This composite primitive demonstrates SDF combination techniques through geometric intersection.
+
+## Mathematical Foundation
+
+The cross SDF operates through rectangular composition and minimum distance selection:
+
+$$
+d_{\text{cross}}(st, s) = \min(d_{\text{rect}}(st, (0.25, s)), d_{\text{rect}}(st, (s, 0.25)))
+$$
+
+where the cross is formed by intersecting:
+
+- Vertical rectangle: width = 0.25, height = $s$
+- Horizontal rectangle: width = $s$, height = 0.25
+
+The minimum function selects the closest distance from either rectangular component.
+
+## Function Signature
+
+| Parameter | Type    | Description                |
+| --------- | ------- | -------------------------- |
+| `st`      | `vec2`  | Sample point coordinates   |
+| `s`       | `float` | Cross arm length parameter |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const dist = crossSDF(uv, sin(iTime).mul(0.5).add(0.5))
+        const inside = step(dist, 0.5)
+        const edge = smoothstep(0.02, 0, dist.abs())
+        const color = inside.mul(0.7).add(edge.mul(0.4))
+        return vec4(color.mul(vec3(1, 0.3, 0.5)), 1)
+}`}
+/>

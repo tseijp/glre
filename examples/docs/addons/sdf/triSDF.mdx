@@ -24,50 +24,33 @@ $$
 where the coefficient $\frac{\sqrt{3}}{2} \approx 0.866025$ represents the geometric relationship for an equilateral triangle's sides.
 
 The coordinate transformation centers the triangle and scales it:
+
 $$
 \vec{p}_{\text{centered}} = (\vec{st} - 0.5) \cdot 5
 $$
 
 ## Function Variants
 
-| Function | Parameters | Description |
-|----------|------------|-------------|
-| `triSDF` | `st` | Triangle centered at (0.5, 0.5) |
-| `triSDFCenter` | `st`, `center` | Triangle at custom position |
+| Function       | Parameters     | Description                     |
+| -------------- | -------------- | ------------------------------- |
+| `triSDF`       | `st`           | Triangle centered at (0.5, 0.5) |
+| `triSDFCenter` | `st`, `center` | Triangle at custom position     |
 
 ## Function Signature
 
-| Parameter | Type   | Description |
-| --------- | ------ | ----------- |
-| `st`      | `vec2` | Sample point in 2D space |
+| Parameter | Type   | Description                                  |
+| --------- | ------ | -------------------------------------------- |
+| `st`      | `vec2` | Sample point in 2D space                     |
 | `center`  | `vec2` | Triangle center position (triSDFCenter only) |
 
 ## Implementation Demonstrations
 
 <FragmentEditor
         code={`
-const fragment = () => {
+const fragment = () => {const fragment = () => {
         const pos = uv.mul(2).sub(1)
-        const dist = triSDF(pos.add(1).div(2))
-        const color = step(0, dist).oneMinus().mul(0.9).add(0.1)
-        return vec4(vec3(color), 1)
+        const dist = triSDF(uv)
+        return vec4(vec3(dist), 1)
+}
 }`}
-/>
-
-<FragmentEditor
-        code={`
-const fragment = () => Scope(() => {
-        const p = uv.mul(4).sub(2)
-        const minDist = float(1000).toVar()
-        Loop(9, ({ i }) => {
-                const x = i.toFloat().mod(3).sub(1)
-                const y = i.toFloat().div(3).floor().sub(1)
-                const center = vec2(x.mul(0.6), y.mul(0.6))
-                const pos = p.sub(center)
-                const d = triSDFCenter(pos.add(1).div(2), vec2(0.5))
-                minDist.assign(minDist.min(d.abs().sub(0.1)))
-        })
-        const brightness = smoothstep(0.02, 0, minDist)
-        return vec4(brightness.mul(vec3(0.2, 0.8, 0.9)), 1)
-})`}
 />
