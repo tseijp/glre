@@ -1,0 +1,62 @@
+---
+title: 'starSDF'
+description: '2D star-shaped signed distance field with adjustable vertices and inner scaling'
+keywords: [SDF, star, 2D, polygon, vertices, angular, geometric]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# starSDF: Parametric Star Distance Field
+
+### Multi-Pointed Star Generation with Angular Precision
+
+The `starSDF` function generates star-shaped distance fields with precise angular control. This function creates star polygons by dividing angular space into segments and applying alternating radius modulation to create the characteristic pointed and indented star geometry.
+
+## Mathematical Foundation
+
+The star pattern is constructed through angular segmentation and polar transformation:
+
+$$
+\theta_{seg} = \left\lfloor \frac{\theta \cdot V}{2\pi} \right\rfloor + 0.5
+$$
+
+$$
+\theta_{star} = \frac{\theta_{seg}}{V} + \text{mix}(s, -s, \text{step}(0.5, \text{fract}(\theta \cdot V / 2\pi))) \cdot 2\pi
+$$
+
+$$
+d_{star} = |\vec{r} \cdot (\cos(\theta_{star}), \sin(\theta_{star}))|
+$$
+
+where $V$ represents the number of star points and $s$ controls the inner scaling factor.
+
+## Function Signatures
+
+| Function            | Parameters             | Description                             |
+| ------------------- | ---------------------- | --------------------------------------- |
+| `starSDF(st, V, s)` | `vec2`, `int`, `float` | Full control with custom inner scaling  |
+| `starSDF(st, V)`    | `vec2`, `int`          | Simplified version with default scaling |
+
+### Parameters
+
+| Parameter | Type    | Description                         |
+| --------- | ------- | ----------------------------------- |
+| `st`      | `vec2`  | 2D coordinate position              |
+| `V`       | `int`   | Number of star points (vertices)    |
+| `s`       | `float` | Inner scaling factor (default: 0.1) |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const coord = uv.sub(0.5).mul(2)
+        const vertices = iTime.mul(0.3).add(3).floor().toInt()
+        const scale = sin(iTime.mul(2)).mul(0.3).add(0.4)
+        const dist = starSDF(coord.mul(0.5).add(0.5), vertices, scale)
+        const brightness = smoothstep(0.02, 0, dist).mul(0.9)
+        const color = brightness.mul(vec3(1, 0.7, 0.3))
+        return vec4(color, 1)
+}`}
+/>
