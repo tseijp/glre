@@ -1,0 +1,48 @@
+---
+title: 'blendLinearLight'
+description: 'Linear Light blending creates dual-mode illumination switching between burn and dodge at midtone threshold'
+keywords: ['blend', 'linear', 'light', 'dual', 'burn', 'dodge', 'threshold', 'midtone']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendLinearLight: Dual-Mode Illumination Control
+
+### Threshold-Based Light and Shadow Switching
+
+Linear Light blending creates dual-mode illumination effects through threshold-based switching between linear burn and linear dodge operations. This function analyzes blend values at the 0.5 midtone boundary, applying darkening for shadows and brightening for highlights with doubled intensity scaling.
+
+The mathematical definition uses conditional threshold switching:
+
+$$
+C_{result} = \begin{cases}
+\text{linearBurn}(C_{base}, 2 \cdot C_{blend}) & \text{if } C_{blend} < 0.5 \\
+\text{linearDodge}(C_{base}, 2 \cdot (C_{blend} - 0.5)) & \text{if } C_{blend} \geq 0.5
+\end{cases}
+$$
+
+This dual-mode operation creates dramatic lighting control where the blend value determines whether regions become shadows or highlights, with the midtone serving as the neutral pivot point.
+
+### Dual-Mode Lighting Properties
+
+| Property | Description | Mathematical Expression |
+|----------|-------------|-------------------------|
+| **Midtone Threshold** | 0.5 boundary determines mode | $C_{blend} < 0.5 \rightarrow \text{burn}$ |
+| **Shadow Enhancement** | Dark values apply burn darkening | $\text{linearBurn}(base, 2 \cdot blend)$ |
+| **Highlight Enhancement** | Light values apply dodge brightening | $\text{linearDodge}(base, 2 \cdot (blend - 0.5))$ |
+| **Intensity Doubling** | Both modes use 2x scaling | $\text{scale} = 2 \cdot C_{blend}$ |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const blendValue = uv.x
+        const baseColor = vec3(0.5, 0.4, 0.6)
+        
+        const blendColor = vec3(blendValue)
+        const result = blendLinearLightVec3(baseColor, blendColor)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration reveals Linear Light's dual-mode essence through horizontal threshold transition. The base color remains constant while the blend gradient creates a sharp division at x=0.5: left side becomes darker through linear burn, right side becomes brighter through linear dodge. This shows the function's core principle of midtone-based switching between opposing lighting effects, creating the dramatic contrast control that defines linear light blending.
