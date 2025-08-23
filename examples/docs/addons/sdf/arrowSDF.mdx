@@ -53,8 +53,8 @@ const fragment = () => {
         const start = vec3(-1.5, 0, 0)
         const end = vec3(1.5, 0, 0)
         const dist = arrowSDF(pos, start, end, 0.25, 0.6, 0.8)
-        const arrowShape = smoothstep(0.05, 0, dist)
-        const arrowFill = step(0, dist.negate())
+        const arrowShape = float(0.05).smoothstep(0, dist)
+        const arrowFill = float(0).step(dist.negate())
         const color = arrowFill.mul(vec3(1, 0.3, 0.1)).add(arrowShape.mul(vec3(1, 0.8, 0.2)))
         return vec4(color, 1)
 }`}

@@ -40,9 +40,9 @@ The minimum function selects the closest distance from either rectangular compon
 <FragmentEditor
         code={`
 const fragment = () => {
-        const dist = crossSDF(uv, sin(iTime).mul(0.5).add(0.5))
-        const inside = step(dist, 0.5)
-        const edge = smoothstep(0.02, 0, dist.abs())
+        const dist = crossSDF(uv, iTime.sin().mul(0.5).add(0.5))
+        const inside = dist.step(0.5)
+        const edge = float(0.02).smoothstep(0, dist.abs())
         const color = inside.mul(0.7).add(edge.mul(0.4))
         return vec4(color.mul(vec3(1, 0.3, 0.5)), 1)
 }`}

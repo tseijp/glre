@@ -53,7 +53,7 @@ const fragment = () => Scope(() => {
                 const d = polySDFFloat(p.add(0.5), sides.toFloat()).sub(0.2).abs().sub(0.02)
                 minDist.assign(minDist.min(d))
         })
-        const brightness = step(minDist, 0).mul(0.9).add(smoothstep(0.02, 0, minDist.abs()).mul(0.3))
+        const brightness = minDist.step(0).mul(0.9).add(float(0.02).smoothstep(0, minDist.abs()).mul(0.3))
         const hue = uv.x.add(uv.y).mul(0.5)
         return vec4(brightness.mul(vec3(hue.mul(0.8).add(0.2), 0.6, 1)), 1)
 })`}

@@ -48,8 +48,8 @@ const fragment = () => {
         const endPoint = vec3(1, 0.5, 0)
         const radius = 0.3
         const dist = capsuleSDF(pos, startPoint, endPoint, radius)
-        const inside = step(dist, 0)
-        const edge = smoothstep(0.02, 0, dist.abs())
+        const inside = dist.step(0)
+        const edge = float(0.02).smoothstep(0, dist.abs())
         const color = inside.mul(0.8).add(edge.mul(0.4))
         return vec4(vec3(color), 1)
 }`}

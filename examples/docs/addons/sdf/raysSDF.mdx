@@ -43,13 +43,13 @@ where $N$ is the number of rays and the result creates repeating angular segment
 const fragment = () => Scope(() => {
         const center = vec2(0.5)
         const dist = uv.sub(center).length()
-        const fadeOut = smoothstep(0.5, 0.3, dist)
+        const fadeOut = float(0.5).smoothstep(0.3, dist)
         const minBrightness = float(0).toVar()
         Loop(4, ({ i }) => {
                 const rayCount = i.add(4).mul(2)
                 const rayPattern = raysSDF(uv, int(rayCount))
                 const threshold = i.toFloat().mul(0.15).add(0.4)
-                const rays = step(threshold, rayPattern).mul(fadeOut)
+                const rays = threshold.step(rayPattern).mul(fadeOut)
                 minBrightness.assign(minBrightness.max(rays.mul(i.add(1).toFloat().div(8))))
         })
         const hue = raysSDF(uv, int(16)).mul(0.3).add(0.1)

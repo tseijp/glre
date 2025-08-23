@@ -66,7 +66,7 @@ Same parameters as `superShapeSDF` plus:
 const fragment = () => {
         const p = uv.mul(2).sub(1).mul(0.1)
         const dist = superShapeSDFCenter(p, vec2(0), 0.5, 1, 1, 1, 1, 1, 5)
-        const color = step(0, dist).oneMinus()
+        const color = float(0).step(dist).oneMinus()
         return vec4(vec3(color), 1)
 }`}
 />

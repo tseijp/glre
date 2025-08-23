@@ -59,7 +59,7 @@ const fragment = () => Scope(() => {
         const gearSystem = float(1000).toVar()
         Loop(4, ({ i }) => {
                 const angle = i.toFloat().mul(1.57)
-                const offset = vec2(sin(angle).mul(0.25), cos(angle).mul(0.25))
+                const offset = vec2(angle.sin().mul(0.25), angle.cos().mul(0.25))
                 const rotation = iTime.mul(i.add(1).toFloat())
                 const rotatedUV = vec2(
                         uv.x.sub(0.5).mul(rotation.cos()).sub(uv.y.sub(0.5).mul(rotation.sin())).add(0.5),
@@ -70,7 +70,7 @@ const fragment = () => Scope(() => {
                 const d = gearSDF(rotatedUV.add(offset), size, teeth)
                 gearSystem.assign(gearSystem.min(d))
         })
-        const brightness = step(gearSystem, 0).mul(0.9).add(smoothstep(0.02, 0, gearSystem.abs()).mul(0.4))
+        const brightness = gearSystem.step(0).mul(0.9).add(float(0.02).smoothstep(0, gearSystem.abs()).mul(0.4))
         return vec4(brightness.mul(vec3(0.7, 0.5, 0.3)), 1)
 })`}
 />

@@ -41,8 +41,8 @@ The coefficient $\frac{\sqrt{3}}{2} \approx 0.866025$ represents the geometric r
 const fragment = () => {
         const pos = uv.sub(0.5).mul(2)
         const dist = hexSDF(pos.add(0.5))
-        const inside = step(dist, 1)
-        const edge = smoothstep(0.05, 0, dist.sub(1).abs())
+        const inside = dist.step(1)
+        const edge = float(0.05).smoothstep(0, dist.sub(1).abs())
         const color = inside.mul(0.8).add(edge.mul(0.6))
         return vec4(color.mul(vec3(0.3, 0.7, 1)), 1)
 }`}

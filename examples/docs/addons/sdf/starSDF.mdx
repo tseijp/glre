@@ -54,7 +54,7 @@ const fragment = () => {
         const vertices = iTime.sin().add(3).floor().toInt()
         const scale = iTime.cos().mul(0.3).add(3)
         const dist = starSDF(uv, vertices, scale)
-        const brightness = smoothstep(0.1, 0, dist).mul(0.9)
+        const brightness = float(0.1).smoothstep(0, dist).mul(0.9)
         const color = brightness.mul(vec3(1, 0.7, 0.3))
         return vec4(color, 1)
 }`}

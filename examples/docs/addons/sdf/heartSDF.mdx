@@ -45,12 +45,12 @@ const fragment = () => Scope(() => {
                 const offset = vec2(i.toFloat().mul(0.1).sub(0.2), 0)
                 const pos = uv.sub(offset).div(scale)
                 const d = heartSDF(pos)
-                const brightness = smoothstep(0.1, 0, d.abs()).mul(scale)
+                const brightness = float(0.1).smoothstep(0, d.abs()).mul(scale)
                 const hue = i.toFloat().mul(0.2)
                 heartColor.assign(heartColor.add(brightness.mul(vec3(
-                        sin(hue).mul(0.5).add(0.5),
-                        cos(hue.add(2.094)).mul(0.5).add(0.5),
-                        sin(hue.add(4.188)).mul(0.5).add(0.5)
+                        hue.sin().mul(0.5).add(0.5),
+                        hue.add(2.094).cos().mul(0.5).add(0.5),
+                        hue.add(4.188).sin().mul(0.5).add(0.5)
                 ))))
         })
         return vec4(heartColor.clamp(0, 1), 1)

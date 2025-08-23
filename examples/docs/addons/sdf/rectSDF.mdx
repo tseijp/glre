@@ -56,10 +56,10 @@ $$
 <FragmentEditor
         code={`
 const fragment = () => {
-        const size = vec2(0.6, 0.3).mul(sin(iTime).mul(0.3).add(1))
+        const size = vec2(0.6, 0.3).mul(iTime.sin().mul(0.3).add(1))
         const dist = rectSDF(uv, size)
-        const inside = step(dist, 1)
-        const edge = smoothstep(1.02, 0.98, dist)
+        const inside = dist.step(1)
+        const edge = float(1.02).smoothstep(0.98, dist)
         const color = inside.mul(0.7).add(edge.mul(0.4))
         return vec4(color.mul(vec3(1, 0.5, 0.3)), 1)
 }`}

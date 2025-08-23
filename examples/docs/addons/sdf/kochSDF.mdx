@@ -49,8 +49,8 @@ where $\vec{r_3} = (-\sqrt{3}, 3)$ and the width scaling factor $w_{n+1} = \frac
 const fragment = () => {
         const pos = uv.sub(0.5)
         const dist = kochSDF(pos.add(0.5), vec2(0.5), int(10))
-        const inside = step(dist, 0)
-        const edge = smoothstep(0.005, 0, dist.abs())
+        const inside = dist.step(0)
+        const edge = float(0.005).smoothstep(0, dist.abs())
         const color = inside.mul(0.9).add(edge.mul(0.7))
         return vec4(color.mul(vec3(0.2, 0.8, 1)), 1)
 }`}

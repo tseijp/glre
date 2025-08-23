@@ -39,6 +39,6 @@ const fragment = () => {
         const pattern = sin(localPos.x.mul(6)).mul(sin(localPos.y.mul(6)))
         const cellColor = sin(id.mul(2.3)).mul(0.5).add(0.5)
         const final = pattern.mul(0.5).add(0.5).mul(cellColor)
-        return vec4(vec3(final, cellColor.mul(0.7), float(1).sub(cellColor)), 1)
+        return vec4(vec3(final, cellColor.mul(0.7), cellColor.oneMinus()), 1)
 }`}
 />

@@ -51,10 +51,10 @@ The factor of 2 normalizes the distance relative to a unit coordinate system.
 <FragmentEditor
         code={`
 const fragment = () => {
-        const center = vec2(0.5).add(sin(iTime).mul(0.2))
+        const center = vec2(0.5).add(iTime.sin().mul(0.2))
         const dist = circleSDF(uv, center)
-        const inside = step(dist, 0.4)
-        const edge = smoothstep(0.42, 0.38, dist)
+        const inside = dist.step(0.4)
+        const edge = float(0.42).smoothstep(0.38, dist)
         const color = inside.mul(0.8).add(edge.mul(0.3))
         return vec4(vec3(color), 1)
 }`}

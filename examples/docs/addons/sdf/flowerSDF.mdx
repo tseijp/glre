@@ -43,8 +43,8 @@ The cosine modulation creates regular undulations in the radial function, formin
 const fragment = () => {
         const petalCount = int(iTime.mul(2).sin().mul(3).add(6))
         const dist = flowerSDF(uv, petalCount)
-        const inside = step(dist, 0)
-        const edge = smoothstep(0.02, 0, dist.abs())
+        const inside = dist.step(0)
+        const edge = float(0.02).smoothstep(0, dist.abs())
         const color = inside.mul(0.9).add(edge.mul(0.6))
         return vec4(color.mul(vec3(1, 0.7, 0.8)), 1)
 }`}

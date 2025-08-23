@@ -47,9 +47,9 @@ The width parameter $w$ controls the overlap between circles:
         code={`
 const fragment = () => {
         const p = uv.sub(0.5).mul(2)
-        const width = sin(iTime).mul(0.3).add(0.6)
+        const width = iTime.sin().mul(0.3).add(0.6)
         const dist = vesicaSDF(p, width)
-        const brightness = step(0, dist.negate()).mul(0.8).add(0.2)
+        const brightness = float(0).step(dist.negate()).mul(0.8).add(0.2)
         return vec4(vec3(brightness), 1)
 }`}
 />

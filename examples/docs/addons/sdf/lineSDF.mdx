@@ -60,11 +60,11 @@ $$
 <FragmentEditor
         code={`
 const fragment = () => {
-        const a = vec2(0.2, 0.3).add(sin(iTime).mul(0.1))
-        const b = vec2(0.8, 0.7).add(cos(iTime.mul(1.3)).mul(0.1))
+        const a = vec2(0.2, 0.3).add(iTime.sin().mul(0.1))
+        const b = vec2(0.8, 0.7).add(iTime.mul(1.3).cos().mul(0.1))
         const dist = lineSDF2D(uv, a, b)
-        const line = smoothstep(0.02, 0.005, dist)
-        const endpoints = step(distance(uv, a), 0.03).max(step(distance(uv, b), 0.03))
+        const line = float(0.02).smoothstep(0.005, dist)
+        const endpoints = distance(uv, a).step(0.03).max(distance(uv, b).step(0.03))
         return vec4(line.mul(vec3(0.8, 0.4, 1)).add(endpoints.mul(vec3(1, 0.2, 0.3))), 1)
 }`}
 />

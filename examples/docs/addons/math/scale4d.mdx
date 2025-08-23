@@ -49,7 +49,7 @@ const fragment = () => {
 
         // Relativistic scaling factors (Lorentz-like transformation)
         const velocity = cosmicTime.sin().mul(0.8)
-        const gamma = float(1).sub(velocity.mul(velocity)).sqrt().reciprocal()
+        const gamma = velocity.mul(velocity).oneMinus().sqrt().reciprocal()
 
         // Space-time coordinates [x, y, z, t]
         const spatialZ = spacetime.length().add(cosmicTime).cos()

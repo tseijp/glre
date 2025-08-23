@@ -52,7 +52,7 @@ const fragment = () => {
         const up = vec3(0, 1, 0)
         const eps = vec3(0.01, 0, 0)
         const eye = rotate3dY(iTime.mul(0.3)).mul(vec3(5))
-        const args = [sin(iTime).mul(0.3).add(0.8)]
+        const args = [iTime.sin().mul(0.3).add(0.8)]
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const d = sphereSDFRadius(p, ...args).toVar()
