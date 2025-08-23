@@ -1,0 +1,53 @@
+---
+title: 'blendVividLight'
+description: 'Vivid Light blending creates extreme contrast by combining color burn and color dodge for dramatic illumination effects'
+keywords: ['blend', 'vivid', 'light', 'contrast', 'burn', 'dodge', 'dramatic']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendVividLight: Extreme Contrast Illumination
+
+### Dramatic Light and Shadow Dynamics
+
+Vivid Light blending creates extreme contrast through conditional brightness manipulation. This function combines color burn for dark regions and color dodge for light regions, generating dramatic illumination effects that amplify both shadows and highlights.
+
+The mathematical definition uses a threshold-based approach:
+
+$$
+C_{result} = \begin{cases}
+\text{colorBurn}(C_{base}, 2 \cdot C_{blend}) & \text{if } C_{blend} < 0.5 \\
+\text{colorDodge}(C_{base}, 2 \cdot (C_{blend} - 0.5)) & \text{if } C_{blend} \geq 0.5
+\end{cases}
+$$
+
+This dual-mode operation creates powerful contrast effects where midtones become decision points between burning shadows and dodging highlights.
+
+### Threshold-Based Contrast Properties
+
+| Property | Description | Mathematical Expression |
+|----------|-------------|-------------------------|
+| **Burn Threshold** | Dark values undergo color burn intensification | $C_{blend} < 0.5 \rightarrow \text{burn}$ |
+| **Dodge Threshold** | Light values undergo color dodge enhancement | $C_{blend} \geq 0.5 \rightarrow \text{dodge}$ |
+| **Dual Scaling** | Both modes use 2x scaling for dramatic effect | $\text{scale} = 2 \cdot C_{blend}$ |
+| **Extreme Response** | Creates maximum contrast between light and dark | $\Delta C_{max}$ |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const radius = length(uv.sub(center))
+        
+        const basePattern = cos(radius.mul(12)).mul(0.3).add(0.5)
+        const blendGradient = radius.mul(1.5)
+        
+        const baseColor = vec3(0.8, 0.4, 0.2)
+        const blendColor = vec3(blendGradient)
+        
+        const result = blendVividLightVec3(baseColor.mul(basePattern), blendColor)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration reveals Vivid Light's essence through radial contrast patterns. The base color contains subtle variations while the blend gradient creates threshold regions where the function switches between burning dark areas and dodging light areas, producing the characteristic extreme contrast that defines vivid lighting effects.
