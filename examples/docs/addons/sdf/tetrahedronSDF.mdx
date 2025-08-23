@@ -1,0 +1,72 @@
+---
+title: 'tetrahedronSDF'
+description: 'Regular tetrahedron signed distance field with height parameter'
+keywords: [SDF, tetrahedron, 3D, geometry, platonic, solid]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# tetrahedronSDF: Regular Tetrahedron Distance Field
+
+### Four-Faced Platonic Solid Geometry
+
+The `tetrahedronSDF` function computes the signed distance from any 3D point to a regular tetrahedron. This primitive represents the simplest of the Platonic solids, featuring four triangular faces meeting at each vertex with perfect symmetry.
+
+## Mathematical Foundation
+
+The tetrahedron SDF calculation involves distance computation from multiple planes:
+
+$$
+d_1 = |q_z| - \max(0, y)
+$$
+
+$$
+d_2 = \max(0.5|q_x| + 0.5y, 0) - \min(h, h + y)
+$$
+
+$$
+d_{\text{tetrahedron}} = \text{length}(\max(\vec{d}, 0.005)) + \min(\max(d_1, d_2), 0)
+$$
+
+where $\vec{q} = |p|$ represents the absolute coordinates and $y = p_y$ is the vertical component.
+
+## Function Signature
+
+| Parameter | Type    | Description                  |
+| --------- | ------- | ---------------------------- |
+| `p`       | `vec3`  | Sample point position        |
+| `h`       | `float` | Tetrahedron height parameter |
+
+## Implementation Demonstrations
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const up = vec3(0, 1, 0)
+        const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dX(iTime).mul(vec3(4))
+        const args = [0.5]
+        const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
+                const p = eye.toVar()
+                const d = tetrahedronSDF(p, ...args).toVar()
+                Loop(128, ({ i }) => {
+                        If(d.lessThanEqual(eps.x), () => {
+                                const dx = tetrahedronSDF(p.add(eps.xyy), ...args).sub(d)
+                                const dy = tetrahedronSDF(p.add(eps.yxy), ...args).sub(d)
+                                const dz = tetrahedronSDF(p.add(eps.yyx), ...args).sub(d)
+                                return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
+                        })
+                        p.assign(p.add(d.mul(dir)))
+                        d.assign(tetrahedronSDF(p, ...args))
+                })
+                return vec4(0)
+        })
+        const z = eye.negate().normalize()
+        const x = z.cross(up)
+        const y = x.cross(z)
+        const scr = vec3(uv.sub(0.5), 2)
+        const dir = mat3(x, y, z).mul(scr).normalize()
+        return march(eye, dir)
+}`}
+/>

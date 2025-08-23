@@ -36,11 +36,7 @@ The maximum operation creates the intersection of the two triangular half-spaces
 <FragmentEditor
         code={`
 const fragment = () => {
-        const coord =  uv.mul(2).sub(1).mul(0.005).add(0.5)
-        const dist = rhombSDF(coord)
-        const inside = step(dist, 0)
-        const edge = smoothstep(0.02, 0, dist.abs())
-        const color = inside.mul(0.8).add(edge.mul(0.6))
-        return vec4(vec3(color), 1)
+        const dist = rhombSDF(uv)
+        return vec4(vec3(dist), 1)
 }`}
 />

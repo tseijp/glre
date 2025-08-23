@@ -56,13 +56,13 @@ $$
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(4)
         const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(4))
         const args = [1.2]
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const d = octahedronSDF(p, ...args).toVar()
-                Loop(16, ({ i }) => {
+                Loop(32, ({ i }) => {
                         If(d.lessThanEqual(eps.x), () => {
                                 const dx = octahedronSDF(p.add(eps.xyy), ...args).sub(d)
                                 const dy = octahedronSDF(p.add(eps.yxy), ...args).sub(d)

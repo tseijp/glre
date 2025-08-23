@@ -49,22 +49,3 @@ const fragment = () => {
         return vec4(color.mul(vec3(1, 0.7, 0.8)), 1)
 }`}
 />
-
-<FragmentEditor
-        code={`
-const fragment = () => Scope(() => {
-        const flowerField = float(1000).toVar()
-        Loop(5, ({ i }) => {
-                const offset = vec2(
-                        sin(i.toFloat().mul(1.26)).mul(0.3),
-                        cos(i.toFloat().mul(1.26)).mul(0.3)
-                )
-                const petals = int(i.add(3))
-                const d = flowerSDF(uv.add(offset), petals)
-                flowerField.assign(flowerField.min(d))
-        })
-        const brightness = step(flowerField, 0).mul(0.8).add(smoothstep(0.03, 0, flowerField.abs()).mul(0.5))
-        const hue = flowerField.mul(5).sin().mul(0.3).add(0.7)
-        return vec4(brightness.mul(vec3(hue, 0.6, 0.9)), 1)
-})`}
-/>

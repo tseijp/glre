@@ -38,17 +38,6 @@ where the coordinates are first centered and normalized. The heart equation comb
 
 <FragmentEditor
         code={`
-const fragment = () => {
-        const heartDist = heartSDF(uv)
-        const inside = step(heartDist, 0)
-        const edge = smoothstep(0.02, 0, heartDist.abs())
-        const color = inside.mul(0.9).add(edge.mul(0.3))
-        return vec4(color.mul(vec3(1, 0.3, 0.4)), 1)
-}`}
-/>
-
-<FragmentEditor
-        code={`
 const fragment = () => Scope(() => {
         const heartColor = vec3(0).toVar()
         Loop(5, ({ i }) => {

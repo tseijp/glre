@@ -42,8 +42,8 @@ This represents the perpendicular distance from point $p$ to the plane surface.
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(8, 6, 8)
         const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(6))
         const sceneMap = Fn(([p]: [Vec3]) => {
                 const ground = planeSDF(p.add(vec3(0, 2, 0)))
                 const cube = cubeSDF(p, 1)

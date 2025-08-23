@@ -41,8 +41,8 @@ This transformation creates a shell around the zero isosurface of the original s
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(5)
         const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
         const sdf = Fn(([p]: [Vec3]) => {
                 const sphere = sphereSDF(p)
                 const box = cubeSDF(p, 0.8)

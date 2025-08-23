@@ -48,8 +48,8 @@ $$
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(6)
         const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(4))
         const sdf = Fn(([p]: [Vec3]) => {
                 const repeatedPos = opRepeatVec3(p, vec3(5))
                 return sphereSDFRadius(repeatedPos, 0.2)

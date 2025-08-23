@@ -51,11 +51,10 @@ where $V$ represents the number of star points and $s$ controls the inner scalin
 <FragmentEditor
         code={`
 const fragment = () => {
-        const coord = uv.sub(0.5).mul(2)
-        const vertices = iTime.mul(0.3).add(3).floor().toInt()
-        const scale = sin(iTime.mul(2)).mul(0.3).add(0.4)
-        const dist = starSDF(coord.mul(0.5).add(0.5), vertices, scale)
-        const brightness = smoothstep(0.02, 0, dist).mul(0.9)
+        const vertices = iTime.sin().add(3).floor().toInt()
+        const scale = iTime.cos().mul(0.3).add(3)
+        const dist = starSDF(uv, vertices, scale)
+        const brightness = smoothstep(0.1, 0, dist).mul(0.9)
         const color = brightness.mul(vec3(1, 0.7, 0.3))
         return vec4(color, 1)
 }`}

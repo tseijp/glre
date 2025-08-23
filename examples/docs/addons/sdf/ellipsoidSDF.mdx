@@ -46,8 +46,8 @@ The function approximates the exact distance through iterative refinement, provi
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(5)
         const eps = vec3(0.01, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(5))
         const args = [vec3(1.5, 0.8, 1.2)]
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()

@@ -56,19 +56,19 @@ $$
         code={`
 const fragment = () => {
         const up = vec3(0, 1, 0)
-        const eye = vec3(3)
         const eps = vec3(0.001, 0, 0)
+        const eye = rotate3dY(iTime).mul(vec3(3))
         const march = Fn(([eye, dir]: [Vec3, Vec3]) => {
                 const p = eye.toVar()
                 const result = mandelbulbSDF(p).toVar()
                 const d = result.x.toVar()
-                Loop(16, ({ i }) => {
+                Loop(128, ({ i }) => {
                         If(d.lessThanEqual(eps.x), () => {
                                 const dx = mandelbulbSDF(p.add(eps.xyy)).x.sub(d)
                                 const dy = mandelbulbSDF(p.add(eps.yxy)).x.sub(d)
                                 const dz = mandelbulbSDF(p.add(eps.yyx)).x.sub(d)
                                 const normal = vec3(dx, dy, dz).normalize()
-                                const iterations = result.y.div(20)
+                                const iterations = result.y.div(64)
                                 return vec4(normal.mul(0.5).add(0.5).mul(iterations.add(0.3)), 1)
                         })
                         p.assign(p.add(d.mul(dir)))
