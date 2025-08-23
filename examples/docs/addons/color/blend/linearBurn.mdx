@@ -1,0 +1,47 @@
+---
+title: 'blendLinearBurn'
+description: 'Linear Burn blending performs additive darkening through linear subtraction with zero clamping'
+keywords: ['blend', 'linear', 'burn', 'additive', 'darkening', 'subtraction', 'clamping']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendLinearBurn: Additive Darkening Process
+
+### Linear Subtraction with Zero Boundary
+
+Linear Burn blending creates darkening effects through additive subtraction. This function adds base and blend values, subtracts unity, then clamps negative results to zero, producing linear darkening that preserves color relationships while creating controlled shadow regions.
+
+The mathematical definition uses linear arithmetic with boundary clamping:
+
+$$
+C_{result} = \max(C_{base} + C_{blend} - 1, 0)
+$$
+
+This operation creates predictable darkening where colors combine additively before subtracting the maximum possible value, ensuring that only overlapping bright regions survive the subtraction process.
+
+### Linear Darkening Properties
+
+| Property | Description | Mathematical Expression |
+|----------|-------------|-------------------------|
+| **Additive Base** | Colors combine through addition | $C_{sum} = C_{base} + C_{blend}$ |
+| **Unity Subtraction** | Maximum value removed from sum | $C_{sub} = C_{sum} - 1$ |
+| **Zero Clamp** | Negative values bounded to black | $C_{result} = \max(C_{sub}, 0)$ |
+| **Linear Response** | Proportional darkening relationship | $\Delta C_{in} = \Delta C_{out}$ |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const horizontalBase = uv.x
+        const verticalBlend = uv.y
+        
+        const baseColor = vec3(horizontalBase, 0.4, 0.6)
+        const blendColor = vec3(0.3, verticalBlend, 0.5)
+        
+        const result = blendLinearBurnVec3(baseColor, blendColor)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration reveals Linear Burn's additive darkening essence through orthogonal gradients. The horizontal base gradient and vertical blend gradient create a grid where their intersection shows the linear subtraction effect. Bright regions where base and blend values exceed unity produce visible results, while darker combinations clamp to black, demonstrating how this function preserves only the brightest overlapping color information through linear subtraction.
