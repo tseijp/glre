@@ -1,0 +1,77 @@
+---
+title: 'arrows'
+description: 'Vector field visualization through directional arrow patterns'
+keywords: [arrows, vector, field, direction, visualization, flow]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# arrows: Vector Field Visualization Through Directional Patterns
+
+### Spatial Vector Representation via Tiled Arrow Distribution
+
+The `arrows` function transforms vector field data into visual arrow patterns, providing intuitive representation of directional information across 2D space. This visualization technique enables direct interpretation of flow fields, gradients, and directional data through geometric arrow symbols.
+
+## Mathematical Foundation
+
+Arrow visualization operates through spatial tiling and vector projection:
+
+$$
+\text{tile\_center} = \left(\lfloor\frac{\mathbf{p}}{s}\rfloor + 0.5\right) \times s
+$$
+
+where $s$ represents the tile size and $\mathbf{p}$ is the position coordinate.
+
+For arrow head construction with angle constraint:
+
+$$
+\text{head\_test} = \cos\left(\frac{\alpha}{2}\right) - \mathbf{\hat{n}} \cdot \mathbf{\hat{v}}
+$$
+
+where $\alpha$ is the head angle, $\mathbf{\hat{n}}$ is the normalized direction from tip to point, and $\mathbf{\hat{v}}$ is the normalized vector direction.
+
+## Function Variants
+
+| Function                | Parameters              | Description                     |
+| ----------------------- | ----------------------- | ------------------------------- |
+| `arrows`               | `p`, `v`                | Arrow field with unit resolution |
+| `arrowsWithResolution` | `p`, `v`, `resolution`  | Arrow field with custom scaling  |
+| `arrowsTileCenterCoord`| `pos`                   | Utility for tile center calculation |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const vortex = Fn(([p]: [Vec2]) => {
+                const offset = p.sub(center)
+                const angle = iTime.mul(0.5)
+                const rotation = mat2(
+                        angle.cos(), angle.sin().negate(),
+                        angle.sin(), angle.cos()
+                )
+                const rotated = rotation.mul(offset)
+                const distance = offset.length().add(0.1)
+                return rotated.div(distance.mul(distance))
+        })
+        const wave = Fn(([p]: [Vec2]) => {
+                const freq = float(8)
+                const phase = iTime.mul(2)
+                return vec2(
+                        p.y.mul(freq).add(phase).sin().mul(0.3),
+                        p.x.mul(freq).add(phase).cos().mul(0.2)
+                )
+        })
+        const combined = vortex(uv).add(wave(uv))
+        const arrowField = arrows(uv.mul(12), combined.mul(0.08))
+        const fieldMagnitude = combined.length().mul(2)
+        const color = vec3(
+                arrowField.mul(0.9).add(fieldMagnitude.mul(0.1)),
+                arrowField.mul(fieldMagnitude),
+                arrowField.mul(0.6).add(fieldMagnitude.mul(0.4))
+        )
+        return vec4(color, 1)
+}`}
+/>
