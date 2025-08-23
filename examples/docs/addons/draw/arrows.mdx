@@ -1,77 +1,55 @@
 ---
 title: 'arrows'
-description: 'Vector field visualization through directional arrow patterns'
-keywords: [arrows, vector, field, direction, visualization, flow]
+description: 'Vector field visualization through arrow-based directional indicators'
+keywords: [arrows, vector field, directional, flow, visualization, tiles, grid]
 date: 2025-08-06
 ---
 
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-# arrows: Vector Field Visualization Through Directional Patterns
+# arrows: Vector Field Directional Visualization
 
-### Spatial Vector Representation via Tiled Arrow Distribution
+### Grid-Based Arrow Rendering System
 
-The `arrows` function transforms vector field data into visual arrow patterns, providing intuitive representation of directional information across 2D space. This visualization technique enables direct interpretation of flow fields, gradients, and directional data through geometric arrow symbols.
+The arrows function renders directional indicators in a tiled grid system. Each tile displays an arrow representing the magnitude and direction of a 2D vector field at that spatial location.
 
-## Mathematical Foundation
-
-Arrow visualization operates through spatial tiling and vector projection:
+The system operates by dividing screen space into regular tiles and centering one arrow within each tile. Arrow size automatically scales based on vector magnitude, with visual constraints preventing arrows from exceeding tile boundaries.
 
 $$
-\text{tile\_center} = \left(\lfloor\frac{\mathbf{p}}{s}\rfloor + 0.5\right) \times s
+\text{Arrow}(p, v) = \begin{cases}
+\min(\text{shaft}, \text{head}) & \text{if } |v| > 0 \\
+0 & \text{otherwise}
+\end{cases}
 $$
 
-where $s$ represents the tile size and $\mathbf{p}$ is the position coordinate.
+Where shaft represents the main body and head represents the arrowhead geometry.
 
-For arrow head construction with angle constraint:
+**Mathematical Properties**
 
-$$
-\text{head\_test} = \cos\left(\frac{\alpha}{2}\right) - \mathbf{\hat{n}} \cdot \mathbf{\hat{v}}
-$$
+| Property          | Value         | Description                    |
+| ----------------- | ------------- | ------------------------------ |
+| Tile Size         | 32 pixels     | Grid cell dimensions           |
+| Minimum Magnitude | 5.0           | Threshold for arrow visibility |
+| Maximum Length    | Tile Size / 2 | Prevents overlap between tiles |
+| Head Angle        | Variable      | Arrowhead opening angle        |
 
-where $\alpha$ is the head angle, $\mathbf{\hat{n}}$ is the normalized direction from tip to point, and $\mathbf{\hat{v}}$ is the normalized vector direction.
+The rendering uses signed distance field computation for both shaft and head elements. The shaft utilizes line SDF while the head employs perpendicular line segments positioned at the arrow tip.
 
-## Function Variants
+**Grid Coordinate System**
 
-| Function                | Parameters              | Description                     |
-| ----------------------- | ----------------------- | ------------------------------- |
-| `arrows`               | `p`, `v`                | Arrow field with unit resolution |
-| `arrowsWithResolution` | `p`, `v`, `resolution`  | Arrow field with custom scaling  |
-| `arrowsTileCenterCoord`| `pos`                   | Utility for tile center calculation |
+The `arrowsTileCenterCoord` function maps any position to its corresponding tile center. This ensures arrows remain stationary within their assigned grid cells regardless of input position variations.
 
-## Implementation Demonstration
+```
+Tile Center = (floor(position / tileSize) + 0.5) × tileSize
+```
 
 <FragmentEditor
         code={`
 const fragment = () => {
-        const center = vec2(0.5)
-        const vortex = Fn(([p]: [Vec2]) => {
-                const offset = p.sub(center)
-                const angle = iTime.mul(0.5)
-                const rotation = mat2(
-                        angle.cos(), angle.sin().negate(),
-                        angle.sin(), angle.cos()
-                )
-                const rotated = rotation.mul(offset)
-                const distance = offset.length().add(0.1)
-                return rotated.div(distance.mul(distance))
-        })
-        const wave = Fn(([p]: [Vec2]) => {
-                const freq = float(8)
-                const phase = iTime.mul(2)
-                return vec2(
-                        p.y.mul(freq).add(phase).sin().mul(0.3),
-                        p.x.mul(freq).add(phase).cos().mul(0.2)
-                )
-        })
-        const combined = vortex(uv).add(wave(uv))
-        const arrowField = arrows(uv.mul(12), combined.mul(0.08))
-        const fieldMagnitude = combined.length().mul(2)
-        const color = vec3(
-                arrowField.mul(0.9).add(fieldMagnitude.mul(0.1)),
-                arrowField.mul(fieldMagnitude),
-                arrowField.mul(0.6).add(fieldMagnitude.mul(0.4))
-        )
-        return vec4(color, 1)
+        const st = uv
+        const time = iTime.mul(0.5)
+        const vectorField = vec2(sin(st.y.mul(4).add(time)), cos(st.x.mul(4).add(time))).mul(0.02)
+        const arrowMask = arrows(st, vectorField, iResolution.xy)
+        return vec4(vec3(arrowMask), 1)
 }`}
 />
