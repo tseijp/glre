@@ -47,10 +47,9 @@ $$
 
 <FragmentEditor
         code={`
-const fragment = () => {const fragment = () => {
+const fragment = () => {
         const pos = uv.mul(2).sub(1)
-        const dist = triSDF(uv)
+        const dist = triSDF(uv).step(0.5)
         return vec4(vec3(dist), 1)
-}
 }`}
 />

@@ -54,7 +54,7 @@ const fragment = () => {
                                 const dz = hexPrismSDF(p.add(eps.yyx), vec2(...args)).sub(d)
                                 return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
                         })
-                        p.assign(p.add(d.mul(dir)))
+                        p.addAssign(d.mul(dir))
                         d.assign(hexPrismSDF(p, vec2(...args)))
                 })
                 return vec4(0)

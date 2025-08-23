@@ -60,7 +60,7 @@ const fragment = () => {
                                 const dz = icosahedronSDF(p.add(eps.yyx), ...args).sub(d)
                                 return vec4(vec3(dx, dy, dz).normalize().mul(0.5).add(0.5), 1)
                         })
-                        p.assign(p.add(d.mul(dir)))
+                        p.addAssign(d.mul(dir))
                         d.assign(icosahedronSDF(p, ...args))
                 })
                 return vec4(0)
