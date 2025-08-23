@@ -1,0 +1,39 @@
+---
+title: 'blendPinLight'
+description: 'Threshold-based bipolar processing system switching between darken and lighten at midpoint'
+keywords: ['blend', 'pinLight', 'threshold', 'bipolar', 'darken', 'lighten', 'midpoint']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendPinLight: Bipolar Processing Switch
+
+### Threshold-Based Dual Mode System
+
+PinLight blending operates as a threshold-activated processing switch, applying darken mode below 0.5 and lighten mode above. This creates a bipolar system where the midpoint serves as a computational watershed.
+
+$$
+C_{result} = \begin{cases}
+\text{darken}(C_{base}, 2 \cdot C_{blend}) & \text{if } C_{blend} < 0.5 \\
+\text{lighten}(C_{base}, 2 \cdot (C_{blend} - 0.5)) & \text{if } C_{blend} \geq 0.5
+\end{cases}
+$$
+
+| Range | Mode | Operation | Amplification |
+|-------|------|-----------|---------------|
+| **0.0 - 0.5** | Darken | Shadows intensified | 2× scaling |
+| **0.5 - 1.0** | Lighten | Highlights expanded | 2× scaling |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const basePattern = step(0.3, sin(uv.x.mul(20)).abs())
+        const blendGradient = uv.y
+        
+        return vec4(blendPinLightVec3(
+                vec3(basePattern.mul(0.8).add(0.2)),
+                vec3(blendGradient)
+        ), 1)
+}`}
+/>
