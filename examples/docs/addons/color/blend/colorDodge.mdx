@@ -36,17 +36,16 @@ The division operation creates non-linear brightening that becomes more pronounc
 <FragmentEditor
 code={`
 const fragment = () => {
-        const hexCenter = hexTile(uv.mul(6))
-        const hexDist = length(hexCenter)
+        const center = vec2(0.5)
+        const dist = uv.sub(center).length()
         
-        const base = vec3(0.15, 0.25, 0.45).mul(
-                smoothstep(0.8, 0.3, hexDist)
+        const base = vec3(0.2, 0.3, 0.6).mul(
+                smoothstep(0.5, 0.2, dist)
         )
         
-        const sphereDist = sphereSDF(vec3(uv.mul(2).sub(1), 0), 0.6).oneMinus().saturate()
-        const circleDist = circleSDF(uv, vec2(0.3, 0.7), 0.2).oneMinus().saturate()
-        const noise = random(floor(uv.mul(8))).mul(0.4)
-        const dodge = vec3(sphereDist, circleDist, noise)
+        const lightSpot = smoothstep(0.3, 0.1, uv.sub(vec2(0.7, 0.3)).length())
+        const gradient = uv.x.mul(0.5)
+        const dodge = vec3(lightSpot, gradient, lightSpot.mul(gradient))
         
         const result = blendColorDodgeVec3(base, dodge)
         return vec4(result, 1)
