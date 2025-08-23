@@ -33,15 +33,15 @@ This operation creates predictable darkening where colors combine additively bef
 <FragmentEditor
 code={`
 const fragment = () => {
-        const horizontalBase = uv.x
-        const verticalBlend = uv.y
+        const leftCircle = smoothstep(0.3, 0.25, length(uv.sub(vec2(0.35, 0.5))))
+        const rightCircle = smoothstep(0.3, 0.25, length(uv.sub(vec2(0.65, 0.5))))
         
-        const baseColor = vec3(horizontalBase, 0.4, 0.6)
-        const blendColor = vec3(0.3, verticalBlend, 0.5)
+        const brightBase = vec3(0.9, 0.7, 0.6).mul(leftCircle)
+        const brightBlend = vec3(0.8, 0.9, 0.5).mul(rightCircle)
         
-        const result = blendLinearBurnVec3(baseColor, blendColor)
+        const result = blendLinearBurnVec3(brightBase, brightBlend)
         return vec4(result, 1)
 }`}
 />
 
-The demonstration reveals Linear Burn's additive darkening essence through orthogonal gradients. The horizontal base gradient and vertical blend gradient create a grid where their intersection shows the linear subtraction effect. Bright regions where base and blend values exceed unity produce visible results, while darker combinations clamp to black, demonstrating how this function preserves only the brightest overlapping color information through linear subtraction.
+The demonstration reveals Linear Burn's selective color emergence through bright circle intersection. Only where both bright circles overlap do colors survive the subtraction process, showing how this function requires sufficient combined brightness to produce visible results. The overlapping region demonstrates the additive-then-subtract mechanism that creates color only when input values exceed the unity threshold together.

@@ -1,0 +1,47 @@
+---
+title: 'blendLinearDodge'
+description: 'Linear Dodge blending creates pure additive lightening with white boundary clamping'
+keywords: ['blend', 'linear', 'dodge', 'additive', 'lightening', 'white', 'clamping']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendLinearDodge: Pure Additive Lightening
+
+### Direct Addition with Unity Boundary
+
+Linear Dodge blending creates lightening effects through pure additive combination. This function directly adds base and blend values while clamping results to unity, producing predictable brightening where any color contribution increases the final luminance without complex mathematical transformations.
+
+The mathematical definition uses simple addition with upper boundary control:
+
+$$
+C_{result} = \min(C_{base} + C_{blend}, 1)
+$$
+
+This operation creates immediate brightening where colors combine additively, ensuring that even dark colors contribute to lightening while preventing oversaturation beyond pure white.
+
+### Additive Lightening Properties
+
+| Property | Description | Mathematical Expression |
+|----------|-------------|-------------------------|
+| **Direct Addition** | Colors combine through simple addition | $C_{sum} = C_{base} + C_{blend}$ |
+| **Unity Clamp** | Results bounded to white maximum | $C_{result} = \min(C_{sum}, 1)$ |
+| **Cumulative Effect** | All values contribute to brightening | $\Delta C > 0$ for all inputs |
+| **Linear Response** | Proportional lightening relationship | $\Delta C_{in} = \Delta C_{out}$ |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const baseValue = uv.x
+        const blendValue = uv.y
+        
+        const baseColor = vec3(baseValue, 0, 0)
+        const blendColor = vec3(0, blendValue, 0)
+        
+        const result = blendLinearDodgeVec3(baseColor, blendColor)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration reveals Linear Dodge's white saturation clipping through gradient intersection. The horizontal red base and vertical green blend create a grid where their additive combination shows the function's core behavior: continuous brightening until reaching white saturation in the upper-right region, demonstrating how this function handles overflow by clamping to unity rather than wrapping or distorting.
