@@ -1,0 +1,53 @@
+---
+title: 'blendHardLight'
+description: 'Hard light blending creates dramatic lighting where blend layer acts as powerful directional light'
+keywords: ['blend', 'hardlight', 'dramatic', 'lighting', 'shadow', 'highlight']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendHardLight: Dramatic Directional Lighting
+
+### Mathematical Foundation of Hard Light
+
+Hard light blending creates dramatic lighting effects by making the blend layer act as a powerful directional light source. It uses overlay blending with reversed parameters, treating dark blend values as shadows and bright values as highlights.
+
+The mathematical definition is:
+
+$$
+C_{hardlight} = \text{overlay}(C_{blend}, C_{base}) = \begin{cases}
+2 \cdot C_{blend} \cdot C_{base} & \text{if } C_{blend} < 0.5 \\
+1 - 2(1 - C_{blend})(1 - C_{base}) & \text{otherwise}
+\end{cases}
+$$
+
+This creates a sharp transition at 50% blend value, where darker blend creates shadows and brighter blend creates highlights.
+
+### Directional Lighting Properties
+
+| Blend Value | Effect | Mathematical Behavior |
+|-------------|--------|----------------------|
+| **Black (0.0)** | Pure shadow | Result becomes black |
+| **Dark (< 0.5)** | Shadow creation | Multiply mode darkening |
+| **50% Gray** | No change | Base color preserved |
+| **Bright (> 0.5)** | Highlight creation | Screen mode brightening |
+| **White (1.0)** | Maximum highlight | Result becomes white |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const base = vec3(0.8, 0.5, 0.3)
+        
+        const light = step(0.2, uv.x)
+        const shadow = step(uv.y, 0.3)
+        const neutral = step(abs(uv.x.sub(0.5)), 0.1)
+        
+        const blend = vec3(
+                light.mul(0.9).add(shadow.mul(0.1)).add(neutral.mul(0.5))
+        )
+        
+        const result = blendHardLightVec3(base, blend)
+        return vec4(result, 1)
+}`}
+/>

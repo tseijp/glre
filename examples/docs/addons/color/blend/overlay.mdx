@@ -1,0 +1,48 @@
+---
+title: 'blendOverlay'
+description: 'Overlay blending combines multiply and screen modes based on base color threshold'
+keywords: ['blend', 'overlay', 'multiply', 'screen', 'threshold', 'conditional']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendOverlay: Conditional Multiply-Screen Blend
+
+### Mathematical Foundation of Overlay
+
+Overlay blending creates natural color enhancement by conditionally applying multiply or screen blending based on the base color value. This creates realistic shadow and highlight behavior that responds to the underlying image tones.
+
+The mathematical definition is:
+
+$$
+C_{result} = \begin{cases}
+2 \cdot C_{base} \cdot C_{blend} & \text{if } C_{base} < 0.5 \\
+1 - 2(1 - C_{base})(1 - C_{blend}) & \text{otherwise}
+\end{cases}
+$$
+
+The 50% threshold creates a natural division where dark areas are multiplied (creating shadows) and bright areas are screened (creating highlights).
+
+### Conditional Enhancement Properties
+
+| Base Value | Applied Mode | Effect | Mathematical Result |
+|------------|-------------|--------|-------------------|
+| **Dark (< 0.5)** | Multiply × 2 | Shadow enhancement | Darkening |
+| **Bright (≥ 0.5)** | Screen mode | Highlight enhancement | Brightening |
+| **50% Gray** | Transition point | Natural boundary | Smooth blend |
+| **Neutral Blend** | Preserves base | No dramatic change | Natural enhancement |
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const gradient = vec3(uv.x)
+        const base = gradient
+        
+        const pattern = step(0.5, fract(uv.y.mul(10)))
+        const blend = vec3(pattern.mul(0.3).add(0.4))
+        
+        const result = blendOverlayVec3(base, blend)
+        return vec4(result, 1)
+}`}
+/>
