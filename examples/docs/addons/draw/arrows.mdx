@@ -46,10 +46,9 @@ Tile Center = (floor(position / tileSize) + 0.5) × tileSize
 <FragmentEditor
         code={`
 const fragment = () => {
-        const st = uv
         const time = iTime.mul(0.5)
-        const vectorField = vec2(sin(st.y.mul(4).add(time)), cos(st.x.mul(4).add(time))).mul(0.02)
-        const arrowMask = arrows(st, vectorField, iResolution.xy)
+        const vectorField = vec2(sin(uv.y.mul(4).add(time)), cos(uv.x.mul(4).add(time))).mul(0.02)
+        const arrowMask = arrows(uv, vectorField, iResolution.xy)
         return vec4(vec3(arrowMask), 1)
 }`}
 />

@@ -20,7 +20,7 @@ export const bridgeFloat = Fn(([c, d, s, w]: [Float, Float, Float, Float]): Floa
 export const bridgeVec2 = Fn(([c, d, s, w]: [Vec2, Float, Float, Float]): Vec2 => {
         const strokeMask = stroke(d, s, w.mul(2))
         const maskedC = c.mul(float(1).sub(strokeMask))
-        return maskedC.add(strokeMask)
+        return maskedC.add(stroke(d, s, w))
 }).setLayout({
         name: 'bridgeVec2',
         type: 'vec2',
@@ -36,7 +36,7 @@ export const bridgeVec2 = Fn(([c, d, s, w]: [Vec2, Float, Float, Float]): Vec2 =
 export const bridgeVec3 = Fn(([c, d, s, w]: [Vec3, Float, Float, Float]): Vec3 => {
         const strokeMask = stroke(d, s, w.mul(2))
         const maskedC = c.mul(float(1).sub(strokeMask))
-        return maskedC.add(strokeMask)
+        return maskedC.add(stroke(d, s, w))
 }).setLayout({
         name: 'bridgeVec3',
         type: 'vec3',
@@ -52,7 +52,7 @@ export const bridgeVec3 = Fn(([c, d, s, w]: [Vec3, Float, Float, Float]): Vec3 =
 export const bridgeVec4 = Fn(([c, d, s, w]: [Vec4, Float, Float, Float]): Vec4 => {
         const strokeMask = stroke(d, s, w.mul(2))
         const maskedC = c.mul(float(1).sub(strokeMask))
-        return maskedC.add(strokeMask)
+        return maskedC.add(stroke(d, s, w))
 }).setLayout({
         name: 'bridgeVec4',
         type: 'vec4',
@@ -68,7 +68,7 @@ export const bridgeVec4 = Fn(([c, d, s, w]: [Vec4, Float, Float, Float]): Vec4 =
 export const bridge = Fn(([c, d, s, w]: [X, Float, Float, Float]): X => {
         const strokeMask = stroke(d, s, (w as any).mul(2))
         const maskedC = (c as any).mul(float(1).sub(strokeMask))
-        return maskedC.add(strokeMask)
+        return maskedC.add(stroke(d, s, w as any))
 }).setLayout({
         name: 'bridge',
         type: 'auto',

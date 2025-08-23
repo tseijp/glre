@@ -47,7 +47,6 @@ where $\mathbf{e}_i$ represents the unit vector for each axis direction ($\mathb
 const fragment = () => {
         const time = iTime.mul(0.4)
         const rotation = rotate4d(vec3(1), time)
-        const axisLines = axis(uv, rotation, vec3(0), float(0.007))
-        return vec4(axisLines.rgb, 1)
+        return axisLines = axis(uv, rotation, vec3(0), float(0.007))
 }`}
 />
