@@ -23,36 +23,22 @@ This creates a symmetric relationship where the sum $(C_{base} + C_{blend})$ det
 
 ### Symmetric Equilibrium Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Unity Pivot** | White generation at sum unity | $C_{base} + C_{blend} = 1 \Rightarrow C_{result} = 1$ |
-| **Additive Domain** | Direct addition below unity | $C_{base} + C_{blend} < 1 \Rightarrow C_{result} = C_{base} + C_{blend}$ |
+| Property               | Description                      | Mathematical Expression                                                      |
+| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
+| **Unity Pivot**        | White generation at sum unity    | $C_{base} + C_{blend} = 1 \Rightarrow C_{result} = 1$                        |
+| **Additive Domain**    | Direct addition below unity      | $C_{base} + C_{blend} < 1 \Rightarrow C_{result} = C_{base} + C_{blend}$     |
 | **Subtractive Domain** | Inverted subtraction above unity | $C_{base} + C_{blend} > 1 \Rightarrow C_{result} = 2 - C_{base} - C_{blend}$ |
-| **Perfect Symmetry** | Mirror behavior around unity | $f(x) = f(2-x)$ where $x = C_{base} + C_{blend}$ |
+| **Perfect Symmetry**   | Mirror behavior around unity     | $f(x) = f(2-x)$ where $x = C_{base} + C_{blend}$                             |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const horizontalGrad = uv.x
         const verticalGrad = uv.y.oneMinus()
-        
         const equilibrium = blendNegationVec3(
                 vec3(horizontalGrad, 0.2, 0.3),
                 vec3(verticalGrad, 0.8, 0.7)
         )
-        
         return vec4(equilibrium, 1)
 }`}
 />
-
-### Mathematical Behavior Analysis
-
-The negation function exhibits distinct behavioral regions based on the sum relationship:
-
-**Additive Region** ($S < 1$): When the combined intensity remains below unity, the function produces standard additive brightening. Color channels accumulate naturally, preserving chromatic relationships while increasing luminosity.
-
-**Unity Line** ($S = 1$): At the critical equilibrium where base and blend sum to unity, the function generates pure white regardless of individual color distributions. This creates a luminous boundary separating the two behavioral domains.
-
-**Subtractive Region** ($S > 1$): Beyond unity, the function inverses the excess through complementary subtraction. The result becomes $2 - S$, creating darker tones that mirror the additive region's brightness progression.
-
-This symmetric architecture enables controlled transitions between additive and subtractive color interactions, with unity serving as the natural balance point for color harmony.

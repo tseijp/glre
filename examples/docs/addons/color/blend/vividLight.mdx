@@ -26,28 +26,23 @@ This dual-mode operation creates powerful contrast effects where midtones become
 
 ### Threshold-Based Contrast Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Burn Threshold** | Dark values undergo color burn intensification | $C_{blend} < 0.5 \rightarrow \text{burn}$ |
-| **Dodge Threshold** | Light values undergo color dodge enhancement | $C_{blend} \geq 0.5 \rightarrow \text{dodge}$ |
-| **Dual Scaling** | Both modes use 2x scaling for dramatic effect | $\text{scale} = 2 \cdot C_{blend}$ |
-| **Extreme Response** | Creates maximum contrast between light and dark | $\Delta C_{max}$ |
+| Property             | Description                                     | Mathematical Expression                       |
+| -------------------- | ----------------------------------------------- | --------------------------------------------- |
+| **Burn Threshold**   | Dark values undergo color burn intensification  | $C_{blend} < 0.5 \rightarrow \text{burn}$     |
+| **Dodge Threshold**  | Light values undergo color dodge enhancement    | $C_{blend} \geq 0.5 \rightarrow \text{dodge}$ |
+| **Dual Scaling**     | Both modes use 2x scaling for dramatic effect   | $\text{scale} = 2 \cdot C_{blend}$            |
+| **Extreme Response** | Creates maximum contrast between light and dark | $\Delta C_{max}$                              |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const center = vec2(0.5)
         const radius = length(uv.sub(center))
-        
         const basePattern = cos(radius.mul(12)).mul(0.3).add(0.5)
         const blendGradient = radius.mul(1.5)
-        
         const baseColor = vec3(0.8, 0.4, 0.2)
         const blendColor = vec3(blendGradient)
-        
         const result = blendVividLightVec3(baseColor.mul(basePattern), blendColor)
         return vec4(result, 1)
 }`}
 />
-
-The demonstration reveals Vivid Light's essence through radial contrast patterns. The base color contains subtle variations while the blend gradient creates threshold regions where the function switches between burning dark areas and dodging light areas, producing the characteristic extreme contrast that defines vivid lighting effects.

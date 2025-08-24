@@ -23,22 +23,19 @@ This operation creates immediate brightening where colors combine additively, en
 
 ### Additive Lightening Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Direct Addition** | Colors combine through simple addition | $C_{sum} = C_{base} + C_{blend}$ |
-| **Unity Clamp** | Results bounded to white maximum | $C_{result} = \min(C_{sum}, 1)$ |
-| **Cumulative Effect** | All values contribute to brightening | $\Delta C > 0$ for all inputs |
-| **Linear Response** | Proportional lightening relationship | $\Delta C_{in} = \Delta C_{out}$ |
+| Property              | Description                            | Mathematical Expression          |
+| --------------------- | -------------------------------------- | -------------------------------- |
+| **Direct Addition**   | Colors combine through simple addition | $C_{sum} = C_{base} + C_{blend}$ |
+| **Unity Clamp**       | Results bounded to white maximum       | $C_{result} = \min(C_{sum}, 1)$  |
+| **Cumulative Effect** | All values contribute to brightening   | $\Delta C > 0$ for all inputs    |
+| **Linear Response**   | Proportional lightening relationship   | $\Delta C_{in} = \Delta C_{out}$ |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
-        const baseValue = uv.x
-        const blendValue = uv.y
-        
-        const baseColor = vec3(baseValue, 0, 0)
-        const blendColor = vec3(0, blendValue, 0)
-        
+        const blendValue = uv.x
+        const baseColor = vec3(0.5, 0.4, 0.6)
+        const blendColor = vec3(blendValue)
         const result = blendLinearDodgeVec3(baseColor, blendColor)
         return vec4(result, 1)
 }`}

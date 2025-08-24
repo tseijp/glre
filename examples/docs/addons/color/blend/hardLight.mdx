@@ -26,27 +26,22 @@ This creates a sharp transition at 50% blend value, where darker blend creates s
 
 ### Directional Lighting Properties
 
-| Blend Value | Effect | Mathematical Behavior |
-|-------------|--------|----------------------|
-| **Black (0.0)** | Pure shadow | Result becomes black |
-| **Dark (< 0.5)** | Shadow creation | Multiply mode darkening |
-| **50% Gray** | No change | Base color preserved |
+| Blend Value        | Effect             | Mathematical Behavior   |
+| ------------------ | ------------------ | ----------------------- |
+| **Black (0.0)**    | Pure shadow        | Result becomes black    |
+| **Dark (< 0.5)**   | Shadow creation    | Multiply mode darkening |
+| **50% Gray**       | No change          | Base color preserved    |
 | **Bright (> 0.5)** | Highlight creation | Screen mode brightening |
-| **White (1.0)** | Maximum highlight | Result becomes white |
+| **White (1.0)**    | Maximum highlight  | Result becomes white    |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const base = vec3(0.8, 0.5, 0.3)
-        
         const light = step(0.2, uv.x)
         const shadow = step(uv.y, 0.3)
         const neutral = step(abs(uv.x.sub(0.5)), 0.1)
-        
-        const blend = vec3(
-                light.mul(0.9).add(shadow.mul(0.1)).add(neutral.mul(0.5))
-        )
-        
+        const blend = vec3(light.mul(0.9).add(shadow.mul(0.1)).add(neutral.mul(0.5)))
         const result = blendHardLightVec3(base, blend)
         return vec4(result, 1)
 }`}

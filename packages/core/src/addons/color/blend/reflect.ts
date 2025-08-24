@@ -7,23 +7,19 @@ export const blendReflect = Fn(([base, blend]: [Float, Float]): Float => {
         type: 'float',
         inputs: [
                 { name: 'base', type: 'float' },
-                { name: 'blend', type: 'float' }
-        ]
+                { name: 'blend', type: 'float' },
+        ],
 })
 
 export const blendReflectVec3 = Fn(([base, blend]: [Vec3, Vec3]): Vec3 => {
-        return vec3(
-                blendReflect(base.r, blend.r),
-                blendReflect(base.g, blend.g),
-                blendReflect(base.b, blend.b)
-        )
+        return vec3(blendReflect(base.r, blend.r), blendReflect(base.g, blend.g), blendReflect(base.b, blend.b))
 }).setLayout({
         name: 'blendReflectVec3',
         type: 'vec3',
         inputs: [
                 { name: 'base', type: 'vec3' },
-                { name: 'blend', type: 'vec3' }
-        ]
+                { name: 'blend', type: 'vec3' },
+        ],
 })
 
 export const blendReflectVec3Opacity = Fn(([base, blend, opacity]: [Vec3, Vec3, Float]): Vec3 => {
@@ -34,6 +30,6 @@ export const blendReflectVec3Opacity = Fn(([base, blend, opacity]: [Vec3, Vec3, 
         inputs: [
                 { name: 'base', type: 'vec3' },
                 { name: 'blend', type: 'vec3' },
-                { name: 'opacity', type: 'float' }
-        ]
+                { name: 'opacity', type: 'float' },
+        ],
 })

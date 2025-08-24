@@ -23,22 +23,20 @@ This operation creates predictable darkening where colors combine additively bef
 
 ### Linear Darkening Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Additive Base** | Colors combine through addition | $C_{sum} = C_{base} + C_{blend}$ |
-| **Unity Subtraction** | Maximum value removed from sum | $C_{sub} = C_{sum} - 1$ |
-| **Zero Clamp** | Negative values bounded to black | $C_{result} = \max(C_{sub}, 0)$ |
-| **Linear Response** | Proportional darkening relationship | $\Delta C_{in} = \Delta C_{out}$ |
+| Property              | Description                         | Mathematical Expression          |
+| --------------------- | ----------------------------------- | -------------------------------- |
+| **Additive Base**     | Colors combine through addition     | $C_{sum} = C_{base} + C_{blend}$ |
+| **Unity Subtraction** | Maximum value removed from sum      | $C_{sub} = C_{sum} - 1$          |
+| **Zero Clamp**        | Negative values bounded to black    | $C_{result} = \max(C_{sub}, 0)$  |
+| **Linear Response**   | Proportional darkening relationship | $\Delta C_{in} = \Delta C_{out}$ |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const leftCircle = smoothstep(0.3, 0.25, length(uv.sub(vec2(0.35, 0.5))))
         const rightCircle = smoothstep(0.3, 0.25, length(uv.sub(vec2(0.65, 0.5))))
-        
         const brightBase = vec3(0.9, 0.7, 0.6).mul(leftCircle)
         const brightBlend = vec3(0.8, 0.9, 0.5).mul(rightCircle)
-        
         const result = blendLinearBurnVec3(brightBase, brightBlend)
         return vec4(result, 1)
 }`}

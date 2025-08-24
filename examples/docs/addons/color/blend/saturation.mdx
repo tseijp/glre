@@ -17,21 +17,21 @@ $$
 HSV_{result} = (H_{base}, S_{blend}, V_{base})
 $$
 
-| Component | Source | Visual Effect |
-|-----------|--------|---------------|
-| **Hue** | Base | Color identity preserved |
-| **Saturation** | Blend | Chroma intensity replaced |
-| **Value** | Base | Brightness pattern maintained |
+| Component      | Source | Visual Effect                 |
+| -------------- | ------ | ----------------------------- |
+| **Hue**        | Base   | Color identity preserved      |
+| **Saturation** | Blend  | Chroma intensity replaced     |
+| **Value**      | Base   | Brightness pattern maintained |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const brightPattern = step(0.4, sin(uv.x.mul(15)).abs()).mul(0.6).add(0.4)
         const chromaGrad = uv.y
-        
-        return vec4(blendSaturation(
+        const color = blendSaturation(
                 hsv2rgb(vec3(0.6, 0.3, brightPattern)),
                 hsv2rgb(vec3(0.6, chromaGrad, 0.8))
-        ), 1)
+        )
+        return vec4(color, 1)
 }`}
 />

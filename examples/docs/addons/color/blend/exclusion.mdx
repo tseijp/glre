@@ -23,22 +23,20 @@ Unlike harsh difference blending, exclusion maintains smoother transitions and c
 
 ### Soft Contrast Properties
 
-| Property | Description | Mathematical Behavior |
-|----------|-------------|----------------------|
+| Property                  | Description                            | Mathematical Behavior           |
+| ------------------------- | -------------------------------------- | ------------------------------- |
 | **Mid-tone Preservation** | Gray areas remain relatively unchanged | $0.5 + 0.5 - 2(0.5)(0.5) = 0.5$ |
-| **Soft Inversion** | Gentle contrast without harsh edges | Smooth gradient response |
-| **Symmetry** | Order independence | $f(A,B) = f(B,A)$ |
-| **Bounded Output** | Results stay within valid range | $0 \leq result \leq 1$ |
+| **Soft Inversion**        | Gentle contrast without harsh edges    | Smooth gradient response        |
+| **Symmetry**              | Order independence                     | $f(A,B) = f(B,A)$               |
+| **Bounded Output**        | Results stay within valid range        | $0 \leq result \leq 1$          |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const base = vec3(0.7, 0.4, 0.8)
-        
         const wave1 = sin(uv.x.mul(8).add(uv.y.mul(3))).mul(0.3).add(0.5)
         const wave2 = cos(uv.y.mul(6).add(uv.x.mul(4))).mul(0.3).add(0.5)
         const blend = vec3(wave1, wave2, wave1.mul(wave2))
-        
         const result = blendExclusionVec3(base, blend)
         return vec4(result, 1)
 }`}

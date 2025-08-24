@@ -29,25 +29,23 @@ $$
 
 ### Color Mathematics Properties
 
-| Property | Description | Result |
-|----------|-------------|---------|
-| **Identity** | Adding zero preserves original color | $C + 0 = C$ |
-| **Commutativity** | Order independence in addition | $A + B = B + A$ |
-| **Brightness Increase** | Result never darker than base | $\text{brightness}(result) \geq \text{brightness}(base)$ |
-| **Clamping Behavior** | Values saturate at maximum brightness | $\max(result) = 1.0$ |
+| Property                | Description                           | Result                                                   |
+| ----------------------- | ------------------------------------- | -------------------------------------------------------- |
+| **Identity**            | Adding zero preserves original color  | $C + 0 = C$                                              |
+| **Commutativity**       | Order independence in addition        | $A + B = B + A$                                          |
+| **Brightness Increase** | Result never darker than base         | $\text{brightness}(result) \geq \text{brightness}(base)$ |
+| **Clamping Behavior**   | Values saturate at maximum brightness | $\max(result) = 1.0$                                     |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const center = vec2(0.5)
         const dist = uv.sub(center).length()
         const baseCircle = smoothstep(0.35, 0.3, dist)
         const blendCircle = smoothstep(0.25, 0.2, uv.sub(vec2(0.65, 0.4)).length())
-        
         const base = vec3(0.2, 0.4, 0.8).mul(baseCircle)
         const blend = vec3(0.9, 0.3, 0.1).mul(blendCircle)
         const result = blendAddVec3(base, blend)
-        
         return vec4(result, 1)
 }`}
 />

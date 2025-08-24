@@ -29,23 +29,21 @@ $$
 
 ### Color Balance Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Symmetry** | Equal contribution from both colors | $f(A,B) = f(B,A)$ |
-| **Midpoint** | Result positioned between inputs | $\min(A,B) \leq f(A,B) \leq \max(A,B)$ |
-| **Conservation** | Total brightness preserved | $\text{brightness}(result) = \frac{\text{brightness}(A) + \text{brightness}(B)}{2}$ |
-| **Neutrality** | Balanced color temperature | No bias toward warm or cool tones |
+| Property         | Description                         | Mathematical Expression                                                             |
+| ---------------- | ----------------------------------- | ----------------------------------------------------------------------------------- |
+| **Symmetry**     | Equal contribution from both colors | $f(A,B) = f(B,A)$                                                                   |
+| **Midpoint**     | Result positioned between inputs    | $\min(A,B) \leq f(A,B) \leq \max(A,B)$                                              |
+| **Conservation** | Total brightness preserved          | $\text{brightness}(result) = \frac{\text{brightness}(A) + \text{brightness}(B)}{2}$ |
+| **Neutrality**   | Balanced color temperature          | No bias toward warm or cool tones                                                   |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
         const radius = uv.sub(vec2(0.5)).length()
-        
         const colorA = vec3(0.8, 0.2, 0.9).mul(step(radius, 0.4))
         const colorB = vec3(0.1, 0.7, 0.3).mul(step(abs(angle), 1.57))
         const result = blendAverageVec3(colorA, colorB)
-        
         return vec4(result, 1)
 }`}
 />

@@ -20,20 +20,20 @@ C_{result} = \begin{cases}
 \end{cases}
 $$
 
-| Range | Mode | Operation | Amplification |
-|-------|------|-----------|---------------|
-| **0.0 - 0.5** | Darken | Shadows intensified | 2× scaling |
-| **0.5 - 1.0** | Lighten | Highlights expanded | 2× scaling |
+| Range         | Mode    | Operation           | Amplification |
+| ------------- | ------- | ------------------- | ------------- |
+| **0.0 - 0.5** | Darken  | Shadows intensified | 2× scaling    |
+| **0.5 - 1.0** | Lighten | Highlights expanded | 2× scaling    |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const basePattern = step(0.3, sin(uv.x.mul(20)).abs())
         const blendGradient = uv.y
-        
-        return vec4(blendPinLightVec3(
+        const color = blendPinLightVec3(
                 vec3(basePattern.mul(0.8).add(0.2)),
                 vec3(blendGradient)
-        ), 1)
+        )
+        return vec4(color, 1)
 }`}
 />

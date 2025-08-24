@@ -1,6 +1,6 @@
 import { Fn, Float, Vec3, vec3, If, Return } from '../../../node'
-import { blendColorBurn, blendColorBurnVec3 } from './colorBurn'
-import { blendColorDodge, blendColorDodgeVec3 } from './colorDodge'
+import { blendColorBurn } from './colorBurn'
+import { blendColorDodge } from './colorDodge'
 
 export const blendVividLight = Fn(([base, blend]: [Float, Float]): Float => {
         If(blend.lessThan(0.5), () => {
@@ -12,8 +12,8 @@ export const blendVividLight = Fn(([base, blend]: [Float, Float]): Float => {
         type: 'float',
         inputs: [
                 { name: 'base', type: 'float' },
-                { name: 'blend', type: 'float' }
-        ]
+                { name: 'blend', type: 'float' },
+        ],
 })
 
 export const blendVividLightVec3 = Fn(([base, blend]: [Vec3, Vec3]): Vec3 => {
@@ -27,8 +27,8 @@ export const blendVividLightVec3 = Fn(([base, blend]: [Vec3, Vec3]): Vec3 => {
         type: 'vec3',
         inputs: [
                 { name: 'base', type: 'vec3' },
-                { name: 'blend', type: 'vec3' }
-        ]
+                { name: 'blend', type: 'vec3' },
+        ],
 })
 
 export const blendVividLightVec3Opacity = Fn(([base, blend, opacity]: [Vec3, Vec3, Float]): Vec3 => {
@@ -39,6 +39,6 @@ export const blendVividLightVec3Opacity = Fn(([base, blend, opacity]: [Vec3, Vec
         inputs: [
                 { name: 'base', type: 'vec3' },
                 { name: 'blend', type: 'vec3' },
-                { name: 'opacity', type: 'float' }
-        ]
+                { name: 'opacity', type: 'float' },
+        ],
 })

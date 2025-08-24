@@ -11,8 +11,8 @@ export const blendSaturation = Fn(([base, blend]: [Vec3, Vec3]): Vec3 => {
         type: 'vec3',
         inputs: [
                 { name: 'base', type: 'vec3' },
-                { name: 'blend', type: 'vec3' }
-        ]
+                { name: 'blend', type: 'vec3' },
+        ],
 })
 
 export const blendSaturationOpacity = Fn(([base, blend, opacity]: [Vec3, Vec3, Float]): Vec3 => {
@@ -23,6 +23,6 @@ export const blendSaturationOpacity = Fn(([base, blend, opacity]: [Vec3, Vec3, F
         inputs: [
                 { name: 'base', type: 'vec3' },
                 { name: 'blend', type: 'vec3' },
-                { name: 'opacity', type: 'float' }
-        ]
+                { name: 'opacity', type: 'float' },
+        ],
 })

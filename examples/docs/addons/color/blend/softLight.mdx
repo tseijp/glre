@@ -1,0 +1,39 @@
+---
+title: 'blendSoftLight'
+description: 'Soft light blend mode creates nuanced illumination effects by dynamically switching between multiply-like darkening and screen-like brightening based on blend value threshold'
+keywords: [blend, soft light, illumination, photoshop, multiply, screen, conditional]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendSoftLight: Adaptive Illumination Blend Mode
+
+### Dynamic Light Modulation Through Threshold-Based Composite Function
+
+The soft light blend mode applies illumination effects through a conditional function that switches between two mathematical regions. For blend values below 0.5, it applies a multiply-like darkening operation. For blend values above 0.5, it performs a screen-like brightening operation using square root transformation.
+
+The mathematical definition involves a threshold function:
+
+$$
+\text{softLight}(base, blend) = \begin{cases}
+2 \cdot base \cdot blend + base^2 \cdot (1 - 2 \cdot blend) & \text{if } blend < 0.5 \\
+\sqrt{base} \cdot (2 \cdot blend - 1) + 2 \cdot base \cdot (1 - blend) & \text{if } blend \geq 0.5
+\end{cases}
+$$
+
+The lower region combines linear multiplication with quadratic base enhancement, while the upper region employs square root luminance extraction for gentle brightening transitions.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const baseGrad = vec3(uv.x, uv.y, uv.x.mul(uv.y))
+        const blendValue = iTime.mul(0.3).sin().mul(0.5).add(0.5)
+        const blendVec = vec3(blendValue)
+        const boundary = step(0.5, uv.y)
+        const original = baseGrad.mix(vec3(0.2, 0.4, 0.8), boundary)
+        const processed = blendSoftLightVec3(original, blendVec)
+        const splitScreen = uv.x.lessThan(0.5).toFloat()
+        return vec4(original.mix(processed, splitScreen), 1)
+}`}
+/>

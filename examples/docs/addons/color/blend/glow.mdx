@@ -26,23 +26,21 @@ This parameter reversal transforms the mathematical behavior, making bright blen
 
 ### Luminous Emission Properties
 
-| Property | Description | Visual Effect |
-|----------|-------------|---------------|
-| **Parameter Reversal** | Blend and base roles swapped | Different lighting behavior |
-| **Light Source Effect** | Bright blend creates glow | Luminous emanation |
-| **Intensity Amplification** | Non-linear brightness boost | Dramatic lighting |
-| **Selective Illumination** | Darker areas remain unaffected | Natural light falloff |
+| Property                    | Description                    | Visual Effect               |
+| --------------------------- | ------------------------------ | --------------------------- |
+| **Parameter Reversal**      | Blend and base roles swapped   | Different lighting behavior |
+| **Light Source Effect**     | Bright blend creates glow      | Luminous emanation          |
+| **Intensity Amplification** | Non-linear brightness boost    | Dramatic lighting           |
+| **Selective Illumination**  | Darker areas remain unaffected | Natural light falloff       |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const base = vec3(0.05, 0.05, 0.1)
-        
         const center = vec2(0.5)
         const dist = length(uv.sub(center))
-        const hotSpot = smoothstep(0.3, 0.05, dist)
+        const hotSpot = smoothstep(0.5, 0.05, dist)
         const warmGlow = vec3(1.0, 0.8, 0.3).mul(hotSpot)
-        
         const result = blendGlowVec3(base, warmGlow)
         return vec4(result, 1)
 }`}

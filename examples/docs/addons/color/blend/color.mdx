@@ -28,26 +28,24 @@ This approach maintains the original brightness distribution while applying new 
 
 ### Color Component Behavior
 
-| Component | Source | Effect | Mathematical Role |
-|-----------|--------|--------|-------------------|
-| **Hue** | Blend layer | Color identity | $H_{result} = H_{blend}$ |
-| **Saturation** | Blend layer | Color intensity | $S_{result} = S_{blend}$ |
-| **Value** | Base layer | Brightness structure | $V_{result} = V_{base}$ |
-| **Alpha** | Opacity control | Blending strength | Linear interpolation weight |
+| Component      | Source          | Effect               | Mathematical Role           |
+| -------------- | --------------- | -------------------- | --------------------------- |
+| **Hue**        | Blend layer     | Color identity       | $H_{result} = H_{blend}$    |
+| **Saturation** | Blend layer     | Color intensity      | $S_{result} = S_{blend}$    |
+| **Value**      | Base layer      | Brightness structure | $V_{result} = V_{base}$     |
+| **Alpha**      | Opacity control | Blending strength    | Linear interpolation weight |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const grid = floor(uv.mul(8))
         const checker = mod(grid.x.add(grid.y), 2)
-        
         const basePattern = vec3(0.8).mul(checker).add(vec3(0.2))
         const colorWheel = vec3(
                 sin(uv.x.mul(6.28)).mul(0.5).add(0.5),
                 cos(uv.y.mul(6.28)).mul(0.5).add(0.5),
                 sin(uv.x.add(uv.y).mul(3.14)).mul(0.5).add(0.5)
         )
-        
         const result = blendColor(basePattern, colorWheel)
         return vec4(result, 1)
 }`}

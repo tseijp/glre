@@ -17,22 +17,22 @@ $$
 C_{result} = \min(C_{base}, C_{blend}) - \max(C_{base}, C_{blend}) + 1
 $$
 
-| Condition | Calculation | Result |
-|-----------|-------------|---------|
-| **Equal Values** | $x - x + 1 = 1$ | White (maximum harmony) |
-| **Maximum Difference** | $0 - 1 + 1 = 0$ | Black (maximum discord) |
-| **Close Values** | Small difference | Bright tones |
-| **Distant Values** | Large difference | Dark tones |
+| Condition              | Calculation      | Result                  |
+| ---------------------- | ---------------- | ----------------------- |
+| **Equal Values**       | $x - x + 1 = 1$  | White (maximum harmony) |
+| **Maximum Difference** | $0 - 1 + 1 = 0$  | Black (maximum discord) |
+| **Close Values**       | Small difference | Bright tones            |
+| **Distant Values**     | Large difference | Dark tones              |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const diagonalA = uv.x.add(uv.y).div(2)
         const diagonalB = uv.x.sub(uv.y).add(1).div(2)
-        
-        return vec4(blendPhoenixVec3(
+        const color = blendPhoenixVec3(
                 vec3(diagonalA),
                 vec3(diagonalB)
-        ), 1)
+        )
+        return vec4(color, 1)
 }`}
 />

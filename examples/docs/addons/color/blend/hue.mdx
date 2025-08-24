@@ -27,28 +27,25 @@ This selective component replacement ensures that only chromatic information tra
 
 ### HSV Component Preservation Properties
 
-| Component | Source | Description | Mathematical Expression |
-|-----------|--------|-------------|-------------------------|
-| **Hue (H)** | Blend Color | Color wheel position | $H_{result} = H_{blend}$ |
-| **Saturation (S)** | Base Color | Color intensity preserved | $S_{result} = S_{base}$ |
-| **Value (V)** | Base Color | Brightness level preserved | $V_{result} = V_{base}$ |
-| **Transformation** | HSV Space | Color space conversion | $\text{RGB} \leftrightarrow \text{HSV}$ |
+| Component          | Source      | Description                | Mathematical Expression                 |
+| ------------------ | ----------- | -------------------------- | --------------------------------------- |
+| **Hue (H)**        | Blend Color | Color wheel position       | $H_{result} = H_{blend}$                |
+| **Saturation (S)** | Base Color  | Color intensity preserved  | $S_{result} = S_{base}$                 |
+| **Value (V)**      | Base Color  | Brightness level preserved | $V_{result} = V_{base}$                 |
+| **Transformation** | HSV Space   | Color space conversion     | $\text{RGB} \leftrightarrow \text{HSV}$ |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const pattern = sin(uv.x.mul(8)).mul(cos(uv.y.mul(12)))
         const intensity = pattern.mul(0.4).add(0.6)
-        
         const baseColor = vec3(0.9, 0.7, 0.2).mul(intensity)
-        
         const hueShift = uv.x.mul(6.28)
         const blendColor = vec3(
                 sin(hueShift).mul(0.5).add(0.5),
                 sin(hueShift.add(2.09)).mul(0.5).add(0.5),
                 sin(hueShift.add(4.19)).mul(0.5).add(0.5)
         )
-        
         const result = blendHue(baseColor, blendColor)
         return vec4(result, 1)
 }`}

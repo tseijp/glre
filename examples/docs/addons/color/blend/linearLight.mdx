@@ -26,19 +26,18 @@ This dual-mode operation creates dramatic lighting control where the blend value
 
 ### Dual-Mode Lighting Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Midtone Threshold** | 0.5 boundary determines mode | $C_{blend} < 0.5 \rightarrow \text{burn}$ |
-| **Shadow Enhancement** | Dark values apply burn darkening | $\text{linearBurn}(base, 2 \cdot blend)$ |
+| Property                  | Description                          | Mathematical Expression                           |
+| ------------------------- | ------------------------------------ | ------------------------------------------------- |
+| **Midtone Threshold**     | 0.5 boundary determines mode         | $C_{blend} < 0.5 \rightarrow \text{burn}$         |
+| **Shadow Enhancement**    | Dark values apply burn darkening     | $\text{linearBurn}(base, 2 \cdot blend)$          |
 | **Highlight Enhancement** | Light values apply dodge brightening | $\text{linearDodge}(base, 2 \cdot (blend - 0.5))$ |
-| **Intensity Doubling** | Both modes use 2x scaling | $\text{scale} = 2 \cdot C_{blend}$ |
+| **Intensity Doubling**    | Both modes use 2x scaling            | $\text{scale} = 2 \cdot C_{blend}$                |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const blendValue = uv.x
         const baseColor = vec3(0.5, 0.4, 0.6)
-        
         const blendColor = vec3(blendValue)
         const result = blendLinearLightVec3(baseColor, blendColor)
         return vec4(result, 1)

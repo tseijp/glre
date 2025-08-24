@@ -26,25 +26,22 @@ This process creates maximum contrast by eliminating midtones, resulting in pure
 
 ### Binary Separation Properties
 
-| Property | Description | Mathematical Expression |
-|----------|-------------|-------------------------|
-| **Threshold Function** | Binary decision at 0.5 threshold | $f(x) = x < 0.5 ? 0 : 1$ |
-| **Vivid Light Basis** | Uses vivid light as input calculation | $\text{input} = \text{vividLight}(base, blend)$ |
-| **Absolute Values** | Output restricted to pure black/white | $C_{out} \in \{0, 1\}$ |
-| **Graphic Separation** | Creates stark poster-like divisions | $\Delta C = 1$ |
+| Property               | Description                           | Mathematical Expression                         |
+| ---------------------- | ------------------------------------- | ----------------------------------------------- |
+| **Threshold Function** | Binary decision at 0.5 threshold      | $f(x) = x < 0.5 ? 0 : 1$                        |
+| **Vivid Light Basis**  | Uses vivid light as input calculation | $\text{input} = \text{vividLight}(base, blend)$ |
+| **Absolute Values**    | Output restricted to pure black/white | $C_{out} \in \{0, 1\}$                          |
+| **Graphic Separation** | Creates stark poster-like divisions   | $\Delta C = 1$                                  |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const rings = length(uv.sub(0.5)).mul(8)
         const spiralBase = sin(rings).mul(0.4).add(0.6)
-        
         const anglePattern = atan2(uv.y.sub(0.5), uv.x.sub(0.5)).mul(3)
         const blendValue = cos(anglePattern).mul(0.3).add(0.5)
-        
         const baseColor = vec3(0.7, 0.5, 0.3).mul(spiralBase)
         const blendColor = vec3(blendValue)
-        
         const result = blendHardMixVec3(baseColor, blendColor)
         return vec4(result, 1)
 }`}

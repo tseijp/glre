@@ -26,21 +26,19 @@ The squaring operation amplifies bright base values while the division creates n
 
 ### Reflection Enhancement Properties
 
-| Property | Description | Mathematical Behavior |
-|----------|-------------|----------------------|
-| **Quadratic Amplification** | Base values squared | $C_{base}^2$ increases contrast |
-| **Division Intensification** | Inverted blend division | Bright blend creates strong effect |
-| **Highlight Preservation** | White blend preserves maximum | Safe upper bound |
-| **Non-linear Response** | Exponential brightness curve | Dramatic lighting simulation |
+| Property                     | Description                   | Mathematical Behavior              |
+| ---------------------------- | ----------------------------- | ---------------------------------- |
+| **Quadratic Amplification**  | Base values squared           | $C_{base}^2$ increases contrast    |
+| **Division Intensification** | Inverted blend division       | Bright blend creates strong effect |
+| **Highlight Preservation**   | White blend preserves maximum | Safe upper bound                   |
+| **Non-linear Response**      | Exponential brightness curve  | Dramatic lighting simulation       |
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
         const base = vec3(0.6, 0.8, 0.9)
-        
         const reflection = smoothstep(0.6, 0.2, distance(uv, vec2(0.7, 0.3)))
         const blend = vec3(reflection.mul(0.8))
-        
         const result = blendReflectVec3(base, blend)
         return vec4(result, 1)
 }`}
