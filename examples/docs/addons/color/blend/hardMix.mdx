@@ -36,10 +36,10 @@ This process creates maximum contrast by eliminating midtones, resulting in pure
 <FragmentEditor
         code={`
 const fragment = () => {
-        const rings = length(uv.sub(0.5)).mul(8)
-        const spiralBase = sin(rings).mul(0.4).add(0.6)
-        const anglePattern = atan2(uv.y.sub(0.5), uv.x.sub(0.5)).mul(3)
-        const blendValue = cos(anglePattern).mul(0.3).add(0.5)
+        const rings = uv.sub(0.5).length().mul(8)
+        const spiralBase = rings.sin().mul(0.4).add(0.6)
+        const anglePattern = uv.y.sub(0.5).atan2(uv.x.sub(0.5)).mul(3)
+        const blendValue = anglePattern.cos().mul(0.3).add(0.5)
         const baseColor = vec3(0.7, 0.5, 0.3).mul(spiralBase)
         const blendColor = vec3(blendValue)
         const result = blendHardMixVec3(baseColor, blendColor)

@@ -30,7 +30,7 @@ const fragment = () => {
         const baseGrad = vec3(uv.x, uv.y, uv.x.mul(uv.y))
         const blendValue = iTime.mul(0.3).sin().mul(0.5).add(0.5)
         const blendVec = vec3(blendValue)
-        const boundary = step(0.5, uv.y)
+        const boundary = float(0.5).step(uv.y)
         const original = baseGrad.mix(vec3(0.2, 0.4, 0.8), boundary)
         const processed = blendSoftLightVec3(original, blendVec)
         const splitScreen = uv.x.lessThan(0.5).toFloat()

@@ -28,7 +28,7 @@ $$
 <FragmentEditor
         code={`
 const fragment = () => {
-        const basePattern = step(0.3, sin(uv.x.mul(20)).abs())
+        const basePattern = float(0.3).step(uv.x.mul(20).sin().abs())
         const blendGradient = uv.y
         const color = blendPinLightVec3(
                 vec3(basePattern.mul(0.8).add(0.2)),

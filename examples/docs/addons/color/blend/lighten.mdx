@@ -33,8 +33,8 @@ This component-wise maximum operation ensures that only brighter values contribu
 <FragmentEditor
         code={`
 const fragment = () => {
-        const leftCircle = smoothstep(0.25, 0.2, length(uv.sub(vec2(0.35, 0.5))))
-        const rightCircle = smoothstep(0.25, 0.2, length(uv.sub(vec2(0.65, 0.5))))
+        const leftCircle = float(0.25).smoothstep(0.2, uv.sub(vec2(0.35, 0.5)).length())
+        const rightCircle = float(0.25).smoothstep(0.2, uv.sub(vec2(0.65, 0.5)).length())
         const baseColor = vec3(0.8, 0.2, 0.4)
         const blendColor = vec3(0.3, 0.9, 0.2)
         const base = baseColor.mul(leftCircle)

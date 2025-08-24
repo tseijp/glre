@@ -37,7 +37,7 @@ The squaring operation amplifies bright base values while the division creates n
         code={`
 const fragment = () => {
         const base = vec3(0.6, 0.8, 0.9)
-        const reflection = smoothstep(0.6, 0.2, distance(uv, vec2(0.7, 0.3)))
+        const reflection = float(0.6).smoothstep(0.2, uv.distance(vec2(0.7, 0.3)))
         const blend = vec3(reflection.mul(0.8))
         const result = blendReflectVec3(base, blend)
         return vec4(result, 1)

@@ -38,9 +38,9 @@ This creates a sharp transition at 50% blend value, where darker blend creates s
         code={`
 const fragment = () => {
         const base = vec3(0.8, 0.5, 0.3)
-        const light = step(0.2, uv.x)
-        const shadow = step(uv.y, 0.3)
-        const neutral = step(abs(uv.x.sub(0.5)), 0.1)
+        const light = uv.x.step(0.2)
+        const shadow = float(0.3).step(uv.y)
+        const neutral = uv.x.sub(0.5).abs().step(0.1)
         const blend = vec3(light.mul(0.9).add(shadow.mul(0.1)).add(neutral.mul(0.5)))
         const result = blendHardLightVec3(base, blend)
         return vec4(result, 1)

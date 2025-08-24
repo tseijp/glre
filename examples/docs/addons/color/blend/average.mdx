@@ -39,10 +39,10 @@ $$
 <FragmentEditor
         code={`
 const fragment = () => {
-        const angle = atan2(uv.y.sub(0.5), uv.x.sub(0.5))
+        const angle = uv.y.sub(0.5).atan2(uv.x.sub(0.5))
         const radius = uv.sub(vec2(0.5)).length()
-        const colorA = vec3(0.8, 0.2, 0.9).mul(step(radius, 0.4))
-        const colorB = vec3(0.1, 0.7, 0.3).mul(step(abs(angle), 1.57))
+        const colorA = vec3(0.8, 0.2, 0.9).mul(radius.step(0.4))
+        const colorB = vec3(0.1, 0.7, 0.3).mul(angle.abs().step(1.57))
         const result = blendAverageVec3(colorA, colorB)
         return vec4(result, 1)
 }`}

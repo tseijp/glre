@@ -38,13 +38,13 @@ This approach maintains the original brightness distribution while applying new 
 <FragmentEditor
         code={`
 const fragment = () => {
-        const grid = floor(uv.mul(8))
-        const checker = mod(grid.x.add(grid.y), 2)
+        const grid = uv.mul(8).floor()
+        const checker = grid.x.add(grid.y).mod(2)
         const basePattern = vec3(0.8).mul(checker).add(vec3(0.2))
         const colorWheel = vec3(
-                sin(uv.x.mul(6.28)).mul(0.5).add(0.5),
-                cos(uv.y.mul(6.28)).mul(0.5).add(0.5),
-                sin(uv.x.add(uv.y).mul(3.14)).mul(0.5).add(0.5)
+                uv.x.mul(6.28).sin().mul(0.5).add(0.5),
+                uv.y.mul(6.28).cos().mul(0.5).add(0.5),
+                uv.x.add(uv.y).mul(3.14).sin().mul(0.5).add(0.5)
         )
         const result = blendColor(basePattern, colorWheel)
         return vec4(result, 1)

@@ -28,9 +28,10 @@ $$
 const fragment = () => {
         const hueBase = vec3(uv.x, 0.9, 0.8)
         const lumBlend = vec3(0.5, 0.5, uv.y.oneMinus())
-        return vec4(blendLuminosity(
+        const color = blendLuminosity(
                 hsv2rgb(hueBase),
                 hsv2rgb(lumBlend)
-        ), 1)
+        )
+        return vec4(color, 1)
 }`}
 />

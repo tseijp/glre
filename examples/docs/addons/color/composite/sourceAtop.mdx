@@ -20,9 +20,9 @@ $$
 <FragmentEditor
         code={`
 const fragment = () => {
-        const dstMask = smoothstep(0.25, 0.2, uv.distance(vec2(0.5)))
+        const dstMask = float(0.25).smoothstep(0.2, uv.distance(vec2(0.5)))
         const srcGrad = vec3(uv.x, uv.y.mul(0.5), uv.x.mul(uv.y))
-        const srcAlpha = smoothstep(0.6, 0.4, uv.x)
+        const srcAlpha = float(0.6).smoothstep(0.4, uv.x)
         const dstColor = vec3(0.2, 0.4, 0.8)
         const src = vec4(srcGrad, srcAlpha)
         const dst = vec4(dstColor, dstMask)

@@ -24,10 +24,10 @@ The absolute value ensures all results are positive, creating bright edges where
 ### Contrast Detection Properties
 
 | Property             | Description                    | Mathematical Expression |
-| -------------------- | ------------------------------ | ----------------------- | ----- | ---- | ----- | --- |
-| **Symmetry**         | Order independence             | $                       | A - B | =    | B - A | $   |
-| **Zero Identity**    | Identical colors produce black | $                       | C - C | = 0$ |
-| **Maximum Contrast** | Opposite values produce white  | $                       | 0 - 1 | = 1$ |
+| -------------------- | ------------------------------ | ----------------------- |
+| **Symmetry**         | Order independence             | $\|A-B\| = \|B-A\|$     |
+| **Zero Identity**    | Identical colors produce black | $\|C-C\| = 0$           |
+| **Maximum Contrast** | Opposite values produce white  | $\|0-1\| = 1$           |
 | **Edge Enhancement** | Highlights color boundaries    | High gradient response  |
 
 <FragmentEditor
@@ -35,9 +35,9 @@ The absolute value ensures all results are positive, creating bright edges where
 const fragment = () => {
         const base = vec3(0.8, 0.3, 0.9)
         const circles = vec3(
-                smoothstep(0.3, 0.2, length(uv.sub(vec2(0.3, 0.3)))),
-                smoothstep(0.3, 0.2, length(uv.sub(vec2(0.7, 0.3)))),
-                smoothstep(0.3, 0.2, length(uv.sub(vec2(0.5, 0.7))))
+                float(0.3).smoothstep(0.2, uv.sub(vec2(0.3, 0.3)).length()),
+                float(0.3).smoothstep(0.2, uv.sub(vec2(0.7, 0.3)).length()),
+                float(0.3).smoothstep(0.2, uv.sub(vec2(0.5, 0.7)).length())
         )
         const result = blendDifferenceVec3(base, circles)
         return vec4(result, 1)

@@ -14,7 +14,7 @@ const compositeDestinationOutFloat = Fn(([src, dst]: [Float, Float]): Float => {
 export const compositeDestinationOut = compositeDestinationOutFloat
 
 export const compositeDestinationOutVec3 = Fn(
-        ([srcColor, dstColor, srcAlpha, dstAlpha]: [Vec3, Vec3, Float, Float]): Vec3 => {
+        ([_srcColor, dstColor, srcAlpha, _dstAlpha]: [Vec3, Vec3, Float, Float]): Vec3 => {
                 return dstColor.mul(srcAlpha.oneMinus())
         }
 ).setLayout({

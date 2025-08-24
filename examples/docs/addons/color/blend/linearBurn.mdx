@@ -33,8 +33,8 @@ This operation creates predictable darkening where colors combine additively bef
 <FragmentEditor
         code={`
 const fragment = () => {
-        const leftCircle = smoothstep(0.3, 0.25, length(uv.sub(vec2(0.35, 0.5))))
-        const rightCircle = smoothstep(0.3, 0.25, length(uv.sub(vec2(0.65, 0.5))))
+        const leftCircle = float(0.3).smoothstep(0.25, uv.sub(vec2(0.35, 0.5)).length())
+        const rightCircle = float(0.3).smoothstep(0.25, uv.sub(vec2(0.65, 0.5)).length())
         const brightBase = vec3(0.9, 0.7, 0.6).mul(leftCircle)
         const brightBlend = vec3(0.8, 0.9, 0.5).mul(rightCircle)
         const result = blendLinearBurnVec3(brightBase, brightBlend)

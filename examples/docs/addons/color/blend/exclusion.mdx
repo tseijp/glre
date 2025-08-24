@@ -34,8 +34,8 @@ Unlike harsh difference blending, exclusion maintains smoother transitions and c
         code={`
 const fragment = () => {
         const base = vec3(0.7, 0.4, 0.8)
-        const wave1 = sin(uv.x.mul(8).add(uv.y.mul(3))).mul(0.3).add(0.5)
-        const wave2 = cos(uv.y.mul(6).add(uv.x.mul(4))).mul(0.3).add(0.5)
+        const wave1 = uv.x.mul(8).add(uv.y.mul(3)).sin().mul(0.3).add(0.5)
+        const wave2 = uv.y.mul(6).add(uv.x.mul(4)).cos().mul(0.3).add(0.5)
         const blend = vec3(wave1, wave2, wave1.mul(wave2))
         const result = blendExclusionVec3(base, blend)
         return vec4(result, 1)

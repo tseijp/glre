@@ -38,7 +38,7 @@ The 50% threshold creates a natural division where dark areas are multiplied (cr
 const fragment = () => {
         const gradient = vec3(uv.x)
         const base = gradient
-        const pattern = step(0.5, fract(uv.y.mul(10)))
+        const pattern = float(0.5).step(uv.y.mul(10).fract())
         const blend = vec3(pattern.mul(0.3).add(0.4))
         const result = blendOverlayVec3(base, blend)
         return vec4(result, 1)

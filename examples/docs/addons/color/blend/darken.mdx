@@ -34,10 +34,10 @@ This component-wise minimum operation ensures that only darker values contribute
         code={`
 const fragment = () => {
         const base = vec3(0.8, 0.9, 0.7).mul(
-                smoothstep(0.2, 0.8, length(uv.sub(vec2(0.5))))
+                float(0.2).smoothstep(0.8, uv.sub(vec2(0.5)).length())
         )
-        const pattern1 = step(0.5, fract(uv.x.mul(12)))
-        const pattern2 = step(0.5, fract(uv.y.mul(8)))
+        const pattern1 = uv.x.mul(12).fract().step(0.5)
+        const pattern2 = uv.y.mul(8).fract().step(0.5)
         const darken = vec3(
                 pattern1.mul(0.6),
                 pattern2.mul(0.4),

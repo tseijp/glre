@@ -37,17 +37,17 @@ The division operation creates non-linear darkening that becomes more pronounced
         code={`
 const fragment = () => {
         const center = vec2(0.5)
-        const angle = atan2(uv.y.sub(center.y), uv.x.sub(center.x))
+        const angle = uv.y.sub(center.y).atan2(uv.x.sub(center.x))
         const radius = uv.sub(center).length()
         const base = vec3(
-                sin(radius.mul(20)).mul(0.3).add(0.7),
-                cos(angle.mul(3)).mul(0.2).add(0.6),
+                radius.mul(20).sin().mul(0.3).add(0.7),
+                angle.mul(3).cos().mul(0.2).add(0.6),
                 radius.mul(1.5)
         )
         const burn = vec3(
-                smoothstep(0.2, 0.8, uv.x),
-                smoothstep(0.1, 0.9, uv.y),
-                sin(uv.x.add(uv.y).mul(8)).mul(0.3).add(0.4)
+                float(0.2).smoothstep(0.8, uv.x),
+                float(0.1).smoothstep(0.9, uv.y),
+                uv.x.add(uv.y).mul(8).sin().mul(0.3).add(0.4)
         )
         const result = blendColorBurnVec3(base, burn)
         return vec4(result, 1)
