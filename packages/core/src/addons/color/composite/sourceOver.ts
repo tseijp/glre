@@ -7,25 +7,23 @@ const compositeSourceOverFloat = Fn(([src, dst]: [Float, Float]): Float => {
         type: 'float',
         inputs: [
                 { name: 'src', type: 'float' },
-                { name: 'dst', type: 'float' },
-        ],
+                { name: 'dst', type: 'float' }
+        ]
 })
 
 export const compositeSourceOver = compositeSourceOverFloat
 
-export const compositeSourceOverVec3 = Fn(
-        ([srcColor, dstColor, srcAlpha, dstAlpha]: [Vec3, Vec3, Float, Float]): Vec3 => {
-                return srcColor.mul(srcAlpha).add(dstColor.mul(dstAlpha).mul(srcAlpha.oneMinus()))
-        }
-).setLayout({
+export const compositeSourceOverVec3 = Fn(([srcColor, dstColor, srcAlpha, dstAlpha]: [Vec3, Vec3, Float, Float]): Vec3 => {
+        return srcColor.mul(srcAlpha).add(dstColor.mul(dstAlpha).mul(srcAlpha.oneMinus()))
+}).setLayout({
         name: 'compositeSourceOverVec3',
         type: 'vec3',
         inputs: [
                 { name: 'srcColor', type: 'vec3' },
                 { name: 'dstColor', type: 'vec3' },
                 { name: 'srcAlpha', type: 'float' },
-                { name: 'dstAlpha', type: 'float' },
-        ],
+                { name: 'dstAlpha', type: 'float' }
+        ]
 })
 
 export const compositeSourceOverVec4 = Fn(([srcColor, dstColor]: [Vec4, Vec4]): Vec4 => {
@@ -37,6 +35,6 @@ export const compositeSourceOverVec4 = Fn(([srcColor, dstColor]: [Vec4, Vec4]): 
         type: 'vec4',
         inputs: [
                 { name: 'srcColor', type: 'vec4' },
-                { name: 'dstColor', type: 'vec4' },
-        ],
+                { name: 'dstColor', type: 'vec4' }
+        ]
 })
