@@ -26,4 +26,25 @@ export const circleStroke = Fn(([st, size, strokeWidth]: [Vec2, Float, Float]): 
         ],
 })
 
-export const circle = circleFill
+export const circle = Fn(([st, size]: [Vec2, Float]): Float => {
+        return fill(circleSDFBasic(st), size)
+}).setLayout({
+        name: 'circle',
+        type: 'float',
+        inputs: [
+                { name: 'st', type: 'vec2' },
+                { name: 'size', type: 'float' },
+        ],
+})
+
+export const circleWithStroke = Fn(([st, size, strokeWidth]: [Vec2, Float, Float]): Float => {
+        return stroke(circleSDFBasic(st), size, strokeWidth)
+}).setLayout({
+        name: 'circleWithStroke',
+        type: 'float',
+        inputs: [
+                { name: 'st', type: 'vec2' },
+                { name: 'size', type: 'float' },
+                { name: 'strokeWidth', type: 'float' },
+        ],
+})

@@ -1,0 +1,30 @@
+---
+title: 'circle'
+description: 'Distance field-based circle rendering with fill and stroke modes'
+keywords: [circle, distance field, SDF, fill, stroke, geometric, drawing]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# circle: Distance Field Circle Rendering
+
+### Mathematical Foundation
+
+Circle rendering operates on distance field calculations. The distance from any point to the circle boundary determines the final visual result through different interpretation methods.
+
+$$
+d = \|uv - center\|_2 \times 2
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const fillResult = circle(uv, 1)
+        const strokeResult = circleWithStroke(uv, 1, 0.05)
+        const divider = uv.x.lessThan(0.5).toFloat()
+        const final = divider.mul(fillResult).add(divider.oneMinus().mul(strokeResult))
+        return vec4(vec3(final), 1)
+}
+`}
+/>
