@@ -1,0 +1,44 @@
+---
+title: 'hex'
+description: 'Hexagonal shape rendering with distance field precision and dual fill/stroke modes'
+keywords: [hex, hexagon, polygon, distance field, geometric shapes, fill, stroke, tessellation]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# hex: Hexagonal Shape Renderer
+
+### Distance Field-Based Hexagonal Geometry with Dual Rendering Modes
+
+The `hex` function renders precise hexagonal shapes using signed distance field techniques. It provides both filled and stroked rendering modes through unified coordinate-based positioning.
+
+**Mathematical Foundation**
+
+Hexagonal distance field is computed using vertex-based coordinate folding:
+$$SDF_{hex}(p) = \max\{|p \cdot n_i|\} - r$$
+where $n_i$ are the six normal vectors of the hexagonal edges.
+
+**Function Variants**
+
+| Function                     | Parameters                  | Rendering Mode   | Mathematical Expression              |
+| ---------------------------- | --------------------------- | ---------------- | ------------------------------------ |
+| `hexFill(st, size)`          | position, radius            | Filled hexagon   | $fill(SDF_{hex}(st), size)$          |
+| `hexStroke(st, size, width)` | position, radius, thickness | Outlined hexagon | $stroke(SDF_{hex}(st), size, width)$ |
+
+**Coordinate System**
+
+The hexagon is centered at origin with flat sides aligned horizontally:
+
+- Size parameter controls the circumradius (center to vertex distance)
+- Coordinate (0,0) places hexagon center
+- Scale factor affects both inner and outer boundaries proportionally
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const filled = hexFill(uv, 0.2)
+        const outlined = hexStroke(uv.add(vec2(0.2, 0)), 0.15, 0.02)
+        return vec4(vec3(filled.add(outlined)), 1)
+}`}
+/>

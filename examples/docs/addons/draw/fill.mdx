@@ -43,14 +43,3 @@ const fragment = () => {
         return vec4(vec3(circle1.add(circle2.mul(0.5))), 1)
 }`}
 />
-
-<FragmentEditor
-        code={`
-const fragment = () => {
-        const grid = fract(uv.mul(8))
-        const center = grid.sub(0.5)
-        const diamond = abs(center.x).add(abs(center.y))
-        const pattern = fill(diamond, 0.3)
-        return vec4(pattern.toVec3(), 1)
-}`}
-/>
