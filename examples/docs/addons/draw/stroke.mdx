@@ -1,0 +1,61 @@
+---
+title: 'stroke'
+description: 'Distance field stroke extraction with anti-aliased boundary rendering and width control'
+keywords: [stroke, outline, boundary, distance field, anti-aliasing, edge, width control]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# stroke: Distance Field Stroke Extraction
+
+### Anti-aliased Boundary Line Rendering with Precise Width Control
+
+The `stroke` function extracts boundary lines from distance fields with specified thickness and smooth anti-aliasing. This enables precise outline rendering for any distance field-based geometry.
+
+**Mathematical Foundation**
+
+Stroke extraction uses dual threshold comparison:
+$$stroke(d, size, width) = H(size, d + \frac{width}{2}) - H(size, d - \frac{width}{2})$$
+where $H$ is the Heaviside step function and $d$ is the distance field value.
+
+**Function Variants**
+
+| Function | Parameters | Edge Control | Mathematical Expression |
+|----------|------------|--------------|------------------------|
+| `stroke(x, size, width)` | distance, threshold, thickness | Automatic AA | $H_{aa}(size, x + w/2) - H_{aa}(size, x - w/2)$ |
+| `strokeWithEdge(x, size, width, edge)` | distance, threshold, thickness, softness | Manual edge | $H_{edge}(size, x + w/2) - H_{edge}(size, x - w/2)$ |
+
+**Boundary Extraction Process**
+
+The stroke function operates through differential thresholding:
+1. **Outer boundary**: Distance field + half width
+2. **Inner boundary**: Distance field - half width  
+3. **Stroke region**: Difference between outer and inner boundaries
+
+**Width Parameter Behavior**
+
+Stroke width affects the boundary extraction symmetrically:
+- `width = 0`: No stroke (zero thickness)
+- `width > 0`: Symmetric expansion around the threshold
+- Large width: Thicker outline with maintained anti-aliasing
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const d = length(uv.sub(0.5))
+        const outline1 = stroke(d, 0.2, 0.02)
+        const outline2 = stroke(d, 0.3, 0.01)
+        return vec4(vec3(outline1.add(outline2)), 1)
+}`}
+/>
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const grid = abs(fract(uv.mul(8)).sub(0.5)).x
+        const t = sin(iTime.mul(3)).mul(0.01).add(0.02)
+        const lines = stroke(grid, 0.4, t)
+        return vec4(lines.toVec3(), 1)
+}`}
+/>
