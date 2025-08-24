@@ -1,0 +1,31 @@
+---
+title: 'compositeDestinationOver'
+description: 'Destination over composite renders destination color as foreground with source color filling transparent background areas'
+keywords: [composite, destination, over, layering, additive, background]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeDestinationOver: Additive Background Filling
+
+### Two-Term Additive Color Composition
+
+The destination over composite operation renders destination as foreground with source filling transparent background areas through additive composition.
+
+$$
+\text{destinationOver} = dst + src \times (1 - \alpha_{dst})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const dstAlpha = smoothstep(0.35, 0.25, uv.distance(vec2(0.5)))
+        const srcColor = vec3(1, 0.2, 0.2)  
+        const dstColor = vec3(0.2, 0.4, 1)
+        const firstTerm = dstColor.mul(dstAlpha)
+        const secondTerm = srcColor.mul(dstAlpha.oneMinus())
+        const result = firstTerm.add(secondTerm)
+        return vec4(result, 1)
+}`}
+/>
