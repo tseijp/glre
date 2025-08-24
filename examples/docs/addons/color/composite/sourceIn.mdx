@@ -1,0 +1,32 @@
+---
+title: 'compositeSourceIn'
+description: 'Source in composite performs multiplicative masking where source color visibility is controlled by destination alpha values'
+keywords: [composite, source, in, masking, multiplicative, alpha]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeSourceIn: Multiplicative Alpha Masking
+
+### Source Visibility Through Destination Alpha Control
+
+The source in composite operation performs multiplicative masking where source color visibility is directly controlled by destination alpha values through multiplication.
+
+$$
+\text{sourceIn} = src \times \alpha_{dst}
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5, 0.5)
+        const dist = uv.distance(center)
+        const dstAlpha = smoothstep(0.4, 0.1, dist)
+        const srcColor = vec3(1, 0.4, 0.1)
+        const src = vec4(srcColor, 1)
+        const dst = vec4(vec3(0), dstAlpha)
+        const result = compositeSourceInVec4(src, dst)
+        return result
+}`}
+/>
