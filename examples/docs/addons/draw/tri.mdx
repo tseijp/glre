@@ -1,0 +1,62 @@
+---
+title: 'tri'
+description: 'Triangular shape rendering with distance field precision and dual fill/stroke modes'
+keywords: [tri, triangle, polygon, distance field, geometric shapes, fill, stroke, symmetry]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# tri: Triangular Shape Renderer
+
+### Distance Field-Based Triangular Geometry with Dual Rendering Modes
+
+The `tri` function renders precise triangular shapes using signed distance field techniques. It provides both filled and stroked rendering modes for equilateral triangles with perfect symmetry.
+
+**Mathematical Foundation**
+
+Triangular distance field uses vertex-based coordinate analysis:
+$$SDF_{tri}(p) = \max\{|p \cdot n_i| - h_i\}$$
+where $n_i$ are the three edge normal vectors and $h_i$ are the corresponding edge distances.
+
+**Function Variants**
+
+| Function | Parameters | Rendering Mode | Mathematical Expression |
+|----------|------------|----------------|------------------------|
+| `triFill(st, size)` | position, radius | Filled triangle | $fill(SDF_{tri}(st), size)$ |
+| `triStroke(st, size, width)` | position, radius, thickness | Outlined triangle | $stroke(SDF_{tri}(st), size, width)$ |
+
+**Geometric Properties**
+
+The triangle exhibits perfect three-fold rotational symmetry:
+- **Orientation**: Point-up configuration (apex at top)
+- **Circumradius**: Size parameter controls inscribed circle radius
+- **Edge alignment**: Symmetric positioning around coordinate origin
+- **Aspect ratio**: Fixed 1:1 proportional scaling
+
+**Distance Field Characteristics**
+
+Triangle SDF maintains consistent behavior:
+- **Interior**: Negative distance values (inside shape)
+- **Boundary**: Zero distance (exactly on edge)
+- **Exterior**: Positive distance values (outside shape)
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const center = uv.sub(0.5)
+        const filled = triFill(center, 0.2)
+        const outlined = triStroke(center.add(vec2(0.4, 0)), 0.15, 0.02)
+        return vec4(vec3(filled.add(outlined)), 1)
+}`}
+/>
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const grid = fract(uv.mul(6)).sub(0.5)
+        const t = sin(iTime.mul(2)).mul(0.05).add(0.15)
+        const pattern = triStroke(grid, t, 0.015)
+        return vec4(pattern.toVec3(), 1)
+}`}
+/>
