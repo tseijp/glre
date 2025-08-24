@@ -1,0 +1,61 @@
+---
+title: 'rect'
+description: 'Rectangle rendering with distance field precision and dual fill/stroke modes'
+keywords: [rect, rectangle, geometry, distance field, fill, stroke, uniform, aspect ratio]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# rect: Rectangle Rendering Function
+
+### Distance Field-Based Rectangular Geometry with Uniform and Non-Uniform Scaling
+
+The `rect` function renders precise rectangular shapes using signed distance field techniques. It provides both filled and stroked rendering modes with support for independent width/height control and uniform scaling.
+
+**Mathematical Foundation**
+
+Rectangular distance field computation uses coordinate clamping:
+$$SDF_{rect}(p, size) = |max(|p| - size, 0)|$$
+where $p$ is the position vector and $size$ defines the rectangle dimensions.
+
+**Function Variants**
+
+| Function | Parameters | Scaling Mode | Rendering Type |
+|----------|------------|--------------|----------------|
+| `rectFill(st, size)` | position, 2D size | Non-uniform | Filled rectangle |
+| `rectFillUniform(st, size)` | position, scalar size | Uniform | Square fill |
+| `rectStroke(st, size, width)` | position, 2D size, thickness | Non-uniform | Outlined rectangle |
+| `rectStrokeUniform(st, size, width)` | position, scalar size, thickness | Uniform | Square outline |
+
+**Scaling Behavior**
+
+Two scaling modes provide different geometric control:
+- **Non-uniform**: Independent width/height control via `vec2(width, height)`
+- **Uniform**: Proportional scaling via single scalar value (creates squares)
+
+**Distance Field Properties**
+
+The rectangular SDF exhibits these characteristics:
+- Interior points: $SDF < 0$ (negative distance)
+- Boundary points: $SDF = 0$ (zero distance)
+- Exterior points: $SDF > 0$ (positive distance)
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const filled = rectFill(uv.sub(0.3), vec2(0.2, 0.1))
+        const outlined = rectStroke(uv.sub(0.7), vec2(0.15, 0.15), 0.02)
+        return vec4(vec3(filled.add(outlined)), 1)
+}`}
+/>
+
+<FragmentEditor
+code={`
+const fragment = () => {
+        const grid = fract(uv.mul(4)).sub(0.5)
+        const t = sin(iTime).mul(0.1).add(0.15)
+        const pattern = rectStrokeUniform(grid, t, 0.01)
+        return vec4(pattern.toVec3(), 1)
+}`}
+/>
