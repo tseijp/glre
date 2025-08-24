@@ -1,0 +1,28 @@
+---
+title: 'colorPicker'
+description: 'Digital eyedropper tool for precise color sampling and display'
+keywords: [colorPicker, eyedropper, color sampling, precise color, design tool]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# colorPicker: Digital Eyedropper Tool
+
+### Precise Color Sampling
+
+The colorPicker extracts exact color values from any position and displays them without mixing or blending, maintaining perfect color fidelity.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const c = iTime.sin()
+        const s = iTime.sin()
+        const rot = rotate2d(iTime)
+        const pos = rot.mul(vec2(0.1)).add(0.5)
+        const gradient = vec4(uv.x, uv.y, s.mul(0.5).add(0.5), 1)
+        const picker = colorPickerDisplay(uv, pos, gradient)
+        return vec4(gradient.rgb.add(picker.rgb), 1)
+}
+`}
+/>
