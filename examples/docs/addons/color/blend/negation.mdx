@@ -1,0 +1,44 @@
+---
+title: 'blendNegation'
+description: 'Symmetric equilibrium blend creating white at sum unity through complementary negation'
+keywords: ['blend', 'negation', 'symmetric', 'equilibrium', 'unity', 'complementary']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendNegation: Symmetric Color Equilibrium
+
+### Unity-Centered Symmetric Balance
+
+Negation blending creates symmetric color relationships through a unity-centered equilibrium function. The mathematical formula generates white when base and blend values sum to unity, establishing a balanced pivot point for color interactions. Below this equilibrium, colors combine additively; above it, they invert subtractively.
+
+The mathematical definition centers on unity equilibrium:
+
+$$
+C_{result} = 1 - |1 - C_{base} - C_{blend}|
+$$
+
+This creates a symmetric relationship where the sum $(C_{base} + C_{blend})$ determines output behavior around the critical point at unity.
+
+### Symmetric Equilibrium Properties
+
+| Property               | Description                      | Mathematical Expression                                                      |
+| ---------------------- | -------------------------------- | ---------------------------------------------------------------------------- |
+| **Unity Pivot**        | White generation at sum unity    | $C_{base} + C_{blend} = 1 \Rightarrow C_{result} = 1$                        |
+| **Additive Domain**    | Direct addition below unity      | $C_{base} + C_{blend} < 1 \Rightarrow C_{result} = C_{base} + C_{blend}$     |
+| **Subtractive Domain** | Inverted subtraction above unity | $C_{base} + C_{blend} > 1 \Rightarrow C_{result} = 2 - C_{base} - C_{blend}$ |
+| **Perfect Symmetry**   | Mirror behavior around unity     | $f(x) = f(2-x)$ where $x = C_{base} + C_{blend}$                             |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const horizontalGrad = uv.x
+        const verticalGrad = uv.y.oneMinus()
+        const equilibrium = blendNegationVec3(
+                vec3(horizontalGrad, 0.2, 0.3),
+                vec3(verticalGrad, 0.8, 0.7)
+        )
+        return vec4(equilibrium, 1)
+}`}
+/>

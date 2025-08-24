@@ -1,0 +1,45 @@
+---
+title: 'blendLinearBurn'
+description: 'Linear Burn blending performs additive darkening through linear subtraction with zero clamping'
+keywords: ['blend', 'linear', 'burn', 'additive', 'darkening', 'subtraction', 'clamping']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendLinearBurn: Additive Darkening Process
+
+### Linear Subtraction with Zero Boundary
+
+Linear Burn blending creates darkening effects through additive subtraction. This function adds base and blend values, subtracts unity, then clamps negative results to zero, producing linear darkening that preserves color relationships while creating controlled shadow regions.
+
+The mathematical definition uses linear arithmetic with boundary clamping:
+
+$$
+C_{result} = \max(C_{base} + C_{blend} - 1, 0)
+$$
+
+This operation creates predictable darkening where colors combine additively before subtracting the maximum possible value, ensuring that only overlapping bright regions survive the subtraction process.
+
+### Linear Darkening Properties
+
+| Property              | Description                         | Mathematical Expression          |
+| --------------------- | ----------------------------------- | -------------------------------- |
+| **Additive Base**     | Colors combine through addition     | $C_{sum} = C_{base} + C_{blend}$ |
+| **Unity Subtraction** | Maximum value removed from sum      | $C_{sub} = C_{sum} - 1$          |
+| **Zero Clamp**        | Negative values bounded to black    | $C_{result} = \max(C_{sub}, 0)$  |
+| **Linear Response**   | Proportional darkening relationship | $\Delta C_{in} = \Delta C_{out}$ |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const leftCircle = float(0.3).smoothstep(0.25, uv.sub(vec2(0.35, 0.5)).length())
+        const rightCircle = float(0.3).smoothstep(0.25, uv.sub(vec2(0.65, 0.5)).length())
+        const brightBase = vec3(0.9, 0.7, 0.6).mul(leftCircle)
+        const brightBlend = vec3(0.8, 0.9, 0.5).mul(rightCircle)
+        const result = blendLinearBurnVec3(brightBase, brightBlend)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration reveals Linear Burn's selective color emergence through bright circle intersection. Only where both bright circles overlap do colors survive the subtraction process, showing how this function requires sufficient combined brightness to produce visible results. The overlapping region demonstrates the additive-then-subtract mechanism that creates color only when input values exceed the unity threshold together.

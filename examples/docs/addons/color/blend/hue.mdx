@@ -1,0 +1,54 @@
+---
+title: 'blendHue'
+description: 'Hue blending preserves saturation and brightness while replacing color hue for pure chromatic transformation'
+keywords: ['blend', 'hue', 'HSV', 'chromatic', 'saturation', 'brightness', 'preservation']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendHue: Pure Chromatic Transformation
+
+### Selective Hue Replacement with Attribute Preservation
+
+Hue blending performs precise chromatic transformation by extracting hue values from the blend color while preserving the base color's saturation and brightness components. This process creates color shifts that maintain the original intensity and vibrancy characteristics.
+
+The mathematical definition uses HSV color space transformation:
+
+$$
+\begin{align}
+\text{HSV}_{base} &= \text{RGB2HSV}(C_{base}) = (H_b, S_b, V_b) \\
+\text{HSV}_{blend} &= \text{RGB2HSV}(C_{blend}) = (H_{bl}, S_{bl}, V_{bl}) \\
+C_{result} &= \text{HSV2RGB}(H_{bl}, S_b, V_b)
+\end{align}
+$$
+
+This selective component replacement ensures that only chromatic information transfers while preserving the base color's saturation depth and luminance characteristics.
+
+### HSV Component Preservation Properties
+
+| Component          | Source      | Description                | Mathematical Expression                 |
+| ------------------ | ----------- | -------------------------- | --------------------------------------- |
+| **Hue (H)**        | Blend Color | Color wheel position       | $H_{result} = H_{blend}$                |
+| **Saturation (S)** | Base Color  | Color intensity preserved  | $S_{result} = S_{base}$                 |
+| **Value (V)**      | Base Color  | Brightness level preserved | $V_{result} = V_{base}$                 |
+| **Transformation** | HSV Space   | Color space conversion     | $\text{RGB} \leftrightarrow \text{HSV}$ |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const pattern = uv.x.mul(8).sin().mul(uv.y.mul(12).cos())
+        const intensity = pattern.mul(0.4).add(0.6)
+        const baseColor = vec3(0.9, 0.7, 0.2).mul(intensity)
+        const hueShift = uv.x.mul(6.28)
+        const blendColor = vec3(
+                hueShift.sin().mul(0.5).add(0.5),
+                hueShift.add(2.09).sin().mul(0.5).add(0.5),
+                hueShift.add(4.19).sin().mul(0.5).add(0.5)
+        )
+        const result = blendHue(baseColor, blendColor)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration reveals Hue blending's chromatic transformation essence. The base pattern maintains consistent saturation and brightness variations while the blend color provides continuous hue shifts across the spectrum. This shows how hue replacement preserves the original color's intensity characteristics while applying new chromatic identity, demonstrating the function's ability to change color identity without altering luminous quality.

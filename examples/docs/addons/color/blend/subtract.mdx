@@ -1,0 +1,33 @@
+---
+title: 'blendSubtract'
+description: 'Subtract blend mode creates additive threshold effects by clamping the sum of base and blend values above unity to zero'
+keywords: [blend, subtract, additive, threshold, clamp, unity]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendSubtract: Additive Threshold Clamping Mode
+
+### Unity-Based Threshold Function for High-Luminance Extraction
+
+The subtract blend mode applies an additive threshold operation where color values persist only when the combined luminance exceeds unity. This creates high-contrast selections based on luminance accumulation.
+
+The mathematical definition uses threshold clamping:
+
+$$
+\text{subtract}(base, blend) = \max(base + blend - 1, 0)
+$$
+
+Values below the unity threshold are eliminated, while excess luminance above 1.0 creates the final result. This produces stark binary separations between preserved and eliminated regions.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const baseGrad = vec3(uv.x, uv.x.mul(0.7), uv.x.mul(0.4))
+        const blendGrad = vec3(uv.y.mul(0.6), uv.y, uv.y.mul(0.8))
+        const subtracted = blendSubtractVec3(baseGrad, blendGrad)
+        const amplified = subtracted.mul(4)
+        return vec4(amplified, 1)
+}`}
+/>

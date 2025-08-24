@@ -1,0 +1,32 @@
+---
+title: 'compositeDestinationAtop'
+description: 'Destination atop composite renders destination color within source alpha boundaries while preserving source areas outside destination coverage'
+keywords: [composite, destination, atop, alpha, inverse, masking]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeDestinationAtop: Inverse Alpha-Masked Overlay
+
+### Destination Rendering Within Source Boundaries
+
+The destination atop composite operation constrains destination color rendering to source alpha regions while preserving source areas outside destination coverage.
+
+$$
+\text{destinationAtop} = dst \times \alpha_{src} + src \times (1 - \alpha_{dst})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const srcAlpha = uv.x
+        const dstAlpha = float(0.35).smoothstep(0.25, uv.distance(vec2(0.5)))
+        const srcColor = vec3(1, 0.3, 0.2)
+        const dstColor = vec3(0.2, 0.4, 1)
+        const src = vec4(srcColor, srcAlpha)
+        const dst = vec4(dstColor, dstAlpha)
+        const result = compositeDestinationAtopVec4(src, dst)
+        return result
+}`}
+/>

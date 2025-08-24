@@ -1,0 +1,51 @@
+---
+title: 'blendAdd'
+description: 'Additive color blending mode implementation for combining colors with brightness accumulation'
+keywords: ['blend', 'add', 'additive', 'color', 'brightness', 'mix']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendAdd: Additive Color Blending
+
+### Mathematical Foundation of Brightness Accumulation
+
+Additive blending increases image brightness by mathematically combining color values through addition. This operation simulates light emission where multiple light sources combine their intensities.
+
+The mathematical definition is:
+
+$$
+C_{result} = \min(C_{base} + C_{blend}, 1.0)
+$$
+
+Where $C_{base}$ is the background color, $C_{blend}$ is the overlay color, and the $\min$ function prevents values from exceeding the maximum brightness threshold.
+
+For opacity-controlled blending:
+
+$$
+C_{result} = \text{blend}(C_{base}, C_{blend}) \times \alpha + C_{base} \times (1 - \alpha)
+$$
+
+### Color Mathematics Properties
+
+| Property                | Description                           | Result                                                   |
+| ----------------------- | ------------------------------------- | -------------------------------------------------------- |
+| **Identity**            | Adding zero preserves original color  | $C + 0 = C$                                              |
+| **Commutativity**       | Order independence in addition        | $A + B = B + A$                                          |
+| **Brightness Increase** | Result never darker than base         | $\text{brightness}(result) \geq \text{brightness}(base)$ |
+| **Clamping Behavior**   | Values saturate at maximum brightness | $\max(result) = 1.0$                                     |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const dist = uv.sub(center).length()
+        const baseCircle = float(0.35).smoothstep(0.3, dist)
+        const blendCircle = float(0.25).smoothstep(0.2, uv.sub(vec2(0.65, 0.4)).length())
+        const base = vec3(0.2, 0.4, 0.8).mul(baseCircle)
+        const blend = vec3(0.9, 0.3, 0.1).mul(blendCircle)
+        const result = blendAddVec3(base, blend)
+        return vec4(result, 1)
+}`}
+/>
