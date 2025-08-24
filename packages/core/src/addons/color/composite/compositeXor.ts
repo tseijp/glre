@@ -7,8 +7,8 @@ const compositeXorFloat = Fn(([src, dst]: [Float, Float]): Float => {
         type: 'float',
         inputs: [
                 { name: 'src', type: 'float' },
-                { name: 'dst', type: 'float' }
-        ]
+                { name: 'dst', type: 'float' },
+        ],
 })
 
 export const compositeXor = compositeXorFloat
@@ -22,8 +22,8 @@ export const compositeXorVec3 = Fn(([srcColor, dstColor, srcAlpha, dstAlpha]: [V
                 { name: 'srcColor', type: 'vec3' },
                 { name: 'dstColor', type: 'vec3' },
                 { name: 'srcAlpha', type: 'float' },
-                { name: 'dstAlpha', type: 'float' }
-        ]
+                { name: 'dstAlpha', type: 'float' },
+        ],
 })
 
 export const compositeXorVec4 = Fn(([srcColor, dstColor]: [Vec4, Vec4]): Vec4 => {
@@ -35,6 +35,6 @@ export const compositeXorVec4 = Fn(([srcColor, dstColor]: [Vec4, Vec4]): Vec4 =>
         type: 'vec4',
         inputs: [
                 { name: 'srcColor', type: 'vec4' },
-                { name: 'dstColor', type: 'vec4' }
-        ]
+                { name: 'dstColor', type: 'vec4' },
+        ],
 })
