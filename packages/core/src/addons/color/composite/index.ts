@@ -1,5 +1,7 @@
 export * from './compositeXor'
 export * from './destinationAtop'
+export * from './destinationIn'
+export * from './destinationOut'
 export * from './sourceAtop'
 export * from './sourceIn'
 export * from './sourceOut'
