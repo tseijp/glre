@@ -1,5 +1,6 @@
 export * from './animation/easing'
 export * from './color/blend'
+export * from './color/composite'
 export * from './color/space'
 export * from './draw'
 export * from './geometry'
