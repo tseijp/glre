@@ -1,0 +1,32 @@
+---
+title: 'compositeSourceOut'
+description: 'Source out composite performs exclusion masking where source color appears only outside destination alpha regions'
+keywords: [composite, source, out, exclusion, masking, complement]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeSourceOut: Exclusion Alpha Masking
+
+### Source Visibility Outside Destination Boundaries
+
+The source out composite operation performs exclusion masking where source color appears only in regions outside destination alpha coverage through complement multiplication.
+
+$$
+\text{sourceOut} = src \times (1 - \alpha_{dst})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5, 0.5)
+        const dist = uv.distance(center)
+        const dstAlpha = smoothstep(0.4, 0.2, dist)
+        const srcColor = vec3(0.1, 0.8, 0.6)
+        const src = vec4(srcColor, 1)
+        const dst = vec4(vec3(0), dstAlpha)
+        const result = compositeSourceOutVec4(src, dst)
+        return result
+}`}
+/>
