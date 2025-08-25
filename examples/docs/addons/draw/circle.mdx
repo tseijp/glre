@@ -23,7 +23,9 @@ const fragment = () => {
         const fillResult = circle(uv, 1)
         const strokeResult = circleWithStroke(uv, 1, 0.05)
         const divider = uv.x.lessThan(0.5).toFloat()
-        const final = divider.mul(fillResult).add(divider.oneMinus().mul(strokeResult))
+        const left = divider.mul(fillResult)
+        const right = divider.oneMinus().mul(strokeResult)
+        const final = left.add(right)
         return vec4(vec3(final), 1)
 }
 `}

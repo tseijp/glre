@@ -39,6 +39,7 @@ The hexagon is centered at origin with flat sides aligned horizontally:
 const fragment = () => {
         const filled = hexFill(uv.mul(4).fract(), 0.5)
         const outlined = hexStroke(uv, 0.15, 0.05)
-        return vec4(vec3(filled.add(outlined)), 1)
+        const combined = filled.add(outlined)
+        return vec4(vec3(combined), 1)
 }`}
 />

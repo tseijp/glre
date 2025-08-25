@@ -36,10 +36,11 @@ The function exhibits symmetric behavior around the midpoint:
 <FragmentEditor
         code={`
 const fragment = () => {
-        const gradient = uv.x
-        const wave = sin(uv.y.mul(20).add(iTime.mul(2))).mul(0.5).add(0.5)
-        const color = vec3(gradient, wave, gradient.mul(wave))
-        const flipped = flip(color, abs(sin(iTime.mul(0.3))))
+        const wave = uv.y.mul(20).add(iTime).sin().mul(0.5).add(0.5)
+        const grad = uv.x.mul(wave)
+        const color = vec3(uv.x, wave, grad)
+        const amount = iTime.sin().abs()
+        const flipped = flip(color, amount)
         return vec4(flipped, 1)
 }`}
 />

@@ -45,8 +45,7 @@ where $\mathbf{e}_i$ represents the unit vector for each axis direction ($\mathb
 <FragmentEditor
         code={`
 const fragment = () => {
-        const time = iTime.mul(0.4)
-        const mat = rotate4d(vec3(1), time)
-        return axisLines = axis(uv, mat, vec3(0), float(0.007))
+        const mat = rotate4d(vec3(1), iTime)
+        return axis(uv, mat, vec3(0), 0.007)
 }`}
 />

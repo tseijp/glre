@@ -45,8 +45,11 @@ Each point combines multiple rendering elements:
         code={`
 const fragment = () => {
         const angle = iTime
-        const pos = vec2(cos(angle), sin(angle)).mul(0.2).add(0.5)
+        const x = angle.cos()
+        const y = angle.sin()
+        const offset = vec2(x, y).mul(0.2)
+        const pos = offset.add(0.5)
         const marker = pointWithColor(uv, pos, vec3(pos, 0), 0.03)
-        return vec4(uv, 0, 1).add(marker)
+        return vec4(uv, 0, 1).mix(marker, marker.a)
 }`}
 />

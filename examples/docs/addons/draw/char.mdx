@@ -50,8 +50,7 @@ The system provides 95 printable ASCII characters (codes 32-126) through exporte
 <FragmentEditor
         code={`
 const fragment = () => {
-        const time = iTime.mul(0.5)
-        const charIndex = time.floor().mod(26).add(33).toInt()
+        const charIndex = iTime.floor().mod(26).add(33).toInt()
         const glyph = char(uv, charIndex)
         return vec4(vec3(glyph), 1)
 }`}

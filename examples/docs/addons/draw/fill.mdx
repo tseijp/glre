@@ -37,9 +37,9 @@ The edge parameter in `fillWithEdge` defines the transition zone width:
 <FragmentEditor
         code={`
 const fragment = () => {
-        const d = length(uv.sub(0.5))
+        const d = uv.sub(0.5).length()
         const circle1 = fill(d, 0.3)
         const circle2 = fillWithEdge(d.sub(0.2), 0.2, 0.05)
-        return vec4(vec3(circle1.add(circle2.mul(0.5))), 1)
+        return vec4(circle1.add(circle2.mul(0.5)).toVec3(), 1)
 }`}
 />

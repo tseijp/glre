@@ -44,7 +44,7 @@ The function supports multiple data types: `float`, `vec2`, `vec3`, and `vec4` t
         code={`
 const fragment = () => {
         const center = vec2(0.5)
-        const dist = length(uv.sub(center))
+        const dist = uv.sub(center).length()
         const hollowed = bridge(vec3(0.8, 0.4, 0.2), dist, 0.3, 0.05)
         return vec4(hollowed, 1)
 }`}

@@ -47,7 +47,9 @@ Tile Center = (floor(position / tileSize) + 0.5) × tileSize
         code={`
 const fragment = () => {
         const time = iTime.mul(0.5)
-        const vectorField = vec2(sin(uv.y.mul(4).add(time)), cos(uv.x.mul(4).add(time))).mul(0.02)
+        const y = uv.y.mul(4).add(time).sin()
+        const x = uv.x.mul(4).add(time).cos()
+        const vectorField = vec2(y, x).mul(0.02)
         const arrowMask = arrows(uv, vectorField, iResolution.xy)
         return vec4(vec3(arrowMask), 1)
 }`}

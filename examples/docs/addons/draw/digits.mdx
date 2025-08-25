@@ -26,11 +26,11 @@ where $x \in [0, 3]$ and $y \in [0, 4]$ define the pixel coordinates within the 
 <FragmentEditor
         code={`
 const fragment = () => {
-        const t = iTime.mul(0.3)
-        const displayValue = t.sin().add(1).mul(50)
+        const value = iTime.mul(0.3).sin().add(1).mul(50)
         const coord = uv.mul(0.16)
-        const digitDisplay = digits(coord, displayValue)
-        const color = vec3(digitDisplay).mul(vec3(0.2, 0.8, 0.3))
+        const digitDisplay = digits(coord, value)
+        const tint = vec3(0.2, 0.8, 0.3)
+        const color = vec3(digitDisplay).mul(tint)
         return vec4(color, 1)
 }`}
 />

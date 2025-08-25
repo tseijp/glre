@@ -45,9 +45,10 @@ Stroke width affects the boundary extraction symmetrically:
 <FragmentEditor
         code={`
 const fragment = () => {
-        const d = length(uv.sub(0.5))
+        const d = uv.sub(0.5).length()
         const outline1 = stroke(d, 0.2, 0.02)
         const outline2 = stroke(d, 0.3, 0.01)
-        return vec4(vec3(outline1.add(outline2)), 1)
+        const combined = outline1.add(outline2)
+        return vec4(vec3(combined), 1)
 }`}
 />

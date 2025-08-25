@@ -48,6 +48,7 @@ Triangle SDF maintains consistent behavior:
 const fragment = () => {
         const filled = triFill(uv.mul(4).fract(), 0.8)
         const outlined = triStroke(uv, 0.2, 0.02)
-        return vec4(vec3(filled.add(outlined)), 1)
+        const combined = filled.add(outlined)
+        return vec4(vec3(combined), 1)
 }`}
 />
