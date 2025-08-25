@@ -1,4 +1,4 @@
-import { Fn, Vec4, Float, If, Return, float } from '../../../node'
+import { Fn, Vec4, Float, If, float } from '../../../node'
 
 export const quatLerp = Fn(([qa, qb, t]: [Vec4, Vec4, Float]): Vec4 => {
         const cosHalfTheta = qa.w.mul(qb.w).add(qa.xyz.dot(qb.xyz)).toVar('cosHalfTheta')
@@ -6,14 +6,14 @@ export const quatLerp = Fn(([qa, qb, t]: [Vec4, Vec4, Float]): Vec4 => {
         const absCosHalfTheta = cosHalfTheta.abs().toVar('absCosHalfTheta')
 
         If(absCosHalfTheta.greaterThanEqual(1), () => {
-                Return(qa)
+                return qa
         })
 
         const halfTheta = absCosHalfTheta.acos().toVar('halfTheta')
         const sinHalfTheta = float(1).sub(absCosHalfTheta.mul(absCosHalfTheta)).sqrt().toVar('sinHalfTheta')
 
         If(sinHalfTheta.abs().lessThan(0.001), () => {
-                Return(qa.div(2).add(adjustedQb.div(2)).normalize())
+                return qa.div(2).add(adjustedQb.div(2)).normalize()
         })
 
         const ratioA = float(1).sub(t).mul(halfTheta).sin().div(sinHalfTheta).toVar('ratioA')

@@ -1,4 +1,4 @@
-import { Fn, Vec3, dot, length, cross, normalize, max, min, vec3, float, If, Return } from '../../../node'
+import { Fn, Vec3, dot, length, cross, normalize, max, min, vec3, float, If } from '../../../node'
 import { barycentricFromVec3 } from './barycentric'
 import { TriangleType } from './triangle'
 
@@ -16,20 +16,20 @@ export const closestPointWithNormal = Fn(([tri, triNormal, pos]: [TriangleType, 
                 const bc = c.sub(b).toVar('bc')
                 const n = length(bc).toVar('n')
                 const t = max(float(0), min(dot(bc, p.sub(b)).div(n), n)).toVar('t')
-                Return(b.add(t.div(n).mul(bc)))
+                return b.add(t.div(n).mul(bc))
         })
 
         If(bcoords.y.lessThan(0), () => {
                 const ca = a.sub(c).toVar('ca')
                 const n = length(ca).toVar('n')
                 const t = max(float(0), min(dot(ca, p.sub(c)).div(n), n)).toVar('t')
-                Return(c.add(t.div(n).mul(ca)))
+                return c.add(t.div(n).mul(ca))
         })
 
         If(bcoords.z.lessThan(0), () => {
                 const n = length(ab).toVar('n')
                 const t = max(float(0), min(dot(ab, p.sub(a)).div(n), n)).toVar('t')
-                Return(a.add(t.div(n).mul(ab)))
+                return a.add(t.div(n).mul(ab))
         })
 
         return a.mul(bcoords.x).add(b.mul(bcoords.y)).add(c.mul(bcoords.z))
@@ -58,20 +58,20 @@ export const closestPoint = Fn(([tri, pos]: [TriangleType, Vec3]): Vec3 => {
                 const bc = c.sub(b).toVar('bc')
                 const n = length(bc).toVar('n')
                 const t = max(float(0), min(dot(bc, p.sub(b)).div(n), n)).toVar('t')
-                Return(b.add(t.div(n).mul(bc)))
+                return b.add(t.div(n).mul(bc))
         })
 
         If(bcoords.y.lessThan(0), () => {
                 const ca = a.sub(c).toVar('ca')
                 const n = length(ca).toVar('n')
                 const t = max(float(0), min(dot(ca, p.sub(c)).div(n), n)).toVar('t')
-                Return(c.add(t.div(n).mul(ca)))
+                return c.add(t.div(n).mul(ca))
         })
 
         If(bcoords.z.lessThan(0), () => {
                 const n = length(ab).toVar('n')
                 const t = max(float(0), min(dot(ab, p.sub(a)).div(n), n)).toVar('t')
-                Return(a.add(t.div(n).mul(ab)))
+                return a.add(t.div(n).mul(ab))
         })
 
         return a.mul(bcoords.x).add(b.mul(bcoords.y)).add(c.mul(bcoords.z))

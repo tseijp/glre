@@ -1,4 +1,4 @@
-import { Fn, Float, Vec3, vec3, If, Return } from '../../../node'
+import { Fn, Float, Vec3, vec3, If } from '../../../node'
 import { blendDarken } from './darken'
 import { blendLighten } from './lighten'
 

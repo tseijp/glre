@@ -1,12 +1,12 @@
-import { Fn, Float, Vec3, vec3, If, Return } from '../../../node'
+import { Fn, Float, Vec3, vec3, If } from '../../../node'
 import { blendLinearBurn } from './linearBurn'
 import { blendLinearDodge } from './linearDodge'
 
 export const blendLinearLight = Fn(([base, blend]: [Float, Float]): Float => {
         If(blend.lessThan(0.5), () => {
-                Return(blendLinearBurn(base, blend.mul(2)))
+                return blendLinearBurn(base, blend.mul(2))
         })
-        Return(blendLinearDodge(base, blend.sub(0.5).mul(2)))
+        return blendLinearDodge(base, blend.sub(0.5).mul(2))
 }).setLayout({
         name: 'blendLinearLight',
         type: 'float',

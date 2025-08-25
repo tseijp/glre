@@ -1,11 +1,11 @@
-import { Fn, Float, Vec3, vec3, If, Return } from '../../../node'
-import { blendVividLight, blendVividLightVec3 } from './vividLight'
+import { Fn, Float, Vec3, vec3, If, float } from '../../../node'
+import { blendVividLight } from './vividLight'
 
 export const blendHardMix = Fn(([base, blend]: [Float, Float]): Float => {
         If(blendVividLight(base, blend).lessThan(0.5), () => {
-                Return(0)
+                return float(0)
         })
-        Return(1)
+        return float(1)
 }).setLayout({
         name: 'blendHardMix',
         type: 'float',

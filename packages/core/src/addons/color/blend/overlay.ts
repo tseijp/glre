@@ -1,8 +1,8 @@
-import { Fn, Float, Vec3, vec3, If, Return } from '../../../node'
+import { Fn, Float, Vec3, vec3, If } from '../../../node'
 
 export const blendOverlay = Fn(([base, blend]: [Float, Float]): Float => {
         If(base.lessThan(0.5), () => {
-                Return(base.mul(blend).mul(2))
+                return base.mul(blend).mul(2)
         })
         return base.oneMinus().mul(blend.oneMinus()).mul(2).oneMinus()
 }).setLayout({

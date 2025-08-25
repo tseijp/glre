@@ -1,6 +1,6 @@
 import { Fn, Vec2, Int, Float, vec2, atan2, step, float } from '../../node'
 import { TAU } from '../math/const'
-import { scale } from '../space/scale'
+import { scale2dWithCenter } from '../space/scale'
 
 export function starSDF(st: Vec2, V: Int, s: Float): Float
 export function starSDF(st: Vec2, V: Int): Float
@@ -35,7 +35,7 @@ export const starSDFWithScale = Fn(([st, V, s]: [Vec2, Int, Float]): Float => {
 })
 
 export const starSDFSimple = Fn(([st, V]: [Vec2, Int]): Float => {
-        const scaledSt = scale(st, V.toFloat().reciprocal().mul(12), vec2(0.5))
+        const scaledSt = scale2dWithCenter(st, V.toFloat().reciprocal().mul(12), vec2(0.5))
         return starSDFWithScale(scaledSt as any, V, float(0.1))
 }).setLayout({
         name: 'starSDFSimple',

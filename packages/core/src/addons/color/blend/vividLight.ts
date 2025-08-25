@@ -1,12 +1,12 @@
-import { Fn, Float, Vec3, vec3, If, Return } from '../../../node'
+import { Fn, Float, Vec3, vec3, If } from '../../../node'
 import { blendColorBurn } from './colorBurn'
 import { blendColorDodge } from './colorDodge'
 
 export const blendVividLight = Fn(([base, blend]: [Float, Float]): Float => {
         If(blend.lessThan(0.5), () => {
-                Return(blendColorBurn(base, blend.mul(2)))
+                return blendColorBurn(base, blend.mul(2))
         })
-        Return(blendColorDodge(base, blend.sub(0.5).mul(2)))
+        return blendColorDodge(base, blend.sub(0.5).mul(2))
 }).setLayout({
         name: 'blendVividLight',
         type: 'float',
