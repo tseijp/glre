@@ -1,0 +1,46 @@
+---
+title: 'flip'
+description: 'Gradual polarity inversion function for controlled value negation and visual effects'
+keywords: [flip, polarity inversion, complement, negative effect, gradual transition, value transformation]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# flip: Gradual Polarity Inversion Function
+
+### Controlled Transition Between Value and Its Complement
+
+The `flip` function performs gradual polarity inversion by interpolating between a value and its complement (1-v). This enables controlled negative effects and bidirectional value transformations.
+
+**Mathematical Definition**
+
+For input value $v$ and transition parameter $p \in [0,1]$:
+$$flip(v, p) = v(1-p) + (1-v)p = v + p(1-2v)$$
+
+**Transition States**
+
+| Parameter | Mathematical Expression | Visual Result       | Application    |
+| --------- | ----------------------- | ------------------- | -------------- |
+| $p = 0$   | $flip(v, 0) = v$        | Original value      | No inversion   |
+| $p = 0.5$ | $flip(v, 0.5) = 0.5$    | Neutral gray        | 50% inversion  |
+| $p = 1$   | $flip(v, 1) = 1-v$      | Complete complement | Full inversion |
+
+**Bidirectional Property**
+
+The function exhibits symmetric behavior around the midpoint:
+
+- Forward: $v \rightarrow 1-v$ as $p: 0 \rightarrow 1$
+- Reverse: $1-v \rightarrow v$ as $p: 0 \rightarrow 1$ applied to $(1-v)$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const wave = uv.y.mul(20).add(iTime).sin().mul(0.5).add(0.5)
+        const grad = uv.x.mul(wave)
+        const color = vec3(uv.x, wave, grad)
+        const amount = iTime.sin().abs()
+        const flipped = flip(color, amount)
+        return vec4(flipped, 1)
+}`}
+/>

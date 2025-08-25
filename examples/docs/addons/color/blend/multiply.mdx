@@ -1,0 +1,43 @@
+---
+title: 'blendMultiply'
+description: 'Multiply blending creates subtractive darkening through direct color multiplication'
+keywords: ['blend', 'multiply', 'subtractive', 'darkening', 'pigment', 'filter']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendMultiply: Subtractive Color Layering
+
+### Direct Multiplication Darkening Process
+
+Multiply blending creates subtractive color effects through direct multiplication of base and blend values. This function simulates physical pigment mixing where each color layer reduces the overall brightness, creating natural darkening effects that preserve color relationships while intensifying shadows.
+
+The mathematical definition uses component-wise multiplication:
+
+$$
+C_{result} = C_{base} \times C_{blend}
+$$
+
+This operation creates predictable darkening where colors combine multiplicatively, ensuring that lighter colors have minimal darkening effect while darker colors create dramatic shadow intensification.
+
+### Multiplicative Darkening Properties
+
+| Property                     | Description                             | Mathematical Expression                     |
+| ---------------------------- | --------------------------------------- | ------------------------------------------- |
+| **Component Multiplication** | Direct value multiplication per channel | $R_{out} = R_{base} \times R_{blend}$       |
+| **Subtractive Nature**       | Result always darker than inputs        | $C_{result} \leq \min(C_{base}, C_{blend})$ |
+| **Neutral Preservation**     | White blend preserves base color        | $C \times 1 = C$                            |
+| **Shadow Intensification**   | Dark values create strong darkening     | $C \times 0 = 0$                            |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const stripe1 = uv.y.mul(10).fract().step(0.5)
+        const stripe2 = uv.x.mul(10).fract().step(0.5)
+        const baseColor = vec3(0.9, 0.7, 0.5).mul(stripe1.add(0.3))
+        const blendColor = vec3(0.8, 0.9, 0.6).mul(stripe2.add(0.3))
+        const result = blendMultiplyVec3(baseColor, blendColor)
+        return vec4(result, 1)
+}`}
+/>

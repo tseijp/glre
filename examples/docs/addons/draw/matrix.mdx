@@ -1,0 +1,51 @@
+---
+title: 'matrix'
+description: 'Matrix visualization function for rendering numerical values with spatial organization'
+keywords: [matrix, visualization, debugging, numerical display, linear algebra, structured data]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# matrix: Matrix Visualization Function
+
+### Structured Numerical Data Display with Spatial Organization
+
+The `matrix` function renders matrix data structures as organized numerical grids. This enables visual debugging of transformation matrices and mathematical computations with precise spatial layout.
+
+**Mathematical Visualization**
+
+Matrix elements are displayed using digit-based rendering:
+$$Matrix_{n \times n} \rightarrow \text{Visual Grid}_{spatial}$$
+where each element $m_{ij}$ is rendered at position $(i \cdot scale, j \cdot scale)$ with numerical precision.
+
+**Function Variants**
+
+| Function            | Matrix Type | Grid Size    | Spatial Bounds       |
+| ------------------- | ----------- | ------------ | -------------------- |
+| `matrixMat2(st, M)` | 2×2 matrix  | $2 \times 2$ | $2 \cdot\|offset\| $ |
+| `matrixMat3(st, M)` | 3×3 matrix  | $3 \times 3$ | $3 \cdot\|offset\| $ |
+| `matrixMat4(st, M)` | 4×4 matrix  | $4 \times 4$ | $4 \cdot\|offset\| $ |
+
+**Display Configuration**
+
+Rendering parameters control layout precision:
+
+- `DIGITS_SIZE`: Element scaling factor (default: 0.02)
+- `DIGITS_VALUE_OFFSET`: Grid positioning offset (default: (-6.0, 3.0))
+- Background alpha: Semi-transparent overlay (0.5 opacity)
+
+**Spatial Bounds Calculation**
+
+Display area is computed as:
+$$bounds = DIGITS\_SIZE \times |DIGITS\_VALUE\_OFFSET| \times dimension$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const scale = iTime.sin().mul(0.5).add(1.5)
+        const M = mat2(scale, 0, 0, scale)
+        const overlay = matrix(uv.mul(0.3), M)
+        return vec4(uv.x, uv.y, 0.5, 1).add(overlay)
+}`}
+/>

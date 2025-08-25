@@ -1,0 +1,56 @@
+---
+title: 'arrows'
+description: 'Vector field visualization through arrow-based directional indicators'
+keywords: [arrows, vector field, directional, flow, visualization, tiles, grid]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# arrows: Vector Field Directional Visualization
+
+### Grid-Based Arrow Rendering System
+
+The arrows function renders directional indicators in a tiled grid system. Each tile displays an arrow representing the magnitude and direction of a 2D vector field at that spatial location.
+
+The system operates by dividing screen space into regular tiles and centering one arrow within each tile. Arrow size automatically scales based on vector magnitude, with visual constraints preventing arrows from exceeding tile boundaries.
+
+$$
+\text{Arrow}(p, v) = \begin{cases}
+\min(\text{shaft}, \text{head}) & \text{if } |v| > 0 \\
+0 & \text{otherwise}
+\end{cases}
+$$
+
+Where shaft represents the main body and head represents the arrowhead geometry.
+
+**Mathematical Properties**
+
+| Property          | Value         | Description                    |
+| ----------------- | ------------- | ------------------------------ |
+| Tile Size         | 32 pixels     | Grid cell dimensions           |
+| Minimum Magnitude | 5.0           | Threshold for arrow visibility |
+| Maximum Length    | Tile Size / 2 | Prevents overlap between tiles |
+| Head Angle        | Variable      | Arrowhead opening angle        |
+
+The rendering uses signed distance field computation for both shaft and head elements. The shaft utilizes line SDF while the head employs perpendicular line segments positioned at the arrow tip.
+
+**Grid Coordinate System**
+
+The `arrowsTileCenterCoord` function maps any position to its corresponding tile center. This ensures arrows remain stationary within their assigned grid cells regardless of input position variations.
+
+```
+Tile Center = (floor(position / tileSize) + 0.5) × tileSize
+```
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const time = iTime.mul(0.5)
+        const y = uv.y.mul(4).add(time).sin()
+        const x = uv.x.mul(4).add(time).cos()
+        const vectorField = vec2(y, x).mul(0.02)
+        const arrowMask = arrows(uv, vectorField, iResolution.xy)
+        return vec4(vec3(arrowMask), 1)
+}`}
+/>

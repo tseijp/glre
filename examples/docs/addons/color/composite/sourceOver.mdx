@@ -1,0 +1,31 @@
+---
+title: 'compositeSourceOver'
+description: 'Source over composite performs standard alpha blending where source layer overlays destination with transparency-based mixing'
+keywords: [composite, source, over, alpha, blending, overlay]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeSourceOver: Standard Alpha Overlay
+
+### Foreground-Background Transparency Blending
+
+The source over composite operation performs standard alpha blending where the source layer overlays the destination with alpha-based transparency mixing.
+
+$$
+\text{sourceOver} = src \times \alpha_{src} + dst \times \alpha_{dst} \times (1 - \alpha_{src})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const srcAlpha = uv.y
+        const dstAlpha = float(0.8)
+        const srcColor = vec3(1, 0.2, 0.1)
+        const dstColor = vec3(0.1, 0.3, 0.9)
+        const src = vec4(srcColor, srcAlpha)
+        const dst = vec4(dstColor, dstAlpha)
+        return compositeSourceOverVec4(src, dst)
+}`}
+/>

@@ -1,0 +1,37 @@
+---
+title: 'blendSaturation'
+description: 'HSV saturation replacement filter preserving hue and brightness channels'
+keywords: ['blend', 'saturation', 'hsv', 'filter', 'chroma', 'intensity']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendSaturation: Chroma Channel Filter
+
+### HSV Saturation Isolation System
+
+Saturation blending isolates and replaces chroma intensity while preserving color identity and brightness through HSV channel manipulation. Base provides hue and value; blend contributes saturation data exclusively.
+
+$$
+HSV_{result} = (H_{base}, S_{blend}, V_{base})
+$$
+
+| Component      | Source | Visual Effect                 |
+| -------------- | ------ | ----------------------------- |
+| **Hue**        | Base   | Color identity preserved      |
+| **Saturation** | Blend  | Chroma intensity replaced     |
+| **Value**      | Base   | Brightness pattern maintained |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const brightPattern = float(0.4).step(uv.x.mul(15).sin().abs()).mul(0.6).add(0.4)
+        const chromaGrad = uv.y
+        const color = blendSaturation(
+                hsv2rgb(vec3(0.6, 0.3, brightPattern)),
+                hsv2rgb(vec3(0.6, chromaGrad, 0.8))
+        )
+        return vec4(color, 1)
+}`}
+/>

@@ -1,0 +1,45 @@
+---
+title: 'fill'
+description: 'Spatial filling function with anti-aliased edges for distance field rendering'
+keywords: [fill, distance field, anti-aliasing, smooth edges, spatial rendering, 2D graphics]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# fill: Distance Field Filling Function
+
+### Anti-aliased Spatial Fill with Smooth Boundaries
+
+The `fill` function converts distance fields into filled regions with smooth, anti-aliased boundaries. This technique enables crisp geometric rendering without aliasing artifacts.
+
+**Mathematical Definition**
+
+For distance field $d$ and threshold $t$:
+$$fill(d, t) = 1 - H_{\epsilon}(t - d)$$
+where $H_{\epsilon}$ is the smoothstep Heaviside function with anti-aliasing parameter $\epsilon$.
+
+**Function Variants**
+
+| Function                      | Parameters                      | Mathematical Expression  | Application             |
+| ----------------------------- | ------------------------------- | ------------------------ | ----------------------- |
+| `fill(x, size)`               | distance, threshold             | $1 - H_{aa}(size - x)$   | Automatic anti-aliasing |
+| `fillWithEdge(x, size, edge)` | distance, threshold, edge width | $1 - H_{edge}(size - x)$ | Manual edge control     |
+
+**Edge Width Control**
+
+The edge parameter in `fillWithEdge` defines the transition zone width:
+
+- Small values: Sharp boundaries (approaching step function)
+- Large values: Soft, diffuse boundaries
+- Zero: No anti-aliasing (hard step)
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const d = uv.sub(0.5).length()
+        const circle1 = fill(d, 0.3)
+        const circle2 = fillWithEdge(d.sub(0.2), 0.2, 0.05)
+        return vec4(circle1.add(circle2.mul(0.5)).toVec3(), 1)
+}`}
+/>

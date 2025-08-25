@@ -1,0 +1,45 @@
+---
+title: 'blendReflect'
+description: 'Reflect blending creates intense highlights through squared base division by inverted blend'
+keywords: ['blend', 'reflect', 'highlight', 'intense', 'squared', 'division']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendReflect: Intense Highlight Creation
+
+### Mathematical Foundation of Reflect
+
+Reflect blending creates intense highlights by squaring the base color and dividing by the inverted blend color. This mathematical operation produces dramatic brightening effects similar to photographic reflection.
+
+The mathematical definition is:
+
+$$
+C_{result} = \begin{cases}
+1 & \text{if } C_{blend} = 1 \\
+\min\left(\frac{C_{base}^2}{1 - C_{blend}}, 1\right) & \text{otherwise}
+\end{cases}
+$$
+
+The squaring operation amplifies bright base values while the division creates non-linear intensity increases as blend approaches white.
+
+### Reflection Enhancement Properties
+
+| Property                     | Description                   | Mathematical Behavior              |
+| ---------------------------- | ----------------------------- | ---------------------------------- |
+| **Quadratic Amplification**  | Base values squared           | $C_{base}^2$ increases contrast    |
+| **Division Intensification** | Inverted blend division       | Bright blend creates strong effect |
+| **Highlight Preservation**   | White blend preserves maximum | Safe upper bound                   |
+| **Non-linear Response**      | Exponential brightness curve  | Dramatic lighting simulation       |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const base = vec3(0.6, 0.8, 0.9)
+        const reflection = float(0.6).smoothstep(0.2, uv.distance(vec2(0.7, 0.3)))
+        const blend = vec3(reflection.mul(0.8))
+        const result = blendReflectVec3(base, blend)
+        return vec4(result, 1)
+}`}
+/>

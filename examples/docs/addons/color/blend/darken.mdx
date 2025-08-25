@@ -1,0 +1,49 @@
+---
+title: 'blendDarken'
+description: 'Simple darkening blend mode that selects the minimum value between base and blend colors'
+keywords: ['blend', 'darken', 'minimum', 'shadow', 'selective', 'comparison']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendDarken: Selective Minimum Blending
+
+### Mathematical Foundation of Darkening
+
+Darken blending implements a simple comparison operation that selects the minimum value between base and blend colors for each channel. This creates natural shadow effects by preserving darker tones while allowing lighter areas to show through.
+
+The mathematical definition is:
+
+$$
+C_{result} = \min(C_{base}, C_{blend})
+$$
+
+This component-wise minimum operation ensures that only darker values contribute to the final result, creating natural shadowing without complex mathematical transformations.
+
+### Selective Darkening Properties
+
+| Property                   | Description                           | Mathematical Expression          |
+| -------------------------- | ------------------------------------- | -------------------------------- |
+| **Component Independence** | Each RGB channel processed separately | $R = \min(R_1, R_2)$             |
+| **Monotonic Darkening**    | Result never brighter than inputs     | $C_{result} \leq \min(C_1, C_2)$ |
+| **Identity Preservation**  | White blend leaves base unchanged     | $\min(C, 1) = C$                 |
+| **Symmetric Operation**    | Order independence                    | $\min(A, B) = \min(B, A)$        |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const base = vec3(0.8, 0.9, 0.7).mul(
+                float(0.2).smoothstep(0.8, uv.sub(vec2(0.5)).length())
+        )
+        const pattern1 = uv.x.mul(12).fract().step(0.5)
+        const pattern2 = uv.y.mul(8).fract().step(0.5)
+        const darken = vec3(
+                pattern1.mul(0.6),
+                pattern2.mul(0.4),
+                pattern1.mul(pattern2).mul(0.3)
+        )
+        const result = blendDarkenVec3(base, darken)
+        return vec4(result, 1)
+}`}
+/>

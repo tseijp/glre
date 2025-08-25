@@ -1,0 +1,57 @@
+---
+title: 'char'
+description: 'Bitmap-based character rendering system with 8x16 pixel font matrix encoding'
+keywords: [char, text, bitmap, font, character, ascii, rendering]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# char: Bitmap Character Rendering System
+
+### Pixel-Perfect Text Display through Hexadecimal Font Encoding
+
+The char function renders ASCII characters using pre-encoded 8×16 pixel bitmap data stored as hexadecimal values. Each character is defined by four 32-bit integers representing compressed bitmap rows, enabling compact text display without external font dependencies.
+
+**Bitmap Structure**
+
+Character data follows an 8×16 pixel grid where each bit represents one pixel:
+
+$$
+\text{pixel}(x,y) = \frac{\text{charData}[y \div 4] \gg (8 \times (3 - (y \bmod 4)) + x)}{2^0} \bmod 2
+$$
+
+The encoding packs 4 rows of 8-bit data into each 32-bit integer, with bit-shifting operations extracting individual pixels.
+
+**Character Coordinate System**
+
+| Component      | Range         | Description                    |
+| -------------- | ------------- | ------------------------------ |
+| UV Input       | $[0,1]^2$     | Normalized texture coordinates |
+| Character Grid | $8 \times 16$ | Pixel resolution per character |
+| Bit Position   | $[0,7]$       | Horizontal pixel index         |
+| Row Group      | $[0,3]$       | Vertical 4-row segments        |
+
+The coordinate transformation maps UV space to discrete pixel positions:
+
+$$
+\text{charCoord} = \lfloor uv \times \begin{bmatrix} 8 \\ 16 \end{bmatrix} \rfloor
+$$
+
+**Character Constants**
+
+The system provides 95 printable ASCII characters (codes 32-126) through exported constants:
+
+- `CHAR_SPACE` through `CHAR_TILDE` for symbol access
+- `CHAR_0` through `CHAR_9` for numeric characters
+- `CHAR_A` through `CHAR_Z` for uppercase letters
+- `CHAR_a` through `CHAR_z` for lowercase letters
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const charIndex = iTime.floor().mod(26).add(33).toInt()
+        const glyph = char(uv, charIndex)
+        return vec4(vec3(glyph), 1)
+}`}
+/>

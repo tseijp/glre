@@ -1,0 +1,35 @@
+---
+title: 'compositeXor'
+description: 'XOR composite operation creates exclusion-based alpha blending where overlapping regions are eliminated and non-overlapping regions preserve original colors'
+keywords: [composite, xor, exclusion, alpha, blending, non-overlapping]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeXor: Alpha-Based Exclusion Composite
+
+### Non-Overlapping Region Preservation Through Alpha Exclusion
+
+The XOR composite operation creates exclusion-based blending where only non-overlapping alpha regions contribute to the final result. Overlapping areas are eliminated through complementary alpha multiplication.
+
+The mathematical definition uses alpha exclusion:
+
+$$
+\text{compositeXor}(src, dst) = src \times (1 - \alpha_{dst}) + dst \times (1 - \alpha_{src})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center1 = vec2(0.3, 0.5)
+        const center2 = vec2(0.7, 0.5)
+        const dist1 = uv.distance(center1)
+        const dist2 = uv.distance(center2)
+        const alpha1 = smoothstep(0.3, 0.2, dist1)
+        const alpha2 = smoothstep(0.3, 0.2, dist2)
+        const src = vec4(vec3(1, 0.3, 0.3), alpha1)
+        const dst = vec4(vec3(0.3, 0.3, 1), alpha2)
+        return compositeXorVec4(src, dst)
+}`}
+/>

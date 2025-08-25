@@ -1,0 +1,31 @@
+---
+title: 'compositeDestinationOut'
+description: 'Destination out composite renders destination color only outside source alpha boundaries through inverse masking multiplication'
+keywords: [composite, destination, out, inverse, masking, multiplication]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeDestinationOut: Inverse Alpha Masking
+
+### Complementary Alpha-Based Exclusion
+
+The destination out composite operation renders destination color only outside source alpha regions through inverse multiplication masking.
+
+$$
+\text{destinationOut} = dst \times (1 - \alpha_{src})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const srcAlpha = uv.x
+        const dstAlpha = float(0.35).smoothstep(0.25, uv.distance(vec2(0.5)))
+        const srcColor = vec3(1, 0.3, 0.2)
+        const dstColor = vec3(0.2, 0.4, 1)
+        const src = vec4(srcColor, srcAlpha)
+        const dst = vec4(dstColor, dstAlpha)
+        return compositeDestinationOutVec4(src, dst)
+}`}
+/>

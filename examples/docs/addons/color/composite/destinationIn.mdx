@@ -1,0 +1,31 @@
+---
+title: 'compositeDestinationIn'
+description: 'Destination in composite renders destination color only within source alpha boundaries through simple masking multiplication'
+keywords: [composite, destination, in, masking, multiplication, alpha]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeDestinationIn: Alpha Masking Multiplication
+
+### Simple Alpha-Based Visibility Control
+
+The destination in composite operation renders destination color only within source alpha regions through direct multiplication masking.
+
+$$
+\text{destinationIn} = dst \times \alpha_{src}
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const srcAlpha = uv.x
+        const dstAlpha = float(0.35).smoothstep(0.25, uv.distance(vec2(0.5)))
+        const srcColor = vec3(1, 0.3, 0.2)
+        const dstColor = vec3(0.2, 0.4, 1)
+        const src = vec4(srcColor, srcAlpha)
+        const dst = vec4(dstColor, dstAlpha)
+        return compositeDestinationInVec4(src, dst)
+}`}
+/>

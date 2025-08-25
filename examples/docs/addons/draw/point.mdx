@@ -1,0 +1,55 @@
+---
+title: 'point'
+description: 'Coordinate point visualization with labeling for spatial data display and debugging'
+keywords: [point, coordinate, visualization, debugging, spatial data, labeling, transformation]
+date: 2025-08-24
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# point: Coordinate Point Visualization
+
+### Spatial Position Marking with Numerical Labels and Transformation Support
+
+The `point` function renders coordinate positions as visual markers with integrated numerical labeling. This enables precise spatial data visualization and transformation debugging through combined geometric and textual display.
+
+**Mathematical Visualization**
+
+Point rendering combines circular geometry with coordinate labeling:
+$$Point(x, y) \rightarrow Circle_{visual} + Label_{numerical}$$
+where position coordinates are displayed both spatially and numerically for precise debugging.
+
+**Function Variants**
+
+| Function                                      | Parameters       | Coordinate Space  | Label Content        |
+| --------------------------------------------- | ---------------- | ----------------- | -------------------- |
+| `point(st, pos)`                              | position only    | 2D screen space   | Position values      |
+| `pointWithColor(st, pos, color, radius)`      | styled rendering | 2D screen space   | Position values      |
+| `pointTransformed(st, M, pos, color, radius)` | 3D projection    | Transformed space | Original 3D position |
+
+**Transformation Pipeline**
+
+3D-to-2D projection follows standard graphics pipeline:
+$$P_{screen} = \frac{(M \cdot P_{3D})_{xy}}{(M \cdot P_{3D})_w} \cdot 0.5 + 0.5$$
+where $M$ is the transformation matrix and $P_{3D}$ is the world-space position.
+
+**Visual Components**
+
+Each point combines multiple rendering elements:
+
+- Circular marker: Visual position indicator with customizable radius
+- Coordinate label: Numerical display of position values
+- Background overlay: Semi-transparent bounding box for text readability
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const angle = iTime
+        const x = angle.cos()
+        const y = angle.sin()
+        const offset = vec2(x, y).mul(0.2)
+        const pos = offset.add(0.5)
+        const marker = pointWithColor(uv, pos, vec3(pos, 0), 0.03)
+        return vec4(uv, 0, 1).mix(marker, marker.a)
+}`}
+/>

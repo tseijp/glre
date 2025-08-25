@@ -1,0 +1,51 @@
+---
+title: 'bridge'
+description: 'Stroke masking technique that creates hollowed visual elements with preserved boundary definition'
+keywords: [bridge, stroke, mask, drawing, effect, outline]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# bridge: Stroke-Based Color Masking Effect
+
+### Hollow Stroke Generation with Boundary Preservation
+
+The bridge function implements stroke-based color masking where the interior is removed using a wider stroke mask, while the boundary is preserved with a thinner stroke. This creates hollow outlines and bridge-like visual effects.
+
+**Mathematical Operation**
+
+The function performs dual stroke operations with mask composition:
+
+$$
+\text{bridge}(c, d, s, w) = c \cdot (1 - \text{stroke}(d, s, 2w)) + \text{stroke}(d, s, w)
+$$
+
+Where:
+
+- $c$ represents the input color value
+- $d$ denotes the distance field
+- $s$ specifies the stroke center position
+- $w$ controls the stroke width parameter
+
+The operation first creates an inverted mask using double width, then adds a standard stroke.
+
+**Implementation Process**
+
+| Stage           | Operation                   | Result            |
+| --------------- | --------------------------- | ----------------- |
+| Mask Generation | $\text{stroke}(d, s, 2w)$   | Wide stroke mask  |
+| Color Masking   | $c \cdot (1 - \text{mask})$ | Hollowed interior |
+| Stroke Addition | $+ \text{stroke}(d, s, w)$  | Boundary outline  |
+
+The function supports multiple data types: `float`, `vec2`, `vec3`, and `vec4` through function overloading.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const dist = uv.sub(center).length()
+        const hollowed = bridge(vec3(0.8, 0.4, 0.2), dist, 0.3, 0.05)
+        return vec4(hollowed, 1)
+}`}
+/>

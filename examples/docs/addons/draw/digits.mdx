@@ -1,0 +1,67 @@
+---
+title: 'digits'
+description: 'Digital display functions for rendering numerical values as bitmap fonts'
+keywords: [digits, display, text, numbers, bitmap, font, debug]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# digits: Digital Display Functions
+
+### Bitmap Number Rendering for Visual Debugging
+
+The `digits` functions transform numerical values into bitmap-style digital displays. Each digit is rendered using a 4×5 pixel grid pattern, creating a monospace font appearance suitable for debugging visualizations and data display applications.
+
+The core rendering algorithm uses binary encoding to store digit patterns. Each digit from 0-9, plus decimal point (.) and minus sign (-), is encoded as a single floating-point value containing the complete 20-bit bitmap pattern. The algorithm extracts individual pixels by bit shifting and modulo operations.
+
+Mathematical representation of digit extraction:
+
+$$
+\text{pixel}(x, y) = \lfloor \frac{\text{bitmap}}{2^{x + 4y}} \rfloor \bmod 2
+$$
+
+where $x \in [0, 3]$ and $y \in [0, 4]$ define the pixel coordinates within the 4×5 grid.
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const value = iTime.mul(0.3).sin().add(1).mul(50)
+        const coord = uv.mul(0.16)
+        const digitDisplay = digits(coord, value)
+        const tint = vec3(0.2, 0.8, 0.3)
+        const color = vec3(digitDisplay).mul(tint)
+        return vec4(color, 1)
+}`}
+/>
+
+### Mathematical Foundation
+
+The digit rendering process involves several mathematical transformations:
+
+1. **Position Mapping**: Screen coordinates are transformed into digit grid space
+2. **Value Decomposition**: Floating-point values are separated into integer and fractional components
+3. **Digit Indexing**: Each digit position is calculated using logarithmic scaling
+4. **Bitmap Lookup**: Binary patterns are decoded using bit manipulation
+
+The digit positioning follows the formula:
+
+$$
+\text{digitIndex} = \lfloor \log_{10}(\text{absValue}) \rfloor - \lfloor \text{st}.x \rfloor
+$$
+
+This ensures proper alignment of multi-digit numbers regardless of their magnitude.
+
+### Overloaded Function Variants
+
+| Function                           | Input Type | Description                                    |
+| ---------------------------------- | ---------- | ---------------------------------------------- |
+| `digits(st, value)`                | `Float`    | Renders float with default 2 decimal places    |
+| `digitsInt(st, value)`             | `Int`      | Renders integer without decimal places         |
+| `digitsFloat(st, value, decimals)` | `Float`    | Renders float with specified decimal precision |
+| `digitsVec2(st, v)`                | `Vec2`     | Displays both components of 2D vector          |
+| `digitsVec3(st, v)`                | `Vec3`     | Displays all three components of 3D vector     |
+| `digitsVec4(st, v)`                | `Vec4`     | Displays all four components of 4D vector      |
+| `digitsMat2(st, m)`                | `Mat2`     | Displays 2×2 matrix elements                   |
+| `digitsMat3(st, m)`                | `Mat3`     | Displays 3×3 matrix elements                   |
+| `digitsMat4(st, m)`                | `Mat4`     | Displays 4×4 matrix elements                   |

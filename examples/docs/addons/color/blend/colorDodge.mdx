@@ -1,0 +1,50 @@
+---
+title: 'blendColorDodge'
+description: 'Luminous color dodge blending that creates brilliant highlights and ethereal glow effects'
+keywords: ['blend', 'colordodge', 'highlight', 'glow', 'luminous', 'bright']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendColorDodge: Luminous Highlight Enhancement
+
+### Mathematical Foundation of Color Dodge
+
+Color dodge creates brilliant highlight effects by dividing the base color by the inverted blend color. This mathematical approach amplifies luminosity while creating ethereal glow effects reminiscent of photographic overexposure.
+
+The mathematical definition is:
+
+$$
+C_{result} = \begin{cases}
+1 & \text{if } C_{blend} = 1 \\
+\min\left(\frac{C_{base}}{1 - C_{blend}}, 1\right) & \text{otherwise}
+\end{cases}
+$$
+
+The division operation creates non-linear brightening that becomes more pronounced as blend values approach one, generating luminous regions with preserved shadow detail.
+
+### Luminosity Enhancement Properties
+
+| Property                    | Description                              | Visual Effect             |
+| --------------------------- | ---------------------------------------- | ------------------------- |
+| **Highlight Amplification** | Bright areas become brilliantly luminous | Ethereal glow effects     |
+| **Shadow Preservation**     | Dark areas maintain detail structure     | Selective brightening     |
+| **Contrast Inversion**      | Reverses burn effect behavior            | Photographic overexposure |
+| **Saturation Protection**   | Prevents color clipping                  | Stable computation        |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const center = vec2(0.5)
+        const dist = uv.sub(center).length()
+        const base = vec3(0.2, 0.3, 0.6).mul(
+                float(0.5).smoothstep(0.2, dist)
+        )
+        const lightSpot = float(0.3).smoothstep(0.1, uv.sub(vec2(0.7, 0.3)).length())
+        const gradient = uv.x.mul(0.5)
+        const dodge = vec3(lightSpot, gradient, lightSpot.mul(gradient))
+        const result = blendColorDodgeVec3(base, dodge)
+        return vec4(result, 1)
+}`}
+/>

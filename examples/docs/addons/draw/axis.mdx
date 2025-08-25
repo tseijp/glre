@@ -1,0 +1,51 @@
+---
+title: 'axis'
+description: 'Three-dimensional coordinate axis visualization with perspective projection'
+keywords: [axis, coordinate, 3D, projection, visualization, transform]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# axis: Three-Dimensional Coordinate System Visualization
+
+### Perspective-Projected Axis Rendering for Spatial Orientation
+
+The `axis` function renders three-dimensional coordinate axes (X, Y, Z) with proper perspective projection, enabling visualization of 3D orientation and spatial relationships. Each axis is color-coded (red for X, green for Y, blue for Z) and projected through a transformation matrix to screen coordinates.
+
+## Mathematical Foundation
+
+Perspective projection transforms 3D world coordinates to 2D screen space:
+
+$$
+\mathbf{p}_{screen} = \frac{\mathbf{M} \cdot \mathbf{p}_{world}}{w} \cdot \frac{1}{2} + \frac{1}{2}
+$$
+
+where $\mathbf{M}$ is the projection matrix and $w$ is the homogeneous coordinate.
+
+For axis endpoint calculation:
+
+$$
+\mathbf{axis}_{end} = \mathbf{M} \cdot (\mathbf{p}_{center} + \mathbf{e}_i)
+$$
+
+where $\mathbf{e}_i$ represents the unit vector for each axis direction ($\mathbf{e}_x = [1,0,0]$, $\mathbf{e}_y = [0,1,0]$, $\mathbf{e}_z = [0,0,1]$).
+
+## Function Specification
+
+| Parameter   | Type    | Description                       |
+| ----------- | ------- | --------------------------------- |
+| `st`        | `vec2`  | Screen coordinate position        |
+| `M`         | `mat4`  | Model-view-projection matrix      |
+| `pos`       | `vec3`  | World space center position       |
+| `thickness` | `float` | Line thickness for axis rendering |
+
+## Implementation Demonstration
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const mat = rotate4d(vec3(1), iTime)
+        return axis(uv, mat, vec3(0), 0.007)
+}`}
+/>

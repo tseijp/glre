@@ -1,0 +1,50 @@
+---
+title: 'blendHardMix'
+description: 'Hard Mix blending creates absolute binary separation by converting vivid light results into pure black or white values'
+keywords: ['blend', 'hard', 'mix', 'binary', 'threshold', 'separation', 'posterization']
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# blendHardMix: Absolute Binary Separation
+
+### Threshold-Based Color Posterization
+
+Hard Mix blending creates absolute binary separation through threshold-based posterization. This function processes vivid light blend results and converts them to pure black or white values, eliminating all intermediate tones to produce stark graphic separations.
+
+The mathematical definition applies binary thresholding:
+
+$$
+C_{result} = \begin{cases}
+0 & \text{if } \text{vividLight}(C_{base}, C_{blend}) < 0.5 \\
+1 & \text{if } \text{vividLight}(C_{base}, C_{blend}) \geq 0.5
+\end{cases}
+$$
+
+This process creates maximum contrast by eliminating midtones, resulting in pure graphic separation between black and white regions based on the underlying vivid light calculation.
+
+### Binary Separation Properties
+
+| Property               | Description                           | Mathematical Expression                         |
+| ---------------------- | ------------------------------------- | ----------------------------------------------- |
+| **Threshold Function** | Binary decision at 0.5 threshold      | $f(x) = x < 0.5 ? 0 : 1$                        |
+| **Vivid Light Basis**  | Uses vivid light as input calculation | $\text{input} = \text{vividLight}(base, blend)$ |
+| **Absolute Values**    | Output restricted to pure black/white | $C_{out} \in \{0, 1\}$                          |
+| **Graphic Separation** | Creates stark poster-like divisions   | $\Delta C = 1$                                  |
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const rings = uv.sub(0.5).length().mul(8)
+        const spiralBase = rings.sin().mul(0.4).add(0.6)
+        const anglePattern = uv.y.sub(0.5).atan2(uv.x.sub(0.5)).mul(3)
+        const blendValue = anglePattern.cos().mul(0.3).add(0.5)
+        const baseColor = vec3(0.7, 0.5, 0.3).mul(spiralBase)
+        const blendColor = vec3(blendValue)
+        const result = blendHardMixVec3(baseColor, blendColor)
+        return vec4(result, 1)
+}`}
+/>
+
+The demonstration shows Hard Mix's binary nature through spiral patterns. The base creates concentric variations while the blend provides angular thresholding. The function converts complex color relationships into stark black-white separations, revealing how Hard Mix eliminates gradual transitions to create absolute graphic boundaries that define pure contrast zones.

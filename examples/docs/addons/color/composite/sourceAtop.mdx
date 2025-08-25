@@ -1,0 +1,31 @@
+---
+title: 'compositeSourceAtop'
+description: 'Source atop composite renders source color only within destination alpha boundaries while preserving destination areas outside source coverage'
+keywords: [composite, source, atop, alpha, masking, clipping]
+date: 2025-08-06
+---
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+# compositeSourceAtop: Alpha-Masked Source Overlay
+
+### Source Rendering Within Destination Boundaries
+
+The source atop composite operation constrains source color rendering to destination alpha regions while preserving destination areas outside source coverage.
+
+$$
+\text{sourceAtop} = src \times \alpha_{dst} + dst \times (1 - \alpha_{src})
+$$
+
+<FragmentEditor
+        code={`
+const fragment = () => {
+        const dstMask = float(0.25).smoothstep(0.2, uv.distance(vec2(0.5)))
+        const srcGrad = vec3(uv.x, uv.y.mul(0.5), uv.x.mul(uv.y))
+        const srcAlpha = float(0.6).smoothstep(0.4, uv.x)
+        const dstColor = vec3(0.2, 0.4, 0.8)
+        const src = vec4(srcGrad, srcAlpha)
+        const dst = vec4(dstColor, dstMask)
+        return compositeSourceAtopVec4(src, dst)
+}`}
+/>
