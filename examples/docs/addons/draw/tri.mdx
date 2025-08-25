@@ -21,14 +21,15 @@ where $n_i$ are the three edge normal vectors and $h_i$ are the corresponding ed
 
 **Function Variants**
 
-| Function | Parameters | Rendering Mode | Mathematical Expression |
-|----------|------------|----------------|------------------------|
-| `triFill(st, size)` | position, radius | Filled triangle | $fill(SDF_{tri}(st), size)$ |
+| Function                     | Parameters                  | Rendering Mode    | Mathematical Expression              |
+| ---------------------------- | --------------------------- | ----------------- | ------------------------------------ |
+| `triFill(st, size)`          | position, radius            | Filled triangle   | $fill(SDF_{tri}(st), size)$          |
 | `triStroke(st, size, width)` | position, radius, thickness | Outlined triangle | $stroke(SDF_{tri}(st), size, width)$ |
 
 **Geometric Properties**
 
 The triangle exhibits perfect three-fold rotational symmetry:
+
 - **Orientation**: Point-up configuration (apex at top)
 - **Circumradius**: Size parameter controls inscribed circle radius
 - **Edge alignment**: Symmetric positioning around coordinate origin
@@ -37,26 +38,16 @@ The triangle exhibits perfect three-fold rotational symmetry:
 **Distance Field Characteristics**
 
 Triangle SDF maintains consistent behavior:
+
 - **Interior**: Negative distance values (inside shape)
 - **Boundary**: Zero distance (exactly on edge)
 - **Exterior**: Positive distance values (outside shape)
 
 <FragmentEditor
-code={`
+        code={`
 const fragment = () => {
-        const center = uv.sub(0.5)
-        const filled = triFill(center, 0.2)
-        const outlined = triStroke(center.add(vec2(0.4, 0)), 0.15, 0.02)
+        const filled = triFill(uv.mul(4).fract(), 0.8)
+        const outlined = triStroke(uv, 0.2, 0.02)
         return vec4(vec3(filled.add(outlined)), 1)
-}`}
-/>
-
-<FragmentEditor
-code={`
-const fragment = () => {
-        const grid = fract(uv.mul(6)).sub(0.5)
-        const t = sin(iTime.mul(2)).mul(0.05).add(0.15)
-        const pattern = triStroke(grid, t, 0.015)
-        return vec4(pattern.toVec3(), 1)
 }`}
 />

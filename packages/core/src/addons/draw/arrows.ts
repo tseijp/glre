@@ -23,8 +23,16 @@ export const arrows = Fn(([p, v, resolution]: [Vec2, Vec2, Vec2]): Float => {
                 const vScaled = dir_v.mul(mag_v).toVar('vScaled')
 
                 const shaft = lineSDF(pScaled, vScaled, vScaled.negate()).toVar('shaft')
-                const head1 = lineSDF(pScaled, vScaled, vScaled.mul(0.4).add(vec2(vScaled.y.negate(), vScaled.x).mul(0.2))).toVar('head1')
-                const head2 = lineSDF(pScaled, vScaled, vScaled.mul(0.4).add(vec2(vScaled.y, vScaled.x.negate()).mul(0.2))).toVar('head2')
+                const head1 = lineSDF(
+                        pScaled,
+                        vScaled,
+                        vScaled.mul(0.4).add(vec2(vScaled.y.negate(), vScaled.x).mul(0.2))
+                ).toVar('head1')
+                const head2 = lineSDF(
+                        pScaled,
+                        vScaled,
+                        vScaled.mul(0.4).add(vec2(vScaled.y, vScaled.x.negate()).mul(0.2))
+                ).toVar('head2')
                 const head = min(head1, head2).toVar('head')
 
                 return step(min(shaft, head), float(1.0))

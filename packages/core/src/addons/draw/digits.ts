@@ -223,7 +223,7 @@ export const digitsVec2 = Fn(([st, v]: [Vec2, Vec2]): Float => {
         Loop(int(2), ({ i }) => {
                 const pos = st.add(vec2(i.toFloat(), 0).mul(DIGITS_SIZE).mul(DIGITS_VALUE_OFFSET)).toVar('pos')
                 let value = float(0).toVar('value')
-                If(i.equal(0), () => {
+                If(i.equal(int(0)), () => {
                         value.assign(v.x)
                 }).Else(() => {
                         value.assign(v.y)
@@ -245,7 +245,7 @@ export const digitsVec3 = Fn(([st, v]: [Vec2, Vec3]): Float => {
         Loop(int(3), ({ i }) => {
                 const pos = st.add(vec2(i.toFloat(), 0).mul(DIGITS_SIZE).mul(DIGITS_VALUE_OFFSET)).toVar('pos')
                 let value = float(0).toVar('value')
-                If(i.equal(0), () => {
+                If(i.equal(int(0)), () => {
                         value.assign(v.x)
                 })
                         .ElseIf(i.equal(1), () => {

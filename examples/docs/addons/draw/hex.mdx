@@ -37,8 +37,8 @@ The hexagon is centered at origin with flat sides aligned horizontally:
 <FragmentEditor
         code={`
 const fragment = () => {
-        const filled = hexFill(uv, 0.2)
-        const outlined = hexStroke(uv.add(vec2(0.2, 0)), 0.15, 0.02)
+        const filled = hexFill(uv.mul(4).fract(), 0.5)
+        const outlined = hexStroke(uv, 0.15, 0.05)
         return vec4(vec3(filled.add(outlined)), 1)
 }`}
 />
