@@ -20,9 +20,12 @@ $$
 <FragmentEditor
         code={`
 const fragment = () => {
-        const srcAlpha = float(0.8).smoothstep(0.6, uv.distance(vec2(0.3, 0.5)))
-        const dstColor = vec3(uv.y, 0.2, 0.8)
-        const result = dstColor.mul(srcAlpha)
-        return vec4(result, 1)
+        const srcAlpha = uv.x
+        const dstAlpha = float(0.35).smoothstep(0.25, uv.distance(vec2(0.5)))
+        const srcColor = vec3(1, 0.3, 0.2)
+        const dstColor = vec3(0.2, 0.4, 1)
+        const src = vec4(srcColor, srcAlpha)
+        const dst = vec4(dstColor, dstAlpha)
+        return compositeDestinationInVec4(src, dst)
 }`}
 />
