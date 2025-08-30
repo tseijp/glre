@@ -12,6 +12,7 @@ export type GL = EventState<{
         isLoop: boolean
         isDebug: boolean
         isDepth: boolean
+        wireframe: boolean
         isGL: true
         width?: number
         height?: number

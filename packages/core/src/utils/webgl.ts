@@ -138,6 +138,11 @@ export const webgl = async (gl: GL) => {
                 c.cullFace(c.BACK)
         }
 
+        if (gl.wireframe) {
+                const ext = c.getExtension('WEBGL_polygon_mode')
+                ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
+        }
+
         const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }
 
         return { webgl, render, clean, _attribute, _instance, _uniform, _texture, _storage: cp?._storage }

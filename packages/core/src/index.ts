@@ -32,6 +32,7 @@ export const createGL = (props?: Partial<GL>) => {
                 isLoop: true,
                 isDebug: false,
                 isDepth: false,
+                wireframe: false,
                 isGL: true,
                 size: [0, 0],
                 mouse: [0, 0],
