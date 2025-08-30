@@ -132,8 +132,10 @@ export const webgl = async (gl: GL) => {
         }
 
         if (gl.isDepth) {
+                c.enable(c.DEPTH_TEST)
                 c.depthFunc(c.LEQUAL)
                 c.enable(c.CULL_FACE)
+                c.cullFace(c.BACK)
         }
 
         const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }
