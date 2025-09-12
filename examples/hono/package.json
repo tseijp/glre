@@ -11,7 +11,7 @@
         "private": true,
         "dependencies": {
                 "gsap": "*",
-                "hono": "4.7.11",
+                "hono": "4.9.7",
                 "honox": "0.1.42"
         },
         "devDependencies": {
