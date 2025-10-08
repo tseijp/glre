@@ -9,10 +9,26 @@
                 "cf-typegen": "wrangler types --env-interface CloudflareBindings"
         },
         "dependencies": {
-                "hono": "*"
+                "hono": "*",
+                "react": "^19.2.0",
+                "react-dom": "^19.2.0",
+                "tailwindcss": "^4.1.14",
+                "zod": "^4.1.12"
         },
         "devDependencies": {
+                "@auth/core": "^0.40.0",
+                "@auth/drizzle-adapter": "^1.10.0",
                 "@cloudflare/vite-plugin": "*",
+                "@hono/auth-js": "^1.1.0",
+                "@tailwindcss/vite": "^4.1.14",
+                "@types/react": "^19.2.2",
+                "@types/react-dom": "^19.2.1",
+                "@vitejs/plugin-react": "^5.0.4",
+                "drizzle-kit": "^0.31.5",
+                "drizzle-orm": "^0.44.6",
+                "hono-party": "^0.0.17",
+                "partyserver": "^0.0.75",
+                "partysocket": "^1.1.6",
                 "vite": "*",
                 "vite-ssr-components": "^0.5.1",
                 "wrangler": "*"
