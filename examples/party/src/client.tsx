@@ -3,24 +3,36 @@ import './style.css'
 import { createRoot } from 'react-dom/client'
 import { SessionProvider, signIn, signOut, useSession } from '@hono/auth-js/react'
 import { usePartySocket } from 'partysocket/react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import type { UserStatusType } from '.'
 
 const handleSignIn = () => signIn()
-const handleSignOut = () => signOut()
+const handleSignOut = () => signOut({ redirect: true, callbackUrl: '/' })
 
-const UserStatus = () => {
-        const [users, set] = useState({} as Record<string, string>)
-        usePartySocket({
+const UserCursors = () => {
+        const [users, set] = useState<UserStatusType[]>([])
+        const socket = usePartySocket({
                 party: 'v1',
                 room: 'my-room',
                 onMessage(e) {
                         set(JSON.parse(e.data))
                 },
         })
+        useEffect(() => {
+                const handleMouseMove = (e: MouseEvent) => {
+                        socket.send(JSON.stringify({ position: [e.clientX, e.clientY] }))
+                }
+                window.addEventListener('mousemove', handleMouseMove)
+                return () => {
+                        window.removeEventListener('mousemove', handleMouseMove)
+                }
+        }, [socket])
         return (
                 <ul>
-                        {Object.entries(users).map(([id, username]) => (
-                                <li key={id}>{username}</li>
+                        {users.map(({ username, position: [x, y] }, key) => (
+                                <li key={key} className="absolute" style={{ transform: `translate(${x}px, ${y}px)` }}>
+                                        {username}
+                                </li>
                         ))}
                 </ul>
         )
@@ -28,15 +40,14 @@ const UserStatus = () => {
 
 const App = () => {
         const { status } = useSession()
+        if (status === 'unauthenticated') return <button onClick={handleSignIn}>Sign In</button>
         if (status === 'authenticated')
                 return (
                         <div>
                                 <button onClick={handleSignOut}>Sign Out</button>
-                                <UserStatus />
+                                <UserCursors />
                         </div>
                 )
-
-        if (status === 'unauthenticated') return <button onClick={handleSignIn}>Sign In</button>
         return null
 }
 
