@@ -1,54 +1,39 @@
 // client.tsx
 import './style.css'
-import { createRoot } from 'react-dom/client'
 import { SessionProvider, signIn, signOut, useSession } from '@hono/auth-js/react'
 import { usePartySocket } from 'partysocket/react'
-import { useEffect, useState } from 'react'
-import type { UserStatusType } from '.'
-
-const handleSignIn = () => signIn()
-const handleSignOut = () => signOut({ redirect: true, callbackUrl: '/' })
+import { useState } from 'react'
+import { createRoot } from 'react-dom/client'
 
 const UserCursors = () => {
-        const [users, set] = useState<UserStatusType[]>([])
+        const [users, set] = useState([] as [username: string, [x: number, y: number]][])
+        const sendMessage = (e: MouseEvent) => {
+                socket.send(JSON.stringify([e.clientX, e.clientY]))
+        }
         const socket = usePartySocket({
                 party: 'v1',
                 room: 'my-room',
-                onMessage(e) {
-                        set(JSON.parse(e.data))
-                },
+                onOpen: () => window.addEventListener('mousemove', sendMessage),
+                onMessage: (e) => set(Object.entries(JSON.parse(e.data))),
         })
-        useEffect(() => {
-                const handleMouseMove = (e: MouseEvent) => {
-                        socket.send(JSON.stringify({ position: [e.clientX, e.clientY] }))
-                }
-                window.addEventListener('mousemove', handleMouseMove)
-                return () => {
-                        window.removeEventListener('mousemove', handleMouseMove)
-                }
-        }, [socket])
-        return (
-                <ul>
-                        {users.map(({ username, position: [x, y] }, key) => (
-                                <li key={key} className="absolute" style={{ transform: `translate(${x}px, ${y}px)` }}>
-                                        {username}
-                                </li>
-                        ))}
-                </ul>
-        )
+        return users.map(([username, [x, y]]) => (
+                <div key={username} className="absolute" style={{ transform: `translate(${x}px, ${y}px)` }}>
+                        {username}
+                </div>
+        ))
 }
 
 const App = () => {
         const { status } = useSession()
-        if (status === 'unauthenticated') return <button onClick={handleSignIn}>Sign In</button>
+        if (status === 'unauthenticated') return <button onClick={() => signIn()}>Sign In</button>
         if (status === 'authenticated')
                 return (
                         <div>
-                                <button onClick={handleSignOut}>Sign Out</button>
+                                <button onClick={() => signOut()}>Sign Out</button>
                                 <UserCursors />
                         </div>
                 )
-        return null
+        return 'Loading...'
 }
 
 createRoot(document.getElementById('root')!).render(
