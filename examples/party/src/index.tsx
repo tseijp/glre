@@ -20,7 +20,7 @@ const googleOAuthMiddleware = initAuthConfig((c) => ({
         session: { strategy: 'jwt' },
 }))
 
-export const myMiddleware = createMiddleware(async (c) => {
+const myMiddleware = createMiddleware(async (c) => {
         const headers = new Headers(c.req.raw.headers)
         headers.set('x-auth-sub', c.get('authUser')?.token?.sub!)
         const req = new Request(c.req.raw, { headers })

@@ -7,13 +7,13 @@ import { createRoot } from 'react-dom/client'
 
 const UserCursors = () => {
         const [users, set] = useState([] as [username: string, [x: number, y: number]][])
-        const sendMessage = (e: MouseEvent) => {
+        const sendPosition = (e: MouseEvent) => {
                 socket.send(JSON.stringify([e.clientX, e.clientY]))
         }
         const socket = usePartySocket({
                 party: 'v1',
                 room: 'my-room',
-                onOpen: () => window.addEventListener('mousemove', sendMessage),
+                onOpen: () => window.addEventListener('mousemove', sendPosition),
                 onMessage: (e) => set(Object.entries(JSON.parse(e.data))),
         })
         return users.map(([username, [x, y]]) => (
