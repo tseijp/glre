@@ -1,31 +1,51 @@
 import { on } from '../hooks'
-import { GearIcon, PersonIcon, RocketIcon, MagnifyingGlassIcon, GlobeIcon, BellIcon } from '@radix-ui/react-icons'
-type Props = { isHUD?: boolean; isMenu?: boolean; isModal?: boolean; page?: string; children?: any }
+import { GearIcon, PersonIcon, RocketIcon, MagnifyingGlassIcon, GlobeIcon, BellIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
+
+type Props = { 
+        isHUD?: boolean
+        isMenu?: boolean
+        isModal?: boolean
+        hasCulturalProfile?: boolean
+        traditionalColors?: any[]
+        culturalWorld?: any
+        page?: string
+        children?: any
+        onSignIn?: () => void
+}
 const Box = ({ c = '' as any, children = null as any }) => <div className={'glass ' + c}>{children}</div>
 const Item = ({ c = '' as any, children = null as any }) => <div className={'px-4 py-2 ' + c}>{children}</div>
-const PC = ({ isHUD, isMenu, isModal, page = '1', children }: Props) => {
+const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
         return (
                 <div className="fixed inset-0 text-white">
                         <div className="fixed inset-0 -z-10">{children}</div>
                         <div className={on(isHUD, 'pointer-events-none fixed inset-0')}>
                                 <div className="fixed top-6 left-8 right-8 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
+                                                {hasCulturalProfile ? (
+                                                        <Box c="rounded-xl">
+                                                                <Item c="flex items-center gap-2">
+                                                                        <PersonIcon />
+                                                                        文化修練者
+                                                                </Item>
+                                                        </Box>
+                                                ) : (
+                                                        <Box c="rounded-xl cursor-pointer" onClick={onSignIn}>
+                                                                <Item c="flex items-center gap-2">
+                                                                        <PersonIcon />
+                                                                        参入
+                                                                </Item>
+                                                        </Box>
+                                                )}
                                                 <Box c="rounded-xl">
                                                         <Item c="flex items-center gap-2">
-                                                                <PersonIcon />
-                                                                隊士
+                                                                <HeartIcon />
+                                                                伝統色
                                                         </Item>
                                                 </Box>
                                                 <Box c="rounded-xl">
                                                         <Item c="flex items-center gap-2">
-                                                                <RocketIcon />
-                                                                任務
-                                                        </Item>
-                                                </Box>
-                                                <Box c="rounded-xl">
-                                                        <Item c="flex items-center gap-2">
-                                                                <BellIcon />
-                                                                達成
+                                                                <HomeIcon />
+                                                                文化世界
                                                         </Item>
                                                 </Box>
                                         </div>
@@ -33,30 +53,30 @@ const PC = ({ isHUD, isMenu, isModal, page = '1', children }: Props) => {
                                                 <Box c="rounded-xl">
                                                         <Item c="flex items-center gap-2">
                                                                 <GlobeIcon />
-                                                                洛内・大通り
+                                                                {culturalWorld?.culturalNarrative || '文化世界'}
                                                         </Item>
                                                 </Box>
                                                 <Box c="rounded-xl">
-                                                        <Item>辰刻</Item>
+                                                        <Item>{culturalWorld?.seasonalCycle || '春'}</Item>
                                                 </Box>
                                                 <Box c="rounded-xl">
-                                                        <Item>両 124,800</Item>
+                                                        <Item>伝統色 {traditionalColors?.length || 0}</Item>
                                                 </Box>
                                         </div>
                                 </div>
                                 <div className="fixed bottom-8 left-8 w-80">
                                         <Box c="rounded-2xl">
-                                                <Item c="text-sm opacity-80">目的</Item>
-                                                <Item>京の異変を探る</Item>
-                                                <Item c="text-sm opacity-70">ヒント: 酒場で噂を聞く</Item>
+                                                <Item c="text-sm opacity-80">文化学習</Item>
+                                                <Item>伝統色の美学を体験する</Item>
+                                                <Item c="text-sm opacity-70">季節の色彩で世界を創造</Item>
                                         </Box>
                                 </div>
                                 <div className="fixed bottom-8 right-8 w-64 h-64 glass rounded-2xl" />
                                 <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass rounded-full px-8 py-3 text-sm">
                                         <div className="flex items-center gap-3">
-                                                <MagnifyingGlassIcon />
-                                                <div>調べる</div>
-                                                <div className="opacity-60">E</div>
+                                                <HeartIcon />
+                                                <div>色彩を感じる</div>
+                                                <div className="opacity-60">Space</div>
                                         </div>
                                 </div>
                         </div>
@@ -64,13 +84,13 @@ const PC = ({ isHUD, isMenu, isModal, page = '1', children }: Props) => {
                                 <Box c="rounded-2xl overflow-hidden h-[480px]">
                                         <Item c="flex items-center gap-2">
                                                 <PersonIcon />
-                                                能力
+                                                文化修練
                                         </Item>
-                                        <Item>指南</Item>
-                                        <Item>装備</Item>
-                                        <Item>隊士</Item>
-                                        <Item>地図</Item>
-                                        <Item>記録</Item>
+                                        <Item>伝統色</Item>
+                                        <Item>季節感</Item>
+                                        <Item>共同体</Item>
+                                        <Item>世界地図</Item>
+                                        <Item>学習記録</Item>
                                 </Box>
                                 <div className="grid gap-6">
                                         <Box c="rounded-2xl p-6 h-56" />

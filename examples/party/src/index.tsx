@@ -135,6 +135,12 @@ const app = new Hono<{ Bindings: Env }>()
                 await shareKnowledge(c.env.DB, communityId, user, knowledgeType, traditionalWisdom, culturalContext)
                 return c.json({ success: true })
         })
+        .post('/api/v1/seed', async (c) => {
+                // Development/admin endpoint for seeding cultural data
+                const { seedAllCulturalData } = await import('./helpers/seed')
+                const results = await seedAllCulturalData(c.env.DB)
+                return c.json(results)
+        })
 
 type AppType = typeof app
 
