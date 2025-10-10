@@ -42,15 +42,15 @@ export const encodeSemanticVoxel = (voxel: SemanticVoxel): number => {
         
         // Pack into 32-bit structure:
         // [RGB: 24 bits] [Alpha: 8 bits]
-        // [Primary Kanji: 12 bits] [Secondary Kanji: 12 bits]
-        // [Behavioral Seed: 8 bits]
+        // Cultural semantic data stored separately for now
         
         const rgbPacked = (voxel.rgbValue & 0xFFFFFF) << 8
         const alphaPacked = voxel.alphaProperties & 0xFF
-        const kanjiPacked = ((primaryIndex & 0xFFF) << 12) | (secondaryIndex & 0xFFF)
-        const seedPacked = voxel.behavioralSeed & 0xFF
         
-        // For demo, we'll encode as separate components
+        // Store kanji and behavioral data in metadata (future implementation)
+        // const kanjiMeta = ((primaryIndex & 0xFFF) << 12) | (secondaryIndex & 0xFFF)
+        // const seedMeta = voxel.behavioralSeed & 0xFF
+        
         return rgbPacked | alphaPacked
 }
 
