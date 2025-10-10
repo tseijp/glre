@@ -10,9 +10,10 @@
         },
         "dependencies": {
                 "gl-matrix": "3.4.4",
-                "hono": "*",
+                "hono": "4.9.10",
                 "react": "19.1.0",
                 "react-dom": "19.1.0",
+                "swr": "2.3.6",
                 "tailwindcss": "^4.1.14",
                 "zod": "^4.1.12"
         },

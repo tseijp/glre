@@ -1,6 +1,9 @@
 import { integer, sqliteTable, text, primaryKey } from 'drizzle-orm/sqlite-core'
 import type { AdapterAccountType } from '@auth/core/adapters'
 
+/**
+ * ↓↓↓　DO NOT CHANGE ↓↓↓
+ */
 export const users = sqliteTable('user', {
         id: text('id')
                 .primaryKey()
@@ -67,3 +70,6 @@ export const authenticators = sqliteTable(
         },
         (authenticator) => [primaryKey({ columns: [authenticator.userId, authenticator.credentialID] })]
 )
+/**
+ * ↑↑↑　DO NOT CHANGE ↑↑↑
+ */

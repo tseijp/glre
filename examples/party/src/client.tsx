@@ -1,10 +1,13 @@
 // client.tsx
 import './style.css'
 import { SessionProvider, signIn, signOut, useSession } from '@hono/auth-js/react'
+import { hc } from 'hono/client'
 import { usePartySocket } from 'partysocket/react'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import PC from './components/PC'
+import { useFetch } from './hooks'
+import type { AppType } from '.'
 
 const UserCursors = () => {
         const [users, set] = useState([] as [username: string, [x: number, y: number]][])
@@ -24,7 +27,10 @@ const UserCursors = () => {
         ))
 }
 
+const client = hc<AppType>('/')
+
 const App = () => {
+        const res = useFetch('res', client.api.v1.res.$get).data
         const { status } = useSession()
         if (status === 'unauthenticated') return <button onClick={() => signIn()}>Sign In</button>
         if (status === 'authenticated')
@@ -37,4 +43,8 @@ const App = () => {
         return 'Loading...'
 }
 
-createRoot(document.getElementById('root')!).render(<PC />)
+createRoot(document.getElementById('root')!).render(
+        <SessionProvider>
+                <PC />
+        </SessionProvider>
+)
