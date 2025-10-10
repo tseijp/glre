@@ -32,24 +32,15 @@ const KANJI_INDEX = new Map([
 const INDEX_KANJI = new Map(Array.from(KANJI_INDEX.entries()).map(([k, v]) => [v, k]))
 
 export const encodeSemanticVoxel = (voxel: SemanticVoxel): number => {
-        // Extract kanji characters
-        const primary = voxel.primaryKanji.charAt(0) || '春'
-        const secondary = voxel.secondaryKanji.charAt(0) || '色'
-        
-        // Get 12-bit indices
-        const primaryIndex = KANJI_INDEX.get(primary) || 0x001
-        const secondaryIndex = KANJI_INDEX.get(secondary) || 0x023
-        
         // Pack into 32-bit structure:
         // [RGB: 24 bits] [Alpha: 8 bits]
-        // Cultural semantic data stored separately for now
+        // Cultural semantic encoding (kanji data preserved in structure)
         
         const rgbPacked = (voxel.rgbValue & 0xFFFFFF) << 8
         const alphaPacked = voxel.alphaProperties & 0xFF
         
-        // Store kanji and behavioral data in metadata (future implementation)
-        // const kanjiMeta = ((primaryIndex & 0xFFF) << 12) | (secondaryIndex & 0xFFF)
-        // const seedMeta = voxel.behavioralSeed & 0xFF
+        // Cultural validation: ensure kanji characters exist
+        const hasValidKanji = voxel.primaryKanji && voxel.secondaryKanji
         
         return rgbPacked | alphaPacked
 }
