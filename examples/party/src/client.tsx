@@ -4,6 +4,7 @@ import { SessionProvider, signIn, signOut, useSession } from '@hono/auth-js/reac
 import { usePartySocket } from 'partysocket/react'
 import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
+import PC from './components/PC'
 
 const UserCursors = () => {
         const [users, set] = useState([] as [username: string, [x: number, y: number]][])
@@ -36,8 +37,4 @@ const App = () => {
         return 'Loading...'
 }
 
-createRoot(document.getElementById('root')!).render(
-        <SessionProvider>
-                <App />
-        </SessionProvider>
-)
+createRoot(document.getElementById('root')!).render(<PC />)
