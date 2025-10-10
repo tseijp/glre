@@ -39,9 +39,7 @@ export const encodeSemanticVoxel = (voxel: SemanticVoxel): number => {
         const rgbPacked = (voxel.rgbValue & 0xFFFFFF) << 8
         const alphaPacked = voxel.alphaProperties & 0xFF
         
-        // Cultural validation: ensure kanji characters exist
-        const hasValidKanji = voxel.primaryKanji && voxel.secondaryKanji
-        
+        // Cultural semantic encoding preserves traditional knowledge
         return rgbPacked | alphaPacked
 }
 
