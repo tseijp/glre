@@ -1,24 +1,17 @@
-import { on, q } from '../hooks'
-import './style.css'
+import { on } from '../hooks'
 import { GearIcon, PersonIcon, RocketIcon, MagnifyingGlassIcon, GlobeIcon } from '@radix-ui/react-icons'
 
-type Props = { params: any; children?: any }
+type Props = { isHUD?: boolean; isMenu?: boolean; isModal?: boolean; page?: string; children?: any }
 
 const Chip = ({ c = '' as any, children = null as any }) => <div className={'badge ' + c}>{children}</div>
 
-const Row = ({ c = '' as any, children = null as any }) => (
-        <div className={'flex items-center gap-4 ' + c}>{children}</div>
-)
+const Row = ({ c = '' as any, children = null as any }) => <div className={'flex items-center gap-4 ' + c}>{children}</div>
 
-const SP = ({ params, children }: Props) => {
-        const hud = q(params, 'hud', '1') !== '0'
-        const menu = q(params, 'menu') === '1'
-        const modal = q(params, 'modal') === '1'
-        const page = q(params, 'page', '1')
+const SP = ({ isHUD, isMenu, isModal, page = '1', children }: Props) => {
         return (
                 <div className="fixed inset-0 text-white">
                         <div className="fixed inset-0 -z-10">{children}</div>
-                        <div className={on(hud, 'pointer-events-none fixed inset-0')}>
+                        <div className={on(isHUD, 'pointer-events-none fixed inset-0')}>
                                 <div className="fixed top-4 left-4 right-4 flex items-center justify-between">
                                         <Row>
                                                 <Chip>
@@ -52,7 +45,7 @@ const SP = ({ params, children }: Props) => {
                                         <Chip>道具</Chip>
                                 </div>
                         </div>
-                        <div className={on(menu, 'fixed inset-0 z-40 flex items-end p-4')}>
+                        <div className={on(isMenu, 'fixed inset-0 z-40 flex items-end p-4')}>
                                 <div className="glass w-full rounded-2xl p-4">
                                         <div className="flex items-center justify-between mb-4">
                                                 <Row c="opacity-80">
@@ -80,7 +73,7 @@ const SP = ({ params, children }: Props) => {
                                         </div>
                                 </div>
                         </div>
-                        <div className={on(modal, 'fixed inset-0 z-50 bg-black/40 grid place-items-center')}>
+                        <div className={on(isModal, 'fixed inset-0 z-50 bg-black/40 grid place-items-center')}>
                                 <div className="glass px-8 py-6 text-center">
                                         <div className="mb-2">確認</div>
                                         <div className="opacity-70">この操作を実行します</div>

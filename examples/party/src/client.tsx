@@ -1,50 +1,42 @@
 // client.tsx
-import './style.css'
-import { SessionProvider, signIn, signOut, useSession } from '@hono/auth-js/react'
+import './components/style.css'
+import { SessionProvider, signIn } from '@hono/auth-js/react'
 import { hc } from 'hono/client'
-import { usePartySocket } from 'partysocket/react'
-import { useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import PC from './components/PC'
-import { useFetch } from './hooks'
+import SP from './components/SP'
+import Canvas from './canvas'
+import { useFetch, useSearchParam, useWindowSize } from './hooks'
 import type { AppType } from '.'
-
-const UserCursors = () => {
-        const [users, set] = useState([] as [username: string, [x: number, y: number]][])
-        const sendPosition = (e: MouseEvent) => {
-                socket.send(JSON.stringify([e.clientX, e.clientY]))
-        }
-        const socket = usePartySocket({
-                party: 'v1',
-                room: 'my-room',
-                onOpen: () => window.addEventListener('mousemove', sendPosition),
-                onMessage: (e) => set(Object.entries(JSON.parse(e.data))),
-        })
-        return users.map(([username, [x, y]]) => (
-                <div key={username} className="absolute" style={{ transform: `translate(${x}px, ${y}px)` }}>
-                        {username}
-                </div>
-        ))
-}
 
 const client = hc<AppType>('/')
 
-const App = () => {
+export const App = () => {
+        const w = useWindowSize()
         const res = useFetch('res', client.api.v1.res.$get).data
-        const { status } = useSession()
-        if (status === 'unauthenticated') return <button onClick={() => signIn()}>Sign In</button>
-        if (status === 'authenticated')
-                return (
-                        <div>
-                                <button onClick={() => signOut()}>Sign Out</button>
-                                <UserCursors />
-                        </div>
-                )
-        return 'Loading...'
+        const hud = useSearchParam('hud')
+        const menu = useSearchParam('menu')
+        const modal = useSearchParam('modal')
+        const page = useSearchParam('page')
+        if (!res) return null
+        const isHUD = hud !== '0'
+        const isMenu = menu === '1'
+        const isModal = modal === '1'
+        const children = <Canvas />
+        const props = {
+                isHUD,
+                isMenu,
+                isModal,
+                page: page || '1',
+                onSignIn: () => signIn(),
+                children,
+        }
+        if (w < 800) return <SP {...props} />
+        return <PC {...props} />
 }
 
 createRoot(document.getElementById('root')!).render(
         <SessionProvider>
-                <PC />
+                <App />
         </SessionProvider>
 )

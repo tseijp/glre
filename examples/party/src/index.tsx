@@ -2,16 +2,13 @@
 import Google from '@auth/core/providers/google'
 import { DrizzleAdapter } from '@auth/drizzle-adapter'
 import { authHandler, initAuthConfig, verifyAuth } from '@hono/auth-js'
-import { eq } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/d1'
 import { Hono } from 'hono'
 import { env } from 'hono/adapter'
 import { createMiddleware } from 'hono/factory'
 import { routePartykitRequest, Server } from 'partyserver'
-import { users } from './schema'
+import { getUserBySub } from './queries'
 import type { Connection, ConnectionContext } from 'partyserver'
-
-const getUserBySub = (DB: D1Database, sub: string) => drizzle(DB).select().from(users).where(eq(users.id, sub)).limit(1)
 
 /**
  * ↓↓↓　DO NOT CHANGE ↓↓↓

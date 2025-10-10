@@ -1,22 +1,13 @@
-import { on, q } from '../hooks'
-import './style.css'
+import { on } from '../hooks'
 import { GearIcon, PersonIcon, RocketIcon, MagnifyingGlassIcon, GlobeIcon, BellIcon } from '@radix-ui/react-icons'
-
-type Props = { params: any; children?: any }
-
+type Props = { isHUD?: boolean; isMenu?: boolean; isModal?: boolean; page?: string; children?: any }
 const Box = ({ c = '' as any, children = null as any }) => <div className={'glass ' + c}>{children}</div>
-
 const Item = ({ c = '' as any, children = null as any }) => <div className={'px-4 py-2 ' + c}>{children}</div>
-
-const PC = ({ params, children }: Props) => {
-        const hud = q(params, 'hud', '1') !== '0'
-        const menu = q(params, 'menu') === '1'
-        const modal = q(params, 'modal') === '1'
-        const page = q(params, 'page', '1')
+const PC = ({ isHUD, isMenu, isModal, page = '1', children }: Props) => {
         return (
                 <div className="fixed inset-0 text-white">
                         <div className="fixed inset-0 -z-10">{children}</div>
-                        <div className={on(hud, 'pointer-events-none fixed inset-0')}>
+                        <div className={on(isHUD, 'pointer-events-none fixed inset-0')}>
                                 <div className="fixed top-6 left-8 right-8 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                                 <Box c="rounded-xl">
@@ -69,12 +60,7 @@ const PC = ({ params, children }: Props) => {
                                         </div>
                                 </div>
                         </div>
-                        <div
-                                className={on(
-                                        menu,
-                                        'fixed inset-0 z-40 grid grid-cols-[280px_1fr] gap-6 p-8 items-start'
-                                )}
-                        >
+                        <div className={on(isMenu, 'fixed inset-0 z-40 grid grid-cols-[280px_1fr] gap-6 p-8 items-start')}>
                                 <Box c="rounded-2xl overflow-hidden h-[480px]">
                                         <Item c="flex items-center gap-2">
                                                 <PersonIcon />
@@ -98,7 +84,7 @@ const PC = ({ params, children }: Props) => {
                                         </div>
                                 </div>
                         </div>
-                        <div className={on(modal, 'fixed inset-0 z-50 bg-black/40 grid place-items-center')}>
+                        <div className={on(isModal, 'fixed inset-0 z-50 bg-black/40 grid place-items-center')}>
                                 <div className="glass px-12 py-8 text-center">
                                         <div className="mb-2">確認</div>
                                         <div className="opacity-70">この操作を実行します</div>
@@ -107,5 +93,4 @@ const PC = ({ params, children }: Props) => {
                 </div>
         )
 }
-
 export default PC
