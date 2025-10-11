@@ -1,7 +1,6 @@
-import { loadGoogleMapsTiles } from '../tiles/loader'
+import { loadGoogleMapsTiles, extractTileGeometry } from '../tiles/loader'
 import { createTileTraversal, selectTilesInRegion } from '../tiles/traversal'
-import { importWasm } from '../utils'
-import { parseGLBFromTiles, createGLBFromGeometry, combineVoxelChunksToAtlas } from './glb'
+import { createVoxelProcessor } from './processor'
 import type { Tileset, Tile } from '../tiles/loader'
 import type { BuiltState } from '../types'
 import type { Viewport } from '../tiles/traversal'
@@ -56,91 +55,30 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
 }
 
 export const voxelizeRegionTiles = async (region: VoxelizedRegion, size: number = 16): Promise<BuiltState | null> => {
-        if (!region.tiles.length) {
-                return null
+        if (!region.tiles.length) return null
+        const bufs: ArrayBuffer[] = []
+        for (const t of region.tiles) {
+                const b = extractTileGeometry(t)
+                if (b) bufs.push(b)
         }
-        
-        // Combine tiles into GLB format
-        const combinedGLB = await combineTilesToGLB(region.tiles)
-        if (!combinedGLB) return null
-        
-        // Import WASM voxelizer
-        const wasm = await importWasm()
-        
-        // Parse GLB and extract geometry data from tiles
-        const glbData = await parseGLBFromTiles(combinedGLB, region.config)
-        
-        // Voxelize the actual tile geometry
-        const items = await (wasm as any).voxelize_glb(glbData, size, size, size)
-        
-        if (!items || items.length === 0) {
-                return null
-        }
-        
-        // Combine voxel chunks into world atlas
-        const atlas = await combineVoxelChunksToAtlas(items, size)
-        
-        const builtState: BuiltState = {
-                file: {
-                        key: `region_${region.id}.png`,
-                        data: atlas.data,
-                        raw: atlas.raw,
-                        tag: `tiles_${Date.now().toString(36)}`,
-                },
-                dims: {
-                        size: [size * 16, size * 16, size * 16],
-                        center: [size * 8, size * 8, size * 8],
-                },
-        }
-        
-        region.voxelData = builtState
-        return builtState
+        const merged = concatArrayBuffers(bufs)
+        const proc = createVoxelProcessor()
+        const res = await proc.processRegion(region.config, merged)
+        if (!res.success || !res.data) return null
+        region.voxelData = res.data
+        return res.data
 }
 
-export const combineTilesToGLB = async (tiles: Tile[]): Promise<ArrayBuffer | null> => {
-        if (!tiles.length) return null
-
-        // Extract geometry from tiles and combine into GLB
-        const vertices: number[] = []
-        const normals: number[] = []
-        const indices: number[] = []
-        
-        let vertexOffset = 0
-        
-        for (const tile of tiles) {
-                if (tile.content?.attributes?.positions?.value) {
-                        const positions = tile.content.attributes.positions.value
-                        const tileNormals = tile.content.attributes.normals?.value
-                        
-                        // Add vertices
-                        for (let i = 0; i < positions.length; i++) {
-                                vertices.push(positions[i])
-                        }
-                        
-                        // Add normals if available
-                        if (tileNormals) {
-                                for (let i = 0; i < tileNormals.length; i++) {
-                                        normals.push(tileNormals[i])
-                                }
-                        } else {
-                                // Generate default normals
-                                for (let i = 0; i < positions.length; i += 3) {
-                                        normals.push(0, 1, 0) // Up normal
-                                }
-                        }
-                        
-                        // Generate indices for triangulation
-                        const vertexCount = positions.length / 3
-                        for (let i = 0; i < vertexCount; i += 3) {
-                                indices.push(vertexOffset + i, vertexOffset + i + 1, vertexOffset + i + 2)
-                        }
-                        
-                        vertexOffset += vertexCount
-                }
+const concatArrayBuffers = (arr: ArrayBuffer[]) => {
+        if (!arr.length) return new ArrayBuffer(0)
+        const len = arr.reduce((n, b) => n + b.byteLength, 0)
+        const out = new Uint8Array(len)
+        let o = 0
+        for (const b of arr) {
+                out.set(new Uint8Array(b), o)
+                o += b.byteLength
         }
-        
-        // Create GLB buffer with actual geometry data
-        return createGLBFromGeometry(vertices, normals, indices)
+        return out.buffer
 }
 
 export const updateRegionVoxels = async (region: VoxelizedRegion, viewport: Viewport): Promise<Tile[]> => {

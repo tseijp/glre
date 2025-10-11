@@ -6,5 +6,5 @@ export const importWasm = async () => {
 
 export const cancelVoxelizer = async () => {
         const wasm = await importWasm()
-        if (wasm.cancel) wasm.cancel()
+        if ((wasm as any).cancel) (wasm as any).cancel()
 }

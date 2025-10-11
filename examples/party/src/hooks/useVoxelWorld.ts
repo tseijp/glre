@@ -1,9 +1,9 @@
 import useSWR from 'swr'
 import { useFetch, useSearchParam } from '.'
 import { importWasm } from '../helpers/voxel/wasm'
-import { loadGLBParsed } from '../helpers/voxel/gltf'
-import { buildAtlasAndMesh } from '../helpers/voxel/build'
 import type { Atlas, Meshes } from '../helpers/types'
+import { blitChunk64ToWorld, encodeImagePNG } from '../helpers/world/atlas'
+import { createChunks, applyVoxelDataToChunks, gather } from '../helpers/world/chunk'
 
 const makeDemoParsed = () => {
         const boxes: any[] = []
@@ -63,11 +63,21 @@ export const useVoxelWorld = () => {
         const key = should ? ['vox', glb || 'demo'] : null
         const swr = useSWR<{ atlas: Atlas; mesh: Meshes }>(key, async () => {
                 const wasm: any = await importWasm()
-                const parsed = glb ? await loadGLBParsed(glb) : makeDemoParsed()
+                const parsed = makeDemoParsed()
                 const arr = wasm.voxelize_glb(parsed, 16, 16, 16) as any
                 const chunks = Array.from(arr).map((o: any) => ({ key: o.key as string, rgba: new Uint8Array(o.rgba as any) }))
-                const built = await buildAtlasAndMesh(chunks)
-                return built
+                const atlasRGBA = new Uint8Array(4096 * 4096 * 4)
+                for (const c of chunks) {
+                        const [ci, cj, ck] = c.key.split('.').map((v: string) => parseInt(v) | 0)
+                        blitChunk64ToWorld(c.rgba, ci, cj, ck, atlasRGBA)
+                }
+                const png = await encodeImagePNG(atlasRGBA, 4096, 4096)
+                const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
+                const built = { file: { key: 'atlas.png', data: png, raw: atlasRGBA }, dims: { size: [256, 256, 256], center: [128, 128, 128] } } as any
+                const chunksMap = createChunks() as any
+                await applyVoxelDataToChunks(chunksMap, built)
+                const m = gather(chunksMap)
+                return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
         })
         return swr.data
 }

@@ -27,10 +27,10 @@ export const createTileTraversal = (tileset: Tileset): TileTraversal => {
         const initTileset3D = () => {
                 if (!tileset3D) {
                         tileset3D = new Tileset3D(tileset, {
-                                onTileLoad: (tile: Tile) => {
+                                onTileLoad: (tile: any) => {
                                         visibleTiles.set(tile.id, tile)
                                 },
-                                onTileUnload: (tile: Tile) => {
+                                onTileUnload: (tile: any) => {
                                         visibleTiles.delete(tile.id)
                                         loadedTiles.delete(tile.id)
                                 },

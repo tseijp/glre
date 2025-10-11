@@ -4,6 +4,11 @@ export type Meshes = {
         cnt: number
         vertex: number[]
         normal: number[]
+        // runtime fields/methods provided by createMeshes
+        count?: number
+        instanceCount?: number
+        update?: (gl: any, xyz?: [number, number, number]) => void
+        applyChunks?: (gl: any, m: Meshes) => void
 }
 
 export type Atlas = {

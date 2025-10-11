@@ -156,6 +156,5 @@ export const createRegionConfig = (lat: number, lng: number, zoom: number = 15):
                 lng,
                 zoom,
                 bounds: estimateRegionBounds(lat, lng, zoom),
-                apiKey: process.env.GOOGLE_MAPS_API_KEY,
         }
 }

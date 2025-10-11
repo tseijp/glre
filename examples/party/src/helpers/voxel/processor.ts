@@ -76,19 +76,19 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
                 const BATCH_SIZE = 3
                 for (let i = 0; i < regions.length; i += BATCH_SIZE) {
                         const batch = regions.slice(i, i + BATCH_SIZE)
-                        const promises = batch.map(async (region) => {
+                        const promises: Promise<[string, ProcessingResult]>[] = batch.map(async (region) => {
                                 const regionId = generateRegionId(region)
                                 const tileData = tileDataMap.get(regionId)
 
                                 if (!tileData) {
-                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' }]
+                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult]
                                 }
 
                                 const result = await processRegion(region, tileData)
                                 return [regionId, result]
                         })
 
-                        const batchResults = await Promise.all(promises)
+                        const batchResults: [string, ProcessingResult][] = await Promise.all(promises)
                         for (const [id, result] of batchResults) {
                                 results.set(id, result)
                         }
@@ -113,7 +113,22 @@ const parseFromTiles = async (_blob: ArrayBuffer): Promise<any> => ({ tris: [], 
 
 const combineVoxelChunks = async (items: any[], _size: number): Promise<{ data: Uint8Array; raw: Uint8Array }> => {
         const atlas = new Uint8Array(4096 * 4096 * 4)
-        for (const it of items) { const { key, rgba } = it as any; const [ci, cj, ck] = String(key).split('.').map((v: string) => parseInt(v) | 0); const planeX = cj & 3; const planeY = cj >> 2; const ox = planeX * 1024 + ci * 64; const oy = planeY * 1024 + ck * 64; for (let y = 0; y < 64; y++) { const dy = oy + y; const di = (dy * 4096 + ox) * 4; const si = y * 64 * 4; atlas.set(new Uint8Array(rgba).subarray(si, si + 64 * 4), di) } }
+        for (const it of items) {
+                const { key, rgba } = it as any
+                const [ci, cj, ck] = String(key)
+                        .split('.')
+                        .map((v: string) => parseInt(v) | 0)
+                const planeX = cj & 3
+                const planeY = cj >> 2
+                const ox = planeX * 1024 + ci * 64
+                const oy = planeY * 1024 + ck * 64
+                for (let y = 0; y < 64; y++) {
+                        const dy = oy + y
+                        const di = (dy * 4096 + ox) * 4
+                        const si = y * 64 * 4
+                        atlas.set(new Uint8Array(rgba).subarray(si, si + 64 * 4), di)
+                }
+        }
         return { data: atlas, raw: atlas }
 }
 

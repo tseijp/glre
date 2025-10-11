@@ -37,18 +37,25 @@ export type Tileset = {
         lodMetricValue: number
 }
 
-const DEFAULT_GOOGLE_MAPS_KEY = 'YOUR_GOOGLE_MAPS_API_KEY'
-
-export const loadGoogleMapsTiles = async (lat: number, lng: number, zoom: number = 15, apiKey?: string): Promise<Tileset | null> => {
-        const key = apiKey || DEFAULT_GOOGLE_MAPS_KEY
-        const tilesetUrl = `https://tile.googleapis.com/v1/3dtiles/root.json?key=${key}`
-        const tileset = (await load(tilesetUrl, Tiles3DLoader, { '3d-tiles': { isTileset: true } })) as Tileset
-        return tileset || null
+export const loadGoogleMapsTiles = async (_lat: number, _lng: number, _zoom: number = 15, _apiKey?: string): Promise<Tileset | null> => {
+        const base = '/api/v1/tiles/google/root.json'
+        const ts = (await load(base, Tiles3DLoader, {})) as any
+        if (!ts) return null
+        return ts as Tileset
 }
 
 export const loadCesiumIonTileset = async (_assetId: number, _accessToken: string): Promise<Tileset | null> => null
 
-export const extractTileGeometry = (_tile: Tile): ArrayBuffer | null => null
+export const extractTileGeometry = (tile: Tile): ArrayBuffer | null => {
+        const a = tile.content?.attributes
+        if (!a || !a.positions?.value) return null
+        const pos = a.positions.value
+        const nor = a.normals?.value || new Float32Array(pos.length)
+        const byt = new Uint8Array(pos.byteLength + nor.byteLength)
+        byt.set(new Uint8Array(pos.buffer, pos.byteOffset, pos.byteLength), 0)
+        byt.set(new Uint8Array(nor.buffer, nor.byteOffset, nor.byteLength), pos.byteLength)
+        return byt.buffer
+}
 
 export const estimateTileBounds = (tile: Tile): { min: number[]; max: number[] } => {
         const defaultBounds = {

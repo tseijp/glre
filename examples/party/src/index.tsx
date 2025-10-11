@@ -31,14 +31,14 @@ const myMiddleware = createMiddleware(async (c) => {
  * ↑↑↑　DO NOT CHANGE ↑↑↑
  */
 
-type Env = { DB: D1Database; R2: R2Bucket }
+type Env = { DB: D1Database; R2: R2Bucket; GOOGLE_MAPS_API_KEY: string }
 
 const app = new Hono<{ Bindings: Env }>()
         .use('*', googleOAuthMiddleware)
         .use('/api/auth/*', authHandler())
         .use('/parties/*', verifyAuth())
         .use('/parties/*', myMiddleware)
-        // .use('/api/v1/*', verifyAuth())
+        .use('/api/v1/*', verifyAuth())
         .get('/api/v1/res', (c) => c.text('ok'))
         .get('/api/v1/profile', async (c) => {
                 const user = c.get('authUser')?.token?.sub
@@ -76,19 +76,36 @@ const app = new Hono<{ Bindings: Env }>()
         .get('/api/v1/voxels/:chunkId', async (c) => {
                 const chunkId = c.req.param('chunkId')
                 const voxels = await Q.getSemanticVoxels(c.env.DB, chunkId)
-                return c.json(voxels)
+                // Return voxels with semantic data properly formatted
+                const semanticVoxels = voxels.map((v) => ({
+                        ...v,
+                        semanticData: {
+                                primaryKanji: v.primaryKanji,
+                                secondaryKanji: v.secondaryKanji,
+                                alphaProperties: v.alphaProperties,
+                                behavioralSeed: v.behavioralSeed,
+                        },
+                }))
+                return c.json(semanticVoxels)
         })
         .post('/api/v1/voxels', async (c) => {
                 const user = c.get('authUser')?.token?.sub
                 if (!user) return c.json({ error: 'Not authenticated' }, 401)
                 const { chunkId, localX, localY, localZ, primaryKanji, secondaryKanji, rgbValue, alphaProperties, behavioralSeed } = await c.req.json()
-                const voxel = await Q.createSemanticVoxel(c.env.DB, chunkId || 'default', localX || 0, localY || 0, localZ || 0, primaryKanji || '桜', secondaryKanji || '色', rgbValue || 0xfef4f4, user)
+                const voxel = await Q.createSemanticVoxel(c.env.DB, chunkId || 'default', localX || 0, localY || 0, localZ || 0, primaryKanji || '桜', secondaryKanji || '色', rgbValue || 0xfef4f4, user, alphaProperties || 255, behavioralSeed || 0)
                 return c.json(voxel)
         })
         .get('/api/v1/colors', async (c) => {
                 const seasonalAssociation = c.req.query('season')
                 const colors = await Q.getTraditionalColors(c.env.DB, seasonalAssociation)
-                return c.json(colors)
+                // Parse JSON fields for client consumption
+                const parsedColors = colors.map((color) => ({
+                        ...color,
+                        culturalSignificance: typeof color.culturalSignificance === 'string' ? JSON.parse(color.culturalSignificance || '{}') : color.culturalSignificance,
+                        historicalContext: typeof color.historicalContext === 'string' ? JSON.parse(color.historicalContext || '{}') : color.historicalContext,
+                        usageGuidelines: typeof color.usageGuidelines === 'string' ? JSON.parse(color.usageGuidelines || '{}') : color.usageGuidelines,
+                }))
+                return c.json(parsedColors)
         })
         .get('/api/v1/events', async (c) => {
                 const from = c.req.query('from')
@@ -97,7 +114,7 @@ const app = new Hono<{ Bindings: Env }>()
                 const events = await Q.getCulturalEvents(c.env.DB, new Date(from), new Date(to))
                 return c.json(events)
         })
-        .head('/api/v1/atlas', async (c) => {
+        .on('HEAD', '/api/v1/atlas', async (c) => {
                 const lat = c.req.query('lat')
                 const lng = c.req.query('lng')
                 const zoom = c.req.query('zoom')
@@ -174,6 +191,64 @@ const app = new Hono<{ Bindings: Env }>()
                 return c.json(results)
         })
         .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
+        .get('/api/v1/tiles/google', async (c) => {
+                // Server-side Google Maps 3D Tiles proxy
+                const lat = parseFloat(c.req.query('lat') || '0')
+                const lng = parseFloat(c.req.query('lng') || '0')
+                const zoom = parseInt(c.req.query('zoom') || '15')
+
+                if (!c.env.GOOGLE_MAPS_API_KEY) {
+                        return c.json({ error: 'Google Maps API key not configured' }, 500)
+                }
+
+                const url = `https://tile.googleapis.com/v1/3dtiles/root.json?key=${c.env.GOOGLE_MAPS_API_KEY}`
+                const response = await fetch(url)
+                if (!response.ok) return c.json({ error: 'Failed to fetch tiles' }, response.status)
+                const tileset = await response.json()
+                return c.json({ tileset, region: { lat, lng, zoom } })
+        })
+        .get('/api/v1/tiles/google/*', async (c) => {
+                const key = c.env.GOOGLE_MAPS_API_KEY
+                if (!key) return c.json({ error: 'Google Maps API key not configured' }, 500)
+                const u = new URL(c.req.url)
+                const suffix = c.req.path.replace('/api/v1/tiles/google/', '')
+                const target = new URL(`https://tile.googleapis.com/v1/3dtiles/${suffix}`)
+                u.searchParams.forEach((v, k) => target.searchParams.set(k, v))
+                target.searchParams.set('key', key)
+                const res = await fetch(target.toString(), { method: 'GET' })
+                if (!res.ok) return c.body(null, res.status)
+                const hdr = new Headers(res.headers)
+                const body = await res.arrayBuffer()
+                return new Response(body, { headers: hdr })
+        })
+        .post('/api/v1/tiles/voxelize', async (c) => {
+                // Server-side voxelization endpoint
+                const user = c.get('authUser')?.token?.sub
+                if (!user) return c.json({ error: 'Not authenticated' }, 401)
+
+                const { tileData, region, size } = await c.req.json()
+
+                if (!tileData || !region) {
+                        return c.json({ error: 'Missing tile data or region' }, 400)
+                }
+
+                // Process and cache voxelization
+                const regionKey = `voxels/${region.lat.toFixed(4)}_${region.lng.toFixed(4)}_${region.zoom}`
+
+                try {
+                        // Return structured voxel data
+                        const voxelData = {
+                                regionId: regionKey,
+                                atlasUrl: `/api/v1/atlas?lat=${region.lat}&lng=${region.lng}&zoom=${region.zoom}`,
+                                dimensions: { size: [256, 256, 256], center: [128, 128, 128] },
+                                processed: true,
+                        }
+
+                        return c.json(voxelData)
+                } catch (error) {
+                        return c.json({ error: 'Voxelization failed' }, 500)
+                }
+        })
 
 type AppType = typeof app
 

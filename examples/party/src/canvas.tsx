@@ -9,6 +9,8 @@ import { createShader } from './helpers/shader'
 import { createChunks, applyVoxelDataToChunks, gather } from './helpers/world/chunk'
 import { createRegionConfig } from './helpers/world/chunk'
 import { createVoxelProcessor } from './helpers/voxel/processor'
+import { loadGoogleMapsTiles, extractTileGeometry } from './helpers/tiles/loader'
+import { selectTilesInRegion } from './helpers/tiles/traversal'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
@@ -38,7 +40,7 @@ export const Canvas = (props: CanvasProps = {}) => {
         useEffect(() => {
                 const init = async () => {
                         await loadTraditionalColors()
-                        
+
                         if (region) {
                                 const url = `/api/v1/atlas?lat=${region.lat}&lng=${region.lng}&zoom=${region.zoom || 15}`
                                 const head = await fetch(url, { method: 'HEAD' })
@@ -52,32 +54,60 @@ export const Canvas = (props: CanvasProps = {}) => {
                                         await applyVoxelDataToChunks(chunks as any, { file: { key: 'atlas', data: rgba, raw: rgba }, dims: { size: [256, 256, 256] as any, center: [128, 128, 128] as any } } as any)
                                         const m = gather(chunks as any)
                                         setPendingMesh({ pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] })
+                                } else {
+                                        const cfg = createRegionConfig(region.lat, region.lng, region.zoom || 15)
+                                        const tileset = await loadGoogleMapsTiles(cfg.lat, cfg.lng, cfg.zoom!, cfg.apiKey)
+                                        const tiles = tileset ? selectTilesInRegion(tileset as any, cfg.bounds) : []
+                                        const bufs: ArrayBuffer[] = []
+                                        for (const t of tiles) {
+                                                const b = extractTileGeometry(t as any)
+                                                if (b) bufs.push(b)
+                                        }
+                                        const merged = concatArrayBuffers(bufs)
+                                        const out = await processor.processRegion(cfg as any, merged)
+                                        if (out.success && out.data) {
+                                                const built = out.data
+                                                shader.updateAtlas({ src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as any)
+                                                const chunks = createChunks()
+                                                await applyVoxelDataToChunks(chunks as any, built as any)
+                                                const m = gather(chunks as any)
+                                                setPendingMesh({ pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] })
+                                        }
                                 }
                         } else {
                                 // Fallback to default atlas
                                 if (!props.atlas) await initAtlasWorld('/texture/world.png')
                         }
-                        
+
                         const world = await createDefaultCulturalWorld()
                         setCulturalWorld(world)
                         setIsReady(true)
                         onReady?.()
                 }
                 init()
-                
+
                 return () => {
                         processor.cleanup()
                 }
         }, [props.atlas, region])
+
+        const concatArrayBuffers = (arr: ArrayBuffer[]) => {
+                if (!arr.length) return new ArrayBuffer(0)
+                const len = arr.reduce((n, b) => n + b.byteLength, 0)
+                const out = new Uint8Array(len)
+                let o = 0
+                for (const b of arr) {
+                        out.set(new Uint8Array(b), o)
+                        o += b.byteLength
+                }
+                return out.buffer
+        }
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
         const meshes = useMemo(() => {
                 // Use tiles chunks if available, otherwise fall back to props
                 const mesh = tilesChunks ? { pos: [], scl: [], cnt: 0, vertex: [], normal: [] } : props.mesh
                 const m = createMeshes(camera, mesh as any)
-                if (tilesChunks) {
-                        m.applyChunks?.(tilesChunks)
-                }
                 return m
         }, [camera, props.mesh, tilesChunks])
         const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
@@ -92,7 +122,10 @@ export const Canvas = (props: CanvasProps = {}) => {
                 instanceCount: meshes.instanceCount,
                 loop() {
                         if (!isReady) return
-                        if (pendingMesh) { meshes.applyChunks?.(gl, pendingMesh as any); setPendingMesh(null) }
+                        if (pendingMesh) {
+                                meshes.applyChunks?.(gl, pendingMesh as any)
+                                setPendingMesh(null)
+                        }
                         player.step(gl)
                 },
                 resize() {
@@ -191,9 +224,7 @@ export const Canvas = (props: CanvasProps = {}) => {
                                 <div className="text-center">
                                         <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
                                         <div className="text-2xl font-bold text-gray-700 mb-2">文化的メタバース</div>
-                                        <div className="text-sm text-gray-600">
-                                                {isBuilding ? '3D Tiles voxelization中...' : '伝統色彩システム初期化中...'}
-                                        </div>
+                                        <div className="text-sm text-gray-600">{isBuilding ? '3D Tiles voxelization中...' : '伝統色彩システム初期化中...'}</div>
                                         {region && (
                                                 <div className="text-xs text-gray-500 mt-2">
                                                         Region: {region.lat.toFixed(4)}, {region.lng.toFixed(4)}
