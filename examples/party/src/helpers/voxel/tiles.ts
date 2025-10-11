@@ -38,7 +38,8 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
                 if (!isExpired) return cached
         }
 
-        const tileset = await loadGoogleMapsTiles(config.lat, config.lng, config.zoom, config.apiKey)
+        const tileData = await loadGoogleMapsTiles(config.lat, config.lng, config.zoom, config.apiKey)
+        const tileset = tileData?.tileset || null
         const tiles = tileset ? selectTilesInRegion(tileset, config.bounds) : []
 
         const region: VoxelizedRegion = {

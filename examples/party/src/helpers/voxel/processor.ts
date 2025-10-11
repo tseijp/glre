@@ -81,11 +81,14 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
                                 const tileData = tileDataMap.get(regionId)
 
                                 if (!tileData) {
-                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult]
+                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult] as [
+                                                string,
+                                                ProcessingResult,
+                                        ]
                                 }
 
                                 const result = await processRegion(region, tileData)
-                                return [regionId, result]
+                                return [regionId, result] as [string, ProcessingResult]
                         })
 
                         const batchResults: [string, ProcessingResult][] = await Promise.all(promises)

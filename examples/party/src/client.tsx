@@ -16,7 +16,6 @@ const client = hc<AppType>('/')
 
 export const App = () => {
         const w = useWindowSize()
-        const vox = useVoxelWorld()
         const res = useFetch('res', client.api.v1.res.$get).data
         const colors = useFetch('colors', client.api.v1.colors.$get).data
         const profile = useFetch('profile', client.api.v1.profile.$get).data
@@ -48,6 +47,9 @@ export const App = () => {
                 []
         )
 
+        const currentRegion = { ...defaultRegion, ...(region || {}) }
+        const vox = useVoxelWorld(currentRegion)
+
         useEffect(() => {
                 const initializeCulturalWorld = async () => {
                         const world = await createDefaultCulturalWorld()
@@ -74,8 +76,6 @@ export const App = () => {
         const canSignIn = !profile
         const isSignedIn = !!profile
         const traditionalColors = colors || []
-
-        const currentRegion = region || defaultRegion
 
         const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} atlas={vox?.atlas as any} mesh={vox?.mesh as any} region={currentRegion} onReady={onCanvasReady} isBuilding={isBuilding} />
 

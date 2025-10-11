@@ -84,14 +84,19 @@ export const located = (X = 0, Y = 0, Z = 0) => {
         }
 }
 
-// WASM voxelizer integration
-export const importWasm = async () => {
-        const wasm: any = await import('../../voxelizer/pkg/voxelizer')
-        await wasm.default()
-        return wasm
-}
-
-export const cancelVoxelizer = async () => {
-        const wasm = await importWasm()
-        if (wasm.cancel) wasm.cancel()
+// simple timing wrapper for async/sync functions
+export function timer<Fn extends (...args: any[]) => any>(label: string, fn: Fn): Fn {
+        const wrapped = async (...args: Parameters<Fn>): Promise<ReturnType<Fn>> => {
+                const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now())
+                const start = now()
+                try {
+                        return await fn(...args)
+                } finally {
+                        const end = now()
+                        // eslint-disable-next-line no-console
+                        console.log(`[timer] ${label}: ${(end - start).toFixed(1)}ms`)
+                }
+        }
+        // cast back to original type to preserve call signature
+        return wrapped as unknown as Fn
 }

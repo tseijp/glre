@@ -192,7 +192,7 @@ const app = new Hono<{ Bindings: Env }>()
         })
         .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
         .get('/api/v1/tiles/google', async (c) => {
-                // Server-side Google Maps 3D Tiles proxy
+                // Server-side Google Maps 3D Tiles proxy with voxelization
                 const lat = parseFloat(c.req.query('lat') || '0')
                 const lng = parseFloat(c.req.query('lng') || '0')
                 const zoom = parseInt(c.req.query('zoom') || '15')
@@ -201,11 +201,30 @@ const app = new Hono<{ Bindings: Env }>()
                         return c.json({ error: 'Google Maps API key not configured' }, 500)
                 }
 
+                // Check R2 cache first
+                const cacheKey = `voxels/${lat.toFixed(4)}_${lng.toFixed(4)}_${zoom}.png`
+                const cached = await c.env.R2.head(cacheKey)
+                
+                if (cached) {
+                        return c.json({ 
+                                cached: true,
+                                atlasUrl: `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`,
+                                region: { lat, lng, zoom }
+                        })
+                }
+
+                // Load and process 3D tiles
                 const url = `https://tile.googleapis.com/v1/3dtiles/root.json?key=${c.env.GOOGLE_MAPS_API_KEY}`
                 const response = await fetch(url)
                 if (!response.ok) return c.json({ error: 'Failed to fetch tiles' }, response.status)
                 const tileset = await response.json()
-                return c.json({ tileset, region: { lat, lng, zoom } })
+
+                // Return tileset for client-side voxelization
+                return c.json({ 
+                        tileset, 
+                        region: { lat, lng, zoom },
+                        processed: false
+                })
         })
         .get('/api/v1/tiles/google/*', async (c) => {
                 const key = c.env.GOOGLE_MAPS_API_KEY

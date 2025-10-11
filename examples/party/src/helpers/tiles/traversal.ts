@@ -1,5 +1,6 @@
 import { Tileset3D } from '@loaders.gl/tiles'
-import type { Tileset, Tile } from './loader'
+import type { Tileset, Tile, TileData, VoxelizedTile } from './loader'
+import { voxelizeTileData, generateAtlasPNG } from './loader'
 
 export type Viewport = {
         longitude: number
@@ -15,14 +16,20 @@ export type TileTraversal = {
         tileset3D: Tileset3D | null
         visibleTiles: Map<string, Tile>
         loadedTiles: Map<string, ArrayBuffer>
+        voxelizedTiles: Map<string, VoxelizedTile>
         update: (viewport: Viewport) => Promise<Tile[]>
         cleanup: () => void
+        getVoxelizedData: (region: { lat: number; lng: number; zoom: number }) => Promise<VoxelizedTile | null>
 }
 
 export const createTileTraversal = (tileset: Tileset): TileTraversal => {
         const visibleTiles = new Map<string, Tile>()
         const loadedTiles = new Map<string, ArrayBuffer>()
+        const voxelizedTiles = new Map<string, VoxelizedTile>()
         let tileset3D: Tileset3D | null = null
+
+        const getRegionKey = (region: { lat: number; lng: number; zoom: number }) => 
+                `${region.lat.toFixed(4)}_${region.lng.toFixed(4)}_${region.zoom}`
 
         const initTileset3D = () => {
                 if (!tileset3D) {
@@ -47,6 +54,29 @@ export const createTileTraversal = (tileset: Tileset): TileTraversal => {
                 return Array.from(visibleTiles.values())
         }
 
+        const getVoxelizedData = async (region: { lat: number; lng: number; zoom: number }): Promise<VoxelizedTile | null> => {
+                const key = getRegionKey(region)
+                
+                if (voxelizedTiles.has(key)) {
+                        return voxelizedTiles.get(key)!
+                }
+
+                try {
+                        const tileData: TileData = {
+                                tileset,
+                                region,
+                                processed: false
+                        }
+                        
+                        const voxelized = await voxelizeTileData(tileData)
+                        voxelizedTiles.set(key, voxelized)
+                        return voxelized
+                } catch (error) {
+                        console.error('Failed to voxelize tile data:', error)
+                        return null
+                }
+        }
+
         const cleanup = () => {
                 if (tileset3D) {
                         tileset3D.destroy()
@@ -54,14 +84,17 @@ export const createTileTraversal = (tileset: Tileset): TileTraversal => {
                 }
                 visibleTiles.clear()
                 loadedTiles.clear()
+                voxelizedTiles.clear()
         }
 
         return {
                 tileset3D,
                 visibleTiles,
                 loadedTiles,
+                voxelizedTiles,
                 update,
                 cleanup,
+                getVoxelizedData,
         }
 }
 
