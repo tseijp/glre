@@ -80,8 +80,8 @@ const app = new Hono<{ Bindings: Env }>()
         .post('/api/v1/voxels', async (c) => {
                 const user = c.get('authUser')?.token?.sub
                 if (!user) return c.json({ error: 'Not authenticated' }, 401)
-                const { chunkId, localX, localY, localZ, primaryKanji, secondaryKanji, rgbValue } = await c.req.json()
-                const voxel = await createSemanticVoxel(c.env.DB, chunkId, localX, localY, localZ, primaryKanji, secondaryKanji, rgbValue, user)
+                const { chunkId, localX, localY, localZ, primaryKanji, secondaryKanji, rgbValue, alphaProperties, behavioralSeed } = await c.req.json()
+                const voxel = await createSemanticVoxel(c.env.DB, chunkId || 'default', localX || 0, localY || 0, localZ || 0, primaryKanji || '桜', secondaryKanji || '色', rgbValue || 0xfef4f4, user)
                 return c.json(voxel)
         })
         .get('/api/v1/colors', async (c) => {

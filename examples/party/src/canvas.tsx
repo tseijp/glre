@@ -9,8 +9,8 @@ import { createPlayer } from './helpers/player'
 import { initAtlasWorld } from './helpers/world'
 import { encOp, dec, K } from './helpers/proto'
 import { face, Hit, raycast, screenToWorldRay } from './helpers/raycast'
-import { encodeSemanticVoxel, decodeSemanticVoxel, applySeasonalTransform } from './helpers/semantic'
-import { generateColorPattern, createDefaultCulturalWorld } from './helpers/world'
+import { applySeasonalTransform } from './helpers/semantic'
+import { createDefaultCulturalWorld } from './helpers/world'
 import { loadTraditionalColors, findNearestTraditionalColor } from './helpers/colors'
 import type { Dims } from './helpers/types'
 
@@ -69,14 +69,25 @@ export const Canvas = (props: CanvasProps = {}) => {
                 const culturalColor = applySeasonalTransform(baseColor, currentSeason, 0.8)
                 const traditionalColor = findNearestTraditionalColor(culturalColor)
 
-                // Create semantic voxel with cultural meaning
+                // Create and persist semantic voxel with cultural meaning
                 const semanticVoxel = {
+                        chunkId: 'cultural-world-default',
+                        localX: xyz[0] % 16,
+                        localY: xyz[1] % 16,
+                        localZ: xyz[2] % 16,
                         primaryKanji: '桜',
                         secondaryKanji: '色',
                         rgbValue: traditionalColor.rgbValue,
                         alphaProperties: 255,
                         behavioralSeed: Math.floor(Math.random() * 256),
                 }
+
+                // Store semantic voxel to database
+                fetch('/api/v1/voxels', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(semanticVoxel),
+                })
 
                 shader.updateHover(hit, near)
                 meshes.update(gl, xyz)

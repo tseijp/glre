@@ -18,6 +18,14 @@ export const App = () => {
         const res = useFetch('res', client.api.v1.res.$get).data
         const colors = useFetch('colors', client.api.v1.colors.$get).data
         const profile = useFetch('profile', client.api.v1.profile.$get).data
+        const events = useFetch('events', () =>
+                client.api.v1.events.$get({
+                        query: {
+                                from: new Date().toISOString(),
+                                to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+                        },
+                })
+        ).data
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')
@@ -51,6 +59,8 @@ export const App = () => {
                 hasCulturalProfile,
                 traditionalColors,
                 culturalWorld,
+                culturalEvents: Array.isArray(events) ? events : [],
+                seasonalColors: colors?.filter((c: any) => c.seasonalAssociation === culturalWorld?.seasonalCycle) || [],
                 page: page || '1',
                 onSignIn: () => signIn(),
                 children,

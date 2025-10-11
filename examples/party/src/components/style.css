@@ -2,6 +2,9 @@
  * ↓↓↓　DO NOT CHANGE ↓↓↓
  */
 @import 'tailwindcss';
+/**
+ * ↑↑↑ DOT NOT CHANGE ↑↑↑
+ */
 @layer components {
         body {
                 @apply bg-gradient-to-b from-black/30 to-black/60;
@@ -13,6 +16,3 @@
                 @apply px-3 py-1 bg-white/10 border border-white/10 rounded-full;
         }
 }
-/**
- * ↑↑↑ NOT CHANGE ↑↑↑
- */

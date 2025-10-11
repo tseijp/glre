@@ -1,5 +1,5 @@
 import { on } from '../hooks'
-import { GearIcon, PersonIcon, RocketIcon, MagnifyingGlassIcon, GlobeIcon, BellIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
+import { GearIcon, PersonIcon, GlobeIcon, BellIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
 
 type Props = {
         isHUD?: boolean

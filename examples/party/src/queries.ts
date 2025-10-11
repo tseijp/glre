@@ -84,7 +84,7 @@ export const createWorld = (DB: D1Database, worldName: string, culturalTheme: st
                 publicAccess: true,
         })
 
-export const createSemanticVoxel = (DB: D1Database, chunkId: string, localX: number, localY: number, localZ: number, primaryKanji: string, secondaryKanji: string, rgbValue: number, creatorId: string) =>
+export const createSemanticVoxel = (DB: D1Database, chunkId: string, localX: number, localY: number, localZ: number, primaryKanji: string, secondaryKanji: string, rgbValue: number, creatorId: string, alphaProperties = 255, behavioralSeed = 0) =>
         drizzle(DB).insert(semanticVoxels).values({
                 chunkId,
                 localX,
@@ -93,6 +93,8 @@ export const createSemanticVoxel = (DB: D1Database, chunkId: string, localX: num
                 primaryKanji,
                 secondaryKanji,
                 rgbValue,
+                alphaProperties,
+                behavioralSeed,
                 creatorId,
         })
 

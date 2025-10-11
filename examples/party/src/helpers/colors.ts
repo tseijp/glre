@@ -1,61 +1,33 @@
-// Dynamic color data loading from JSON files
+// Dynamic color data loading from D1 backend
 let TRADITIONAL_COLORS_DATA: any[] = []
-let CHINESE_COLORS_DATA: any[] = []
 
 export const loadTraditionalColors = async (): Promise<void> => {
         try {
-                // Load Japanese traditional colors
-                const jpResponse = await fetch('/traditional_colors.ja.json')
-                const jpColors = await jpResponse.json()
+                // Load traditional colors from D1 backend
+                const response = await fetch('/api/v1/colors')
+                const colors = await response.json()
                 
-                TRADITIONAL_COLORS_DATA = Object.entries(jpColors as Record<string, number[]>).map(([name, rgb]) => {
-                        const [r, g, b] = rgb as number[]
-                        return {
-                                colorNameJa: name,
-                                colorNameEn: convertKanjiToEnglish(name),
-                                rgbValue: (r << 16) | (g << 8) | b,
-                                seasonalAssociation: inferSeasonFromColor(name, r, g, b),
-                                culturalSignificance: {
-                                        poeticReference: generatePoetryContext(name),
-                                        emotionalContext: inferEmotion(name)
-                                },
-                                historicalContext: {
-                                        period: 'traditional',
-                                        usage: 'cultural_heritage'
-                                }
-                        }
-                })
-                
-                // Load Chinese traditional colors
-                const cnResponse = await fetch('/traditional_colors.cn.json')
-                const cnColors = await cnResponse.json()
-                
-                CHINESE_COLORS_DATA = Object.entries(cnColors as Record<string, number[]>).map(([name, rgb]) => {
-                        const [r, g, b] = rgb as number[]
-                        return {
-                                colorNameZh: name,
-                                colorNameEn: convertChineseToEnglish(name),
-                                rgbValue: (r << 16) | (g << 8) | b,
-                                seasonalAssociation: inferSeasonFromWuXing(name),
-                                element: inferWuXingElement(name, r, g, b),
-                                culturalSignificance: {
-                                        direction: inferDirection(name),
-                                        emotion: inferChineseEmotion(name)
-                                },
-                                historicalContext: {
-                                        dynasty: 'classical',
-                                        usage: 'imperial_court'
-                                }
-                        }
-                })
+                TRADITIONAL_COLORS_DATA = colors.map((color: any) => ({
+                        colorNameJa: color.colorNameJa,
+                        colorNameZh: color.colorNameZh,
+                        colorNameEn: color.colorNameEn,
+                        rgbValue: color.rgbValue,
+                        seasonalAssociation: color.seasonalAssociation,
+                        culturalSignificance: typeof color.culturalSignificance === 'string' 
+                                ? JSON.parse(color.culturalSignificance) 
+                                : color.culturalSignificance,
+                        historicalContext: typeof color.historicalContext === 'string' 
+                                ? JSON.parse(color.historicalContext) 
+                                : color.historicalContext,
+                        element: color.culturalSignificance?.wuxing
+                }))
         } catch (error) {
-                // Fallback to basic colors if JSON loading fails
                 initializeFallbackColors()
         }
 }
 
-export const getTraditionalColorsData = () => TRADITIONAL_COLORS_DATA
-export const getChineseColorsData = () => CHINESE_COLORS_DATA
+export const getTraditionalColorsData = () => TRADITIONAL_COLORS_DATA.filter(c => c.colorNameJa)
+export const getChineseColorsData = () => TRADITIONAL_COLORS_DATA.filter(c => c.colorNameZh)
 
 // Color analysis helper functions
 const convertKanjiToEnglish = (kanji: string): string => {
@@ -160,11 +132,11 @@ const initializeFallbackColors = (): void => {
         ]
 }
 
-export const getAllTraditionalColors = () => [...TRADITIONAL_COLORS_DATA, ...CHINESE_COLORS_DATA]
+export const getAllTraditionalColors = () => TRADITIONAL_COLORS_DATA
 
-export const getColorsBySeasonalAssociation = (season: string) => getAllTraditionalColors().filter((color) => color.seasonalAssociation === season)
+export const getColorsBySeasonalAssociation = (season: string) => TRADITIONAL_COLORS_DATA.filter((color) => color.seasonalAssociation === season)
 
-export const getColorsByElement = (element: string) => CHINESE_COLORS_DATA.filter((color) => color.element === element)
+export const getColorsByElement = (element: string) => TRADITIONAL_COLORS_DATA.filter((color) => color.element === element)
 
 export const findNearestTraditionalColor = (rgb: number) => {
         let closest = getAllTraditionalColors()[0]
@@ -197,15 +169,14 @@ export const checkWuXingHarmony = (color1: string, color2: string): boolean => {
                 destructive: { wood: 'earth', earth: 'water', water: 'fire', fire: 'metal', metal: 'wood' },
         }
 
-        const c1 = CHINESE_COLORS_DATA.find((c) => c.colorNameZh === color1)
-        const c2 = CHINESE_COLORS_DATA.find((c) => c.colorNameZh === color2)
+        const c1 = TRADITIONAL_COLORS_DATA.find((c) => c.colorNameZh === color1)
+        const c2 = TRADITIONAL_COLORS_DATA.find((c) => c.colorNameZh === color2)
 
-        if (!c1 || !c2) return true // Allow if not in system
+        if (!c1 || !c2) return true
 
         const e1 = c1.element
         const e2 = c2.element
 
-        // Harmonious if same element or in generating cycle
         return e1 === e2 || elementCycles.generating[e1 as keyof typeof elementCycles.generating] === e2
 }
 
