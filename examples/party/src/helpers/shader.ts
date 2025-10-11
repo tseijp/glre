@@ -1,17 +1,4 @@
-import {
-        attribute,
-        uniform,
-        vec4,
-        vec3,
-        Fn,
-        vertexStage,
-        instance,
-        float,
-        Vec3,
-        vec2,
-        texture,
-        clamp,
-} from 'glre/src/node'
+import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, Vec3, vec2, texture, clamp } from 'glre/src/node'
 import { computeCamera } from './camera'
 import type { Camera } from './camera'
 import type { Atlas, Meshes } from './types'
