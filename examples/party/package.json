@@ -40,7 +40,8 @@
                 "partyserver": "^0.0.75",
                 "partysocket": "^1.1.6",
                 "vite": "*",
-                "vite-ssr-components": "^0.5.1",
+                "vite-plugin-top-level-await": "^1.6.0",
+                "vite-plugin-wasm": "^3.5.0",
                 "wrangler": "*"
         }
 }
