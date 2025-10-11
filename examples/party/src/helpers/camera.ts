@@ -38,6 +38,7 @@ export const createCamera = (size: number, dims: Dims) => {
                 VP: mat4.create(),
                 yaw: 0,
                 pitch: 0,
+                needsUpdate: true,
                 update(size: number, dims: { size: [number, number, number] }) {
                         const w = Math.max(1, Math.round(dims.size[0] || size))
                         const d = Math.max(1, Math.round(dims.size[1] || size))

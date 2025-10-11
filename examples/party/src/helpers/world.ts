@@ -1,4 +1,5 @@
-import { loadTraditionalColors, getAllTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, checkWuXingHarmony, getSeasonalIntensity } from './colors'
+import { loadTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, checkWuXingHarmony, getSeasonalIntensity } from './colors'
+export { initAtlasWorld } from './atlas'
 import { traditionalColorToRgb, applySeasonalTransform } from './semantic'
 import { CHUNK, GRID } from './utils'
 
@@ -188,7 +189,7 @@ export const generateColorPattern = (baseColors: number[], season: string, x: nu
         const seasonalIntensity = getSeasonalIntensity(season, new Date())
         const colorIndex = (x + y) % baseColors.length
         const baseColor = baseColors[colorIndex]
-        
+
         // Apply cultural color harmony validation
         const nearestColor = findNearestTraditionalColor(baseColor)
         const harmonicColor = validateCulturalHarmony(baseColor, season)
@@ -199,19 +200,19 @@ export const generateColorPattern = (baseColors: number[], season: string, x: nu
 // Cultural harmony validation using traditional color theory
 const validateCulturalHarmony = (baseColor: number, season: string): number => {
         const traditionalColor = findNearestTraditionalColor(baseColor)
-        
+
         // Check if color is appropriate for season
         if (traditionalColor.seasonalAssociation === season) {
                 return baseColor
         }
-        
+
         // Find harmonious alternative from seasonal colors
         const seasonalColors = getColorsBySeasonalAssociation(season)
         if (seasonalColors.length > 0) {
                 const alternatives = seasonalColors.slice(0, 3)
                 return alternatives[Math.floor(Math.random() * alternatives.length)].rgbValue
         }
-        
+
         return baseColor
 }
 

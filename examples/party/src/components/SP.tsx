@@ -9,7 +9,7 @@ const Row = ({ c = '' as any, children = null as any }) => <div className={'flex
 
 const SP = ({ isHUD, isMenu, isModal, page = '1', children }: Props) => {
         return (
-                <div className="fixed inset-0 text-white">
+                <div className="fixed inset-0 text-black">
                         <div className="fixed inset-0 -z-10">{children}</div>
                         <div className={on(isHUD, 'pointer-events-none fixed inset-0')}>
                                 <div className="fixed top-4 left-4 right-4 flex items-center justify-between">

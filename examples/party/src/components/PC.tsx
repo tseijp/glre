@@ -1,7 +1,7 @@
 import { on } from '../hooks'
 import { GearIcon, PersonIcon, RocketIcon, MagnifyingGlassIcon, GlobeIcon, BellIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
 
-type Props = { 
+type Props = {
         isHUD?: boolean
         isMenu?: boolean
         isModal?: boolean
@@ -16,7 +16,7 @@ const Box = ({ c = '' as any, children = null as any }) => <div className={'glas
 const Item = ({ c = '' as any, children = null as any }) => <div className={'px-4 py-2 ' + c}>{children}</div>
 const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
         return (
-                <div className="fixed inset-0 text-white">
+                <div className="fixed inset-0 text-black">
                         <div className="fixed inset-0 -z-10">{children}</div>
                         <div className={on(isHUD, 'pointer-events-none fixed inset-0')}>
                                 <div className="fixed top-6 left-8 right-8 flex items-center justify-between">

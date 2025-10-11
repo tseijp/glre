@@ -1,15 +1,18 @@
-import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, Vec3, vec2, texture, clamp } from 'glre/src/node'
+import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, Vec3, vec2, texture, clamp, If } from 'glre/src/node'
 import { computeCamera } from './camera'
 import type { Camera } from './camera'
 import type { Atlas, Meshes } from './types'
 
-export const createShader = (camera: Camera, meshes: Meshes, atlas: Atlas) => {
+export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
+        const defaultAtlas = atlas || { src: '/texture/world.png', W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }
         const MVP = computeCamera(camera, [1280, 800])
         const iMVP = uniform<'mat4'>(MVP, 'MVP')
-        const iAtlas = uniform(atlas.src, 'iAtlas')
-        const iAtlasSize = uniform(vec2(atlas.W, atlas.H), 'iAtlasSize')
-        const iPlaneSize = uniform(vec2(atlas.planeW, atlas.planeH), 'iPlaneSize')
-        const iPlaneCols = uniform(float(atlas.cols), 'iPlaneCols')
+        const iAtlas = uniform(defaultAtlas.src, 'iAtlas')
+        const iAtlasSize = uniform(vec2(defaultAtlas.W, defaultAtlas.H), 'iAtlasSize')
+        const iPlaneSize = uniform(vec2(defaultAtlas.planeW, defaultAtlas.planeH), 'iPlaneSize')
+        const iPlaneCols = uniform(float(defaultAtlas.cols), 'iPlaneCols')
+        const iHover = uniform(vec3(-1), 'iHover')
+        const iFace = uniform(vec3(-1), 'iFace')
 
         const atlasUV = Fn(([n, local, iPos]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
@@ -41,11 +44,28 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas: Atlas) => {
         })
 
         const fs = Fn(([n, local, iPos]: [Vec3, Vec3, Vec3]) => {
+                // Cultural hover highlighting
+                const sameFace = n.dot(iFace).equal(1)
+                const W = iPos
+                        .add(local)
+                        .sub(n.sign().mul(float(1e-3)))
+                        .floor()
+                const isHover = W.x.equal(iHover.x).and(W.y.equal(iHover.y)).and(W.z.equal(iHover.z))
+
+                // Traditional lighting model
                 const L = vec3(0.3, 0.7, 0.5).normalize()
                 const diffuse = n.normalize().dot(L).max(0.2)
                 const texel = texture(iAtlas, atlasUV(n, local, iPos)).toVar('texel')
-                const rgb = texel.rgb.mul(diffuse)
-                return vec4(rgb, 0.85)
+
+                // Apply cultural color transformation using If statement
+                const baseColor = texel.rgb.mul(diffuse)
+                const culturalColor = baseColor.toVar('culturalColor')
+
+                If(sameFace.and(isHover), () => {
+                        culturalColor.assign(vec3(1, 0.3, 0.3)) // Cultural highlight color (traditional red)
+                })
+
+                return vec4(culturalColor, 0.85)
         })
 
         const vert = vs(vertex, pos, scl)
@@ -59,5 +79,21 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas: Atlas) => {
                 iPlaneSize.value = [atlas.planeW, atlas.planeH]
                 iPlaneCols.value = atlas.cols
         }
-        return { vert, frag, updateCamera, updateAtlas }
+
+        const updateHover = (hit?: any, near?: number[]) => {
+                if (!hit || !near) {
+                        iHover.value = [-1, -1, -1]
+                        iFace.value = [-1, -1, -1]
+                        return
+                }
+                const f = hit.face
+                const eps = 1e-3
+                const x = Math.floor(near[0] - eps * f[0])
+                const y = Math.floor(near[1] - eps * f[1])
+                const z = Math.floor(near[2] - eps * f[2])
+                iHover.value = [x, y, z]
+                iFace.value = f
+        }
+
+        return { vert, frag, updateCamera, updateAtlas, updateHover }
 }

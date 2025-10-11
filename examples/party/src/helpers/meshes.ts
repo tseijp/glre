@@ -32,13 +32,22 @@ const createNormalData = () => {
 let _vertex: number[]
 let _normal: number[]
 
-export const createMeshes = (_camera: any, mesh: Meshes) => {
+export const createMeshes = (_camera: any, mesh?: Meshes) => {
         const vertex = (_vertex = _vertex ?? createVertexData())
         const normal = (_normal = _normal ?? createNormalData())
         const pos = mesh?.pos || [0, 0, 0]
         const scl = mesh?.scl || [16, 16, 16]
         const count = vertex.length / 3
         const instanceCount = mesh?.cnt || 1
+        
+        const update = (gl: any, xyz?: [number, number, number]) => {
+                if (xyz) {
+                        pos.push(...xyz)
+                        scl.push(1, 1, 1)
+                        applyInstances(gl, { pos, scl, cnt: pos.length / 3, vertex, normal })
+                }
+        }
+        
         return {
                 vertex,
                 normal,
@@ -46,6 +55,7 @@ export const createMeshes = (_camera: any, mesh: Meshes) => {
                 scl,
                 count,
                 instanceCount,
+                update,
                 get cnt() {
                         return instanceCount
                 },

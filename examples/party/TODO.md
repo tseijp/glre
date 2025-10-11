@@ -3,7 +3,9 @@
 > ## Development Overview
 >
 > Addendum (2025-10-10) — Implementation Status Summary. Backend routes live in `src/index.tsx` and follow Hono chaining; data access stays in `src/queries.ts` with Drizzle; OAuth tables in `src/schema.ts` remain untouched as required; PartyServer is bridged via `x-auth-sub` header. This matches the prescribed server architecture. Frontend shell exists in `src/client.tsx`, `src/components`, and `src/hooks`; it renders `Canvas` as children and switches SP/PC by window width. Real-time UI is not wired to PartyServer. WebGL in `src/canvas.tsx` is a minimal GLRE gradient; cultural engines are not implemented.
->
+
+Addendum (2025-10-11) — SPEC vs Implementation Alignment. The server side conforms to the contract: Hono route chaining in `src/index.tsx`, Drizzle-only queries in `src/queries.ts`, untouched OAuth tables in `src/schema.ts`, and Durable Object bridging via `x-auth-sub`. The client follows the required shell: `client.tsx` selects SP/PC and passes `Canvas` as children with props computed in the client layer. Real-time is actually wired through `partysocket` in `src/canvas.tsx` and the PartyServer bridge; the October 10 note is superseded. Rendering currently uses GLRE over WebGL, which is acceptable for the early milestones but below the WebGPU goal stated in SPEC. Minimal cultural systems exist: `helpers/semantic.ts` provides encode/decode scaffolding and harmony checks; `helpers/world.ts` generates cultural regions; `helpers/colors.ts` implements seasonal and Five Elements mapping.
+
 > The GLRE Cultural Metaverse Platform represents a revolutionary fusion of traditional Eastern cultural wisdom with cutting-edge voxel technology. Building upon the existing party server foundation, this roadmap transforms a basic real-time communication system into a sophisticated cultural computing platform that encodes traditional knowledge as executable code.
 >
 > The development follows a strategic progression from core infrastructure through cultural systems to advanced community features, ensuring each milestone delivers value while building toward the complete cultural metaverse vision. The task breakdown prioritizes foundational systems that enable cultural computing, followed by user-facing features that demonstrate the platform's unique value proposition.
@@ -24,7 +26,9 @@
 > ## Phase 1: Cultural Computing Foundation (Month 1-2)
 >
 > Addendum (2025-10-10) — Phase 1 Status. Tables for `semanticVoxels`, `traditionalColors`, and `culturalEvents` exist; queries expose them; routes for colors, voxels, and events are present. Encoding/decoding for semantic voxels is not implemented; cultural validation engine is absent; shader cultural functions and a WebGPU pipeline do not exist. Short-term scope: provide a thin encode/decode adapter in `src/helpers/*` and return typed data to the client through existing endpoints.
->
+
+Addendum (2025-10-11) — Phase 1 Verification. A minimal semantic voxel codec exists in `helpers/semantic.ts` and seasonal transforms are available, but API routes do not yet persist or return encoded values. Traditional color listing is implemented through queries; seasonal logic and Wu Xing mapping are implemented in helpers. Shader adds cultural hover feedback and atlas addressing; atlas world loading is present. The color JSON assets referenced by helpers are missing, creating a hard dependency that must be replaced by a D1-backed endpoint or by calling the seeding utilities. Immediate next step: import `encodeSemanticVoxel`/`decodeSemanticVoxel` inside voxel create/read flows, and expose a server endpoint to provide color dictionaries from D1 so the client no longer fetches static JSON.
+
 > ### Ticket 1: Semantic Voxel Data Structure Implementation
 >
 > **Priority**: 1 | **Tag**: [FOUNDATION] | **Branch**: `feat/party_semantic_voxels` | **Commit**: `feat: add party semantic voxel encoding system with cultural data compression`
@@ -113,7 +117,9 @@
 > ## Phase 2: Interactive Cultural Building Systems (Month 2-3)
 >
 > Addendum (2025-10-10) — Phase 2 Status. SP/PC markup is shipped and styled with Tailwind; client props control visibility flags; no cultural building UI, gesture tools, or traditional tool metaphors are implemented. Procedural pattern generation is not present; architecture assistance is not present; mentorship features are not present; seasonal environmental responses are not present. Canvas renders but does not accept building inputs.
->
+
+Addendum (2025-10-11) — Phase 2 Snapshot. The `Canvas` accepts pointer drag and click and updates instances, but a cultural tool system is not surfaced as UI and no poetry- or haiku-driven material chooser exists. No procedural pattern generator is wired to shaders; no seasonal environment response loop is active beyond static transforms. The client passes cultural context props but does not bind them to building actions. Short path forward: introduce a lightweight intent-to-material adapter in the client that maps cultural intents to semantic voxel presets, then forward those into the existing `meshes.update` pipeline.
+
 > ### Ticket 6: Cultural Building Interface and Traditional Tool System
 >
 > **Priority**: 1 | **Tag**: [RENDER] | **Branch**: `feat/party_building_interface` | **Commit**: `feat: add party cultural building interface with traditional tool metaphors`
@@ -202,7 +208,9 @@
 > ## Phase 3: Advanced Social and Community Features (Month 3-4)
 >
 > Addendum (2025-10-10) — Phase 3 Status. Community CRUD endpoints exist for creation and joining; member listing exists; knowledge sharing POST exists; events listing exists. Cross-cultural translation is not implemented; community governance flows are not implemented; automatic celebration orchestration is not implemented. The client does not consume communities, events, or knowledge endpoints yet.
->
+
+Addendum (2025-10-11) — Phase 3 Snapshot. API coverage includes communities, events, knowledge sharing, and color usage logging; the client does not call these endpoints and has no UI for timelines, celebrations, or governance. Translation and protocol guidance are not present. Recommended bridge: add `useFetch` hooks for communities and events, render read-only panels in PC/SP to validate data shape, then iterate on participation and knowledge flows.
+
 > ### Ticket 11: Cultural Event System and Traditional Celebration Framework
 >
 > **Priority**: 1 | **Tag**: [SOCIAL] | **Branch**: `feat/party_cultural_events` | **Commit**: `feat: add party cultural event system with traditional celebration mechanics`
@@ -289,7 +297,9 @@
 > Workshops include traditional music instruction with virtual instruments, martial arts forms with movement tracking, and meditation techniques with environmental support. Each workshop preserves traditional teaching methods while leveraging digital capabilities to enhance learning effectiveness.
 >
 > ## Phase 4: Advanced AI and Procedural Systems (Month 4-5)
->
+
+Addendum (2025-10-11) — Phase 4 Status. No cultural AI or narrative systems exist. Procedural world generation is basic and localized to `helpers/world.ts`; it does not stream regions, generate landmarks, or encode cultural geography at world scale. Shader code does not include pattern synthesis nodes. Defer AI narrative until after building tools are interactive and cultural data flows are stable.
+
 > ### Ticket 16: Cultural AI Storytelling and Narrative Generation Engine
 >
 > **Priority**: 2 | **Tag**: [ADVANCED] | **Branch**: `feat/party_ai_storytelling` | **Commit**: `feat: add party cultural AI storytelling with traditional narrative generation`
@@ -376,7 +386,9 @@
 > The system includes traditional instrument simulations, seasonal soundscapes that change according to traditional calendars, and audio cues that provide cultural context and educational feedback during interactions. Audio elements respect traditional acoustic principles while enhancing the overall cultural experience.
 >
 > ## Phase 5: Platform Optimization and Community Launch (Month 5-6)
->
+
+Addendum (2025-10-11) — Phase 5 Status. Safety, accessibility, and governance frameworks are conceptual only; no code paths implement moderation, restorative flows, or inclusive UI rules. Audio and multisensory layers are not started. Launch readiness depends on wiring Phase 1–3 and adding minimal safety gates around sharing and events.
+
 > ### Ticket 21: Performance Optimization and Cultural Computing Efficiency
 >
 > **Priority**: 1 | **Tag**: [FOUNDATION] | **Branch**: `feat/party_performance_optimization` | **Commit**: `feat: add party performance optimization with cultural computing efficiency`
@@ -550,7 +562,9 @@
 > ## Development Summary
 >
 > Addendum (2025-10-10) — Completion Map. Server design conforms to requirements; database schema and queries cover users, worlds, voxels, colors, events, communities, education. Client foundation renders SP/PC and GLRE canvas. Missing pieces are cultural validation, semantic voxel codec, shader extensions, WebGPU pipeline, building interface, translation, governance, and client wiring for social features. Next steps focus on wiring client hooks to existing APIs and introducing a minimal semantic voxel adapter to unblock Phase 1 demos.
->
+
+Addendum (2025-10-11) — Completion Map v2. Done: server architecture, OAuth schema, Drizzle queries, baseline rendering, basic real-time over PartyServer, cultural scaffolding in helpers. Partial: semantic voxel codec exists but is not integrated with API; cultural world generator exists but is not persisted; client props pass cultural context but building UI is absent. Missing: WebGPU path, cultural tools UI, translation/governance, events participation UI, content safety. Immediate next actions: 1) serve traditional color dictionaries from D1 and remove static JSON dependency; 2) integrate encode/decode in voxel CRUD and return semantic fields; 3) add read-only community/events panels in PC/SP to validate endpoints; 4) ship a minimal cultural tool chooser to turn intents into voxel presets.
+
 > This comprehensive development roadmap transforms the existing party server foundation into a revolutionary cultural metaverse platform that preserves traditional wisdom while fostering global community connections. The task breakdown ensures systematic progression from core infrastructure through cultural systems to advanced community features, with each milestone delivering tangible value while building toward the complete vision.
 >
 > The 30-ticket structure provides 6 months of focused development work that respects traditional knowledge while leveraging cutting-edge technology to create authentic cultural experiences. Each ticket balances technical innovation with cultural authenticity, ensuring that the platform serves both educational and entertainment goals while maintaining respect for traditional wisdom and community values.
