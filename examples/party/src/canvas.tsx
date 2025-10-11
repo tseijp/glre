@@ -4,11 +4,13 @@ import { useMemo, useEffect, useState } from 'react'
 import { useDrag, useKey } from 'rege/react'
 import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, loadTraditionalColors, raycast, screenToWorldRay } from './helpers'
 import { createShader } from './helpers/shader'
-import type { Dims, Hit } from './helpers'
+import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
         size?: number
         dims?: Dims
+        atlas?: Atlas
+        mesh?: Meshes
 }
 
 export const Canvas = (props: CanvasProps = {}) => {
@@ -18,18 +20,18 @@ export const Canvas = (props: CanvasProps = {}) => {
 
         // Initialize cultural metaverse system
         useEffect(() => {
-                const initializeCulturalSystem = async () => {
+                const init = async () => {
                         await loadTraditionalColors()
-                        await initAtlasWorld('/texture/world.png')
+                        if (!props.atlas) await initAtlasWorld('/texture/world.png')
                         const world = await createDefaultCulturalWorld()
                         setCulturalWorld(world)
                         setIsReady(true)
                 }
-                initializeCulturalSystem()
-        }, [])
+                init()
+        }, [props.atlas])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
-        const meshes = useMemo(() => createMeshes(camera), [camera])
+        const meshes = useMemo(() => createMeshes(camera, props.mesh as any), [camera, props.mesh])
         const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
         const player = useMemo(() => createPlayer(camera, meshes, shader), [])
 
@@ -121,8 +123,8 @@ export const Canvas = (props: CanvasProps = {}) => {
 
         // Cultural metaverse real-time synchronization
         const sock = usePartySocket({
-                party: 'my-server',
-                room: 'cultural-metaverse',
+                party: 'v1', // DO NOT CHANGE FROM "v1"
+                room: 'my-room',
                 async onMessage(e) {
                         if (!(e.data instanceof Blob)) return
                         const data = await e.data.arrayBuffer()

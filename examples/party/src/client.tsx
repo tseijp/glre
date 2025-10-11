@@ -7,6 +7,7 @@ import PC from './components/PC'
 import SP from './components/SP'
 import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
+import { useVoxelWorld } from './hooks/useVoxelWorld'
 import { createDefaultCulturalWorld } from './helpers'
 import { useEffect, useState } from 'react'
 import type { AppType } from '.'
@@ -15,6 +16,7 @@ const client = hc<AppType>('/')
 
 export const App = () => {
         const w = useWindowSize()
+        const vox = useVoxelWorld()
         const res = useFetch('res', client.api.v1.res.$get).data
         const colors = useFetch('colors', client.api.v1.colors.$get).data
         const profile = useFetch('profile', client.api.v1.profile.$get).data
@@ -50,7 +52,7 @@ export const App = () => {
         const hasCulturalProfile = !!profile
         const traditionalColors = colors || []
 
-        const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} />
+        const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} atlas={vox?.atlas as any} mesh={vox?.mesh as any} />
 
         const props = {
                 isHUD,
