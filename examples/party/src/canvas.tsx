@@ -1,10 +1,13 @@
 import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo, useEffect, useState } from 'react'
+import { load } from '@loaders.gl/core'
+import { ImageLoader } from '@loaders.gl/images'
 import { useDrag, useKey } from 'rege/react'
 import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, loadTraditionalColors, raycast, screenToWorldRay } from './helpers'
 import { createShader } from './helpers/shader'
-import { generateFromTiles, createRegionConfig } from './helpers/world/chunk'
+import { createChunks, applyVoxelDataToChunks, gather } from './helpers/world/chunk'
+import { createRegionConfig } from './helpers/world/chunk'
 import { createVoxelProcessor } from './helpers/voxel/processor'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
@@ -27,6 +30,7 @@ export const Canvas = (props: CanvasProps = {}) => {
         const [isReady, setIsReady] = useState(false)
         const [culturalWorld, setCulturalWorld] = useState<any>(null)
         const [tilesChunks, setTilesChunks] = useState<any>(null)
+        const [pendingMesh, setPendingMesh] = useState<Meshes | null>(null)
 
         const processor = useMemo(() => createVoxelProcessor(), [])
 
@@ -35,12 +39,20 @@ export const Canvas = (props: CanvasProps = {}) => {
                 const init = async () => {
                         await loadTraditionalColors()
                         
-                        // Initialize from 3D Tiles if region specified
                         if (region) {
-                                const config = createRegionConfig(region.lat, region.lng, region.zoom || 15)
-                                const camera = createCamera(size, dims)
-                                const chunks = await generateFromTiles(config, camera)
-                                setTilesChunks(chunks)
+                                const url = `/api/v1/atlas?lat=${region.lat}&lng=${region.lng}&zoom=${region.zoom || 15}`
+                                const head = await fetch(url, { method: 'HEAD' })
+                                if (head.ok) {
+                                        const res = await fetch(url)
+                                        const buf = await res.arrayBuffer()
+                                        const img: any = await load(buf, ImageLoader, { image: { type: 'data' } })
+                                        const rgba = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer.slice(0)) : img.data
+                                        shader.updateAtlas({ src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as any)
+                                        const chunks = createChunks()
+                                        await applyVoxelDataToChunks(chunks as any, { file: { key: 'atlas', data: rgba, raw: rgba }, dims: { size: [256, 256, 256] as any, center: [128, 128, 128] as any } } as any)
+                                        const m = gather(chunks as any)
+                                        setPendingMesh({ pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] })
+                                }
                         } else {
                                 // Fallback to default atlas
                                 if (!props.atlas) await initAtlasWorld('/texture/world.png')
@@ -80,6 +92,7 @@ export const Canvas = (props: CanvasProps = {}) => {
                 instanceCount: meshes.instanceCount,
                 loop() {
                         if (!isReady) return
+                        if (pendingMesh) { meshes.applyChunks?.(gl, pendingMesh as any); setPendingMesh(null) }
                         player.step(gl)
                 },
                 resize() {

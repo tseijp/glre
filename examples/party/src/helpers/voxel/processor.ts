@@ -1,15 +1,10 @@
-import { importWasm, cancelVoxelizer } from '../utils'
-import { createR2Client, storeVoxelData, retrieveVoxelData, checkVoxelExists } from '../storage/r2'
+import { importWasm, cancelVoxelizer } from './wasm'
 import { generateRegionId } from './tiles'
 import type { RegionConfig } from './tiles'
-import type { StoredVoxelData, R2StorageConfig } from '../storage/r2'
-import type { BuiltState, FileData } from '../types'
+import type { BuiltState } from '../types'
+import { encodeImagePNG } from '../world/atlas'
 
-export type VoxelProcessorConfig = {
-        r2Config: R2StorageConfig
-        defaultSize: number
-        cacheExpiry: number
-}
+export type VoxelProcessorConfig = { defaultSize: number; cacheExpiry: number }
 
 export type ProcessingResult = {
         success: boolean
@@ -18,126 +13,65 @@ export type ProcessingResult = {
         error?: string
 }
 
-const DEFAULT_CONFIG: VoxelProcessorConfig = {
-        r2Config: {
-                accountId: process.env.CLOUDFLARE_ACCOUNT_ID || '',
-                accessKeyId: process.env.R2_ACCESS_KEY_ID || '',
-                secretAccessKey: process.env.R2_SECRET_ACCESS_KEY || '',
-                bucketName: process.env.R2_BUCKET_NAME || 'voxel-cache'
-        },
-        defaultSize: 16,
-        cacheExpiry: 3600000 // 1 hour
-}
+const DEFAULT_CONFIG: VoxelProcessorConfig = { defaultSize: 16, cacheExpiry: 3600000 }
 
 export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {}) => {
         const cfg = { ...DEFAULT_CONFIG, ...config }
-        const r2 = createR2Client(cfg.r2Config)
-        
+
         const processRegion = async (regionConfig: RegionConfig, tileData: ArrayBuffer): Promise<ProcessingResult> => {
                 const { lat, lng, zoom } = regionConfig
                 const size = cfg.defaultSize
-                
+
                 // Check R2 cache first
                 const cached = await retrieveFromCache(lat, lng, zoom, size)
                 if (cached) {
                         return {
                                 success: true,
                                 data: cached,
-                                fromCache: true
+                                fromCache: true,
                         }
                 }
-                
+
                 // Process with WASM if not cached
                 const processed = await processWithWasm(tileData, size)
                 if (processed.success && processed.data) {
                         // Store in R2 cache
                         await storeInCache(lat, lng, zoom, size, processed.data)
                 }
-                
+
                 return processed
         }
-        
-        const retrieveFromCache = async (lat: number, lng: number, zoom: number, size: number): Promise<BuiltState | null> => {
-                const exists = await checkVoxelExists(r2, lat, lng, zoom, size)
-                if (!exists) return null
-                
-                const stored = await retrieveVoxelData(r2, lat, lng, zoom, size)
-                if (!stored) return null
-                
-                // Check if cache is still valid
-                if (Date.now() - stored.metadata.createdAt > cfg.cacheExpiry) {
-                        return null
-                }
-                
-                // Convert stored data back to BuiltState
-                return convertStoredToBuiltState(stored)
+
+        const retrieveFromCache = async (lat: number, lng: number, zoom: number, _size: number): Promise<BuiltState | null> => {
+                const url = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+                const head = await fetch(url, { method: 'HEAD' })
+                if (!head.ok) return null
+                const res = await fetch(url)
+                if (!res.ok) return null
+                const buf = new Uint8Array(await res.arrayBuffer())
+                return { file: { key: 'atlas.png', data: buf, raw: buf, tag: generateRegionId({ lat, lng, zoom, bounds: { min: [], max: [] } }) }, dims: { size: [256, 256, 256], center: [128, 128, 128] } }
         }
-        
-        const storeInCache = async (lat: number, lng: number, zoom: number, size: number, builtState: BuiltState): Promise<void> => {
-                if (typeof builtState.file === 'string') return
-                
-                const storedData: StoredVoxelData = {
-                        id: generateRegionId({ lat, lng, zoom, bounds: { min: [], max: [] } }),
-                        region: `${lat.toFixed(4)}_${lng.toFixed(4)}`,
-                        data: builtState.file.data,
-                        metadata: {
-                                lat,
-                                lng,
-                                zoom,
-                                size: builtState.dims.size,
-                                createdAt: Date.now(),
-                                lastAccessed: Date.now()
-                        }
-                }
-                
-                await storeVoxelData(r2, storedData)
+
+        const storeInCache = async (lat: number, lng: number, zoom: number, _size: number, built: BuiltState): Promise<void> => {
+                if (typeof built.file === 'string') return
+                const png = await encodeImagePNG(built.file.raw!, 4096, 4096)
+                await fetch(`/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`, { method: 'PUT', body: png })
         }
-        
+
         const processWithWasm = async (tileData: ArrayBuffer, size: number): Promise<ProcessingResult> => {
                 const wasm = await importWasm()
-                
-                const glb = await parseGLBFromTiles(tileData)
-                if (!glb) {
-                        return {
-                                success: false,
-                                fromCache: false,
-                                error: 'Failed to parse GLB from tile data'
-                        }
-                }
-                
-                const items = await wasm.voxelize_glb(glb, size, size, size)
-                if (!items || items.length === 0) {
-                        return {
-                                success: false,
-                                fromCache: false,
-                                error: 'Voxelization failed'
-                        }
-                }
-                
-                // Combine voxel chunks into atlas
-                const atlas = await combineVoxelChunks(items, size)
-                const dims = estimateVoxelDimensions(glb, size)
-                
-                const builtState: BuiltState = {
-                        file: {
-                                key: 'processed.png',
-                                data: atlas.data,
-                                raw: atlas.raw,
-                                tag: generateProcessingTag(tileData)
-                        },
-                        dims
-                }
-                
-                return {
-                        success: true,
-                        data: builtState,
-                        fromCache: false
-                }
+                const parsed = await parseFromTiles(tileData)
+                const items: any = await (wasm as any).voxelize_glb(parsed, size, size, size)
+                const arr = Array.from(items || [])
+                if (!arr.length) return { success: false, fromCache: false, error: 'empty' }
+                const atlas = await combineVoxelChunks(arr, size)
+                const built: BuiltState = { file: { key: 'atlas.png', data: atlas.data, raw: atlas.raw, tag: generateProcessingTag(tileData) }, dims: { size: [256, 256, 256], center: [128, 128, 128] } }
+                return { success: true, data: built, fromCache: false }
         }
-        
+
         const batchProcess = async (regions: RegionConfig[], tileDataMap: Map<string, ArrayBuffer>): Promise<Map<string, ProcessingResult>> => {
                 const results = new Map<string, ProcessingResult>()
-                
+
                 // Process regions in parallel with limit
                 const BATCH_SIZE = 3
                 for (let i = 0; i < regions.length; i += BATCH_SIZE) {
@@ -145,94 +79,52 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
                         const promises = batch.map(async (region) => {
                                 const regionId = generateRegionId(region)
                                 const tileData = tileDataMap.get(regionId)
-                                
+
                                 if (!tileData) {
                                         return [regionId, { success: false, fromCache: false, error: 'No tile data' }]
                                 }
-                                
+
                                 const result = await processRegion(region, tileData)
                                 return [regionId, result]
                         })
-                        
+
                         const batchResults = await Promise.all(promises)
                         for (const [id, result] of batchResults) {
                                 results.set(id, result)
                         }
                 }
-                
+
                 return results
         }
-        
+
         const cleanup = async () => {
                 await cancelVoxelizer()
         }
-        
+
         return {
                 processRegion,
                 batchProcess,
                 retrieveFromCache,
-                cleanup
+                cleanup,
         }
 }
 
-const parseGLBFromTiles = async (tileData: ArrayBuffer): Promise<any> => {
-        // Simple GLB header validation
-        const header = new Uint32Array(tileData, 0, 3)
-        if (header[0] !== 0x46546c67) return null // 'glTF'
-        
-        // Return simplified GLB structure for voxelizer
-        return {
-                tris: [],
-                materials: [],
-                textures: [],
-                aabb: { min: [-10, -10, -10], max: [10, 10, 10] },
-                model: { extent: [20, 20, 20], center: [0, 0, 0] }
-        }
-}
+const parseFromTiles = async (_blob: ArrayBuffer): Promise<any> => ({ tris: [], materials: [], textures: [], aabb: { min: [0, 0, 0], max: [32, 16, 32] }, model: { extent: [32, 16, 32], center: [16, 8, 16] } })
 
-const combineVoxelChunks = async (items: any[], size: number): Promise<{ data: Uint8Array, raw: Uint8Array }> => {
-        const totalSize = size * 64 * size * 64 * 4
-        const atlas = new Uint8Array(totalSize)
-        
-        for (const item of items) {
-                // Combine chunk data into atlas
-                atlas.set(item.rgba || new Uint8Array(64 * 64 * 4))
-        }
-        
+const combineVoxelChunks = async (items: any[], _size: number): Promise<{ data: Uint8Array; raw: Uint8Array }> => {
+        const atlas = new Uint8Array(4096 * 4096 * 4)
+        for (const it of items) { const { key, rgba } = it as any; const [ci, cj, ck] = String(key).split('.').map((v: string) => parseInt(v) | 0); const planeX = cj & 3; const planeY = cj >> 2; const ox = planeX * 1024 + ci * 64; const oy = planeY * 1024 + ck * 64; for (let y = 0; y < 64; y++) { const dy = oy + y; const di = (dy * 4096 + ox) * 4; const si = y * 64 * 4; atlas.set(new Uint8Array(rgba).subarray(si, si + 64 * 4), di) } }
         return { data: atlas, raw: atlas }
 }
 
-const estimateVoxelDimensions = (glb: any, size: number) => {
-        const extent = glb.model?.extent || [size, size, size]
-        return {
-                size: extent,
-                center: [extent[0] * 0.5, extent[1] * 0.5, extent[2] * 0.5]
-        }
-}
+const estimateVoxelDimensions = (ext: number[]) => ({ size: ext as any, center: [ext[0] * 0.5, ext[1] * 0.5, ext[2] * 0.5] as any })
 
 const generateProcessingTag = (tileData: ArrayBuffer): string => {
         const hash = Array.from(new Uint8Array(tileData.slice(0, 32)))
-                .map(b => b.toString(16).padStart(2, '0'))
+                .map((b) => b.toString(16).padStart(2, '0'))
                 .join('')
                 .slice(0, 8)
         return `p${hash}`
 }
 
-const convertStoredToBuiltState = (stored: StoredVoxelData): BuiltState => {
-        return {
-                file: {
-                        key: stored.id,
-                        data: stored.data,
-                        raw: stored.data,
-                        tag: stored.region
-                },
-                dims: {
-                        size: stored.metadata.size,
-                        center: [
-                                stored.metadata.size[0] * 0.5,
-                                stored.metadata.size[1] * 0.5,
-                                stored.metadata.size[2] * 0.5
-                        ]
-                }
-        }
-}
+const convertStoredToBuiltState = (_: any): BuiltState => ({ file: { key: 'atlas.png', data: new Uint8Array(), raw: new Uint8Array(), tag: 'r' }, dims: { size: [256, 256, 256] as any, center: [128, 128, 128] as any } })

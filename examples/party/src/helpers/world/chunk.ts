@@ -70,10 +70,10 @@ export const generate = (camera: Camera) => {
 // New functions for 3D Tiles integration
 export const generateFromTiles = async (config: RegionConfig, camera: Camera): Promise<Chunks> => {
         const chunks = createChunks()
-        
+
         // Check cache first
         let region = getCachedRegion(config)
-        
+
         if (!region || !region.voxelData) {
                 // Load and voxelize region tiles
                 region = await loadRegionTiles(config)
@@ -81,12 +81,12 @@ export const generateFromTiles = async (config: RegionConfig, camera: Camera): P
                         await voxelizeRegionTiles(region, 16)
                 }
         }
-        
+
         if (region?.voxelData) {
                 // Apply voxel data to chunks
                 await applyVoxelDataToChunks(chunks, region.voxelData)
         }
-        
+
         culling(chunks, camera)
         meshing(chunks)
         return chunks
@@ -94,10 +94,10 @@ export const generateFromTiles = async (config: RegionConfig, camera: Camera): P
 
 export const applyVoxelDataToChunks = async (chunks: Chunks, voxelData: BuiltState): Promise<void> => {
         if (!voxelData.file?.raw) return
-        
+
         const worldData = voxelData.file.raw
         const { size } = voxelData.dims
-        
+
         // Convert world atlas data to chunk voxel data
         chunks.forEach((chunk) => {
                 const { i, j, k } = chunk
@@ -113,40 +113,40 @@ export const applyVoxelDataToChunks = async (chunks: Chunks, voxelData: BuiltSta
 const extractChunkFromAtlas = (worldData: Uint8Array, ci: number, cj: number, ck: number, worldSize: number[]): Uint8Array | null => {
         // Extract 16x16x16 chunk from world atlas
         const chunkVox = new Uint8Array(16 * 16 * 16)
-        
+
         // Calculate world coordinates
         const worldX = ci * 16
         const worldY = cj * 16
         const worldZ = ck * 16
-        
+
         if (worldX >= worldSize[0] || worldY >= worldSize[1] || worldZ >= worldSize[2]) {
                 return null
         }
-        
+
         // Extract voxel data from atlas using same pattern as atlas.ts
         for (let z = 0; z < 16; z++) {
                 const oz = (z & 3) * 16
                 const pz = (z >> 2) * 16
-                
+
                 for (let y = 0; y < 16; y++) {
                         for (let x = 0; x < 16; x++) {
                                 const wx = worldX + x
                                 const wy = worldY + y
                                 const wz = worldZ + z
-                                
+
                                 if (wx < worldSize[0] && wy < worldSize[1] && wz < worldSize[2]) {
                                         // Calculate atlas position
                                         const atlasX = (cj % 4) * 64 + (oz + x)
                                         const atlasY = Math.floor(cj / 4) * 64 + (pz + y)
                                         const atlasIdx = (atlasY * 4096 + atlasX) * 4 + 3 // Alpha channel
-                                        
+
                                         const voxelIdx = x + (y + z * 16) * 16
                                         chunkVox[voxelIdx] = worldData[atlasIdx] > 0 ? 1 : 0
                                 }
                         }
                 }
         }
-        
+
         return chunkVox
 }
 
@@ -156,6 +156,6 @@ export const createRegionConfig = (lat: number, lng: number, zoom: number = 15):
                 lng,
                 zoom,
                 bounds: estimateRegionBounds(lat, lng, zoom),
-                apiKey: process.env.GOOGLE_MAPS_API_KEY
+                apiKey: process.env.GOOGLE_MAPS_API_KEY,
         }
 }

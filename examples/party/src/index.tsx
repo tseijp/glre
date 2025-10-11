@@ -97,6 +97,37 @@ const app = new Hono<{ Bindings: Env }>()
                 const events = await Q.getCulturalEvents(c.env.DB, new Date(from), new Date(to))
                 return c.json(events)
         })
+        .head('/api/v1/atlas', async (c) => {
+                const lat = c.req.query('lat')
+                const lng = c.req.query('lng')
+                const zoom = c.req.query('zoom')
+                if (!lat || !lng || !zoom) return c.body(null, 400)
+                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const obj = await c.env.R2.head(key)
+                if (!obj) return c.body(null, 404)
+                return c.body(null, 200)
+        })
+        .get('/api/v1/atlas', async (c) => {
+                const lat = c.req.query('lat')
+                const lng = c.req.query('lng')
+                const zoom = c.req.query('zoom')
+                if (!lat || !lng || !zoom) return c.json({ error: 'missing' }, 400)
+                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const obj = await c.env.R2.get(key)
+                if (!obj) return c.json({ error: 'not found' }, 404)
+                const body = await obj.arrayBuffer()
+                return new Response(body, { headers: { 'content-type': 'image/png' } })
+        })
+        .put('/api/v1/atlas', async (c) => {
+                const lat = c.req.query('lat')
+                const lng = c.req.query('lng')
+                const zoom = c.req.query('zoom')
+                if (!lat || !lng || !zoom) return c.json({ error: 'missing' }, 400)
+                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const ab = await c.req.arrayBuffer()
+                await c.env.R2.put(key, ab, { httpMetadata: { contentType: 'image/png' } })
+                return c.json({ ok: true, key })
+        })
         .get('/api/v1/communities/:communityId/members', async (c) => {
                 const communityId = c.req.param('communityId')
                 const members = await Q.getCommunityMembers(c.env.DB, communityId)
@@ -142,6 +173,7 @@ const app = new Hono<{ Bindings: Env }>()
                 const results = await seedAllCulturalData(c.env.DB)
                 return c.json(results)
         })
+        .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
 
 type AppType = typeof app
 
