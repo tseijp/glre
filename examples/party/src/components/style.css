@@ -9,6 +9,9 @@
         body {
                 @apply bg-gradient-to-b from-black/30 to-black/60;
         }
+        button {
+                @apply -m-1 px-5 py-3 pointer-events-auto cursor-pointer;
+        }
         .glass {
                 @apply bg-white/5 backdrop-blur-md border border-white/10 shadow-lg;
         }

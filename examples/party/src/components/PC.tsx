@@ -1,22 +1,6 @@
-import { ReactNode } from 'react'
 import { on } from '../hooks'
-import { GearIcon, PersonIcon, GlobeIcon, BellIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
-
-type Props = {
-        isHUD?: boolean
-        isMenu?: boolean
-        isModal?: boolean
-        hasCulturalProfile?: boolean
-        traditionalColors?: any[]
-        culturalWorld?: any
-        page?: string
-        children?: any
-        onSignIn?: () => void
-}
-
-const Box = ({ c = '' as string, children = null as ReactNode }) => <div className={'glass ' + c}>{children}</div>
-
-const Item = ({ c = '' as string, children = null as ReactNode }) => <div className={'px-4 py-2 ' + c}>{children}</div>
+import { GearIcon, PersonIcon, GlobeIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
+import type { Props } from './types'
 
 const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
         return (
@@ -26,54 +10,54 @@ const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, cul
                                 <div className="fixed top-6 left-8 right-8 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
                                                 {hasCulturalProfile ? (
-                                                        <Box c="rounded-xl">
-                                                                <Item c="flex items-center gap-2">
+                                                        <div className="glass rounded-xl">
+                                                                <button className="flex items-center gap-2">
                                                                         <PersonIcon />
                                                                         文化修練者
-                                                                </Item>
-                                                        </Box>
+                                                                </button>
+                                                        </div>
                                                 ) : (
-                                                        <Box c="rounded-xl cursor-pointer" onClick={onSignIn}>
-                                                                <Item c="flex items-center gap-2">
+                                                        <div className="glass rounded-xl cursor-pointer">
+                                                                <button className="flex items-center gap-2" onClick={onSignIn}>
                                                                         <PersonIcon />
                                                                         参入
-                                                                </Item>
-                                                        </Box>
+                                                                </button>
+                                                        </div>
                                                 )}
-                                                <Box c="rounded-xl">
-                                                        <Item c="flex items-center gap-2">
+                                                <div className="glass rounded-xl">
+                                                        <button className="flex items-center gap-2">
                                                                 <HeartIcon />
                                                                 伝統色
-                                                        </Item>
-                                                </Box>
-                                                <Box c="rounded-xl">
-                                                        <Item c="flex items-center gap-2">
+                                                        </button>
+                                                </div>
+                                                <div className="glass rounded-xl">
+                                                        <button className="flex items-center gap-2">
                                                                 <HomeIcon />
                                                                 文化世界
-                                                        </Item>
-                                                </Box>
+                                                        </button>
+                                                </div>
                                         </div>
                                         <div className="flex items-center gap-4">
-                                                <Box c="rounded-xl">
-                                                        <Item c="flex items-center gap-2">
+                                                <div className="glass rounded-xl">
+                                                        <button className="flex items-center gap-2">
                                                                 <GlobeIcon />
                                                                 {culturalWorld?.culturalNarrative || '文化世界'}
-                                                        </Item>
-                                                </Box>
-                                                <Box c="rounded-xl">
-                                                        <Item>{culturalWorld?.seasonalCycle || '春'}</Item>
-                                                </Box>
-                                                <Box c="rounded-xl">
-                                                        <Item>伝統色 {traditionalColors?.length || 0}</Item>
-                                                </Box>
+                                                        </button>
+                                                </div>
+                                                <div className="glass rounded-xl">
+                                                        <button>{culturalWorld?.seasonalCycle || '春'}</button>
+                                                </div>
+                                                <div className="glass rounded-xl">
+                                                        <button>伝統色 {traditionalColors?.length || 0}</button>
+                                                </div>
                                         </div>
                                 </div>
                                 <div className="fixed bottom-8 left-8 w-80">
-                                        <Box c="rounded-2xl">
-                                                <Item c="text-sm opacity-80">文化学習</Item>
-                                                <Item>伝統色の美学を体験する</Item>
-                                                <Item c="text-sm opacity-70">季節の色彩で世界を創造</Item>
-                                        </Box>
+                                        <div className="glass rounded-2xl">
+                                                <button className="text-sm opacity-80">文化学習</button>
+                                                <button>伝統色の美学を体験する</button>
+                                                <button className="text-sm opacity-70">季節の色彩で世界を創造</button>
+                                        </div>
                                 </div>
                                 <div className="fixed bottom-8 right-8 w-64 h-64 glass rounded-2xl" />
                                 <div className="fixed bottom-8 left-1/2 -translate-x-1/2 glass rounded-full px-8 py-3 text-sm">
@@ -85,20 +69,20 @@ const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, cul
                                 </div>
                         </div>
                         <div className={on(isMenu, 'fixed inset-0 z-40 grid grid-cols-[280px_1fr] gap-6 p-8 items-start')}>
-                                <Box c="rounded-2xl overflow-hidden h-[480px]">
-                                        <Item c="flex items-center gap-2">
+                                <div className="glass rounded-2xl overflow-hidden h-[480px]">
+                                        <button className="flex items-center gap-2">
                                                 <PersonIcon />
                                                 文化修練
-                                        </Item>
-                                        <Item>伝統色</Item>
-                                        <Item>季節感</Item>
-                                        <Item>共同体</Item>
-                                        <Item>世界地図</Item>
-                                        <Item>学習記録</Item>
-                                </Box>
+                                        </button>
+                                        <button>伝統色</button>
+                                        <button>季節感</button>
+                                        <button>共同体</button>
+                                        <button>世界地図</button>
+                                        <button>学習記録</button>
+                                </div>
                                 <div className="grid gap-6">
-                                        <Box c="rounded-2xl p-6 h-56" />
-                                        <Box c="rounded-2xl p-6 h-56" />
+                                        <div className="glass rounded-2xl p-6 h-56" />
+                                        <div className="glass rounded-2xl p-6 h-56" />
                                         <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3 opacity-80">
                                                         <GearIcon />
