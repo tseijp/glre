@@ -1,6 +1,6 @@
 import { mat4, vec3 } from 'gl-matrix'
-import { CHUNK, WORLD } from './utils'
-import type { Dims } from './types'
+import { CHUNK, WORLD } from '../utils'
+import type { Dims } from '../types'
 
 const createProj = (out: mat4, camera: Camera, size: number[]) => {
         const aspect = size[0] / size[1]

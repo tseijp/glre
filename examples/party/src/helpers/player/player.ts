@@ -1,6 +1,6 @@
 import { vec3, mat4 } from 'gl-matrix'
 import type { Camera } from './camera'
-import type { Meshes } from './types'
+import type { Meshes } from '../types'
 
 const MODE = 1 // 0 is creative
 const TIME = 0.01

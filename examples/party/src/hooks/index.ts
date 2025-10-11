@@ -7,7 +7,7 @@ export * from './useCallback'
 export * from './useSearchParam'
 export * from './useWindowSize'
 
-export const on = (isActive?: boolean, className = '') => (isActive ? className : '')
+export const on = (isActive?: boolean, className = '') => (isActive ? className : 'hidden')
 
 export const q = (params: any, key: string, fallback: any = '') => {
         return params?.get ? params.get(key) ?? fallback : params?.[key] ?? fallback

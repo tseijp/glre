@@ -1,3 +1,4 @@
+import { ReactNode } from 'react'
 import { on } from '../hooks'
 import { GearIcon, PersonIcon, GlobeIcon, BellIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
 
@@ -12,8 +13,11 @@ type Props = {
         children?: any
         onSignIn?: () => void
 }
-const Box = ({ c = '' as any, children = null as any }) => <div className={'glass ' + c}>{children}</div>
-const Item = ({ c = '' as any, children = null as any }) => <div className={'px-4 py-2 ' + c}>{children}</div>
+
+const Box = ({ c = '' as string, children = null as ReactNode }) => <div className={'glass ' + c}>{children}</div>
+
+const Item = ({ c = '' as string, children = null as ReactNode }) => <div className={'px-4 py-2 ' + c}>{children}</div>
+
 const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
         return (
                 <div className="fixed inset-0 text-black">

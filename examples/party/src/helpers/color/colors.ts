@@ -2,53 +2,48 @@
 let TRADITIONAL_COLORS_DATA: any[] = []
 
 export const loadTraditionalColors = async (): Promise<void> => {
-        try {
-                // Load traditional colors from D1 backend
-                const response = await fetch('/api/v1/colors')
-                const colors = await response.json()
-                
-                TRADITIONAL_COLORS_DATA = colors.map((color: any) => ({
-                        colorNameJa: color.colorNameJa,
-                        colorNameZh: color.colorNameZh,
-                        colorNameEn: color.colorNameEn,
-                        rgbValue: color.rgbValue,
-                        seasonalAssociation: color.seasonalAssociation,
-                        culturalSignificance: typeof color.culturalSignificance === 'string' 
-                                ? JSON.parse(color.culturalSignificance) 
-                                : color.culturalSignificance,
-                        historicalContext: typeof color.historicalContext === 'string' 
-                                ? JSON.parse(color.historicalContext) 
-                                : color.historicalContext,
-                        element: color.culturalSignificance?.wuxing
-                }))
-        } catch (error) {
-                initializeFallbackColors()
-        }
+        // Load traditional colors from D1 backend
+        const response = await fetch('/api/v1/colors')
+        const colors = (await response.json()) as any
+
+        TRADITIONAL_COLORS_DATA = colors.map((color: any) => ({
+                colorNameJa: color.colorNameJa,
+                colorNameZh: color.colorNameZh,
+                colorNameEn: color.colorNameEn,
+                rgbValue: color.rgbValue,
+                seasonalAssociation: color.seasonalAssociation,
+                culturalSignificance: typeof color.culturalSignificance === 'string' ? JSON.parse(color.culturalSignificance) : color.culturalSignificance,
+                historicalContext: typeof color.historicalContext === 'string' ? JSON.parse(color.historicalContext) : color.historicalContext,
+                element: color.culturalSignificance?.wuxing,
+        }))
 }
 
-export const getTraditionalColorsData = () => TRADITIONAL_COLORS_DATA.filter(c => c.colorNameJa)
-export const getChineseColorsData = () => TRADITIONAL_COLORS_DATA.filter(c => c.colorNameZh)
-
-// Color analysis helper functions
-const convertKanjiToEnglish = (kanji: string): string => {
-        const kanjiMap: Record<string, string> = {
-                '桜': 'cherry', '色': 'color', '紅': 'crimson', '葉': 'leaf',
-                '月': 'moon', '白': 'white', '藍': 'indigo', '若': 'young',
-                '草': 'grass', '柿': 'persimmon', '雪': 'snow', '青': 'blue',
-                '竹': 'bamboo', '海': 'sea', '松': 'pine', '朝': 'morning',
-                '霧': 'mist', '夕': 'evening', '焼': 'glow'
-        }
-        return kanji.split('').map(char => kanjiMap[char] || 'traditional').join('_')
-}
+export const getTraditionalColorsData = () => TRADITIONAL_COLORS_DATA.filter((c) => c.colorNameJa)
+export const getChineseColorsData = () => TRADITIONAL_COLORS_DATA.filter((c) => c.colorNameZh)
 
 const convertChineseToEnglish = (chinese: string): string => {
         const chineseMap: Record<string, string> = {
-                '粉': 'powder', '鳳': 'phoenix', '浅': 'light', '淡': 'pale',
-                '紫': 'purple', '薇': 'violet', '暗': 'dark', '荷': 'lotus',
-                '花': 'flower', '石': 'stone', '木': 'wood', '槿': 'hibiscus',
-                '長': 'long', '春': 'spring', '洋': 'foreign', '葱': 'onion'
+                粉: 'powder',
+                鳳: 'phoenix',
+                浅: 'light',
+                淡: 'pale',
+                紫: 'purple',
+                薇: 'violet',
+                暗: 'dark',
+                荷: 'lotus',
+                花: 'flower',
+                石: 'stone',
+                木: 'wood',
+                槿: 'hibiscus',
+                長: 'long',
+                春: 'spring',
+                洋: 'foreign',
+                葱: 'onion',
         }
-        return chinese.split('').map(char => chineseMap[char] || 'traditional').join('_')
+        return chinese
+                .split('')
+                .map((char) => chineseMap[char] || 'traditional')
+                .join('_')
 }
 
 const inferSeasonFromColor = (name: string, r: number, g: number, b: number): string => {
@@ -56,12 +51,12 @@ const inferSeasonFromColor = (name: string, r: number, g: number, b: number): st
         if (name.includes('紅') || name.includes('柿')) return 'autumn'
         if (name.includes('雪') || name.includes('白')) return 'winter'
         if (name.includes('青') || name.includes('緑')) return 'summer'
-        
+
         // Infer from RGB values
         const brightness = (r + g + b) / 3
         const greenish = g > r && g > b
         const reddish = r > g && r > b
-        
+
         if (greenish) return 'spring'
         if (reddish && brightness < 150) return 'autumn'
         if (brightness > 200) return 'winter'
@@ -82,7 +77,7 @@ const inferWuXingElement = (name: string, r: number, g: number, b: number): stri
         if (name.includes('黄') || name.includes('土')) return 'earth'
         if (name.includes('白') || name.includes('金')) return 'metal'
         if (name.includes('黑') || name.includes('藍')) return 'water'
-        
+
         // Infer from color values
         if (g > r && g > b) return 'wood'
         if (r > g && r > b) return 'fire'
@@ -121,15 +116,6 @@ const inferChineseEmotion = (name: string): string => {
         if (name.includes('白')) return 'righteousness'
         if (name.includes('黑')) return 'wisdom'
         return 'balance'
-}
-
-const initializeFallbackColors = (): void => {
-        TRADITIONAL_COLORS_DATA = [
-                { colorNameJa: '桜色', rgbValue: 0xFEF4F4, seasonalAssociation: 'spring' }
-        ]
-        CHINESE_COLORS_DATA = [
-                { colorNameZh: '朱红', rgbValue: 0xFF2D2D, element: 'fire' }
-        ]
 }
 
 export const getAllTraditionalColors = () => TRADITIONAL_COLORS_DATA

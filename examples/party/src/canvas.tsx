@@ -1,18 +1,10 @@
 import { useGL } from 'glre/src/react'
-import { useMemo, useEffect, useState } from 'react'
 import usePartySocket from 'partysocket/react'
+import { useMemo, useEffect, useState } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { createCamera } from './helpers/camera'
-import { createMeshes } from './helpers/meshes'
+import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, loadTraditionalColors, raycast, screenToWorldRay } from './helpers'
 import { createShader } from './helpers/shader'
-import { createPlayer } from './helpers/player'
-import { initAtlasWorld } from './helpers/world'
-import { encOp, dec, K } from './helpers/proto'
-import { face, Hit, raycast, screenToWorldRay } from './helpers/raycast'
-import { applySeasonalTransform } from './helpers/semantic'
-import { createDefaultCulturalWorld } from './helpers/world'
-import { loadTraditionalColors, findNearestTraditionalColor } from './helpers/colors'
-import type { Dims } from './helpers/types'
+import type { Dims, Hit } from './helpers'
 
 export interface CanvasProps {
         size?: number

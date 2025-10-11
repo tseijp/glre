@@ -1,7 +1,7 @@
-import { loadTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, checkWuXingHarmony, getSeasonalIntensity } from './colors'
+import { loadTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, getSeasonalIntensity } from '../color/colors'
 export { initAtlasWorld } from './atlas'
-import { traditionalColorToRgb, applySeasonalTransform } from './semantic'
-import { CHUNK, GRID } from './utils'
+import { traditionalColorToRgb, applySeasonalTransform } from '../color/semantic'
+import { CHUNK, GRID } from '../utils'
 
 // Cultural world generation based on traditional principles
 export type CulturalRegion = {

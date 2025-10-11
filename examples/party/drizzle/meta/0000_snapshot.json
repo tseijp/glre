@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "89753dd6-2f8b-4377-8d91-18056b093fb1",
+  "id": "11d18e62-e689-4276-ba4a-6e6fe14da3be",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -209,6 +209,1172 @@
       "uniqueConstraints": {},
       "checkConstraints": {}
     },
+    "color_usage_log": {
+      "name": "color_usage_log",
+      "columns": {
+        "usage_id": {
+          "name": "usage_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color_id": {
+          "name": "color_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "usage_context": {
+          "name": "usage_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "appropriateness_score": {
+          "name": "appropriateness_score",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "seasonal_relevance": {
+          "name": "seasonal_relevance",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "used_at": {
+          "name": "used_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "color_usage_log_color_idx": {
+          "name": "color_usage_log_color_idx",
+          "columns": [
+            "color_id",
+            "used_at"
+          ],
+          "isUnique": false
+        },
+        "color_usage_log_user_idx": {
+          "name": "color_usage_log_user_idx",
+          "columns": [
+            "user_id",
+            "used_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "color_usage_log_color_id_traditional_color_color_id_fk": {
+          "name": "color_usage_log_color_id_traditional_color_color_id_fk",
+          "tableFrom": "color_usage_log",
+          "tableTo": "traditional_color",
+          "columnsFrom": [
+            "color_id"
+          ],
+          "columnsTo": [
+            "color_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "color_usage_log_user_id_user_id_fk": {
+          "name": "color_usage_log_user_id_user_id_fk",
+          "tableFrom": "color_usage_log",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "community": {
+      "name": "community",
+      "columns": {
+        "community_id": {
+          "name": "community_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "community_name": {
+          "name": "community_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cultural_focus": {
+          "name": "cultural_focus",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "community_guidelines": {
+          "name": "community_guidelines",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "founder_id": {
+          "name": "founder_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "established": {
+          "name": "established",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "member_count": {
+          "name": "member_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
+        },
+        "cultural_expertise": {
+          "name": "cultural_expertise",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "community_founder_id_user_id_fk": {
+          "name": "community_founder_id_user_id_fk",
+          "tableFrom": "community",
+          "tableTo": "user",
+          "columnsFrom": [
+            "founder_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "community_membership": {
+      "name": "community_membership",
+      "columns": {
+        "membership_id": {
+          "name": "membership_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "community_id": {
+          "name": "community_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "role": {
+          "name": "role",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'member'"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_contributions": {
+          "name": "cultural_contributions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "community_membership_unique_idx": {
+          "name": "community_membership_unique_idx",
+          "columns": [
+            "community_id",
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "community_membership_community_id_community_community_id_fk": {
+          "name": "community_membership_community_id_community_community_id_fk",
+          "tableFrom": "community_membership",
+          "tableTo": "community",
+          "columnsFrom": [
+            "community_id"
+          ],
+          "columnsTo": [
+            "community_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "community_membership_user_id_user_id_fk": {
+          "name": "community_membership_user_id_user_id_fk",
+          "tableFrom": "community_membership",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cultural_achievement": {
+      "name": "cultural_achievement",
+      "columns": {
+        "achievement_id": {
+          "name": "achievement_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "profile_id": {
+          "name": "profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "achievement_type": {
+          "name": "achievement_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "achievement_data": {
+          "name": "achievement_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "earned_at": {
+          "name": "earned_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_significance": {
+          "name": "cultural_significance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "cultural_achievement_profile_idx": {
+          "name": "cultural_achievement_profile_idx",
+          "columns": [
+            "profile_id",
+            "achievement_type"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cultural_achievement_profile_id_user_cultural_profile_profile_id_fk": {
+          "name": "cultural_achievement_profile_id_user_cultural_profile_profile_id_fk",
+          "tableFrom": "cultural_achievement",
+          "tableTo": "user_cultural_profile",
+          "columnsFrom": [
+            "profile_id"
+          ],
+          "columnsTo": [
+            "profile_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cultural_context": {
+      "name": "cultural_context",
+      "columns": {
+        "context_id": {
+          "name": "context_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color_id": {
+          "name": "color_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "context_type": {
+          "name": "context_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cultural_meaning": {
+          "name": "cultural_meaning",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "historical_period": {
+          "name": "historical_period",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "geographical_origin": {
+          "name": "geographical_origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "spiritual_significance": {
+          "name": "spiritual_significance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "modern_relevance": {
+          "name": "modern_relevance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cultural_context_color_id_traditional_color_color_id_fk": {
+          "name": "cultural_context_color_id_traditional_color_color_id_fk",
+          "tableFrom": "cultural_context",
+          "tableTo": "traditional_color",
+          "columnsFrom": [
+            "color_id"
+          ],
+          "columnsTo": [
+            "color_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "cultural_context_content_id_educational_content_content_id_fk": {
+          "name": "cultural_context_content_id_educational_content_content_id_fk",
+          "tableFrom": "cultural_context",
+          "tableTo": "educational_content",
+          "columnsFrom": [
+            "content_id"
+          ],
+          "columnsTo": [
+            "content_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cultural_event": {
+      "name": "cultural_event",
+      "columns": {
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_name": {
+          "name": "event_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cultural_origin": {
+          "name": "cultural_origin",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "start_time": {
+          "name": "start_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "end_time": {
+          "name": "end_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_details": {
+          "name": "event_details",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "participation_requirements": {
+          "name": "participation_requirements",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "host_community_id": {
+          "name": "host_community_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "repeating_annual": {
+          "name": "repeating_annual",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": false
+        }
+      },
+      "indexes": {
+        "cultural_event_time_idx": {
+          "name": "cultural_event_time_idx",
+          "columns": [
+            "start_time",
+            "end_time"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "cultural_event_host_community_id_community_community_id_fk": {
+          "name": "cultural_event_host_community_id_community_community_id_fk",
+          "tableFrom": "cultural_event",
+          "tableTo": "community",
+          "columnsFrom": [
+            "host_community_id"
+          ],
+          "columnsTo": [
+            "community_id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "cultural_project": {
+      "name": "cultural_project",
+      "columns": {
+        "project_id": {
+          "name": "project_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "community_id": {
+          "name": "community_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_name": {
+          "name": "project_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "project_description": {
+          "name": "project_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_objectives": {
+          "name": "cultural_objectives",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "start_date": {
+          "name": "start_date",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "target_completion": {
+          "name": "target_completion",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "project_status": {
+          "name": "project_status",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'planning'"
+        },
+        "collaborative_data": {
+          "name": "collaborative_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "cultural_project_community_id_community_community_id_fk": {
+          "name": "cultural_project_community_id_community_community_id_fk",
+          "tableFrom": "cultural_project",
+          "tableTo": "community",
+          "columnsFrom": [
+            "community_id"
+          ],
+          "columnsTo": [
+            "community_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "educational_content": {
+      "name": "educational_content",
+      "columns": {
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_title": {
+          "name": "content_title",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_type": {
+          "name": "content_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_data": {
+          "name": "content_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_context": {
+          "name": "cultural_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "difficulty_level": {
+          "name": "difficulty_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
+        },
+        "learning_objectives": {
+          "name": "learning_objectives",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "educational_content_type_idx": {
+          "name": "educational_content_type_idx",
+          "columns": [
+            "content_type"
+          ],
+          "isUnique": false
+        },
+        "educational_content_cultural_idx": {
+          "name": "educational_content_cultural_idx",
+          "columns": [
+            "cultural_context"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "educational_content_creator_id_user_id_fk": {
+          "name": "educational_content_creator_id_user_id_fk",
+          "tableFrom": "educational_content",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "event_participation": {
+      "name": "event_participation",
+      "columns": {
+        "participation_id": {
+          "name": "participation_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "participation_level": {
+          "name": "participation_level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'observer'"
+        },
+        "joined_at": {
+          "name": "joined_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_contribution": {
+          "name": "cultural_contribution",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "event_participation_unique_idx": {
+          "name": "event_participation_unique_idx",
+          "columns": [
+            "event_id",
+            "user_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "event_participation_event_id_cultural_event_event_id_fk": {
+          "name": "event_participation_event_id_cultural_event_event_id_fk",
+          "tableFrom": "event_participation",
+          "tableTo": "cultural_event",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "event_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "event_participation_user_id_user_id_fk": {
+          "name": "event_participation_user_id_user_id_fk",
+          "tableFrom": "event_participation",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "knowledge_sharing": {
+      "name": "knowledge_sharing",
+      "columns": {
+        "sharing_id": {
+          "name": "sharing_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "community_id": {
+          "name": "community_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "sharer_id": {
+          "name": "sharer_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "knowledge_type": {
+          "name": "knowledge_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "traditional_wisdom": {
+          "name": "traditional_wisdom",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_context": {
+          "name": "cultural_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "shared_at": {
+          "name": "shared_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "access_level": {
+          "name": "access_level",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'community'"
+        }
+      },
+      "indexes": {
+        "knowledge_sharing_type_idx": {
+          "name": "knowledge_sharing_type_idx",
+          "columns": [
+            "knowledge_type"
+          ],
+          "isUnique": false
+        },
+        "knowledge_sharing_community_idx": {
+          "name": "knowledge_sharing_community_idx",
+          "columns": [
+            "community_id",
+            "shared_at"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "knowledge_sharing_community_id_community_community_id_fk": {
+          "name": "knowledge_sharing_community_id_community_community_id_fk",
+          "tableFrom": "knowledge_sharing",
+          "tableTo": "community",
+          "columnsFrom": [
+            "community_id"
+          ],
+          "columnsTo": [
+            "community_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "knowledge_sharing_sharer_id_user_id_fk": {
+          "name": "knowledge_sharing_sharer_id_user_id_fk",
+          "tableFrom": "knowledge_sharing",
+          "tableTo": "user",
+          "columnsFrom": [
+            "sharer_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "learning_progress": {
+      "name": "learning_progress",
+      "columns": {
+        "progress_id": {
+          "name": "progress_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "profile_id": {
+          "name": "profile_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "content_id": {
+          "name": "content_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "progress_percentage": {
+          "name": "progress_percentage",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "skill_assessment": {
+          "name": "skill_assessment",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_accessed": {
+          "name": "last_accessed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "learning_progress_profile_idx": {
+          "name": "learning_progress_profile_idx",
+          "columns": [
+            "profile_id",
+            "content_id"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "learning_progress_profile_id_user_cultural_profile_profile_id_fk": {
+          "name": "learning_progress_profile_id_user_cultural_profile_profile_id_fk",
+          "tableFrom": "learning_progress",
+          "tableTo": "user_cultural_profile",
+          "columnsFrom": [
+            "profile_id"
+          ],
+          "columnsTo": [
+            "profile_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "learning_progress_content_id_educational_content_content_id_fk": {
+          "name": "learning_progress_content_id_educational_content_content_id_fk",
+          "tableFrom": "learning_progress",
+          "tableTo": "educational_content",
+          "columnsFrom": [
+            "content_id"
+          ],
+          "columnsTo": [
+            "content_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "semantic_voxel": {
+      "name": "semantic_voxel",
+      "columns": {
+        "voxel_id": {
+          "name": "voxel_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_id": {
+          "name": "chunk_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_x": {
+          "name": "local_x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_y": {
+          "name": "local_y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "local_z": {
+          "name": "local_z",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "primary_kanji": {
+          "name": "primary_kanji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "secondary_kanji": {
+          "name": "secondary_kanji",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "rgb_value": {
+          "name": "rgb_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "alpha_properties": {
+          "name": "alpha_properties",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 255
+        },
+        "behavioral_seed": {
+          "name": "behavioral_seed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 0
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "placed_at": {
+          "name": "placed_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "semantic_voxel_chunk_idx": {
+          "name": "semantic_voxel_chunk_idx",
+          "columns": [
+            "chunk_id",
+            "local_x",
+            "local_y",
+            "local_z"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "semantic_voxel_chunk_id_voxel_chunk_chunk_id_fk": {
+          "name": "semantic_voxel_chunk_id_voxel_chunk_chunk_id_fk",
+          "tableFrom": "semantic_voxel",
+          "tableTo": "voxel_chunk",
+          "columnsFrom": [
+            "chunk_id"
+          ],
+          "columnsTo": [
+            "chunk_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "semantic_voxel_creator_id_user_id_fk": {
+          "name": "semantic_voxel_creator_id_user_id_fk",
+          "tableFrom": "semantic_voxel",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "session": {
       "name": "session",
       "columns": {
@@ -242,6 +1408,256 @@
           "tableTo": "user",
           "columnsFrom": [
             "userId"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "traditional_activity": {
+      "name": "traditional_activity",
+      "columns": {
+        "activity_id": {
+          "name": "activity_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity_name": {
+          "name": "activity_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity_description": {
+          "name": "activity_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_instructions": {
+          "name": "cultural_instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "required_skill_level": {
+          "name": "required_skill_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
+        },
+        "max_participants": {
+          "name": "max_participants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scheduled_time": {
+          "name": "scheduled_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "traditional_activity_event_id_cultural_event_event_id_fk": {
+          "name": "traditional_activity_event_id_cultural_event_event_id_fk",
+          "tableFrom": "traditional_activity",
+          "tableTo": "cultural_event",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "event_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "traditional_color": {
+      "name": "traditional_color",
+      "columns": {
+        "color_id": {
+          "name": "color_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color_name_zh": {
+          "name": "color_name_zh",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color_name_ja": {
+          "name": "color_name_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color_name_en": {
+          "name": "color_name_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rgb_value": {
+          "name": "rgb_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "seasonal_association": {
+          "name": "seasonal_association",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_significance": {
+          "name": "cultural_significance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "historical_context": {
+          "name": "historical_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "usage_guidelines": {
+          "name": "usage_guidelines",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "traditional_color_rgb_idx": {
+          "name": "traditional_color_rgb_idx",
+          "columns": [
+            "rgb_value"
+          ],
+          "isUnique": false
+        },
+        "traditional_color_season_idx": {
+          "name": "traditional_color_season_idx",
+          "columns": [
+            "seasonal_association"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "user_cultural_profile": {
+      "name": "user_cultural_profile",
+      "columns": {
+        "profile_id": {
+          "name": "profile_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cultural_identity": {
+          "name": "cultural_identity",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_knowledge_level": {
+          "name": "cultural_knowledge_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
+        },
+        "learning_preferences": {
+          "name": "learning_preferences",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_interests": {
+          "name": "cultural_interests",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "achievement_badges": {
+          "name": "achievement_badges",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "profile_created": {
+          "name": "profile_created",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_cultural_profile_user_id_user_id_fk": {
+          "name": "user_cultural_profile_user_id_user_id_fk",
+          "tableFrom": "user_cultural_profile",
+          "tableTo": "user",
+          "columnsFrom": [
+            "user_id"
           ],
           "columnsTo": [
             "id"
@@ -343,6 +1759,277 @@
           "name": "verificationToken_identifier_token_pk"
         }
       },
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "voxel_chunk": {
+      "name": "voxel_chunk",
+      "columns": {
+        "chunk_id": {
+          "name": "chunk_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "region_id": {
+          "name": "region_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_x": {
+          "name": "chunk_x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_y": {
+          "name": "chunk_y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "chunk_z": {
+          "name": "chunk_z",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "voxel_data": {
+          "name": "voxel_data",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_modified": {
+          "name": "last_modified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "voxel_chunk_coord_idx": {
+          "name": "voxel_chunk_coord_idx",
+          "columns": [
+            "region_id",
+            "chunk_x",
+            "chunk_y",
+            "chunk_z"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "voxel_chunk_region_id_world_region_region_id_fk": {
+          "name": "voxel_chunk_region_id_world_region_region_id_fk",
+          "tableFrom": "voxel_chunk",
+          "tableTo": "world_region",
+          "columnsFrom": [
+            "region_id"
+          ],
+          "columnsTo": [
+            "region_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "world_region": {
+      "name": "world_region",
+      "columns": {
+        "region_id": {
+          "name": "region_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "world_id": {
+          "name": "world_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "region_x": {
+          "name": "region_x",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "region_y": {
+          "name": "region_y",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "region_z": {
+          "name": "region_z",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cultural_context": {
+          "name": "cultural_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "environmental_state": {
+          "name": "environmental_state",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "last_modified": {
+          "name": "last_modified",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "png_atlas_url": {
+          "name": "png_atlas_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "world_region_coord_idx": {
+          "name": "world_region_coord_idx",
+          "columns": [
+            "world_id",
+            "region_x",
+            "region_y",
+            "region_z"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {
+        "world_region_world_id_world_world_id_fk": {
+          "name": "world_region_world_id_world_world_id_fk",
+          "tableFrom": "world_region",
+          "tableTo": "world",
+          "columnsFrom": [
+            "world_id"
+          ],
+          "columnsTo": [
+            "world_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "world": {
+      "name": "world",
+      "columns": {
+        "world_id": {
+          "name": "world_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "world_name": {
+          "name": "world_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "cultural_theme": {
+          "name": "cultural_theme",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "world_parameters": {
+          "name": "world_parameters",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "max_participants": {
+          "name": "max_participants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 32
+        },
+        "creator_id": {
+          "name": "creator_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "public_access": {
+          "name": "public_access",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": true
+        },
+        "seasonal_settings": {
+          "name": "seasonal_settings",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "world_creator_id_user_id_fk": {
+          "name": "world_creator_id_user_id_fk",
+          "tableFrom": "world",
+          "tableTo": "user",
+          "columnsFrom": [
+            "creator_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}
     }

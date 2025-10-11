@@ -1,4 +1,4 @@
-import { Meshes } from './types'
+import { Meshes } from '../types'
 
 const createVertexData = () => {
         const p = 0.5
@@ -39,7 +39,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
         const scl = mesh?.scl || [16, 16, 16]
         const count = vertex.length / 3
         const instanceCount = mesh?.cnt || 1
-        
+
         const update = (gl: any, xyz?: [number, number, number]) => {
                 if (xyz) {
                         pos.push(...xyz)
@@ -47,7 +47,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                         applyInstances(gl, { pos, scl, cnt: pos.length / 3, vertex, normal })
                 }
         }
-        
+
         return {
                 vertex,
                 normal,

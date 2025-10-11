@@ -7,8 +7,8 @@ import PC from './components/PC'
 import SP from './components/SP'
 import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
-import { createDefaultCulturalWorld } from './helpers/world'
-import { useMemo, useEffect, useState } from 'react'
+import { createDefaultCulturalWorld } from './helpers'
+import { useEffect, useState } from 'react'
 import type { AppType } from '.'
 
 const client = hc<AppType>('/')

@@ -1,10 +1,10 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { traditionalColors } from '../schema'
-import { loadTraditionalColors, getTraditionalColorsData, getChineseColorsData } from './colors'
+import { culturalEvents, educationalContent, traditionalColors } from '../../schema'
+import { loadTraditionalColors, getTraditionalColorsData, getChineseColorsData } from '../color/colors'
 
 export const seedTraditionalColors = async (DB: D1Database) => {
         const db = drizzle(DB)
-        
+
         // Load color data from JSON files
         await loadTraditionalColors()
         const japaneseColors = getTraditionalColorsData()
@@ -69,7 +69,6 @@ export const seedTraditionalColors = async (DB: D1Database) => {
 
 export const seedEducationalContent = async (DB: D1Database) => {
         const db = drizzle(DB)
-        const { educationalContent } = await import('../schema')
 
         const culturalLessons = [
                 {
@@ -128,8 +127,6 @@ export const seedEducationalContent = async (DB: D1Database) => {
 // Seed cultural events based on traditional calendar
 export const seedCulturalEvents = async (DB: D1Database) => {
         const db = drizzle(DB)
-        const { culturalEvents } = await import('../schema')
-
         const currentYear = new Date().getFullYear()
         const events = [
                 {

@@ -29,7 +29,7 @@ export const encPose = (x: number, y: number, z: number, yaw: number, pitch: num
 export const dec = (buf: ArrayBuffer) => {
         const view = new DataView(buf)
         const kind = view.getUint8(0)
-        
+
         if (kind === K.OP) {
                 return {
                         kind,
@@ -38,7 +38,7 @@ export const dec = (buf: ArrayBuffer) => {
                         z: view.getFloat32(12, true),
                 }
         }
-        
+
         if (kind === K.POSE) {
                 return {
                         kind,
@@ -49,6 +49,6 @@ export const dec = (buf: ArrayBuffer) => {
                         pitch: view.getFloat32(20, true),
                 }
         }
-        
+
         return { kind: -1 }
 }

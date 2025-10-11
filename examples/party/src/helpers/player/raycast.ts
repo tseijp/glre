@@ -49,7 +49,7 @@ export const raycast = (ray: Ray, meshes: { pos: number[]; scl: number[]; cnt: n
         const max = vec3.create()
         const off = vec3.fromValues(0, 0, 0)
         const face = vec3.create()
-        
+
         for (let i = 0; i < meshes.cnt; i++) {
                 read(h, meshes.scl, i)
                 read(c, meshes.pos, i)
@@ -65,7 +65,7 @@ export const raycast = (ray: Ray, meshes: { pos: number[]; scl: number[]; cnt: n
                 id = i
                 near = hit.near
         }
-        
+
         if (id < 0) return null
         read(h, meshes.scl, id)
         read(c, meshes.pos, id)

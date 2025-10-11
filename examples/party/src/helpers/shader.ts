@@ -1,6 +1,6 @@
 import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, Vec3, vec2, texture, clamp, If } from 'glre/src/node'
-import { computeCamera } from './camera'
-import type { Camera } from './camera'
+import { computeCamera } from './player/camera'
+import type { Camera } from './player/camera'
 import type { Atlas, Meshes } from './types'
 
 export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
