@@ -1,135 +1,164 @@
-// Traditional Japanese colors with cultural context
-export const TRADITIONAL_COLORS_DATA = [
-        {
-                colorNameJa: '桜色',
-                colorNameEn: 'Cherry Blossom Pink',
-                rgbValue: 0xfef4f4,
-                seasonalAssociation: 'spring',
-                culturalSignificance: { beauty: 'ephemeral', emotion: 'joy', ceremony: 'hanami' },
-                historicalContext: { period: 'heian', poetry: true, aristocracy: true },
-        },
-        {
-                colorNameJa: '紅葉',
-                colorNameEn: 'Autumn Leaves Red',
-                rgbValue: 0xcd5c5c,
-                seasonalAssociation: 'autumn',
-                culturalSignificance: { beauty: 'transient', emotion: 'melancholy', ceremony: 'momiji-gari' },
-                historicalContext: { period: 'heian', poetry: true, nature: true },
-        },
-        {
-                colorNameJa: '月白',
-                colorNameEn: 'Moonlight White',
-                rgbValue: 0xf8f8ff,
-                seasonalAssociation: 'night',
-                culturalSignificance: { purity: true, meditation: true, zen: true },
-                historicalContext: { period: 'muromachi', poetry: true, spirituality: true },
-        },
-        {
-                colorNameJa: '藍色',
-                colorNameEn: 'Indigo Blue',
-                rgbValue: 0x165e83,
-                seasonalAssociation: 'summer',
-                culturalSignificance: { craft: 'dyeing', tradition: 'artisan', protection: true },
-                historicalContext: { period: 'edo', commerce: true, common: true },
-        },
-        {
-                colorNameJa: '若草色',
-                colorNameEn: 'Young Grass Green',
-                rgbValue: 0xc3d825,
-                seasonalAssociation: 'spring',
-                culturalSignificance: { growth: true, renewal: true, hope: true },
-                historicalContext: { period: 'ancient', nature: true, agriculture: true },
-        },
-        {
-                colorNameJa: '雪白',
-                colorNameEn: 'Snow White',
-                rgbValue: 0xfffff0,
-                seasonalAssociation: 'winter',
-                culturalSignificance: { purity: true, silence: true, contemplation: true },
-                historicalContext: { period: 'heian', poetry: true, isolation: true },
-        },
-        {
-                colorNameJa: '夕焼け',
-                colorNameEn: 'Sunset Orange',
-                rgbValue: 0xff7f50,
-                seasonalAssociation: 'autumn',
-                culturalSignificance: { beauty: 'fleeting', emotion: 'nostalgia', time: 'twilight' },
-                historicalContext: { period: 'heian', poetry: true, contemplation: true },
-        },
-        {
-                colorNameJa: '青竹色',
-                colorNameEn: 'Green Bamboo',
-                rgbValue: 0x7ebeab,
-                seasonalAssociation: 'summer',
-                culturalSignificance: { strength: true, flexibility: true, growth: true },
-                historicalContext: { period: 'ancient', architecture: true, zen: true },
-        },
-        {
-                colorNameJa: '朝霧',
-                colorNameEn: 'Morning Mist',
-                rgbValue: 0xe6e6fa,
-                seasonalAssociation: 'spring',
-                culturalSignificance: { mystery: true, meditation: true, renewal: true },
-                historicalContext: { period: 'heian', poetry: true, nature: true },
-        },
-        {
-                colorNameJa: '海松色',
-                colorNameEn: 'Seaweed Green',
-                rgbValue: 0x726d40,
-                seasonalAssociation: 'winter',
-                culturalSignificance: { endurance: true, earth: true, survival: true },
-                historicalContext: { period: 'kamakura', warrior: true, practical: true },
-        },
-]
+// Dynamic color data loading from JSON files
+let TRADITIONAL_COLORS_DATA: any[] = []
+let CHINESE_COLORS_DATA: any[] = []
 
-// Chinese traditional colors with Five Elements theory
-export const CHINESE_COLORS_DATA = [
-        {
-                colorNameZh: '春霞',
-                colorNameEn: 'Spring Haze',
-                rgbValue: 0xe8d5b7,
-                seasonalAssociation: 'spring',
-                element: 'wood',
-                culturalSignificance: { wuxing: 'wood', direction: 'east', emotion: 'benevolence' },
-                historicalContext: { dynasty: 'tang', poetry: true, painting: true },
-        },
-        {
-                colorNameZh: '朱砂',
-                colorNameEn: 'Cinnabar Red',
-                rgbValue: 0xff4500,
-                seasonalAssociation: 'summer',
-                element: 'fire',
-                culturalSignificance: { wuxing: 'fire', direction: 'south', emotion: 'joy' },
-                historicalContext: { dynasty: 'han', imperial: true, ceremonial: true },
-        },
-        {
-                colorNameZh: '土黄',
-                colorNameEn: 'Earth Yellow',
-                rgbValue: 0xdaa520,
-                seasonalAssociation: 'late_summer',
-                element: 'earth',
-                culturalSignificance: { wuxing: 'earth', direction: 'center', emotion: 'thoughtfulness' },
-                historicalContext: { dynasty: 'ming', imperial: true, architecture: true },
-        },
-        {
-                colorNameZh: '秋白',
-                colorNameEn: 'Autumn White',
-                rgbValue: 0xf5f5dc,
-                seasonalAssociation: 'autumn',
-                element: 'metal',
-                culturalSignificance: { wuxing: 'metal', direction: 'west', emotion: 'righteousness' },
-                historicalContext: { dynasty: 'song', philosophy: true, literati: true },
-        },
-        {
-                colorNameZh: '玄水',
-                colorNameEn: 'Mysterious Water',
-                rgbValue: 0x191970,
-                seasonalAssociation: 'winter',
-                element: 'water',
-                culturalSignificance: { wuxing: 'water', direction: 'north', emotion: 'wisdom' },
-                historicalContext: { dynasty: 'yuan', philosophy: true, daoism: true },
-        },
-]
+export const loadTraditionalColors = async (): Promise<void> => {
+        try {
+                // Load Japanese traditional colors
+                const jpResponse = await fetch('/traditional_colors.ja.json')
+                const jpColors = await jpResponse.json()
+                
+                TRADITIONAL_COLORS_DATA = Object.entries(jpColors as Record<string, number[]>).map(([name, rgb]) => {
+                        const [r, g, b] = rgb as number[]
+                        return {
+                                colorNameJa: name,
+                                colorNameEn: convertKanjiToEnglish(name),
+                                rgbValue: (r << 16) | (g << 8) | b,
+                                seasonalAssociation: inferSeasonFromColor(name, r, g, b),
+                                culturalSignificance: {
+                                        poeticReference: generatePoetryContext(name),
+                                        emotionalContext: inferEmotion(name)
+                                },
+                                historicalContext: {
+                                        period: 'traditional',
+                                        usage: 'cultural_heritage'
+                                }
+                        }
+                })
+                
+                // Load Chinese traditional colors
+                const cnResponse = await fetch('/traditional_colors.cn.json')
+                const cnColors = await cnResponse.json()
+                
+                CHINESE_COLORS_DATA = Object.entries(cnColors as Record<string, number[]>).map(([name, rgb]) => {
+                        const [r, g, b] = rgb as number[]
+                        return {
+                                colorNameZh: name,
+                                colorNameEn: convertChineseToEnglish(name),
+                                rgbValue: (r << 16) | (g << 8) | b,
+                                seasonalAssociation: inferSeasonFromWuXing(name),
+                                element: inferWuXingElement(name, r, g, b),
+                                culturalSignificance: {
+                                        direction: inferDirection(name),
+                                        emotion: inferChineseEmotion(name)
+                                },
+                                historicalContext: {
+                                        dynasty: 'classical',
+                                        usage: 'imperial_court'
+                                }
+                        }
+                })
+        } catch (error) {
+                // Fallback to basic colors if JSON loading fails
+                initializeFallbackColors()
+        }
+}
+
+export const getTraditionalColorsData = () => TRADITIONAL_COLORS_DATA
+export const getChineseColorsData = () => CHINESE_COLORS_DATA
+
+// Color analysis helper functions
+const convertKanjiToEnglish = (kanji: string): string => {
+        const kanjiMap: Record<string, string> = {
+                '桜': 'cherry', '色': 'color', '紅': 'crimson', '葉': 'leaf',
+                '月': 'moon', '白': 'white', '藍': 'indigo', '若': 'young',
+                '草': 'grass', '柿': 'persimmon', '雪': 'snow', '青': 'blue',
+                '竹': 'bamboo', '海': 'sea', '松': 'pine', '朝': 'morning',
+                '霧': 'mist', '夕': 'evening', '焼': 'glow'
+        }
+        return kanji.split('').map(char => kanjiMap[char] || 'traditional').join('_')
+}
+
+const convertChineseToEnglish = (chinese: string): string => {
+        const chineseMap: Record<string, string> = {
+                '粉': 'powder', '鳳': 'phoenix', '浅': 'light', '淡': 'pale',
+                '紫': 'purple', '薇': 'violet', '暗': 'dark', '荷': 'lotus',
+                '花': 'flower', '石': 'stone', '木': 'wood', '槿': 'hibiscus',
+                '長': 'long', '春': 'spring', '洋': 'foreign', '葱': 'onion'
+        }
+        return chinese.split('').map(char => chineseMap[char] || 'traditional').join('_')
+}
+
+const inferSeasonFromColor = (name: string, r: number, g: number, b: number): string => {
+        if (name.includes('桜') || name.includes('若')) return 'spring'
+        if (name.includes('紅') || name.includes('柿')) return 'autumn'
+        if (name.includes('雪') || name.includes('白')) return 'winter'
+        if (name.includes('青') || name.includes('緑')) return 'summer'
+        
+        // Infer from RGB values
+        const brightness = (r + g + b) / 3
+        const greenish = g > r && g > b
+        const reddish = r > g && r > b
+        
+        if (greenish) return 'spring'
+        if (reddish && brightness < 150) return 'autumn'
+        if (brightness > 200) return 'winter'
+        return 'summer'
+}
+
+const inferSeasonFromWuXing = (name: string): string => {
+        if (name.includes('春') || name.includes('青')) return 'spring'
+        if (name.includes('夏') || name.includes('紅')) return 'summer'
+        if (name.includes('秋') || name.includes('白')) return 'autumn'
+        if (name.includes('冬') || name.includes('黑')) return 'winter'
+        return 'all_seasons'
+}
+
+const inferWuXingElement = (name: string, r: number, g: number, b: number): string => {
+        if (name.includes('青') || name.includes('緑')) return 'wood'
+        if (name.includes('紅') || name.includes('赤')) return 'fire'
+        if (name.includes('黄') || name.includes('土')) return 'earth'
+        if (name.includes('白') || name.includes('金')) return 'metal'
+        if (name.includes('黑') || name.includes('藍')) return 'water'
+        
+        // Infer from color values
+        if (g > r && g > b) return 'wood'
+        if (r > g && r > b) return 'fire'
+        if (r > 200 && g > 200 && b < 150) return 'earth'
+        if (r > 200 && g > 200 && b > 200) return 'metal'
+        return 'water'
+}
+
+const generatePoetryContext = (name: string): string => {
+        if (name.includes('桜')) return 'Cherry blossoms dancing'
+        if (name.includes('月')) return 'Moonlight whispers'
+        if (name.includes('雪')) return 'Silent snowfall'
+        if (name.includes('海')) return 'Ocean depths'
+        return 'Traditional beauty'
+}
+
+const inferEmotion = (name: string): string => {
+        if (name.includes('桜')) return 'renewal'
+        if (name.includes('紅')) return 'passion'
+        if (name.includes('雪')) return 'purity'
+        if (name.includes('海')) return 'depth'
+        return 'harmony'
+}
+
+const inferDirection = (name: string): string => {
+        if (name.includes('青') || name.includes('緑')) return 'east'
+        if (name.includes('紅') || name.includes('赤')) return 'south'
+        if (name.includes('白') || name.includes('金')) return 'west'
+        if (name.includes('黑') || name.includes('藍')) return 'north'
+        return 'center'
+}
+
+const inferChineseEmotion = (name: string): string => {
+        if (name.includes('春')) return 'growth'
+        if (name.includes('紅')) return 'joy'
+        if (name.includes('白')) return 'righteousness'
+        if (name.includes('黑')) return 'wisdom'
+        return 'balance'
+}
+
+const initializeFallbackColors = (): void => {
+        TRADITIONAL_COLORS_DATA = [
+                { colorNameJa: '桜色', rgbValue: 0xFEF4F4, seasonalAssociation: 'spring' }
+        ]
+        CHINESE_COLORS_DATA = [
+                { colorNameZh: '朱红', rgbValue: 0xFF2D2D, element: 'fire' }
+        ]
+}
 
 export const getAllTraditionalColors = () => [...TRADITIONAL_COLORS_DATA, ...CHINESE_COLORS_DATA]
 

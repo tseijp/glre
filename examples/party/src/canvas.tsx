@@ -1,8 +1,10 @@
 import { useGL } from 'glre/src/react'
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import { createCamera } from './helpers/camera'
 import { createMeshes } from './helpers/meshes'
 import { createShader } from './helpers/shader'
+import { encodeSemanticVoxel, decodeSemanticVoxel, rgbToTraditionalColor, validateColorHarmony } from './helpers/semantic'
+import { generateColorPattern } from './helpers/world'
 import type { Dims } from './helpers/types'
 
 export interface CanvasProps {
@@ -12,6 +14,59 @@ export interface CanvasProps {
 
 export const Canvas = (props: CanvasProps = {}) => {
         const { size = 16, dims = { size: [16, 16, 16], center: [8, 8, 8] } } = props
+        const [culturalData, setCulturalData] = useState<any>(null)
+        
+        // Initialize cultural voxel system
+        useEffect(() => {
+                const initializeCulturalSystem = async () => {
+                        // Generate semantic voxel data using traditional colors
+                        const voxelData = []
+                        for (let i = 0; i < 100; i++) {
+                                const semanticVoxel = {
+                                        primaryKanji: '桜',
+                                        secondaryKanji: '色',
+                                        rgbValue: 0xFEF4F4,
+                                        alphaProperties: 255,
+                                        behavioralSeed: Math.floor(Math.random() * 256)
+                                }
+                                const encoded = encodeSemanticVoxel(semanticVoxel)
+                                const decoded = decodeSemanticVoxel(encoded)
+                                voxelData.push({ encoded, decoded })
+                        }
+                        setCulturalData({ voxels: voxelData })
+                }
+                initializeCulturalSystem()
+        }, [])
+        
+        // Create cultural mesh with traditional color validation
+        const culturalMesh = useMemo(() => {
+                const baseColors = [0xFEF4F4, 0xCD5C5C, 0xF8F8FF]
+                const season = 'spring'
+                const pos = []
+                const scl = []
+                
+                for (let x = 0; x < 4; x++) {
+                        for (let z = 0; z < 4; z++) {
+                                const colorValue = generateColorPattern(baseColors, season, x, z)
+                                const traditionalColor = rgbToTraditionalColor(
+                                        (colorValue >>> 16) & 0xFF,
+                                        (colorValue >>> 8) & 0xFF,
+                                        colorValue & 0xFF
+                                )
+                                
+                                pos.push(x * 4, 0, z * 4)
+                                scl.push(4, 1, 4)
+                        }
+                }
+                
+                return {
+                        pos,
+                        scl,
+                        cnt: pos.length / 3,
+                        vertex: [],
+                        normal: []
+                }
+        }, [culturalData])
         
         // Create basic mesh data for fallback world texture
         const fallbackMesh = useMemo(() => ({
@@ -32,7 +87,7 @@ export const Canvas = (props: CanvasProps = {}) => {
         }), [])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
-        const meshes = useMemo(() => createMeshes(camera, fallbackMesh), [camera, fallbackMesh])
+        const meshes = useMemo(() => createMeshes(camera, culturalMesh || fallbackMesh), [camera, culturalMesh, fallbackMesh])
         const shader = useMemo(() => createShader(camera, meshes, fallbackAtlas), [camera, meshes, fallbackAtlas])
 
         const gl = useGL({

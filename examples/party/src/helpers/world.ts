@@ -1,4 +1,4 @@
-import { TRADITIONAL_COLORS_DATA, getColorsBySeasonalAssociation } from './colors'
+import { loadTraditionalColors, getAllTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, checkWuXingHarmony, getSeasonalIntensity } from './colors'
 import { traditionalColorToRgb, applySeasonalTransform } from './semantic'
 import { CHUNK, GRID } from './utils'
 
@@ -42,7 +42,9 @@ const CULTURAL_THEMES = {
         },
 }
 
-export const generateCulturalWorld = (culturalTheme: string = 'zen_garden', seasonalSettings: any = {}): CulturalWorld => {
+export const generateCulturalWorld = async (culturalTheme: string = 'zen_garden', seasonalSettings: any = {}): Promise<CulturalWorld> => {
+        // Initialize color system if not loaded
+        await loadTraditionalColors()
         const theme = CULTURAL_THEMES[culturalTheme as keyof typeof CULTURAL_THEMES] || CULTURAL_THEMES.zen_garden
         const currentSeason = seasonalSettings.season || 'spring'
 
@@ -183,11 +185,34 @@ const generateTemplePattern = (x: number, y: number, z: number): boolean => {
 
 // Generate traditional color patterns for textures
 export const generateColorPattern = (baseColors: number[], season: string, x: number, y: number): number => {
-        const seasonalIntensity = getCurrentSeasonalIntensity(season)
+        const seasonalIntensity = getSeasonalIntensity(season, new Date())
         const colorIndex = (x + y) % baseColors.length
         const baseColor = baseColors[colorIndex]
+        
+        // Apply cultural color harmony validation
+        const nearestColor = findNearestTraditionalColor(baseColor)
+        const harmonicColor = validateCulturalHarmony(baseColor, season)
 
-        return applySeasonalTransform(baseColor, season, seasonalIntensity)
+        return applySeasonalTransform(harmonicColor, season, seasonalIntensity)
+}
+
+// Cultural harmony validation using traditional color theory
+const validateCulturalHarmony = (baseColor: number, season: string): number => {
+        const traditionalColor = findNearestTraditionalColor(baseColor)
+        
+        // Check if color is appropriate for season
+        if (traditionalColor.seasonalAssociation === season) {
+                return baseColor
+        }
+        
+        // Find harmonious alternative from seasonal colors
+        const seasonalColors = getColorsBySeasonalAssociation(season)
+        if (seasonalColors.length > 0) {
+                const alternatives = seasonalColors.slice(0, 3)
+                return alternatives[Math.floor(Math.random() * alternatives.length)].rgbValue
+        }
+        
+        return baseColor
 }
 
 const getCurrentSeasonalIntensity = (season: string): number => {
@@ -231,6 +256,6 @@ export const generateWorldAtlas = async (world: CulturalWorld, size: number = 16
         return atlas
 }
 
-export const createDefaultCulturalWorld = (): CulturalWorld => {
-        return generateCulturalWorld('zen_garden', { season: 'spring' })
+export const createDefaultCulturalWorld = async (): Promise<CulturalWorld> => {
+        return await generateCulturalWorld('zen_garden', { season: 'spring' })
 }

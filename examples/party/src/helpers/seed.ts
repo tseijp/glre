@@ -1,12 +1,17 @@
 import { drizzle } from 'drizzle-orm/d1'
 import { traditionalColors } from '../schema'
-import { TRADITIONAL_COLORS_DATA, CHINESE_COLORS_DATA } from './colors'
+import { loadTraditionalColors, getTraditionalColorsData, getChineseColorsData } from './colors'
 
 export const seedTraditionalColors = async (DB: D1Database) => {
         const db = drizzle(DB)
+        
+        // Load color data from JSON files
+        await loadTraditionalColors()
+        const japaneseColors = getTraditionalColorsData()
+        const chineseColors = getChineseColorsData()
 
         // Seed Japanese traditional colors
-        for (const color of TRADITIONAL_COLORS_DATA) {
+        for (const color of japaneseColors) {
                 try {
                         await db
                                 .insert(traditionalColors)
@@ -31,7 +36,7 @@ export const seedTraditionalColors = async (DB: D1Database) => {
         }
 
         // Seed Chinese traditional colors
-        for (const color of CHINESE_COLORS_DATA) {
+        for (const color of chineseColors) {
                 try {
                         await db
                                 .insert(traditionalColors)
@@ -59,7 +64,7 @@ export const seedTraditionalColors = async (DB: D1Database) => {
                 }
         }
 
-        return { success: true, count: TRADITIONAL_COLORS_DATA.length + CHINESE_COLORS_DATA.length }
+        return { success: true, count: japaneseColors.length + chineseColors.length }
 }
 
 export const seedEducationalContent = async (DB: D1Database) => {

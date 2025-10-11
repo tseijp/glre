@@ -8,7 +8,7 @@ import SP from './components/SP'
 import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
 import { createDefaultCulturalWorld } from './helpers/world'
-import { useMemo } from 'react'
+import { useMemo, useEffect, useState } from 'react'
 import type { AppType } from '.'
 
 const client = hc<AppType>('/')
@@ -23,8 +23,16 @@ export const App = () => {
         const modal = useSearchParam('modal')
         const page = useSearchParam('page')
         
-        // Create cultural world context
-        const culturalWorld = useMemo(() => createDefaultCulturalWorld(), [])
+        // Create cultural world context with async loading
+        const [culturalWorld, setCulturalWorld] = useState<any>(null)
+        
+        useEffect(() => {
+                const initializeCulturalWorld = async () => {
+                        const world = await createDefaultCulturalWorld()
+                        setCulturalWorld(world)
+                }
+                initializeCulturalWorld()
+        }, [])
         
         if (!res) return null
         
