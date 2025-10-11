@@ -9,7 +9,7 @@ import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
 import { useVoxelWorld } from './hooks/useVoxelWorld'
 import { createDefaultCulturalWorld } from './helpers'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import type { AppType } from '.'
 
 const client = hc<AppType>('/')
@@ -35,6 +35,15 @@ export const App = () => {
 
         // Create cultural world context with async loading
         const [culturalWorld, setCulturalWorld] = useState<any>(null)
+        const [region, setRegion] = useState<{ lat: number; lng: number; zoom?: number } | null>(null)
+        const [isBuilding, setIsBuilding] = useState(false)
+        
+        // Default to Tokyo coordinates for 3D Tiles
+        const defaultRegion = useMemo(() => ({
+                lat: 35.6762,
+                lng: 139.6503,
+                zoom: 15
+        }), [])
 
         useEffect(() => {
                 const initializeCulturalWorld = async () => {
@@ -43,6 +52,15 @@ export const App = () => {
                 }
                 initializeCulturalWorld()
         }, [])
+        
+        const onRegionChange = (lat: number, lng: number, zoom?: number) => {
+                setIsBuilding(true)
+                setRegion({ lat, lng, zoom })
+        }
+        
+        const onCanvasReady = () => {
+                setIsBuilding(false)
+        }
 
         if (!res) return null
 
@@ -52,7 +70,19 @@ export const App = () => {
         const hasCulturalProfile = !!profile
         const traditionalColors = colors || []
 
-        const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} atlas={vox?.atlas as any} mesh={vox?.mesh as any} />
+        const currentRegion = region || defaultRegion
+        
+        const children = (
+                <Canvas 
+                        size={16} 
+                        dims={{ size: [32, 16, 32], center: [16, 8, 16] }} 
+                        atlas={vox?.atlas as any} 
+                        mesh={vox?.mesh as any}
+                        region={currentRegion}
+                        onReady={onCanvasReady}
+                        isBuilding={isBuilding}
+                />
+        )
 
         const props = {
                 isHUD,
@@ -65,6 +95,13 @@ export const App = () => {
                 seasonalColors: colors?.filter((c: any) => c.seasonalAssociation === culturalWorld?.seasonalCycle) || [],
                 page: page || '1',
                 onSignIn: () => signIn(),
+                onRegionChange,
+                currentRegion,
+                isBuilding,
+                // Cultural metaverse 3D Tiles features
+                isCulturalMode: true,
+                hasTraditionalColors: true,
+                isSemanticVoxels: true,
                 children,
         }
 

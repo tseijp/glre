@@ -4,6 +4,8 @@ import { useMemo, useEffect, useState } from 'react'
 import { useDrag, useKey } from 'rege/react'
 import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, loadTraditionalColors, raycast, screenToWorldRay } from './helpers'
 import { createShader } from './helpers/shader'
+import { generateFromTiles, createRegionConfig } from './helpers/world/chunk'
+import { createVoxelProcessor } from './helpers/voxel/processor'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
@@ -11,27 +13,61 @@ export interface CanvasProps {
         dims?: Dims
         atlas?: Atlas
         mesh?: Meshes
+        region?: {
+                lat: number
+                lng: number
+                zoom?: number
+        }
+        onReady?: () => void
+        isBuilding?: boolean
 }
 
 export const Canvas = (props: CanvasProps = {}) => {
-        const { size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] } } = props
+        const { size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, isBuilding } = props
         const [isReady, setIsReady] = useState(false)
         const [culturalWorld, setCulturalWorld] = useState<any>(null)
+        const [tilesChunks, setTilesChunks] = useState<any>(null)
 
-        // Initialize cultural metaverse system
+        const processor = useMemo(() => createVoxelProcessor(), [])
+
+        // Initialize cultural metaverse system with 3D Tiles
         useEffect(() => {
                 const init = async () => {
                         await loadTraditionalColors()
-                        if (!props.atlas) await initAtlasWorld('/texture/world.png')
+                        
+                        // Initialize from 3D Tiles if region specified
+                        if (region) {
+                                const config = createRegionConfig(region.lat, region.lng, region.zoom || 15)
+                                const camera = createCamera(size, dims)
+                                const chunks = await generateFromTiles(config, camera)
+                                setTilesChunks(chunks)
+                        } else {
+                                // Fallback to default atlas
+                                if (!props.atlas) await initAtlasWorld('/texture/world.png')
+                        }
+                        
                         const world = await createDefaultCulturalWorld()
                         setCulturalWorld(world)
                         setIsReady(true)
+                        onReady?.()
                 }
                 init()
-        }, [props.atlas])
+                
+                return () => {
+                        processor.cleanup()
+                }
+        }, [props.atlas, region])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
-        const meshes = useMemo(() => createMeshes(camera, props.mesh as any), [camera, props.mesh])
+        const meshes = useMemo(() => {
+                // Use tiles chunks if available, otherwise fall back to props
+                const mesh = tilesChunks ? { pos: [], scl: [], cnt: 0, vertex: [], normal: [] } : props.mesh
+                const m = createMeshes(camera, mesh as any)
+                if (tilesChunks) {
+                        m.applyChunks?.(tilesChunks)
+                }
+                return m
+        }, [camera, props.mesh, tilesChunks])
         const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
         const player = useMemo(() => createPlayer(camera, meshes, shader), [])
 
@@ -136,12 +172,20 @@ export const Canvas = (props: CanvasProps = {}) => {
                 },
         })
 
-        if (!isReady) {
+        if (!isReady || isBuilding) {
                 return (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
                                 <div className="text-center">
+                                        <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
                                         <div className="text-2xl font-bold text-gray-700 mb-2">文化的メタバース</div>
-                                        <div className="text-sm text-gray-600">伝統色彩システム初期化中...</div>
+                                        <div className="text-sm text-gray-600">
+                                                {isBuilding ? '3D Tiles voxelization中...' : '伝統色彩システム初期化中...'}
+                                        </div>
+                                        {region && (
+                                                <div className="text-xs text-gray-500 mt-2">
+                                                        Region: {region.lat.toFixed(4)}, {region.lng.toFixed(4)}
+                                                </div>
+                                        )}
                                 </div>
                         </div>
                 )
