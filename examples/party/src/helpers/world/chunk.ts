@@ -1,5 +1,5 @@
 import { greedyMesh } from './greedy'
-import { culling } from './culling'
+// import { culling } from './culling'
 import { Camera } from '../player/camera'
 import { CHUNK, Chunk, chunkId, Chunks, eachChunk, located, SIZE } from '../utils'
 import { loadRegionTiles, voxelizeRegionTiles, getCachedRegion, estimateRegionBounds } from '../voxel/tiles'
@@ -62,7 +62,7 @@ export const gather = (chunks: Map<number, Chunk>) => {
 
 export const generate = (camera: Camera) => {
         const chunks = createChunks()
-        culling(chunks, camera)
+        // culling(chunks, camera)
         meshing(chunks)
         return chunks
 }
@@ -87,13 +87,13 @@ export const generateFromTiles = async (config: RegionConfig, camera: Camera): P
                 await applyVoxelDataToChunks(chunks, region.voxelData)
         }
 
-        culling(chunks, camera)
+        // culling(chunks, camera) - commented out until culling import is fixed
         meshing(chunks)
         return chunks
 }
 
 export const applyVoxelDataToChunks = async (chunks: Chunks, voxelData: BuiltState): Promise<void> => {
-        if (!voxelData.file?.raw) return
+        if (typeof voxelData.file === 'string' || !voxelData.file?.raw) return
 
         const worldData = voxelData.file.raw
         const { size } = voxelData.dims
