@@ -1,10 +1,12 @@
-import { encode, load } from '@loaders.gl/core'
-import { ImageWriter, ImageLoader } from '@loaders.gl/images'
-
 export const encodeImagePNG = async (pix: Uint8Array, w: number, h: number) => {
-        const data = new Uint8ClampedArray(pix.buffer, pix.byteOffset, w * h * 4)
-        const ab = await encode({ data, width: w, height: h }, ImageWriter, { image: { mimeType: 'image/png' } as any })
-        return new Uint8Array(ab as ArrayBuffer)
+        const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
+        canvas.width = w
+        canvas.height = h
+        const ctx: any = canvas.getContext('2d', { willReadFrequently: true })
+        const img = new ImageData(new Uint8ClampedArray(pix.buffer, pix.byteOffset, w * h * 4), w, h)
+        ctx.putImageData(img, 0, 0)
+        const blob: Blob = canvas.convertToBlob ? await canvas.convertToBlob({ type: 'image/png' }) : await new Promise((res) => (canvas as HTMLCanvasElement).toBlob((b) => res(b as Blob), 'image/png'))
+        return new Uint8Array(await blob.arrayBuffer())
 }
 
 export const blitChunk64ToWorld = (src: Uint8Array, ci = 0, cj = 0, ck = 0, dst?: Uint8Array) => {
@@ -23,8 +25,25 @@ export const blitChunk64ToWorld = (src: Uint8Array, ci = 0, cj = 0, ck = 0, dst?
 }
 
 const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
-        const img = (await load(buf, ImageLoader, { image: { type: 'data' } })) as any
-        const dat = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer.slice(0)) : img.data
+        const raw = new Uint8Array(buf)
+        const isRGBA = raw.byteLength === 4096 * 4096 * 4
+        const data: Uint8Array = isRGBA ? raw : await (async () => {
+                const blob = new Blob([buf], { type: 'image/png' })
+                const bmp: any = (globalThis as any).createImageBitmap ? await createImageBitmap(blob) : await new Promise((res) => {
+                        const img = new Image()
+                        img.onload = () => res(img)
+                        img.src = URL.createObjectURL(blob)
+                })
+                const w = bmp.width || 4096
+                const h = bmp.height || 4096
+                const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
+                canvas.width = w
+                canvas.height = h
+                const ctx: any = canvas.getContext('2d', { willReadFrequently: true })
+                ctx.drawImage(bmp, 0, 0)
+                const { data } = ctx.getImageData(0, 0, w, h)
+                return new Uint8Array(data.buffer.slice(0))
+        })()
         const out = new Map<string, Uint8Array>()
         for (let k = 0; k < 16; k++)
                 for (let j = 0; j < 16; j++)
@@ -38,7 +57,7 @@ const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
                                         const sy = oy + y
                                         const si = (sy * 4096 + ox) * 4
                                         const di = y * 64 * 4
-                                        dst.set(dat.subarray(si, si + 64 * 4), di)
+                                        dst.set(data.subarray(si, si + 64 * 4), di)
                                 }
                                 out.set(i + '.' + j + '.' + k, dst)
                         }

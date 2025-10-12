@@ -48,7 +48,6 @@ export const App = () => {
 
         const currentRegion = { ...defaultRegion, ...(region || {}) }
         const vox = useVoxelWorld(client, currentRegion)
-
         useEffect(() => {
                 const initializeWorld = async () => {
                         const world = await createDefaultWorld()
@@ -79,7 +78,18 @@ export const App = () => {
         const traditionalColors = colors || []
 
         const onSemanticVoxel = (v: any) => client.api.v1.voxels.$post({ json: v })
-        const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} atlas={vox?.atlas as any} mesh={vox?.mesh as any} region={currentRegion} onReady={onCanvasReady} isBuilding={isBuilding} onSemanticVoxel={onSemanticVoxel} />
+        const children = (
+                <Canvas //
+                        size={16}
+                        dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
+                        atlas={vox?.atlas as any}
+                        mesh={vox?.mesh as any}
+                        region={currentRegion}
+                        onReady={onCanvasReady}
+                        isBuilding={isBuilding}
+                        onSemanticVoxel={onSemanticVoxel}
+                />
+        )
 
         const props = {
                 isHUD,

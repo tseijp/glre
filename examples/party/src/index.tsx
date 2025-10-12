@@ -166,6 +166,7 @@ const app = new Hono<{ Bindings: Env }>()
                 const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
                 const obj = await c.env.R2.head(key)
                 if (!obj) return c.body(null, { status: 404 })
+                if ((obj as any).size === 0) return c.body(null, { status: 404 })
                 return c.body(null, { status: 200 })
         })
         .get('/api/v1/atlas/exists', async (c) => {
@@ -176,7 +177,8 @@ const app = new Hono<{ Bindings: Env }>()
                 const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
                 const obj = await c.env.R2.head(key)
                 if (!obj) return c.body(null, { status: 404 })
-                return c.body(null, { status: 204 })
+                if ((obj as any).size === 0) return c.body(null, { status: 404 })
+                return c.body(null, { status: 200 })
         })
         .get('/api/v1/atlas', async (c) => {
                 const lat = c.req.query('lat')
@@ -186,7 +188,10 @@ const app = new Hono<{ Bindings: Env }>()
                 const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
                 const obj = await c.env.R2.get(key)
                 if (!obj) return c.json({ error: 'not found' }, { status: 404 })
+                const head = await c.env.R2.head(key)
+                if (!head || (head as any).size === 0) return c.json({ error: 'empty' }, { status: 404 })
                 const body = await obj.arrayBuffer()
+                if (!body || body.byteLength === 0) return c.json({ error: 'empty' }, { status: 404 })
                 return new Response(body, { headers: { 'content-type': 'image/png' } })
         })
         .put('/api/v1/atlas', async (c) => {
@@ -196,6 +201,7 @@ const app = new Hono<{ Bindings: Env }>()
                 if (!lat || !lng || !zoom) return c.json({ error: 'missing' }, { status: 400 })
                 const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
                 const ab = await c.req.arrayBuffer()
+                if (!ab || ab.byteLength === 0) return c.json({ error: 'empty body' }, { status: 400 })
                 await c.env.R2.put(key, ab, { httpMetadata: { contentType: 'image/png' } })
                 return c.json({ ok: true, key })
         })
@@ -252,11 +258,8 @@ const app = new Hono<{ Bindings: Env }>()
                 if (!c.env.CESIUM_API_KEY) {
                         return c.json({ error: 'Cesium API key not configured' }, { status: 500 })
                 }
-
-                // Check R2 cache first
                 const cacheKey = `cesium/${assetId}.json`
                 const cached = await c.env.R2.head(cacheKey)
-
                 if (cached) {
                         const cachedData = await c.env.R2.get(cacheKey)
                         if (cachedData) {
@@ -264,169 +267,40 @@ const app = new Hono<{ Bindings: Env }>()
                                 return c.json(metadata)
                         }
                 }
-
-                // Fetch asset metadata from Cesium Ion
                 const metadataUrl = `https://api.cesium.com/v1/assets/${assetId}`
-                const res = await fetch(metadataUrl, {
-                        headers: {
-                                Authorization: `Bearer ${c.env.CESIUM_API_KEY}`,
-                        },
-                })
-
-                if (!res.ok) {
-                        return c.json({ error: 'Failed to fetch Cesium asset metadata' })
-                }
-
+                const res = await fetch(metadataUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
+                if (!res.ok) return c.json({ error: 'Failed to fetch Cesium asset metadata' })
                 const metadata = await res.json()
-
-                // Cache metadata
                 await c.env.R2.put(cacheKey, JSON.stringify(metadata), {
                         httpMetadata: { contentType: 'application/json' },
                 })
-
                 return c.json(metadata)
         })
         .get('/api/v1/tiles/cesium/:assetId/gltf', async (c) => {
                 const assetId = parseInt(c.req.param('assetId'))
                 if (!c.env.CESIUM_API_KEY) return c.json({ error: 'Cesium API key not configured' }, { status: 500 })
-
-                const cacheKey = `cesium/${assetId}.glb`
-                const cached = await c.env.R2.get(cacheKey)
-                if (cached) {
-                        const body = await cached.arrayBuffer()
-                        return new Response(body, { headers: { 'content-type': 'model/gltf-binary', 'cache-control': 'public, max-age=86400' } })
-                }
-
                 const endpoint = await fetch(`https://api.cesium.com/v1/assets/${assetId}/endpoint`, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!endpoint.ok) return c.json({ error: 'Failed to get Cesium endpoint' })
+                if (!endpoint.ok) return c.json({ error: 'Failed to get Cesium endpoint' }, { status: 502 })
                 const ep = (await endpoint.json()) as any
                 const url: string = ep.url
                 const token: string = ep.accessToken || ep.token || ''
-
                 const res = await fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
-                if (!res.ok) return c.json({ error: 'Failed to download GLTF' })
-                const data = await res.arrayBuffer()
-                await c.env.R2.put(cacheKey, data, { httpMetadata: { contentType: 'model/gltf-binary' } })
-                return new Response(data, { headers: { 'content-type': 'model/gltf-binary', 'cache-control': 'public, max-age=86400' } })
+                if (!res.ok) return c.json({ error: 'Failed to download GLTF' }, { status: 502 })
+                return new Response(res.body, { headers: { 'content-type': 'model/gltf-binary', 'cache-control': 'private, max-age=60' } })
         })
         .post('/api/v1/tiles/cesium/:assetId/tile', async (c) => {
                 const assetId = parseInt(c.req.param('assetId'))
                 if (!c.env.CESIUM_API_KEY) return c.json({ error: 'Cesium API key not configured' }, { status: 500 })
                 const { tileUrl } = await c.req.json()
                 if (!tileUrl || typeof tileUrl !== 'string') return c.json({ error: 'tileUrl required' }, { status: 400 })
-                try {
-                        const endpoint = await fetch(`https://api.cesium.com/v1/assets/${assetId}/endpoint`, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                        if (!endpoint.ok) return c.json({ error: 'Failed to get Cesium endpoint' })
-                        const ep = (await endpoint.json()) as any
-                        const token: string = ep.accessToken || ep.token || ''
-                        const res = await fetch(tileUrl, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
-                        if (!res.ok) return c.json({ error: 'Failed to fetch tile' })
-                        const ab = await res.arrayBuffer()
-                        return new Response(ab)
-                } catch (_) {
-                        return c.json({ error: 'tile proxy error' }, { status: 502 })
-                }
-        })
-        .post('/api/v1/tiles/cesium/:assetId/voxelize', async (c) => {
-                // Server-side GLTF voxelization endpoint using WASM
-                const user = c.get('authUser')?.token?.sub
-                if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
-
-                const assetId = parseInt(c.req.param('assetId'))
-                const { size = 16 } = await c.req.json()
-
-                if (!c.env.CESIUM_API_KEY) {
-                        return c.json({ error: 'Cesium API key not configured' }, { status: 500 })
-                }
-
-                // Check if voxelized data is already cached
-                const voxelCacheKey = `voxels/cesium_${assetId}_${size}.png`
-                const cached = await c.env.R2.head(voxelCacheKey)
-
-                if (cached) {
-                        return c.json({
-                                cached: true,
-                                atlasUrl: `/api/v1/atlas/cesium/${assetId}?size=${size}`,
-                                assetId,
-                                processed: true,
-                        })
-                }
-
-                try {
-                        // Get GLTF data
-                        const gltfData = await c.env.R2.get(`cesium/${assetId}.glb`)
-                        if (!gltfData) {
-                                return c.json({ error: 'GLTF model not found in cache' }, { status: 404 })
-                        }
-
-                        const gltfBuffer = await gltfData.arrayBuffer()
-
-                        // Integrate with simplified voxelizer (WASM not available in CF Workers)
-                        // Create basic cultural voxel pattern based on GLTF bounds
-                        const atlasSize = 4096
-                        const atlas = new Uint8Array(atlasSize * atlasSize * 4)
-
-                        // Generate cultural pattern using traditional colors
-                        for (let y = 0; y < atlasSize; y++) {
-                                for (let x = 0; x < atlasSize; x++) {
-                                        const idx = (y * atlasSize + x) * 4
-
-                                        // Wu Xing (Five Elements) color pattern
-                                        const elementIndex = (x + y) % 5
-                                        const colors = [
-                                                [40, 120, 40], // 青 (Blue-Green) - Wood
-                                                [200, 60, 60], // 紅 (Red) - Fire
-                                                [160, 140, 80], // 黄 (Yellow) - Earth
-                                                [200, 200, 200], // 白 (White) - Metal
-                                                [40, 40, 120], // 玄 (Black-Blue) - Water
-                                        ]
-                                        const [r, g, b] = colors[elementIndex]
-                                        const alpha = (x + y) % 3 === 0 ? 255 : 0
-
-                                        atlas[idx] = r
-                                        atlas[idx + 1] = g
-                                        atlas[idx + 2] = b
-                                        atlas[idx + 3] = alpha
-                                }
-                        }
-
-                        // Store voxelized atlas in R2 cache
-                        await c.env.R2.put(voxelCacheKey, atlas, {
-                                httpMetadata: { contentType: 'application/octet-stream' },
-                        })
-
-                        const voxelData = {
-                                assetId,
-                                atlasUrl: `/api/v1/atlas/cesium/${assetId}?size=${size}`,
-                                dimensions: { size: [size * 16, size * 16, size * 16], center: [size * 8, size * 8, size * 8] },
-                                processed: true,
-                                wasmProcessed: true, //  pattern generation complete
-                        }
-
-                        return c.json(voxelData)
-                } catch (error) {
-                        return c.json({ error: 'GLTF voxelization failed', details: error }, { status: 500 })
-                }
-        })
-        .get('/api/v1/atlas/cesium/:assetId', async (c) => {
-                // Serve voxelized atlas data for Cesium assets
-                const assetId = parseInt(c.req.param('assetId'))
-                const size = c.req.query('size') || '16'
-
-                const cacheKey = `voxels/cesium_${assetId}_${size}.png`
-                const cached = await c.env.R2.get(cacheKey)
-
-                if (!cached) {
-                        return c.json({ error: 'Atlas not found' }, { status: 404 })
-                }
-
-                const body = await cached.arrayBuffer()
-                return new Response(body, {
-                        headers: {
-                                'content-type': 'image/png',
-                                'cache-control': 'public, max-age=86400',
-                        },
-                })
+                const endpoint = await fetch(`https://api.cesium.com/v1/assets/${assetId}/endpoint`, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
+                if (!endpoint.ok) return c.json({ error: 'Failed to get Cesium endpoint' }, { status: 502 })
+                const ep = (await endpoint.json()) as any
+                const token: string = ep.accessToken || ep.token || ''
+                const res = await fetch(tileUrl, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
+                if (!res.ok) return c.json({ error: 'Failed to fetch tile' }, { status: 502 })
+                const ab = await res.arrayBuffer()
+                return new Response(ab)
         })
 
 type AppType = typeof app

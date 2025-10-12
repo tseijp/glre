@@ -108,8 +108,10 @@ export const applyVoxelDataToChunks = async (chunks: Chunks, voxelData: BuiltSta
                 const chunkData = extractChunkFromAtlas(worldData, i, j, k, size)
                 if (chunkData) {
                         chunk.vox.set(chunkData)
+                        chunk.visible = true
                         chunk.dirty = true
                         chunk.gen = true
                 }
         })
+        meshing(chunks)
 }

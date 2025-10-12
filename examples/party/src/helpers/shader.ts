@@ -44,27 +44,21 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
         })
 
         const fs = Fn(([n, local, iPos]: [Vec3, Vec3, Vec3]) => {
-                // hover highlighting
+                // return vec4(1, 0, 0, 1)
                 const sameFace = n.dot(iFace).equal(1)
                 const W = iPos
                         .add(local)
                         .sub(n.sign().mul(float(1e-3)))
                         .floor()
                 const isHover = W.x.equal(iHover.x).and(W.y.equal(iHover.y)).and(W.z.equal(iHover.z))
-
-                // Traditional lighting model
                 const L = vec3(0.3, 0.7, 0.5).normalize()
                 const diffuse = n.normalize().dot(L).max(0.2)
                 const texel = texture(iAtlas, atlasUV(n, local, iPos)).toVar('texel')
-
-                // Apply cultural color transformation using If statement
                 const baseColor = texel.rgb.mul(diffuse)
                 const culturalColor = baseColor.toVar('culturalColor')
-
                 If(sameFace.and(isHover), () => {
-                        culturalColor.assign(vec3(1, 0.3, 0.3)) //  highlight color (traditional red)
+                        culturalColor.assign(vec3(1, 0.3, 0.3))
                 })
-
                 return vec4(culturalColor, 0.85)
         })
 

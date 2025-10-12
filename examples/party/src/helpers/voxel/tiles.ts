@@ -48,9 +48,9 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
         return region
 }
 
-export const voxelizeRegionTiles = async (region: VoxelizedRegion, size: number = 16): Promise<BuiltState | null> => {
+export const voxelizeRegionTiles = async (region: VoxelizedRegion, size: number = 16, client?: any): Promise<BuiltState | null> => {
         const asset = region.config.assetId || 96188
-        const vox = await voxelizeCesiumData(asset, { lat: region.config.lat, lng: region.config.lng, zoom: region.config.zoom })
+        const vox = await voxelizeCesiumData(asset, { lat: region.config.lat, lng: region.config.lng, zoom: region.config.zoom }, client)
         const proc = createVoxels()
         const fake = new Uint8Array(vox.atlas.buffer.slice(0))
         const packed = new Uint8Array(fake.buffer)

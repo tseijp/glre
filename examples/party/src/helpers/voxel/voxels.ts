@@ -28,7 +28,7 @@ export const createVoxels = (config: Partial<VoxelProcessorConfig> = {}) => {
         }
         const retrieveFromCache = async (lat: number, lng: number, zoom: number, _size: number): Promise<BuiltState | null> => {
                 const url = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
-                const chk = await fetch(`/api/v1/atlas/exists?lat=${lat}&lng=${lng}&zoom=${zoom}`)
+                const chk = await fetch(url, { method: 'HEAD' })
                 if (!chk.ok) return null
                 const res = await fetch(url)
                 if (!res.ok) return null

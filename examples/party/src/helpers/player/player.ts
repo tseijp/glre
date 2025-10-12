@@ -2,7 +2,7 @@ import { vec3, mat4 } from 'gl-matrix'
 import type { Camera } from './camera'
 import type { Meshes } from '../types'
 
-const MODE = 1 // 0 is creative
+const MODE = 0 // 0 is creative
 const TIME = 0.01
 const GRAV = -0.06
 const JUMP = 0.15
@@ -75,6 +75,7 @@ export const createPlayer = (camera: Camera, meshes: Meshes, shader: any) => {
                 vel[2] = move[2]
                 if (mode) vel[1] += GRAV * dt
                 vec3.add(pos, pos, vel)
+                if (pos[1] < 0) pos[1] = 0
                 face = faceDir(face, yaw, pitch)
                 setLook()
                 shader.updateCamera(gl.size)

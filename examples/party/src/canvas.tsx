@@ -20,27 +20,23 @@ export interface CanvasProps {
         onSemanticVoxel?: (v: any) => void
 }
 
-export const Canvas = (props: CanvasProps = {}) => {
-        const { size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, isBuilding } = props
-        const [isReady, setIsReady] = useState(false)
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, isBuilding, atlas, mesh, onSemanticVoxel }: CanvasProps) => {
         const [culturalWorld, setWorld] = useState<any>(null)
         const [pendingMesh, setPendingMesh] = useState<Meshes | null>(null)
 
         const processor = useMemo(() => createVoxels(), [])
 
-        // 初期化のみ。取得系は client.tsx 側で完結させる
         useEffect(() => {
                 const init = async () => {
                         await loadTraditionalColors()
 
-                        if (props.atlas && props.mesh) {
-                                shader.updateAtlas(props.atlas as any)
-                                setPendingMesh(props.mesh as any)
+                        if (atlas && mesh) {
+                                shader.updateAtlas(atlas as any)
+                                setPendingMesh(mesh as any)
                         }
 
                         const world = await createDefaultWorld()
                         setWorld(world)
-                        setIsReady(true)
                         onReady?.()
                 }
                 init()
@@ -48,27 +44,10 @@ export const Canvas = (props: CanvasProps = {}) => {
                 return () => {
                         processor.cleanup()
                 }
-        }, [props.atlas, region])
-
-        const concatArrayBuffers = (arr: ArrayBuffer[]) => {
-                if (!arr.length) return new ArrayBuffer(0)
-                const len = arr.reduce((n, b) => n + b.byteLength, 0)
-                const out = new Uint8Array(len)
-                let o = 0
-                for (const b of arr) {
-                        out.set(new Uint8Array(b), o)
-                        o += b.byteLength
-                }
-                return out.buffer
-        }
+        }, [atlas, region])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
-        const meshes = useMemo(() => {
-                // Use tiles chunks if available, otherwise fall back to props
-                const mesh = props.mesh
-                const m = createMeshes(camera, mesh as any)
-                return m
-        }, [camera, props.mesh])
+        const meshes = useMemo(() => createMeshes(camera, mesh), [camera, mesh])
         const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
         const player = useMemo(() => createPlayer(camera, meshes, shader), [])
 
@@ -80,7 +59,6 @@ export const Canvas = (props: CanvasProps = {}) => {
                 count: meshes.count,
                 instanceCount: meshes.instanceCount,
                 loop() {
-                        if (!isReady) return
                         if (pendingMesh) {
                                 meshes.applyChunks?.(gl, pendingMesh as any)
                                 setPendingMesh(null)
@@ -92,7 +70,6 @@ export const Canvas = (props: CanvasProps = {}) => {
                 },
         })
 
-        // 以降は描画/入力のみ
         const click = (hit?: Hit, near?: number[]) => {
                 if (!hit || !culturalWorld) return
                 const xyz = face(hit, meshes.pos, meshes.scl)
@@ -115,7 +92,7 @@ export const Canvas = (props: CanvasProps = {}) => {
                         alphaProperties: 255,
                         behavioralSeed: Math.floor(Math.random() * 256),
                 }
-                props.onSemanticVoxel?.(semanticVoxel)
+                onSemanticVoxel?.(semanticVoxel)
 
                 shader.updateHover(hit, near)
                 meshes.update(gl, xyz)
@@ -170,12 +147,11 @@ export const Canvas = (props: CanvasProps = {}) => {
                 },
         })
 
-        if (!isReady || isBuilding) {
+        if (isBuilding) {
                 return (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
                                 <div className="text-center">
                                         <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                                        <div className="text-2xl font-bold text-gray-700 mb-2">文化的メタバース</div>
                                         <div className="text-sm text-gray-600">{isBuilding ? '3D Tiles voxelization中...' : '伝統色彩システム初期化中...'}</div>
                                         {region && (
                                                 <div className="text-xs text-gray-500 mt-2">
@@ -186,9 +162,8 @@ export const Canvas = (props: CanvasProps = {}) => {
                         </div>
                 )
         }
-
         return (
-                <div ref={key.ref as any} className="w-full h-full">
+                <div ref={key.ref} className="w-full h-full">
                         <div ref={drag.ref as any} className="w-full h-full">
                                 <canvas ref={gl.ref} className="w-full h-full bg-gradient-to-b from-sky-200 to-green-100" />
                         </div>

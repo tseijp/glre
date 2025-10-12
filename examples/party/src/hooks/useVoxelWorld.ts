@@ -1,9 +1,9 @@
 import useSWR from 'swr'
-import { useFetch, useSearchParam } from '.'
+import { useSearchParam } from '.'
 import { importWasm } from '../helpers/utils'
 import type { Atlas, Meshes } from '../helpers/types'
 import { blitChunk64ToWorld, encodeImagePNG, extractVoxelArraysFromWorldPNG } from '../helpers/world/atlas'
-import { createChunks, applyVoxelDataToChunks, gather } from '../helpers/world/chunk'
+import { createChunks, gather, meshing } from '../helpers/world/chunk'
 import { chunkId } from '../helpers'
 
 const makeDemoParsed = () => {
@@ -26,7 +26,7 @@ const makeDemoParsed = () => {
                         [x1, y0, z1],
                         [x1, y1, z1],
                         [x0, y1, z1],
-                ] as any
+                ]
                 const F = [
                         [0, 1, 2, 3],
                         [5, 4, 7, 6],
@@ -59,61 +59,47 @@ const makeDemoParsed = () => {
 
 export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; zoom: number }) => {
         const glb = useSearchParam('glb')
-        const cnt = useFetch<{ count: number }>('chunks', () => client.api.v1.chunks.$get()).data as any
-        const should = cnt && typeof cnt.count === 'number' && cnt.count === 0
         const useRegion = region && !glb
-        const key = should ? (useRegion ? ['vox-3d', region.lat, region.lng, region.zoom] : ['vox', glb || 'demo']) : null
+        const key = useRegion ? ['vox-3d', region.lat, region.lng, region.zoom] : ['vox', glb || 'demo']
 
         const swr = useSWR<{ atlas: Atlas; mesh: Meshes }>(
                 key,
                 async () => {
-                        if (useRegion && region) {
-                                const query = { lat: region.lat, lng: region.lng, zoom: String(region.zoom) }
-                                const exists = await client.api.v1.atlas.exists.$get({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) } })
-                                if (exists.ok) {
-                                        const res = await client.api.v1.atlas.$get({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) } })
+                        if (!region) return undefined as any
+                        const query = { lat: region.lat, lng: region.lng, zoom: String(region.zoom) }
+                        const head = await fetch(`/api/v1/atlas?lat=${query.lat}&lng=${query.lng}&zoom=${query.zoom}`, { method: 'HEAD' })
+                        if (head.ok) {
+                                const res = await client.api.v1.atlas.$get({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) } })
+                                const isPNG = String(res.headers.get('content-type') || '').includes('image/png')
+                                if (isPNG) {
                                         const ab = await res.arrayBuffer()
-                                        const voxMap = await extractVoxelArraysFromWorldPNG(ab)
-                                        const chunksMap = createChunks() as any
-                                        for (const [k, rgba] of voxMap) {
-                                                const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
-                                                const id = chunkId(i, j, l)
-                                                const chunk = chunksMap.get(id)
-                                                if (!chunk) continue
-                                                const out = new Uint8Array(16 * 16 * 16)
-                                                for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
-                                                chunk.vox.set(out)
-                                                chunk.dirty = true
-                                                chunk.gen = true
+                                        if (ab && ab.byteLength > 0) {
+                                                const voxMap = await extractVoxelArraysFromWorldPNG(ab)
+                                                if (voxMap.size > 0) {
+                                                        const chunksMap = createChunks() as any
+                                                        for (const [k, rgba] of voxMap) {
+                                                                const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
+                                                                const id = chunkId(i, j, l)
+                                                                const chunk = chunksMap.get(id)
+                                                                if (!chunk) continue
+                                                                const out = new Uint8Array(16 * 16 * 16)
+                                                                for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
+                                                                chunk.vox.set(out)
+                                                                chunk.visible = true
+                                                                chunk.dirty = true
+                                                                chunk.gen = true
+                                                        }
+                                                        meshing(chunksMap)
+                                                        const m = gather(chunksMap)
+                                                        const url = `/api/v1/atlas?lat=${query.lat}&lng=${query.lng}&zoom=${query.zoom}`
+                                                        return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
+                                                }
                                         }
-                                        const m = gather(chunksMap)
-                                        const url = `/api/v1/atlas?lat=${query.lat}&lng=${query.lng}&zoom=${query.zoom}`
-                                        return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                                 }
-                                const assetId = 96188
-                                const voxRes = await client.api.v1.tiles.cesium[':assetId'].voxelize.$post({ param: { assetId: String(assetId) }, json: { size: 16 } as any })
-                                const meta = (await voxRes.json()) as any
-                                const url = meta.atlasUrl as string
-                                const ab = await fetch(url).then((r) => r.arrayBuffer())
-                                const voxMap = await extractVoxelArraysFromWorldPNG(ab)
-                                const chunksMap = createChunks() as any
-                                for (const [k, rgba] of voxMap) {
-                                        const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
-                                        const id = chunkId(i, j, l)
-                                        const chunk = chunksMap.get(id)
-                                        if (!chunk) continue
-                                        const out = new Uint8Array(16 * 16 * 16)
-                                        for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
-                                        chunk.vox.set(out)
-                                        chunk.dirty = true
-                                        chunk.gen = true
-                                }
-                                const m = gather(chunksMap)
-                                await client.api.v1.atlas.$put({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) }, body: new Uint8Array(await (await fetch(url)).arrayBuffer()) as any, headers: { 'content-type': 'image/png' } as any })
-                                return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                         }
-
-                        // Default demo voxelization
+                        const assetId = 96188
+                        const glbRes = await client.api.v1.tiles.cesium[':assetId'].gltf.$get({ param: { assetId: String(assetId) } })
+                        const _ab = await glbRes.arrayBuffer()
                         const wasm: any = await importWasm()
                         const parsed = makeDemoParsed()
                         const arr = wasm.voxelize_glb(parsed, 16, 16, 16) as any
@@ -124,15 +110,29 @@ export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; 
                                 blitChunk64ToWorld(c.rgba, ci, cj, ck, atlasRGBA)
                         }
                         const png = await encodeImagePNG(atlasRGBA, 4096, 4096)
-                        const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
-                        const built = { file: { key: 'atlas.png', data: png, raw: atlasRGBA }, dims: { size: [256, 256, 256], center: [128, 128, 128] } } as any
+                        await client.api.v1.atlas.$put({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) }, body: png as any, headers: { 'content-type': 'image/png' } as any })
+                        const voxMap = await extractVoxelArraysFromWorldPNG(png.buffer)
                         const chunksMap = createChunks() as any
-                        await applyVoxelDataToChunks(chunksMap, built)
+                        for (const [k, rgba] of voxMap) {
+                                const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
+                                const id = chunkId(i, j, l)
+                                const chunk = chunksMap.get(id)
+                                if (!chunk) continue
+                                const out = new Uint8Array(16 * 16 * 16)
+                                for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
+                                chunk.vox.set(out)
+                                chunk.visible = true
+                                chunk.dirty = true
+                                chunk.gen = true
+                        }
+                        meshing(chunksMap)
                         const m = gather(chunksMap)
-                        return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
+                        const objUrl = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
+                        return { atlas: { src: objUrl, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                 },
                 { revalidateOnFocus: false, revalidateOnReconnect: false, refreshInterval: 0, shouldRetryOnError: false }
         )
-        console.log(swr)
+        // ↓↓↓ DO NOT REMOVE↓↓↓
+        console.log(swr.data)
         return swr.data
 }
