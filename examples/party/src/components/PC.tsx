@@ -2,7 +2,7 @@ import { on } from '../hooks'
 import { GearIcon, PersonIcon, GlobeIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
 import type { Props } from './types'
 
-const PC = ({ isHUD, isMenu, isModal, hasProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
+const PC = ({ isHUD, isMenu, isModal, hasProfile, Colors, culturalWorld, page = '1', children, onSignIn }: Props) => {
         return (
                 <div className="fixed inset-0 text-black">
                         <div className="fixed inset-0 -z-10">{children}</div>
@@ -48,7 +48,7 @@ const PC = ({ isHUD, isMenu, isModal, hasProfile, traditionalColors, culturalWor
                                                         <button>{culturalWorld?.seasonalCycle || '春'}</button>
                                                 </div>
                                                 <div className="glass rounded-xl">
-                                                        <button>伝統色 {traditionalColors?.length || 0}</button>
+                                                        <button>伝統色 {Colors?.length || 0}</button>
                                                 </div>
                                         </div>
                                 </div>

@@ -1,14 +1,14 @@
 // Dynamic color data loading from D1 backend
-let TRADITIONAL_COLORS_DATA: any[] = []
+let _COLORS_DATA: any[] = []
 
-export const loadTraditionalColors = async (): Promise<void> => {
-        TRADITIONAL_COLORS_DATA = []
+export const loadColors = async (): Promise<void> => {
+        _COLORS_DATA = []
 }
 
-export const loadTraditionalColorsWithClient = async (client: any): Promise<void> => {
+export const loadColorsWithClient = async (client: any): Promise<void> => {
         const res = await client.api.v1.colors.$get()
         const colors = (await res.json()) as any
-        TRADITIONAL_COLORS_DATA = colors.map((color: any) => ({
+        _COLORS_DATA = colors.map((color: any) => ({
                 colorNameJa: color.colorNameJa,
                 colorNameZh: color.colorNameZh,
                 colorNameEn: color.colorNameEn,
@@ -20,21 +20,21 @@ export const loadTraditionalColorsWithClient = async (client: any): Promise<void
         }))
 }
 
-export const getAllTraditionalColors = () => TRADITIONAL_COLORS_DATA
+export const getAllColors = () => _COLORS_DATA
 
-export const getColorsBySeasonalAssociation = (season: string) => TRADITIONAL_COLORS_DATA.filter((color) => color.seasonalAssociation === season)
+export const getColorsBySeasonalAssociation = (season: string) => _COLORS_DATA.filter((color) => color.seasonalAssociation === season)
 
-export const getColorsByElement = (element: string) => TRADITIONAL_COLORS_DATA.filter((color) => color.element === element)
+export const getColorsByElement = (element: string) => _COLORS_DATA.filter((color) => color.element === element)
 
-export const findNearestTraditionalColor = (rgb: number) => {
-        let closest = getAllTraditionalColors()[0]
+export const findNearestColor = (rgb: number) => {
+        let closest = getAllColors()[0]
         let minDistance = Infinity
 
         const r1 = (rgb >>> 16) & 0xff
         const g1 = (rgb >>> 8) & 0xff
         const b1 = rgb & 0xff
 
-        for (const color of getAllTraditionalColors()) {
+        for (const color of getAllColors()) {
                 const r2 = (color.rgbValue >>> 16) & 0xff
                 const g2 = (color.rgbValue >>> 8) & 0xff
                 const b2 = color.rgbValue & 0xff
@@ -59,8 +59,8 @@ export type SemanticVoxel = {
         behavioralSeed: number
 }
 
-// Traditional color name mapping (simplified subset for demo)
-const TRADITIONAL_COLORS = new Map([
+//  color name mapping (simplified subset for demo)
+const _COLORS = new Map([
         ['春霞', { rgb: 0xe8d5b7, season: 'spring', meaning: 'spring_mist' }],
         ['紅葉', { rgb: 0xcd5c5c, season: 'autumn', meaning: 'autumn_leaves' }],
         ['月白', { rgb: 0xf8f8ff, season: 'night', meaning: 'moon_white' }],
@@ -92,7 +92,7 @@ export const decodeSemanticVoxel = (encoded: number): SemanticVoxel => {
 }
 
 export const findColorName = (rgb: number): string | null => {
-        for (const [name, data] of TRADITIONAL_COLORS) {
+        for (const [name, data] of _COLORS) {
                 if (Math.abs(data.rgb - rgb) < 0x1000) {
                         return name // Approximate match
                 }
@@ -100,8 +100,8 @@ export const findColorName = (rgb: number): string | null => {
         return null
 }
 
-export const traditionalColorToRgb = (colorName: string): number => {
-        const colorData = TRADITIONAL_COLORS.get(colorName)
+export const ColorToRgb = (colorName: string): number => {
+        const colorData = _COLORS.get(colorName)
         return colorData?.rgb || 0x808080 // Default gray
 }
 

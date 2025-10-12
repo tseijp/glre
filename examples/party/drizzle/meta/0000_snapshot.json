@@ -1,9 +1,178 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "9276da55-7921-427b-9b85-ab17b4953b01",
+  "id": "d66baa47-d7d0-4681-a68c-8480c941faf7",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
+    "activity": {
+      "name": "activity",
+      "columns": {
+        "activity_id": {
+          "name": "activity_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "event_id": {
+          "name": "event_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity_name": {
+          "name": "activity_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "activity_description": {
+          "name": "activity_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_instructions": {
+          "name": "cultural_instructions",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "required_skill_level": {
+          "name": "required_skill_level",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": 1
+        },
+        "max_participants": {
+          "name": "max_participants",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "scheduled_time": {
+          "name": "scheduled_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "activity_event_id_cultural_event_event_id_fk": {
+          "name": "activity_event_id_cultural_event_event_id_fk",
+          "tableFrom": "activity",
+          "tableTo": "cultural_event",
+          "columnsFrom": [
+            "event_id"
+          ],
+          "columnsTo": [
+            "event_id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
+    "color": {
+      "name": "color",
+      "columns": {
+        "color_id": {
+          "name": "color_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "color_name_zh": {
+          "name": "color_name_zh",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color_name_ja": {
+          "name": "color_name_ja",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "color_name_en": {
+          "name": "color_name_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "rgb_value": {
+          "name": "rgb_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "seasonal_association": {
+          "name": "seasonal_association",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "cultural_significance": {
+          "name": "cultural_significance",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "historical_context": {
+          "name": "historical_context",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "usage_guidelines": {
+          "name": "usage_guidelines",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        }
+      },
+      "indexes": {
+        "color_rgb_idx": {
+          "name": "color_rgb_idx",
+          "columns": [
+            "rgb_value"
+          ],
+          "isUnique": false
+        },
+        "color_season_idx": {
+          "name": "color_season_idx",
+          "columns": [
+            "seasonal_association"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "checkConstraints": {}
+    },
     "account": {
       "name": "account",
       "columns": {
@@ -282,10 +451,10 @@
         }
       },
       "foreignKeys": {
-        "color_usage_log_color_id_traditional_color_color_id_fk": {
-          "name": "color_usage_log_color_id_traditional_color_color_id_fk",
+        "color_usage_log_color_id_color_color_id_fk": {
+          "name": "color_usage_log_color_id_color_color_id_fk",
           "tableFrom": "color_usage_log",
-          "tableTo": "traditional_color",
+          "tableTo": "color",
           "columnsFrom": [
             "color_id"
           ],
@@ -627,10 +796,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "cultural_context_color_id_traditional_color_color_id_fk": {
-          "name": "cultural_context_color_id_traditional_color_color_id_fk",
+        "cultural_context_color_id_color_color_id_fk": {
+          "name": "cultural_context_color_id_color_color_id_fk",
           "tableFrom": "cultural_context",
-          "tableTo": "traditional_color",
+          "tableTo": "color",
           "columnsFrom": [
             "color_id"
           ],
@@ -1066,8 +1235,8 @@
           "notNull": true,
           "autoincrement": false
         },
-        "traditional_wisdom": {
-          "name": "traditional_wisdom",
+        "wisdom": {
+          "name": "wisdom",
           "type": "text",
           "primaryKey": false,
           "notNull": false,
@@ -1416,175 +1585,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "traditional_activity": {
-      "name": "traditional_activity",
-      "columns": {
-        "activity_id": {
-          "name": "activity_id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "event_id": {
-          "name": "event_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "activity_name": {
-          "name": "activity_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "activity_description": {
-          "name": "activity_description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "cultural_instructions": {
-          "name": "cultural_instructions",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "required_skill_level": {
-          "name": "required_skill_level",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false,
-          "default": 1
-        },
-        "max_participants": {
-          "name": "max_participants",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "scheduled_time": {
-          "name": "scheduled_time",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {
-        "traditional_activity_event_id_cultural_event_event_id_fk": {
-          "name": "traditional_activity_event_id_cultural_event_event_id_fk",
-          "tableFrom": "traditional_activity",
-          "tableTo": "cultural_event",
-          "columnsFrom": [
-            "event_id"
-          ],
-          "columnsTo": [
-            "event_id"
-          ],
-          "onDelete": "cascade",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "checkConstraints": {}
-    },
-    "traditional_color": {
-      "name": "traditional_color",
-      "columns": {
-        "color_id": {
-          "name": "color_id",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "color_name_zh": {
-          "name": "color_name_zh",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "color_name_ja": {
-          "name": "color_name_ja",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "color_name_en": {
-          "name": "color_name_en",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "rgb_value": {
-          "name": "rgb_value",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "autoincrement": false
-        },
-        "seasonal_association": {
-          "name": "seasonal_association",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "cultural_significance": {
-          "name": "cultural_significance",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "historical_context": {
-          "name": "historical_context",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        },
-        "usage_guidelines": {
-          "name": "usage_guidelines",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false,
-          "autoincrement": false
-        }
-      },
-      "indexes": {
-        "traditional_color_rgb_idx": {
-          "name": "traditional_color_rgb_idx",
-          "columns": [
-            "rgb_value"
-          ],
-          "isUnique": false
-        },
-        "traditional_color_season_idx": {
-          "name": "traditional_color_season_idx",
-          "columns": [
-            "seasonal_association"
-          ],
-          "isUnique": false
-        }
-      },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "checkConstraints": {}

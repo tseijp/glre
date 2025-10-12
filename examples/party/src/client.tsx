@@ -7,7 +7,7 @@ import PC from './components/PC'
 import SP from './components/SP'
 import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
-import { createDefaultWorld, loadTraditionalColorsWithClient } from './helpers'
+import { createDefaultWorld, loadColorsWithClient } from './helpers'
 import { useVoxelWorld } from './hooks/useVoxelWorld'
 import { useEffect, useState, useMemo } from 'react'
 import type { AppType } from '.'
@@ -57,7 +57,7 @@ export const App = () => {
         }, [])
 
         useEffect(() => {
-                loadTraditionalColorsWithClient(client)
+                loadColorsWithClient(client)
         }, [])
 
         const onRegionChange = (lat: number, lng: number, zoom?: number) => {
@@ -75,7 +75,7 @@ export const App = () => {
         const hasProfile = !!profile
         const canSignIn = !profile
         const isSignedIn = !!profile
-        const traditionalColors = colors || []
+        const Colors = colors || []
 
         const onSemanticVoxel = (v: any) => client.api.v1.voxels.$post({ json: v })
         const children = (
@@ -98,7 +98,7 @@ export const App = () => {
                 hasProfile,
                 canSignIn,
                 isSignedIn,
-                traditionalColors,
+                Colors,
                 culturalWorld,
                 culturalEvents: Array.isArray(events) ? events : [],
                 seasonalColors: colors?.filter((c: any) => c.seasonalAssociation === culturalWorld?.seasonalCycle) || [],
@@ -109,7 +109,7 @@ export const App = () => {
                 isBuilding,
                 //  metaverse 3D Tiles features
                 isMode: true,
-                hasTraditionalColors: true,
+                hasColors: true,
                 isSemanticVoxels: true,
                 children,
         }

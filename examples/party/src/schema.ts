@@ -168,8 +168,8 @@ export const semanticVoxels = sqliteTable(
         (table) => [index('semantic_voxel_chunk_idx').on(table.chunkId, table.localX, table.localY, table.localZ)]
 )
 
-export const traditionalColors = sqliteTable(
-        'traditional_color',
+export const Colors = sqliteTable(
+        'color',
         {
                 colorId: text('color_id')
                         .primaryKey()
@@ -183,7 +183,7 @@ export const traditionalColors = sqliteTable(
                 historicalContext: text('historical_context', { mode: 'json' }),
                 usageGuidelines: text('usage_guidelines', { mode: 'json' }),
         },
-        (table) => [index('traditional_color_rgb_idx').on(table.rgbValue), index('traditional_color_season_idx').on(table.seasonalAssociation)]
+        (table) => [index('color_rgb_idx').on(table.rgbValue), index('color_season_idx').on(table.seasonalAssociation)]
 )
 
 export const culturalEvents = sqliteTable(
@@ -314,7 +314,7 @@ export const eventParticipation = sqliteTable(
         (table) => [index('event_participation_unique_idx').on(table.eventId, table.userId)]
 )
 
-export const traditionalActivities = sqliteTable('traditional_activity', {
+export const Activities = sqliteTable('activity', {
         activityId: text('activity_id')
                 .primaryKey()
                 .$defaultFn(() => crypto.randomUUID()),
@@ -358,7 +358,7 @@ export const knowledgeSharing = sqliteTable(
                         .notNull()
                         .references(() => users.id, { onDelete: 'cascade' }),
                 knowledgeType: text('knowledge_type').notNull(),
-                traditionalWisdom: text('traditional_wisdom', { mode: 'json' }),
+                Wisdom: text('wisdom', { mode: 'json' }),
                 culturalContext: text('cultural_context'),
                 sharedAt: integer('shared_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
                 accessLevel: text('access_level').default('community'),
@@ -374,7 +374,7 @@ export const colorUsageLogs = sqliteTable(
                         .$defaultFn(() => crypto.randomUUID()),
                 colorId: text('color_id')
                         .notNull()
-                        .references(() => traditionalColors.colorId, { onDelete: 'cascade' }),
+                        .references(() => Colors.colorId, { onDelete: 'cascade' }),
                 userId: text('user_id')
                         .notNull()
                         .references(() => users.id, { onDelete: 'cascade' }),
@@ -390,7 +390,7 @@ export const culturalContexts = sqliteTable('cultural_context', {
         contextId: text('context_id')
                 .primaryKey()
                 .$defaultFn(() => crypto.randomUUID()),
-        colorId: text('color_id').references(() => traditionalColors.colorId, { onDelete: 'cascade' }),
+        colorId: text('color_id').references(() => Colors.colorId, { onDelete: 'cascade' }),
         contentId: text('content_id').references(() => educationalContent.contentId, { onDelete: 'cascade' }),
         contextType: text('context_type').notNull(),
         culturalMeaning: text('cultural_meaning', { mode: 'json' }),

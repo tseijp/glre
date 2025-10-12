@@ -1,9 +1,9 @@
-import { loadTraditionalColors, getColorsBySeasonalAssociation } from '../voxel/colors'
+import { loadColors, getColorsBySeasonalAssociation } from '../voxel/colors'
 export { initAtlasWorld } from './atlas'
-import { traditionalColorToRgb } from '../voxel/colors'
+import { ColorToRgb } from '../voxel/colors'
 import { CHUNK, GRID } from '../utils'
 
-//  world generation based on traditional principles
+//  world generation based on  principles
 export type Region = {
         theme: string
         season: string
@@ -19,7 +19,7 @@ export type World = {
         culturalNarrative: string
 }
 
-// Traditional landscape principles for world generation
+//  landscape principles for world generation
 const CULTURAL_THEMES = {
         zen_garden: {
                 colors: ['雪白', '青竹色', '海松色'],
@@ -45,18 +45,18 @@ const CULTURAL_THEMES = {
 
 export const generateWorld = async (culturalTheme: string = 'zen_garden', seasonalSettings: any = {}): Promise<World> => {
         // Initialize color system if not loaded
-        await loadTraditionalColors()
+        await loadColors()
         const theme = CULTURAL_THEMES[culturalTheme as keyof typeof CULTURAL_THEMES] || CULTURAL_THEMES.zen_garden
         const currentSeason = seasonalSettings.season || 'spring'
 
-        // Generate regions based on traditional principles
+        // Generate regions based on  principles
         const regions: Region[] = []
 
         // Central sacred space
         regions.push({
                 theme: 'sacred_center',
                 season: currentSeason,
-                colors: theme.colors.map(traditionalColorToRgb),
+                colors: theme.colors.map(ColorToRgb),
                 culturalElements: theme.elements,
                 spiritualSignificance: 'center_of_harmony',
         })

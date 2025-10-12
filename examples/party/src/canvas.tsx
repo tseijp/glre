@@ -2,7 +2,7 @@ import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo, useEffect, useState, useRef } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxels, dec, enc, face, findNearestTraditionalColor, K, raycast, screenToWorldRay, loadTraditionalColors } from './helpers'
+import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxels, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
@@ -29,13 +29,15 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
 
         useEffect(() => {
                 const init = async () => {
-                        await loadTraditionalColors()
+                        await loadColors()
                         const world = await createDefaultWorld()
                         setWorld(world)
                         onReady?.()
                 }
                 init()
-                return () => { processor.cleanup() }
+                return () => {
+                        processor.cleanup()
+                }
         }, [])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
@@ -52,7 +54,12 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 instanceCount: instCount,
                 loop() {
                         const next = pendingMeshRef.current
-                        if (next) { meshes.applyChunks?.(gl, next as any); gl.instanceCount = (next as any).cnt || 1; setInstCount((next as any).cnt || 1); pendingMeshRef.current = null }
+                        if (next) {
+                                meshes.applyChunks?.(gl, next as any)
+                                gl.instanceCount = (next as any).cnt || 1
+                                setInstCount((next as any).cnt || 1)
+                                pendingMeshRef.current = null
+                        }
                         player.step(gl)
                 },
                 resize() {
@@ -60,8 +67,15 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 },
         })
 
-        useEffect(() => { if (!atlas) return; shader.updateAtlas(atlas as any) }, [atlas, shader])
-        useEffect(() => { if (!mesh) return; pendingMeshRef.current = mesh as any; setInstCount((mesh as any).cnt || 1) }, [mesh])
+        useEffect(() => {
+                if (!atlas) return
+                shader.updateAtlas(atlas as any)
+        }, [atlas, shader])
+        useEffect(() => {
+                if (!mesh) return
+                pendingMeshRef.current = mesh as any
+                setInstCount((mesh as any).cnt || 1)
+        }, [mesh])
 
         const click = (hit?: Hit, near?: number[]) => {
                 if (!hit || !culturalWorld) return
@@ -72,7 +86,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 const currentSeason = culturalWorld.seasonalCycle
                 const baseColor = 0xfef4f4 // 桜色 (cherry blossom)
                 const culturalColor = applySeasonalTransform(baseColor, currentSeason, 0.8)
-                const traditionalColor = findNearestTraditionalColor(culturalColor)
+                const Color = findNearestColor(culturalColor)
 
                 const semanticVoxel = {
                         chunkId: 'cultural-world-default',
@@ -81,7 +95,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         localZ: xyz[2] % 16,
                         primaryKanji: '桜',
                         secondaryKanji: '色',
-                        rgbValue: traditionalColor.rgbValue,
+                        rgbValue: Color.rgbValue,
                         alphaProperties: 255,
                         behavioralSeed: Math.floor(Math.random() * 256),
                 }

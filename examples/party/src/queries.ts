@@ -1,6 +1,6 @@
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/d1'
-import { users, userProfiles, worlds, worldRegions, voxelChunks, semanticVoxels, traditionalColors, culturalEvents, communities, communityMemberships, educationalContent, culturalAchievements, learningProgress, knowledgeSharing, colorUsageLogs } from './schema'
+import { users, userProfiles, worlds, worldRegions, voxelChunks, semanticVoxels, Colors, culturalEvents, communities, communityMemberships, educationalContent, culturalAchievements, learningProgress, knowledgeSharing, colorUsageLogs } from './schema'
 
 export const getUserBySub = (DB: D1Database, sub: string) => drizzle(DB).select().from(users).where(eq(users.id, sub)).limit(1)
 
@@ -16,11 +16,11 @@ export const getVoxelChunks = (DB: D1Database, regionId: string) => drizzle(DB).
 
 export const getSemanticVoxels = (DB: D1Database, chunkId: string) => drizzle(DB).select().from(semanticVoxels).where(eq(semanticVoxels.chunkId, chunkId))
 
-export const getTraditionalColors = (DB: D1Database, seasonalAssociation?: string) =>
+export const getColors = (DB: D1Database, seasonalAssociation?: string) =>
         drizzle(DB)
                 .select()
-                .from(traditionalColors)
-                .where(seasonalAssociation ? eq(traditionalColors.seasonalAssociation, seasonalAssociation) : undefined)
+                .from(Colors)
+                .where(seasonalAssociation ? eq(Colors.seasonalAssociation, seasonalAssociation) : undefined)
 
 export const getEvents = (DB: D1Database, timeFrom: Date, timeTo: Date) =>
         drizzle(DB)
@@ -135,12 +135,12 @@ export const recordColorUsage = (DB: D1Database, colorId: string, userId: string
                 seasonalRelevance,
         })
 
-export const shareKnowledge = (DB: D1Database, communityId: string, sharerId: string, knowledgeType: string, traditionalWisdom: string, culturalContext: string, accessLevel = 'community') =>
+export const shareKnowledge = (DB: D1Database, communityId: string, sharerId: string, knowledgeType: string, Wisdom: string, culturalContext: string, accessLevel = 'community') =>
         drizzle(DB).insert(knowledgeSharing).values({
                 communityId,
                 sharerId,
                 knowledgeType,
-                traditionalWisdom,
+                Wisdom,
                 culturalContext,
                 accessLevel,
         })

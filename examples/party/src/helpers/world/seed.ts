@@ -1,13 +1,13 @@
 import { drizzle } from 'drizzle-orm/d1'
-import { culturalEvents, educationalContent, traditionalColors } from '../../schema'
+import { culturalEvents, educationalContent, Colors } from '../../schema'
 
 // Static color data to avoid circular dependency
 const JAPANESE_COLORS = [
-        { colorNameJa: '桜色', colorNameEn: 'cherry_blossom', rgbValue: 0xfef4f4, seasonalAssociation: 'spring', culturalSignificance: { traditional: true, spiritual: 'renewal' }, historicalContext: { period: 'heian', significance: 'aristocratic' } },
-        { colorNameJa: '紅葉', colorNameEn: 'autumn_leaves', rgbValue: 0xcd5c5c, seasonalAssociation: 'autumn', culturalSignificance: { traditional: true, spiritual: 'change' }, historicalContext: { period: 'ancient', significance: 'natural' } },
-        { colorNameJa: '月白', colorNameEn: 'moon_white', rgbValue: 0xf8f8ff, seasonalAssociation: 'night', culturalSignificance: { traditional: true, spiritual: 'purity' }, historicalContext: { period: 'ancient', significance: 'spiritual' } },
-        { colorNameJa: '藍色', colorNameEn: 'indigo_blue', rgbValue: 0x165e83, seasonalAssociation: 'summer', culturalSignificance: { traditional: true, spiritual: 'depth' }, historicalContext: { period: 'edo', significance: 'artisan' } },
-        { colorNameJa: '若草', colorNameEn: 'young_grass', rgbValue: 0xc3d825, seasonalAssociation: 'spring', culturalSignificance: { traditional: true, spiritual: 'growth' }, historicalContext: { period: 'ancient', significance: 'natural' } },
+        { colorNameJa: '桜色', colorNameEn: 'cherry_blossom', rgbValue: 0xfef4f4, seasonalAssociation: 'spring', culturalSignificance: { traditinal: true, spiritual: 'renewal' }, historicalContext: { period: 'heian', significance: 'aristocratic' } },
+        { colorNameJa: '紅葉', colorNameEn: 'autumn_leaves', rgbValue: 0xcd5c5c, seasonalAssociation: 'autumn', culturalSignificance: { traditinal: true, spiritual: 'change' }, historicalContext: { period: 'ancient', significance: 'natural' } },
+        { colorNameJa: '月白', colorNameEn: 'moon_white', rgbValue: 0xf8f8ff, seasonalAssociation: 'night', culturalSignificance: { traditinal: true, spiritual: 'purity' }, historicalContext: { period: 'ancient', significance: 'spiritual' } },
+        { colorNameJa: '藍色', colorNameEn: 'indigo_blue', rgbValue: 0x165e83, seasonalAssociation: 'summer', culturalSignificance: { traditinal: true, spiritual: 'depth' }, historicalContext: { period: 'edo', significance: 'artisan' } },
+        { colorNameJa: '若草', colorNameEn: 'young_grass', rgbValue: 0xc3d825, seasonalAssociation: 'spring', culturalSignificance: { traditinal: true, spiritual: 'growth' }, historicalContext: { period: 'ancient', significance: 'natural' } },
 ]
 
 const CHINESE_COLORS = [
@@ -18,18 +18,18 @@ const CHINESE_COLORS = [
         { colorNameZh: '玄水', colorNameEn: 'dark_water', rgbValue: 0x2c3e50, seasonalAssociation: 'winter', element: 'water', culturalSignificance: { wuxing: 'water', direction: 'north' }, historicalContext: { dynasty: 'qing', significance: 'wisdom' } },
 ]
 
-export const seedTraditionalColors = async (DB: D1Database) => {
+export const seedColors = async (DB: D1Database) => {
         const db = drizzle(DB)
 
         // Use static color data to avoid circular dependency
         const japaneseColors = JAPANESE_COLORS
         const chineseColors = CHINESE_COLORS
 
-        // Seed Japanese traditional colors
+        // Seed Japanese  colors
         for (const color of japaneseColors) {
                 try {
                         await db
-                                .insert(traditionalColors)
+                                .insert(Colors)
                                 .values({
                                         colorNameJa: color.colorNameJa,
                                         colorNameEn: color.colorNameEn,
@@ -40,7 +40,7 @@ export const seedTraditionalColors = async (DB: D1Database) => {
                                         usageGuidelines: JSON.stringify({
                                                 appropriate: ['art', 'ceremony', 'meditation'],
                                                 context: color.seasonalAssociation,
-                                                harmony: 'traditional',
+                                                harmony: '',
                                         }),
                                 })
                                 .execute()
@@ -50,11 +50,11 @@ export const seedTraditionalColors = async (DB: D1Database) => {
                 }
         }
 
-        // Seed Chinese traditional colors
+        // Seed Chinese  colors
         for (const color of chineseColors) {
                 try {
                         await db
-                                .insert(traditionalColors)
+                                .insert(Colors)
                                 .values({
                                         colorNameZh: color.colorNameZh,
                                         colorNameEn: color.colorNameEn,
@@ -87,16 +87,16 @@ export const seedEducationalContent = async (DB: D1Database) => {
 
         const culturalLessons = [
                 {
-                        contentTitle: 'Introduction to Traditional Japanese Colors',
+                        contentTitle: 'Introduction to  Japanese Colors',
                         contentType: 'interactive_lesson',
                         culturalContext: 'japanese_aesthetics',
                         difficultyLevel: 1,
                         contentData: JSON.stringify({
-                                introduction: 'Explore the rich world of traditional Japanese colors and their cultural significance',
+                                introduction: 'Explore the rich world of  Japanese colors and their cultural significance',
                                 activities: ['color_identification', 'seasonal_matching', 'cultural_context'],
                                 resources: ['color_wheel', 'seasonal_calendar', 'poetry_examples'],
                         }),
-                        learningObjectives: JSON.stringify(['Recognize 10 traditional Japanese color names', 'Understand seasonal color associations', 'Apply cultural context to color choices']),
+                        learningObjectives: JSON.stringify(['Recognize 10  Japanese color names', 'Understand seasonal color associations', 'Apply cultural context to color choices']),
                         creatorId: 'system',
                 },
                 {
@@ -108,7 +108,7 @@ export const seedEducationalContent = async (DB: D1Database) => {
                                 introduction: 'Learn the ancient Chinese Five Elements (Wu Xing) color system',
                                 elements: ['wood', 'fire', 'earth', 'metal', 'water'],
                                 interactions: ['generating_cycle', 'destructive_cycle'],
-                                applications: ['feng_shui', 'traditional_medicine', 'architecture'],
+                                applications: ['feng_shui', '_medicine', 'architecture'],
                         }),
                         learningObjectives: JSON.stringify(['Understand the Five Elements theory', 'Apply elemental color harmony rules', 'Create balanced color compositions']),
                         creatorId: 'system',
@@ -139,7 +139,7 @@ export const seedEducationalContent = async (DB: D1Database) => {
         return { success: true, count: culturalLessons.length }
 }
 
-// Seed cultural events based on traditional calendar
+// Seed cultural events based on  calendar
 export const seedEvents = async (DB: D1Database) => {
         const db = drizzle(DB)
         const currentYear = new Date().getFullYear()
@@ -152,14 +152,14 @@ export const seedEvents = async (DB: D1Database) => {
                         repeatingAnnual: true,
                         eventDetails: JSON.stringify({
                                 description: 'Celebrate the ephemeral beauty of cherry blossoms',
-                                activities: ['hanami_viewing', 'poetry_composition', 'traditional_dance'],
+                                activities: ['hanami_viewing', 'poetry_composition', '_dance'],
                                 colors: ['桜色', '若草色', '朝霧'],
                                 cultural_meaning: 'appreciation of transient beauty',
                         }),
                         participationRequirements: JSON.stringify({
                                 respectful_behavior: true,
                                 cultural_sensitivity: true,
-                                appropriate_attire: 'traditional_or_respectful',
+                                appropriate_attire: '_or_respectful',
                         }),
                 },
                 {
@@ -169,7 +169,7 @@ export const seedEvents = async (DB: D1Database) => {
                         endTime: new Date(currentYear, 8, 17), // September 17th
                         repeatingAnnual: true,
                         eventDetails: JSON.stringify({
-                                description: 'Traditional moon viewing ceremony with poetry and reflection',
+                                description: ' moon viewing ceremony with poetry and reflection',
                                 activities: ['moon_viewing', 'poetry_sharing', 'tea_ceremony'],
                                 colors: ['月白', '紅葉', '秋白'],
                                 cultural_meaning: 'contemplation and gratitude',
@@ -212,7 +212,7 @@ export const seedEvents = async (DB: D1Database) => {
 }
 
 export const seedAllData = async (DB: D1Database) => {
-        const results = await Promise.all([seedTraditionalColors(DB), seedEducationalContent(DB), seedEvents(DB)])
+        const results = await Promise.all([seedColors(DB), seedEducationalContent(DB), seedEvents(DB)])
 
         return {
                 success: true,

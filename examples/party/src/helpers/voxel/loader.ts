@@ -48,50 +48,46 @@ export type VoxelizedTile = {
 
 export const loadCesiumGltfModel = async (assetId: number, client?: any): Promise<ArrayBuffer | null> => {
         if (!client) return null
-        const res = await client.api.v1.tiles.cesium[':assetId'].gltf.$get({ param: { assetId: String(assetId) } })
-        if (!res.ok) return null
-        return await res.arrayBuffer()
+        const gltf = await client.api.v1.tiles.cesium[':assetId'].gltf.$get({ param: { assetId: String(assetId) } })
+        if (!gltf.ok) return null
+        const ct = (gltf.headers.get && gltf.headers.get('content-type')) || ''
+        if (ct.includes('gltf') || ct.includes('model/gltf-binary')) return await gltf.arrayBuffer()
+        const isJson = ct.includes('json')
+        if (!isJson) return await gltf.arrayBuffer()
+        const ts = await client.api.v1.tiles.cesium[':assetId'].tileset.$get({ param: { assetId: String(assetId) } })
+        if (!ts.ok) return null
+        const meta = (await ts.json()) as any
+        const tileset: any = meta.tileset || {}
+        const q: any[] = []
+        const root = tileset.root || {}
+        q.push(root)
+        let path = ''
+        while (q.length) {
+                const t = q.shift()
+                const c = t?.content || {}
+                const uri = c.uri || c.url || ''
+                if (uri && (uri.endsWith('.b3dm') || uri.endsWith('.i3dm') || uri.endsWith('.glb'))) {
+                        path = uri
+                        break
+                }
+                const ch = t?.children || []
+                for (let i = 0; i < ch.length; i++) q.push(ch[i])
+        }
+        if (!path) return null
+        const tile = await client.api.v1.tiles.cesium[':assetId'].tile.$post({ param: { assetId: String(assetId) }, json: { path } })
+        if (!tile.ok) return null
+        return await tile.arrayBuffer()
 }
 
-const createVoxelizedTile = (region: { lat: number; lng: number; zoom: number }, gltfData?: ArrayBuffer): VoxelizedTile => {
+const createVoxelizedTile = (_region: { lat: number; lng: number; zoom: number }, gltfData?: ArrayBuffer): VoxelizedTile => {
         const size = 64
         const atlas = new Uint8Array(size * size * 4)
-        if (gltfData) {
-                for (let i = 0; i < atlas.length; i += 4) {
-                        const x = (i / 4) % size
-                        const y = Math.floor(i / 4 / size)
-                        const woodColor = [40, 120, 40] // 青 (Blue-Green)
-                        const fireColor = [200, 60, 60] // 紅 (Red)
-                        const earthColor = [160, 140, 80] // 黄 (Yellow)
-                        const metalColor = [200, 200, 200] // 白 (White)
-                        const waterColor = [40, 40, 120] // 玄 (Black-Blue)
-                        const elementIndex = (x + y) % 5
-                        const colors = [woodColor, fireColor, earthColor, metalColor, waterColor]
-                        const [r, g, b] = colors[elementIndex]
-                        const alpha = (x + y) % 3 === 0 ? 255 : 0
-                        atlas[i] = r
-                        atlas[i + 1] = g
-                        atlas[i + 2] = b
-                        atlas[i + 3] = alpha
-                }
-        } else {
-                // Fallback cultural pattern
-                for (let i = 0; i < atlas.length; i += 4) {
-                        const x = (i / 4) % size
-                        const y = Math.floor(i / 4 / size)
-                        const height = Math.sin((x + region.lat * 100) * 0.1) * Math.cos((y + region.lng * 100) * 0.1) * 0.5 + 0.5
-                        const alpha = height > 0.3 ? 255 : 0
-                        // Traditional spring colors (桜色 - cherry blossom)
-                        atlas[i] = Math.floor(height * 200 + 55)
-                        atlas[i + 1] = Math.floor(height * 150 + 100)
-                        atlas[i + 2] = Math.floor(height * 100 + 50)
-                        atlas[i + 3] = alpha
-                }
-        }
+        if (!gltfData) return { atlas, dimensions: [size, size, size], region: _region }
+        atlas.fill(0)
         return {
                 atlas,
                 dimensions: [size, size, size],
-                region,
+                region: _region,
         }
 }
 

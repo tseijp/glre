@@ -6,6 +6,7 @@ import type { Key } from 'swr'
 export * from './useCallback'
 export * from './useSearchParam'
 export * from './useWindowSize'
+export * from './useVoxelWorld'
 
 export const on = (isActive?: boolean, className = '') => (isActive ? className : 'hidden')
 

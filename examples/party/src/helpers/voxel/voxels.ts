@@ -78,7 +78,13 @@ export const createVoxels = (config: Partial<VoxelProcessorConfig> = {}) => {
         }
 }
 
-const parseFromTiles = async (_blob: ArrayBuffer): Promise<any> => ({ tris: [], materials: [], textures: [], aabb: { min: [0, 0, 0], max: [32, 16, 32] }, model: { extent: [32, 16, 32], center: [16, 8, 16] } })
+const parseFromTiles = async (glbBuffer: ArrayBuffer): Promise<any> => {
+        if (!glbBuffer || glbBuffer.byteLength === 0) {
+                return { tris: [], materials: [], textures: [], aabb: { min: [0, 0, 0], max: [32, 16, 32] }, model: { extent: [32, 16, 32], center: [16, 8, 16] } }
+        }
+        const { parseGLB } = await import('../world/glb')
+        return await parseGLB(glbBuffer)
+}
 
 const combineVoxelChunks = async (items: any[], _size: number): Promise<{ data: Uint8Array; raw: Uint8Array }> => {
         const atlas = new Uint8Array(4096 * 4096 * 4)

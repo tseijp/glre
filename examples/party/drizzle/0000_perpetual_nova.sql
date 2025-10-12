@@ -1,3 +1,29 @@
+CREATE TABLE `activity` (
+	`activity_id` text PRIMARY KEY NOT NULL,
+	`event_id` text NOT NULL,
+	`activity_name` text NOT NULL,
+	`activity_description` text,
+	`cultural_instructions` text,
+	`required_skill_level` integer DEFAULT 1,
+	`max_participants` integer,
+	`scheduled_time` integer,
+	FOREIGN KEY (`event_id`) REFERENCES `cultural_event`(`event_id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `color` (
+	`color_id` text PRIMARY KEY NOT NULL,
+	`color_name_zh` text,
+	`color_name_ja` text,
+	`color_name_en` text NOT NULL,
+	`rgb_value` integer NOT NULL,
+	`seasonal_association` text,
+	`cultural_significance` text,
+	`historical_context` text,
+	`usage_guidelines` text
+);
+--> statement-breakpoint
+CREATE INDEX `color_rgb_idx` ON `color` (`rgb_value`);--> statement-breakpoint
+CREATE INDEX `color_season_idx` ON `color` (`seasonal_association`);--> statement-breakpoint
 CREATE TABLE `account` (
 	`userId` text NOT NULL,
 	`type` text NOT NULL,
@@ -36,7 +62,7 @@ CREATE TABLE `color_usage_log` (
 	`appropriateness_score` integer,
 	`seasonal_relevance` integer DEFAULT true,
 	`used_at` integer,
-	FOREIGN KEY (`color_id`) REFERENCES `traditional_color`(`color_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`color_id`) REFERENCES `color`(`color_id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -87,7 +113,7 @@ CREATE TABLE `cultural_context` (
 	`geographical_origin` text,
 	`spiritual_significance` text,
 	`modern_relevance` text,
-	FOREIGN KEY (`color_id`) REFERENCES `traditional_color`(`color_id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`color_id`) REFERENCES `color`(`color_id`) ON UPDATE no action ON DELETE cascade,
 	FOREIGN KEY (`content_id`) REFERENCES `educational_content`(`content_id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
@@ -150,7 +176,7 @@ CREATE TABLE `knowledge_sharing` (
 	`community_id` text NOT NULL,
 	`sharer_id` text NOT NULL,
 	`knowledge_type` text NOT NULL,
-	`traditional_wisdom` text,
+	`wisdom` text,
 	`cultural_context` text,
 	`shared_at` integer,
 	`access_level` text DEFAULT 'community',
@@ -198,32 +224,6 @@ CREATE TABLE `session` (
 	FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
-CREATE TABLE `traditional_activity` (
-	`activity_id` text PRIMARY KEY NOT NULL,
-	`event_id` text NOT NULL,
-	`activity_name` text NOT NULL,
-	`activity_description` text,
-	`cultural_instructions` text,
-	`required_skill_level` integer DEFAULT 1,
-	`max_participants` integer,
-	`scheduled_time` integer,
-	FOREIGN KEY (`event_id`) REFERENCES `cultural_event`(`event_id`) ON UPDATE no action ON DELETE cascade
-);
---> statement-breakpoint
-CREATE TABLE `traditional_color` (
-	`color_id` text PRIMARY KEY NOT NULL,
-	`color_name_zh` text,
-	`color_name_ja` text,
-	`color_name_en` text NOT NULL,
-	`rgb_value` integer NOT NULL,
-	`seasonal_association` text,
-	`cultural_significance` text,
-	`historical_context` text,
-	`usage_guidelines` text
-);
---> statement-breakpoint
-CREATE INDEX `traditional_color_rgb_idx` ON `traditional_color` (`rgb_value`);--> statement-breakpoint
-CREATE INDEX `traditional_color_season_idx` ON `traditional_color` (`seasonal_association`);--> statement-breakpoint
 CREATE TABLE `user_cultural_profile` (
 	`profile_id` text PRIMARY KEY NOT NULL,
 	`user_id` text NOT NULL,
