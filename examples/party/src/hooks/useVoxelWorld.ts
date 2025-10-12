@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, parseGLB, loadCesiumGltfModel } from '../helpers'
+import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, parseGLB, loadCesiumModel } from '../helpers'
 import { useSearchParam } from './useSearchParam'
 import type { Atlas, Meshes } from '../helpers'
 
@@ -48,7 +48,7 @@ export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; 
                         // ↑↑ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↑↑↑
 
                         const wasm: any = await importWasm()
-                        const glbBuf = await loadCesiumGltfModel(assetId, client)
+                        const glbBuf = await loadCesiumModel(assetId, client)
                         if (!glbBuf) return undefined as any
                         const parsed = await parseGLB(glbBuf)
                         const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
@@ -62,7 +62,11 @@ export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; 
                         const png = await encodeImagePNG(atlasRGBA, 4096, 4096)
                         const voxMap = await extractVoxelArraysFromWorldPNG(png.buffer)
                         const m = fillChunks(voxMap)
-                        fetch(q, { method: 'PUT', body: png }).catch(() => {})
+
+                        // ↓↓↓ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↓↓↓
+                        // fetch(q, { method: 'PUT', body: png }).catch(() => {})
+                        // ↑↑ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↑↑↑
+
                         const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
                         return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                 },

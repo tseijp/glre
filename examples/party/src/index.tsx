@@ -251,24 +251,7 @@ const app = new Hono<{ Bindings: Env }>()
                 return c.json(results)
         })
         .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
-        .get('/api/v1/tiles/cesium/:assetId', async (c) => {
-                const assetId = parseInt(c.req.param('assetId'))
-                const cacheKey = `cesium/${assetId}.json`
-                const cached = await c.env.R2.head(cacheKey)
-                if (cached) {
-                        const cachedData = await c.env.R2.get(cacheKey)
-                        if (cachedData) return c.json(await cachedData.json())
-                }
-                const metadataUrl = `https://api.cesium.com/v1/assets/${assetId}`
-                const res = await fetch(metadataUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!res.ok) return c.json({ error: 'Failed to fetch Cesium asset metadata' })
-                const metadata = await res.json()
-                await c.env.R2.put(cacheKey, JSON.stringify(metadata), {
-                        httpMetadata: { contentType: 'application/json' },
-                })
-                return c.json(metadata)
-        })
-        .get('/api/v1/tiles/cesium/:assetId/gltf', async (c) => {
+        .get('/api/v1/cesium/:assetId', async (c) => {
                 const assetId = parseInt(c.req.param('assetId'))
                 if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
                 const endpointUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint`
@@ -276,61 +259,13 @@ const app = new Hono<{ Bindings: Env }>()
                 if (!epRes.ok) return c.body(null, { status: 502 })
                 const ep = (await epRes.json()) as any
                 if (!ep || !ep.url) return c.body(null, { status: 502 })
-                const token: string = ep.accessToken || ep.token || ''
-                const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
+                const token = ep.accessToken || ep.token || ''
+                const headers = token ? { Authorization: `Bearer ${token}` } : void 0
                 const fileRes = await fetch(ep.url, { headers })
                 if (!fileRes.ok) return c.body(null, { status: 502 })
-                const ct = fileRes.headers.get('content-type') || ''
-                const type = ct.includes('gltf') || ct.includes('glb') ? 'model/gltf-binary' : ct || 'application/octet-stream'
-                return new Response(fileRes.body, { headers: { 'content-type': type, 'cache-control': 'private, max-age=60' } })
-        })
-        .post('/api/v1/tiles/cesium/:assetId/tile', async (c) => {
-                const assetId = parseInt(c.req.param('assetId'))
-                if (!c.env.CESIUM_API_KEY) return c.json({ error: 'Cesium API key not configured' }, { status: 500 })
-                const body = await c.req.json()
-                const tileUrl = typeof body?.tileUrl === 'string' ? body.tileUrl : undefined
-                const path = typeof body?.path === 'string' ? body.path : undefined
-                if (!tileUrl && !path) return c.json({ error: 'tileUrl or path required' }, { status: 400 })
-                const endpoint = await fetch(`https://api.cesium.com/v1/assets/${assetId}/endpoint`, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!endpoint.ok) return c.json({ error: 'Failed to get Cesium endpoint' }, { status: 502 })
-                const ep = (await endpoint.json()) as any
-                const token: string = ep.accessToken || ep.token || ''
-                const base = String(ep.url || '').replace(/\/tileset\.json$/, '')
-                const target = tileUrl || (path ? `${base}/${path}` : '')
-                const res = await fetch(target, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
-                if (!res.ok) return c.json({ error: 'Failed to fetch tile' }, { status: 502 })
-                const ab = await res.arrayBuffer()
-                const dv = new DataView(ab)
-                const magic = String.fromCharCode(dv.getUint8(0)) + String.fromCharCode(dv.getUint8(1)) + String.fromCharCode(dv.getUint8(2)) + String.fromCharCode(dv.getUint8(3))
-                const pad8 = (n: number) => (n + 7) & ~7
-                let out: ArrayBuffer | null = null
-                if (magic === 'b3dm') {
-                        const off = 28 + pad8(dv.getUint32(12, true)) + pad8(dv.getUint32(16, true)) + pad8(dv.getUint32(20, true)) + pad8(dv.getUint32(24, true))
-                        out = ab.slice(off)
-                } else if (magic === 'i3dm') {
-                        const gltfFormat = dv.getUint32(28, true)
-                        if (gltfFormat === 1) {
-                                const off = 32 + pad8(dv.getUint32(12, true)) + pad8(dv.getUint32(16, true)) + pad8(dv.getUint32(20, true)) + pad8(dv.getUint32(24, true))
-                                out = ab.slice(off)
-                        }
-                } else if (magic === 'glTF' || magic === 'glb\u0002') {
-                        out = ab
-                }
-                if (!out) return new Response(ab)
-                return new Response(out, { headers: { 'content-type': 'model/gltf-binary' } })
-        })
-        .get('/api/v1/tiles/cesium/:assetId/tileset', async (c) => {
-                const assetId = parseInt(c.req.param('assetId'))
-                if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
-                const epRes = await fetch(`https://api.cesium.com/v1/assets/${assetId}/endpoint`, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!epRes.ok) return c.body(null, { status: 502 })
-                const ep = (await epRes.json()) as any
-                if (!ep?.url) return c.body(null, { status: 502 })
-                const token: string = ep.accessToken || ep.token || ''
-                const ts = await fetch(ep.url, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
-                if (!ts.ok) return c.body(null, { status: 502 })
-                const json = await ts.json()
-                return c.json({ base: String(ep.url).replace(/\/tileset\.json$/, ''), tileset: json })
+                const contentType = fileRes.headers.get('content-type') || 'model/gltf-binary'
+                const respHeaders = { 'content-type': contentType, 'cache-control': 'public, max-age=3600' }
+                return new Response(fileRes.body, { headers: respHeaders })
         })
 
 type AppType = typeof app

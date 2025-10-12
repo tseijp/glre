@@ -4,7 +4,7 @@ import type { Camera } from './player/camera'
 import type { Atlas, Meshes } from './types'
 
 export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
-        const defaultAtlas = atlas || { src: '/texture/world.png', W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }
+        const defaultAtlas = atlas || { src: '', W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }
         const MVP = computeCamera(camera, [1280, 800])
         const iMVP = uniform<'mat4'>(MVP, 'MVP')
         const iAtlas = uniform(defaultAtlas.src, 'iAtlas')

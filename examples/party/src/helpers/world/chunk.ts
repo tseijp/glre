@@ -2,8 +2,6 @@ import { greedyMesh } from './greedy'
 // import { culling } from './culling'
 import { Camera } from '../player/camera'
 import { CHUNK, Chunk, chunkId, Chunks, eachChunk, located, SIZE } from '../utils'
-import { loadRegionTiles, voxelizeRegionTiles, getCachedRegion, estimateRegionBounds } from '../voxel/tiles'
-import type { RegionConfig } from '../voxel/tiles'
 import type { BuiltState } from '../types'
 
 export const createChunks = () => {
