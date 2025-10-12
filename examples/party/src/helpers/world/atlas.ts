@@ -26,9 +26,8 @@ const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
         const img = (await load(buf, ImageLoader, { image: { type: 'data' } })) as any
         const dat = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer.slice(0)) : img.data
         const out = new Map<string, Uint8Array>()
-
-        for (let k = 0; k < 16; k++) {
-                for (let j = 0; j < 16; j++) {
+        for (let k = 0; k < 16; k++)
+                for (let j = 0; j < 16; j++)
                         for (let i = 0; i < 16; i++) {
                                 const dst = new Uint8Array(64 * 64 * 4)
                                 const planeX = k & 3
@@ -43,8 +42,6 @@ const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
                                 }
                                 out.set(i + '.' + j + '.' + k, dst)
                         }
-                }
-        }
         return out
 }
 
@@ -52,9 +49,8 @@ const splitChunk64ToVoxRGBA = (png64: Uint8Array) => {
         const dst = new Uint8Array(16 * 16 * 16 * 4)
         const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
         const put = (x = 0, y = 0, z = 0) => (((z * 16 + y) * 16 + x) * 4) | 0
-
-        for (let z = 0; z < 16; z++) {
-                for (let y = 0; y < 16; y++) {
+        for (let z = 0; z < 16; z++)
+                for (let y = 0; y < 16; y++)
                         for (let x = 0; x < 16; x++) {
                                 const ox = (z & 3) * 16
                                 const oy = (z >> 2) * 16
@@ -65,8 +61,6 @@ const splitChunk64ToVoxRGBA = (png64: Uint8Array) => {
                                 dst[di + 2] = png64[si + 2]
                                 dst[di + 3] = png64[si + 3]
                         }
-                }
-        }
         return dst
 }
 
@@ -77,13 +71,9 @@ export const extractVoxelArraysFromWorldPNG = async (buf: ArrayBuffer) => {
         return out
 }
 
-// Atlas world initialization
 let chunks = new Map<string, Uint8Array>()
-let ready = false
 
 export const FLOOR_MAX_Y = 4
-
-export const isAtlasReady = () => ready
 
 export const initAtlasWorld = async (url: string) => {
         const ab = await fetch(url).then((r) => r.arrayBuffer())
@@ -91,7 +81,12 @@ export const initAtlasWorld = async (url: string) => {
         const to01 = (data: Uint8Array, jChunk: number) => {
                 const out = new Uint8Array(16 * 16 * 16)
                 for (let i = 0, v = 0; i < out.length; i++, v += 4) out[i] = data[v + 3] > 0 ? 1 : 0
-                if (jChunk === 0) for (let z = 0; z < 16; z++) for (let y = 0; y <= FLOOR_MAX_Y && y < 16; y++) for (let x = 0; x < 16; x++) out[x + (y + z * 16) * 16] = 1
+                if (jChunk === 0)
+                        for (let z = 0; z < 16; z++)
+                                for (let y = 0; y <= FLOOR_MAX_Y && y < 16; y++)
+                                        for (let x = 0; x < 16; x++) {
+                                                out[x + (y + z * 16) * 16] = 1
+                                        }
                 return out
         }
         for (const [k, v] of rgba) {
@@ -99,5 +94,4 @@ export const initAtlasWorld = async (url: string) => {
                 const j = parseInt(parts[1] || '0') | 0
                 chunks.set(k, to01(v, j))
         }
-        ready = true
 }

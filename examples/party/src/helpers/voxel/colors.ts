@@ -50,20 +50,6 @@ export const findNearestTraditionalColor = (rgb: number) => {
         return closest
 }
 
-// Seasonal color transformation intensity
-export const getSeasonalIntensity = (season: string, currentDate: Date): number => {
-        const month = currentDate.getMonth() + 1
-        const seasonalMonths = {
-                spring: [3, 4, 5],
-                summer: [6, 7, 8],
-                autumn: [9, 10, 11],
-                winter: [12, 1, 2],
-        }
-
-        const months = seasonalMonths[season as keyof typeof seasonalMonths] || []
-        return months.includes(month) ? 1.0 : 0.3
-}
-
 // Semantic voxel encoding system for cultural data compression
 export type SemanticVoxel = {
         primaryKanji: string
@@ -85,51 +71,17 @@ const TRADITIONAL_COLORS = new Map([
         ['雪白', { rgb: 0xfffff0, season: 'winter', meaning: 'snow_white' }],
 ])
 
-// Kanji character encoding (12-bit index mapping)
-const KANJI_INDEX = new Map([
-        ['春', 0x001],
-        ['夏', 0x002],
-        ['秋', 0x003],
-        ['冬', 0x004],
-        ['霞', 0x011],
-        ['紅', 0x012],
-        ['葉', 0x013],
-        ['月', 0x014],
-        ['白', 0x021],
-        ['桜', 0x022],
-        ['色', 0x023],
-        ['藍', 0x024],
-        ['若', 0x031],
-        ['草', 0x032],
-        ['柿', 0x033],
-        ['雪', 0x034],
-        ['青', 0x041],
-        ['緑', 0x042],
-        ['黄', 0x043],
-        ['紫', 0x044],
-])
-
 export const encodeSemanticVoxel = (voxel: SemanticVoxel): number => {
-        // Pack into 32-bit structure:
-        // [RGB: 24 bits] [Alpha: 8 bits]
-        //  semantic encoding (kanji data preserved in structure)
-
         const rgbPacked = (voxel.rgbValue & 0xffffff) << 8
         const alphaPacked = voxel.alphaProperties & 0xff
-
-        //  semantic encoding preserves traditional knowledge
         return rgbPacked | alphaPacked
 }
 
 export const decodeSemanticVoxel = (encoded: number): SemanticVoxel => {
-        // Extract components from 32-bit value
         const rgbValue = (encoded >>> 8) & 0xffffff
         const alphaProperties = encoded & 0xff
-
-        // For demo, use fallback kanji mapping
         const colorName = findColorName(rgbValue)
         const [primary, secondary] = colorName ? [colorName.charAt(0), colorName.charAt(1)] : ['春', '色']
-
         return {
                 primaryKanji: primary,
                 secondaryKanji: secondary,
@@ -142,8 +94,7 @@ export const decodeSemanticVoxel = (encoded: number): SemanticVoxel => {
 export const findColorName = (rgb: number): string | null => {
         for (const [name, data] of TRADITIONAL_COLORS) {
                 if (Math.abs(data.rgb - rgb) < 0x1000) {
-                        // Approximate match
-                        return name
+                        return name // Approximate match
                 }
         }
         return null
@@ -154,35 +105,24 @@ export const traditionalColorToRgb = (colorName: string): number => {
         return colorData?.rgb || 0x808080 // Default gray
 }
 
-// Seasonal transformation for environmental response
 export const applySeasonalTransform = (baseColor: number, season: string, intensity: number = 1.0): number => {
         const r = (baseColor >>> 16) & 0xff
         const g = (baseColor >>> 8) & 0xff
         const b = baseColor & 0xff
-
         let nr = r
         let ng = g
         let nb = b
-
-        switch (season) {
-                case 'spring':
-                        ng = Math.min(255, g + Math.floor(20 * intensity)) // More green
-                        break
-                case 'summer':
-                        nr = Math.min(255, r + Math.floor(15 * intensity)) // Warmer
-                        break
-                case 'autumn':
-                        nr = Math.min(255, r + Math.floor(25 * intensity)) // More red/orange
-                        ng = Math.max(0, g - Math.floor(10 * intensity))
-                        break
-                case 'winter':
-                        // Desaturate toward white
-                        const avg = (r + g + b) / 3
-                        nr = Math.floor(r + (avg - r) * intensity * 0.3)
-                        ng = Math.floor(g + (avg - g) * intensity * 0.3)
-                        nb = Math.floor(b + (avg - b) * intensity * 0.3)
-                        break
+        if (season === 'spring') ng = Math.min(255, g + Math.floor(20 * intensity)) // More green
+        if (season === 'summer') nr = Math.min(255, r + Math.floor(15 * intensity)) // Warmer
+        if (season === 'autumn') {
+                nr = Math.min(255, r + Math.floor(25 * intensity)) // More red/orange
+                ng = Math.max(0, g - Math.floor(10 * intensity))
         }
-
+        if (season === 'winter') {
+                const avg = (r + g + b) / 3
+                nr = Math.floor(r + (avg - r) * intensity * 0.3)
+                ng = Math.floor(g + (avg - g) * intensity * 0.3)
+                nb = Math.floor(b + (avg - b) * intensity * 0.3)
+        }
         return (nr << 16) | (ng << 8) | nb
 }

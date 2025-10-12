@@ -90,7 +90,6 @@ export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; 
                                         const url = `/api/v1/atlas?lat=${query.lat}&lng=${query.lng}&zoom=${query.zoom}`
                                         return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                                 }
-
                                 const assetId = 96188
                                 const voxRes = await client.api.v1.tiles.cesium[':assetId'].voxelize.$post({ param: { assetId: String(assetId) }, json: { size: 16 } as any })
                                 const meta = (await voxRes.json()) as any
@@ -134,5 +133,6 @@ export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; 
                 },
                 { revalidateOnFocus: false, revalidateOnReconnect: false, refreshInterval: 0, shouldRetryOnError: false }
         )
+        console.log(swr)
         return swr.data
 }

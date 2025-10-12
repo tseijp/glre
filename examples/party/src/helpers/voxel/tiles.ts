@@ -1,8 +1,7 @@
 import { voxelizeCesiumData } from '../voxel/loader'
-import { createVoxelProcessor } from './processor'
+import { createVoxels } from './voxels'
 import type { Tileset, Tile } from '../voxel/loader'
 import type { BuiltState } from '../types'
-import type { Viewport } from '../voxel/traversal'
 
 export type RegionConfig = {
         lat: number
@@ -30,16 +29,13 @@ export const generateRegionId = (config: RegionConfig): string => {
 
 export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRegion> => {
         const regionId = generateRegionId(config)
-
         if (REGION_CACHE.has(regionId)) {
                 const cached = REGION_CACHE.get(regionId)!
                 const isExpired = Date.now() - cached.lastUpdated > 3600000 // 1 hour
                 if (!isExpired) return cached
         }
-
         const tileset = null
         const tiles: Tile[] = []
-
         const region: VoxelizedRegion = {
                 id: regionId,
                 config,
@@ -48,7 +44,6 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
                 voxelData: null,
                 lastUpdated: Date.now(),
         }
-
         REGION_CACHE.set(regionId, region)
         return region
 }
@@ -56,36 +51,18 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
 export const voxelizeRegionTiles = async (region: VoxelizedRegion, size: number = 16): Promise<BuiltState | null> => {
         const asset = region.config.assetId || 96188
         const vox = await voxelizeCesiumData(asset, { lat: region.config.lat, lng: region.config.lng, zoom: region.config.zoom })
-        const proc = createVoxelProcessor()
+        const proc = createVoxels()
         const fake = new Uint8Array(vox.atlas.buffer.slice(0))
         const packed = new Uint8Array(fake.buffer)
-        const built = await proc.processRegion(region.config, packed.buffer)
+        const built = await proc.processRegion(region.config, packed.buffer as ArrayBuffer)
         if (!built.success || !built.data) return null
         region.voxelData = built.data
         return built.data
 }
 
-const concatArrayBuffers = (arr: ArrayBuffer[]) => {
-        if (!arr.length) return new ArrayBuffer(0)
-        const len = arr.reduce((n, b) => n + b.byteLength, 0)
-        const out = new Uint8Array(len)
-        let o = 0
-        for (const b of arr) {
-                out.set(new Uint8Array(b), o)
-                o += b.byteLength
-        }
-        return out.buffer
-}
-
-export const updateRegionVoxels = async (region: VoxelizedRegion, viewport: Viewport): Promise<Tile[]> => {
-        const _ = viewport
-        return []
-}
-
 export const estimateRegionBounds = (lat: number, lng: number, zoom: number): { min: number[]; max: number[] } => {
         const tileSize = 256 / Math.pow(2, zoom)
         const halfSize = tileSize * 0.5
-
         return {
                 min: [lng - halfSize, lat - halfSize, -100],
                 max: [lng + halfSize, lat + halfSize, 100],
@@ -95,31 +72,4 @@ export const estimateRegionBounds = (lat: number, lng: number, zoom: number): { 
 export const getCachedRegion = (config: RegionConfig): VoxelizedRegion | null => {
         const regionId = generateRegionId(config)
         return REGION_CACHE.get(regionId) || null
-}
-
-export const clearRegionCache = (maxAge: number = 3600000): void => {
-        const now = Date.now()
-        for (const [id, region] of REGION_CACHE.entries()) {
-                if (now - region.lastUpdated > maxAge) {
-                        REGION_CACHE.delete(id)
-                }
-        }
-}
-
-export const getRegionCacheStats = (): { count: number; totalTiles: number; memoryUsage: number } => {
-        let totalTiles = 0
-        let memoryUsage = 0
-
-        for (const region of REGION_CACHE.values()) {
-                totalTiles += region.tiles.length
-                if (region.voxelData?.file && typeof region.voxelData.file !== 'string' && region.voxelData.file.data) {
-                        memoryUsage += region.voxelData.file.data.byteLength
-                }
-        }
-
-        return {
-                count: REGION_CACHE.size,
-                totalTiles,
-                memoryUsage,
-        }
 }

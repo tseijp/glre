@@ -24,7 +24,7 @@ export type Ray = {
         dir: vec3
 }
 
-export const slab = (ray: Ray, minB: vec3, maxB: vec3) => {
+const slab = (ray: Ray, minB: vec3, maxB: vec3) => {
         const inv = vec3.fromValues(1 / (ray.dir[0] || 1e-9), 1 / (ray.dir[1] || 1e-9), 1 / (ray.dir[2] || 1e-9))
         const t1 = vec3.mul(vec3.create(), vec3.sub(vec3.create(), minB, ray.origin), inv)
         const t2 = vec3.mul(vec3.create(), vec3.sub(vec3.create(), maxB, ray.origin), inv)
@@ -49,7 +49,6 @@ export const raycast = (ray: Ray, meshes: { pos: number[]; scl: number[]; cnt: n
         const max = vec3.create()
         const off = vec3.fromValues(0, 0, 0)
         const face = vec3.create()
-
         for (let i = 0; i < meshes.cnt; i++) {
                 read(h, meshes.scl, i)
                 read(c, meshes.pos, i)
@@ -65,7 +64,6 @@ export const raycast = (ray: Ray, meshes: { pos: number[]; scl: number[]; cnt: n
                 id = i
                 near = hit.near
         }
-
         if (id < 0) return null
         read(h, meshes.scl, id)
         read(c, meshes.pos, id)

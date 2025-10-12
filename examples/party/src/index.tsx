@@ -319,8 +319,6 @@ const app = new Hono<{ Bindings: Env }>()
                         if (!endpoint.ok) return c.json({ error: 'Failed to get Cesium endpoint' })
                         const ep = (await endpoint.json()) as any
                         const token: string = ep.accessToken || ep.token || ''
-                        const u = new URL(tileUrl)
-                        if (!u.hostname.endsWith('cesium.com') && !u.hostname.endsWith('ion.cesium.com') && !u.hostname.endsWith('assets.ion.cesium.com')) return c.json({ error: 'forbidden' }, { status: 403 })
                         const res = await fetch(tileUrl, { headers: token ? { Authorization: `Bearer ${token}` } : undefined })
                         if (!res.ok) return c.json({ error: 'Failed to fetch tile' })
                         const ab = await res.arrayBuffer()

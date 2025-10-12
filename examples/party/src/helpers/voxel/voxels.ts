@@ -15,33 +15,17 @@ export type ProcessingResult = {
 
 const DEFAULT_CONFIG: VoxelProcessorConfig = { defaultSize: 16, cacheExpiry: 3600000 }
 
-export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {}) => {
+export const createVoxels = (config: Partial<VoxelProcessorConfig> = {}) => {
         const cfg = { ...DEFAULT_CONFIG, ...config }
-
         const processRegion = async (regionConfig: RegionConfig, tileData: ArrayBuffer): Promise<ProcessingResult> => {
                 const { lat, lng, zoom } = regionConfig
                 const size = cfg.defaultSize
-
-                // Check R2 cache first
                 const cached = await retrieveFromCache(lat, lng, zoom, size)
-                if (cached) {
-                        return {
-                                success: true,
-                                data: cached,
-                                fromCache: true,
-                        }
-                }
-
-                // Process with WASM if not cached
+                if (cached) return { success: true, data: cached, fromCache: true }
                 const processed = await processWithWasm(tileData, size)
-                if (processed.success && processed.data) {
-                        // Store in R2 cache
-                        await storeInCache(lat, lng, zoom, size, processed.data)
-                }
-
+                if (processed.success && processed.data) await storeInCache(lat, lng, zoom, size, processed.data)
                 return processed
         }
-
         const retrieveFromCache = async (lat: number, lng: number, zoom: number, _size: number): Promise<BuiltState | null> => {
                 const url = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
                 const chk = await fetch(`/api/v1/atlas/exists?lat=${lat}&lng=${lng}&zoom=${zoom}`)
@@ -51,13 +35,11 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
                 const buf = new Uint8Array(await res.arrayBuffer())
                 return { file: { key: 'atlas.png', data: buf, raw: buf, tag: generateRegionId({ lat, lng, zoom, bounds: { min: [], max: [] } }) }, dims: { size: [256, 256, 256], center: [128, 128, 128] } }
         }
-
         const storeInCache = async (lat: number, lng: number, zoom: number, _size: number, built: BuiltState): Promise<void> => {
                 if (typeof built.file === 'string') return
                 const png = await encodeImagePNG(built.file.raw!, 4096, 4096)
                 await fetch(`/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`, { method: 'PUT', body: png })
         }
-
         const processWithWasm = async (tileData: ArrayBuffer, size: number): Promise<ProcessingResult> => {
                 const wasm = await importWasm()
                 const parsed = await parseFromTiles(tileData)
@@ -68,39 +50,26 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
                 const built: BuiltState = { file: { key: 'atlas.png', data: atlas.data, raw: atlas.raw, tag: generateProcessingTag(tileData) }, dims: { size: [256, 256, 256], center: [128, 128, 128] } }
                 return { success: true, data: built, fromCache: false }
         }
-
         const batchProcess = async (regions: RegionConfig[], tileDataMap: Map<string, ArrayBuffer>): Promise<Map<string, ProcessingResult>> => {
                 const results = new Map<string, ProcessingResult>()
-
-                // Process regions in parallel with limit
                 const BATCH_SIZE = 3
                 for (let i = 0; i < regions.length; i += BATCH_SIZE) {
                         const batch = regions.slice(i, i + BATCH_SIZE)
                         const promises: Promise<[string, ProcessingResult]>[] = batch.map(async (region) => {
                                 const regionId = generateRegionId(region)
                                 const tileData = tileDataMap.get(regionId)
-
-                                if (!tileData) {
-                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult] as [string, ProcessingResult]
-                                }
-
+                                if (!tileData) return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult] as [string, ProcessingResult]
                                 const result = await processRegion(region, tileData)
                                 return [regionId, result] as [string, ProcessingResult]
                         })
-
                         const batchResults: [string, ProcessingResult][] = await Promise.all(promises)
-                        for (const [id, result] of batchResults) {
-                                results.set(id, result)
-                        }
+                        for (const [id, result] of batchResults) results.set(id, result)
                 }
-
                 return results
         }
-
         const cleanup = async () => {
                 await cancelVoxelizer()
         }
-
         return {
                 processRegion,
                 batchProcess,
@@ -132,8 +101,6 @@ const combineVoxelChunks = async (items: any[], _size: number): Promise<{ data: 
         return { data: atlas, raw: atlas }
 }
 
-const estimateVoxelDimensions = (ext: number[]) => ({ size: ext as any, center: [ext[0] * 0.5, ext[1] * 0.5, ext[2] * 0.5] as any })
-
 const generateProcessingTag = (tileData: ArrayBuffer): string => {
         const hash = Array.from(new Uint8Array(tileData.slice(0, 32)))
                 .map((b) => b.toString(16).padStart(2, '0'))
@@ -141,5 +108,3 @@ const generateProcessingTag = (tileData: ArrayBuffer): string => {
                 .slice(0, 8)
         return `p${hash}`
 }
-
-const convertStoredToBuiltState = (_: any): BuiltState => ({ file: { key: 'atlas.png', data: new Uint8Array(), raw: new Uint8Array(), tag: 'r' }, dims: { size: [256, 256, 256] as any, center: [128, 128, 128] as any } })

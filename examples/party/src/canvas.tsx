@@ -2,7 +2,7 @@ import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo, useEffect, useState } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxelProcessor, dec, encOp, face, findNearestTraditionalColor, K, raycast, screenToWorldRay, loadTraditionalColors } from './helpers'
+import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxels, dec, enc, face, findNearestTraditionalColor, K, raycast, screenToWorldRay, loadTraditionalColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
@@ -26,7 +26,7 @@ export const Canvas = (props: CanvasProps = {}) => {
         const [culturalWorld, setWorld] = useState<any>(null)
         const [pendingMesh, setPendingMesh] = useState<Meshes | null>(null)
 
-        const processor = useMemo(() => createVoxelProcessor(), [])
+        const processor = useMemo(() => createVoxels(), [])
 
         // 初期化のみ。取得系は client.tsx 側で完結させる
         useEffect(() => {
@@ -119,7 +119,7 @@ export const Canvas = (props: CanvasProps = {}) => {
 
                 shader.updateHover(hit, near)
                 meshes.update(gl, xyz)
-                sock.send(encOp(xyz[0], xyz[1], xyz[2]))
+                sock.send(enc(xyz[0], xyz[1], xyz[2]))
         }
 
         const drag = useDrag((d) => {
