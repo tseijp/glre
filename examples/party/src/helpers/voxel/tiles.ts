@@ -1,5 +1,4 @@
-import { loadGoogleMapsTiles, extractTileGeometry } from '../tiles/loader'
-import { createTileTraversal, selectTilesInRegion } from '../tiles/traversal'
+import { voxelizeCesiumData } from '../tiles/loader'
 import { createVoxelProcessor } from './processor'
 import type { Tileset, Tile } from '../tiles/loader'
 import type { BuiltState } from '../types'
@@ -10,7 +9,7 @@ export type RegionConfig = {
         lng: number
         zoom: number
         bounds: { min: number[]; max: number[] }
-        apiKey?: string
+        assetId?: number
 }
 
 export type VoxelizedRegion = {
@@ -38,9 +37,8 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
                 if (!isExpired) return cached
         }
 
-        const tileData = await loadGoogleMapsTiles(config.lat, config.lng, config.zoom, config.apiKey)
-        const tileset = tileData?.tileset || null
-        const tiles = tileset ? selectTilesInRegion(tileset, config.bounds) : []
+        const tileset = null
+        const tiles: Tile[] = []
 
         const region: VoxelizedRegion = {
                 id: regionId,
@@ -56,18 +54,15 @@ export const loadRegionTiles = async (config: RegionConfig): Promise<VoxelizedRe
 }
 
 export const voxelizeRegionTiles = async (region: VoxelizedRegion, size: number = 16): Promise<BuiltState | null> => {
-        if (!region.tiles.length) return null
-        const bufs: ArrayBuffer[] = []
-        for (const t of region.tiles) {
-                const b = extractTileGeometry(t)
-                if (b) bufs.push(b)
-        }
-        const merged = concatArrayBuffers(bufs)
+        const asset = region.config.assetId || 96188
+        const vox = await voxelizeCesiumData(asset, { lat: region.config.lat, lng: region.config.lng, zoom: region.config.zoom })
         const proc = createVoxelProcessor()
-        const res = await proc.processRegion(region.config, merged)
-        if (!res.success || !res.data) return null
-        region.voxelData = res.data
-        return res.data
+        const fake = new Uint8Array(vox.atlas.buffer.slice(0))
+        const packed = new Uint8Array(fake.buffer)
+        const built = await proc.processRegion(region.config, packed.buffer)
+        if (!built.success || !built.data) return null
+        region.voxelData = built.data
+        return built.data
 }
 
 const concatArrayBuffers = (arr: ArrayBuffer[]) => {
@@ -83,18 +78,8 @@ const concatArrayBuffers = (arr: ArrayBuffer[]) => {
 }
 
 export const updateRegionVoxels = async (region: VoxelizedRegion, viewport: Viewport): Promise<Tile[]> => {
-        if (!region.tileset) return []
-
-        const traversal = createTileTraversal(region.tileset)
-        const newTiles = await traversal.update(viewport)
-
-        // Update region tiles if new tiles are available
-        if (newTiles.length > 0) {
-                region.tiles = newTiles
-                region.lastUpdated = Date.now()
-        }
-
-        return newTiles
+        const _ = viewport
+        return []
 }
 
 export const estimateRegionBounds = (lat: number, lng: number, zoom: number): { min: number[]; max: number[] } => {

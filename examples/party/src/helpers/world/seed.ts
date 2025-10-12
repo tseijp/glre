@@ -1,14 +1,29 @@
 import { drizzle } from 'drizzle-orm/d1'
 import { culturalEvents, educationalContent, traditionalColors } from '../../schema'
-import { loadTraditionalColors, getTraditionalColorsData, getChineseColorsData } from '../color/colors'
+
+// Static color data to avoid circular dependency
+const JAPANESE_COLORS = [
+        { colorNameJa: '桜色', colorNameEn: 'cherry_blossom', rgbValue: 0xfef4f4, seasonalAssociation: 'spring', culturalSignificance: { traditional: true, spiritual: 'renewal' }, historicalContext: { period: 'heian', significance: 'aristocratic' } },
+        { colorNameJa: '紅葉', colorNameEn: 'autumn_leaves', rgbValue: 0xcd5c5c, seasonalAssociation: 'autumn', culturalSignificance: { traditional: true, spiritual: 'change' }, historicalContext: { period: 'ancient', significance: 'natural' } },
+        { colorNameJa: '月白', colorNameEn: 'moon_white', rgbValue: 0xf8f8ff, seasonalAssociation: 'night', culturalSignificance: { traditional: true, spiritual: 'purity' }, historicalContext: { period: 'ancient', significance: 'spiritual' } },
+        { colorNameJa: '藍色', colorNameEn: 'indigo_blue', rgbValue: 0x165e83, seasonalAssociation: 'summer', culturalSignificance: { traditional: true, spiritual: 'depth' }, historicalContext: { period: 'edo', significance: 'artisan' } },
+        { colorNameJa: '若草', colorNameEn: 'young_grass', rgbValue: 0xc3d825, seasonalAssociation: 'spring', culturalSignificance: { traditional: true, spiritual: 'growth' }, historicalContext: { period: 'ancient', significance: 'natural' } },
+]
+
+const CHINESE_COLORS = [
+        { colorNameZh: '春霞', colorNameEn: 'spring_mist', rgbValue: 0xe8d5b7, seasonalAssociation: 'spring', element: 'wood', culturalSignificance: { wuxing: 'wood', direction: 'east' }, historicalContext: { dynasty: 'tang', significance: 'poetry' } },
+        { colorNameZh: '紅葉', colorNameEn: 'red_leaves', rgbValue: 0xcd5c5c, seasonalAssociation: 'autumn', element: 'fire', culturalSignificance: { wuxing: 'fire', direction: 'south' }, historicalContext: { dynasty: 'song', significance: 'nature' } },
+        { colorNameZh: '黃土', colorNameEn: 'yellow_earth', rgbValue: 0xa0854b, seasonalAssociation: 'all_seasons', element: 'earth', culturalSignificance: { wuxing: 'earth', direction: 'center' }, historicalContext: { dynasty: 'han', significance: 'imperial' } },
+        { colorNameZh: '白雪', colorNameEn: 'white_snow', rgbValue: 0xf8f8ff, seasonalAssociation: 'winter', element: 'metal', culturalSignificance: { wuxing: 'metal', direction: 'west' }, historicalContext: { dynasty: 'ming', significance: 'purity' } },
+        { colorNameZh: '玄水', colorNameEn: 'dark_water', rgbValue: 0x2c3e50, seasonalAssociation: 'winter', element: 'water', culturalSignificance: { wuxing: 'water', direction: 'north' }, historicalContext: { dynasty: 'qing', significance: 'wisdom' } },
+]
 
 export const seedTraditionalColors = async (DB: D1Database) => {
         const db = drizzle(DB)
 
-        // Load color data from JSON files
-        await loadTraditionalColors()
-        const japaneseColors = getTraditionalColorsData()
-        const chineseColors = getChineseColorsData()
+        // Use static color data to avoid circular dependency
+        const japaneseColors = JAPANESE_COLORS
+        const chineseColors = CHINESE_COLORS
 
         // Seed Japanese traditional colors
         for (const color of japaneseColors) {

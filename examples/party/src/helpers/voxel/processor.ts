@@ -44,8 +44,8 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
 
         const retrieveFromCache = async (lat: number, lng: number, zoom: number, _size: number): Promise<BuiltState | null> => {
                 const url = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
-                const head = await fetch(url, { method: 'HEAD' })
-                if (!head.ok) return null
+                const chk = await fetch(`/api/v1/atlas/exists?lat=${lat}&lng=${lng}&zoom=${zoom}`)
+                if (!chk.ok) return null
                 const res = await fetch(url)
                 if (!res.ok) return null
                 const buf = new Uint8Array(await res.arrayBuffer())
@@ -81,10 +81,7 @@ export const createVoxelProcessor = (config: Partial<VoxelProcessorConfig> = {})
                                 const tileData = tileDataMap.get(regionId)
 
                                 if (!tileData) {
-                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult] as [
-                                                string,
-                                                ProcessingResult,
-                                        ]
+                                        return [regionId, { success: false, fromCache: false, error: 'No tile data' } as ProcessingResult] as [string, ProcessingResult]
                                 }
 
                                 const result = await processRegion(region, tileData)

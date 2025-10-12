@@ -1,7 +1,4 @@
-import { load } from '@loaders.gl/core'
-import { Tiles3DLoader } from '@loaders.gl/3d-tiles'
 import { encodeImagePNG } from '../world/atlas'
-import { timer } from '../utils'
 
 export type TileContent = {
         cartesianOrigin: number[]
@@ -51,25 +48,20 @@ export type VoxelizedTile = {
         region: { lat: number; lng: number; zoom: number }
 }
 
-export const loadGoogleMapsTiles = timer('loadGoogleMapsTiles', async (lat: number, lng: number, zoom: number = 15, apiKey?: string): Promise<TileData | null> => {
-        const base = apiKey ? `https://tile.googleapis.com/v1/3dtiles/root.json?key=${apiKey}` : '/api/v1/tiles/google/root.json'
+export const loadCesiumAsset = async (assetId: number, _accessToken: string, client?: any): Promise<TileData | null> => {
+        if (!client) return null
+        const res = await client.api.v1.tiles.cesium[':assetId'].$get({ param: { assetId: String(assetId) } })
+        if (!res.ok) return null
+        const data = await res.json()
+        return { tileset: data.tileset || null, region: data.region || { lat: 0, lng: 0, zoom: 15 }, processed: false }
+}
 
-        try {
-                const tileset = (await load(base, Tiles3DLoader, {})) as Tileset
-                if (!tileset) return null
-
-                return {
-                        tileset,
-                        region: { lat, lng, zoom },
-                        processed: false,
-                }
-        } catch (error) {
-                console.error('Failed to load Google Maps 3D tiles:', error)
-                return null
-        }
-})
-
-export const loadCesiumIonTileset = async (_assetId: number, _accessToken: string): Promise<Tileset | null> => null
+export const loadCesiumGltfModel = async (assetId: number, client?: any): Promise<ArrayBuffer | null> => {
+        if (!client) return null
+        const res = await client.api.v1.tiles.cesium[':assetId'].gltf.$get({ param: { assetId: String(assetId) } })
+        if (!res.ok) return null
+        return await res.arrayBuffer()
+}
 
 export const extractTileGeometry = (tile: Tile): ArrayBuffer | null => {
         const a = tile.content?.attributes
@@ -106,36 +98,58 @@ export const estimateTileBounds = (tile: Tile): { min: number[]; max: number[] }
         return { min, max }
 }
 
-export const loadTileContent = timer('loadTileContent', async (apiKey: string, tileUrl: string) => {
-        const fullUrl = tileUrl.includes('?') ? `${tileUrl}&key=${apiKey}` : `${tileUrl}?key=${apiKey}`
+export const loadCesiumTileContent = async (assetId: number, tileUrl: string, client?: any): Promise<ArrayBuffer> => {
+        if (!client) return new ArrayBuffer(0)
+        const res = await client.api.v1.tiles.cesium[':assetId'].tile.$post({ param: { assetId: String(assetId) }, json: { tileUrl } })
+        if (!res.ok) return new ArrayBuffer(0)
+        return await res.arrayBuffer()
+}
 
-        try {
-                const response = await fetch(fullUrl)
-                if (!response.ok) {
-                        throw new Error(`Failed to fetch tile content: ${response.status}`)
-                }
-                return await response.arrayBuffer()
-        } catch (error) {
-                console.error('Failed to load tile content:', error)
-                throw new Error(`Tile content loading failed: ${error}`)
-        }
-})
-
-const createMockVoxelizedTile = (region: { lat: number; lng: number; zoom: number }): VoxelizedTile => {
+const createCulturalVoxelizedTile = (region: { lat: number; lng: number; zoom: number }, gltfData?: ArrayBuffer): VoxelizedTile => {
         const size = 64
         const atlas = new Uint8Array(size * size * 4)
 
-        for (let i = 0; i < atlas.length; i += 4) {
-                const x = (i / 4) % size
-                const y = Math.floor(i / 4 / size)
+        // If GLTF data is available, use it for voxelization
+        if (gltfData) {
+                // This will be replaced with actual WASM voxelization
+                // For now, create a pattern based on cultural principles
+                for (let i = 0; i < atlas.length; i += 4) {
+                        const x = (i / 4) % size
+                        const y = Math.floor(i / 4 / size)
 
-                const height = Math.sin((x + region.lat * 100) * 0.1) * Math.cos((y + region.lng * 100) * 0.1) * 0.5 + 0.5
-                const alpha = height > 0.3 ? 255 : 0
+                        // Apply traditional color harmony (Wu Xing - Five Elements)
+                        const woodColor = [40, 120, 40] // 青 (Blue-Green)
+                        const fireColor = [200, 60, 60] // 紅 (Red)
+                        const earthColor = [160, 140, 80] // 黄 (Yellow)
+                        const metalColor = [200, 200, 200] // 白 (White)
+                        const waterColor = [40, 40, 120] // 玄 (Black-Blue)
 
-                atlas[i] = Math.floor(height * 200 + 55)
-                atlas[i + 1] = Math.floor(height * 150 + 100)
-                atlas[i + 2] = Math.floor(height * 100 + 50)
-                atlas[i + 3] = alpha
+                        const elementIndex = (x + y) % 5
+                        const colors = [woodColor, fireColor, earthColor, metalColor, waterColor]
+                        const [r, g, b] = colors[elementIndex]
+
+                        const alpha = (x + y) % 3 === 0 ? 255 : 0
+
+                        atlas[i] = r
+                        atlas[i + 1] = g
+                        atlas[i + 2] = b
+                        atlas[i + 3] = alpha
+                }
+        } else {
+                // Fallback cultural pattern
+                for (let i = 0; i < atlas.length; i += 4) {
+                        const x = (i / 4) % size
+                        const y = Math.floor(i / 4 / size)
+
+                        const height = Math.sin((x + region.lat * 100) * 0.1) * Math.cos((y + region.lng * 100) * 0.1) * 0.5 + 0.5
+                        const alpha = height > 0.3 ? 255 : 0
+
+                        // Traditional spring colors (桜色 - cherry blossom)
+                        atlas[i] = Math.floor(height * 200 + 55)
+                        atlas[i + 1] = Math.floor(height * 150 + 100)
+                        atlas[i + 2] = Math.floor(height * 100 + 50)
+                        atlas[i + 3] = alpha
+                }
         }
 
         return {
@@ -145,17 +159,13 @@ const createMockVoxelizedTile = (region: { lat: number; lng: number; zoom: numbe
         }
 }
 
-export const voxelizeTileData = timer('voxelizeTileData', async (tileData: TileData): Promise<VoxelizedTile> => {
-        const { tileset, region } = tileData
+export const voxelizeCesiumData = async (assetId: number, region: { lat: number; lng: number; zoom: number }, client?: any): Promise<VoxelizedTile> => {
+        const gltfData = await loadCesiumGltfModel(assetId, client)
+        if (gltfData) return createCulturalVoxelizedTile(region, gltfData)
+        return createCulturalVoxelizedTile(region)
+}
 
-        if (!tileset?.root) {
-                return createMockVoxelizedTile(region)
-        }
-
-        return createMockVoxelizedTile(region)
-})
-
-export const generateAtlasPNG = timer('generateAtlasPNG', async (voxelData: VoxelizedTile): Promise<Uint8Array> => {
+export const generateAtlasPNG = async (voxelData: VoxelizedTile): Promise<Uint8Array> => {
         const [width, height] = [voxelData.dimensions[0], voxelData.dimensions[1]]
         return await encodeImagePNG(voxelData.atlas, width, height)
-})
+}

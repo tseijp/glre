@@ -2,10 +2,12 @@
 let TRADITIONAL_COLORS_DATA: any[] = []
 
 export const loadTraditionalColors = async (): Promise<void> => {
-        // Load traditional colors from D1 backend
-        const response = await fetch('/api/v1/colors')
-        const colors = (await response.json()) as any
+        TRADITIONAL_COLORS_DATA = []
+}
 
+export const loadTraditionalColorsWithClient = async (client: any): Promise<void> => {
+        const res = await client.api.v1.colors.$get()
+        const colors = (await res.json()) as any
         TRADITIONAL_COLORS_DATA = colors.map((color: any) => ({
                 colorNameJa: color.colorNameJa,
                 colorNameZh: color.colorNameZh,

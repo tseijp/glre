@@ -1,15 +1,13 @@
 import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo, useEffect, useState } from 'react'
-import { load } from '@loaders.gl/core'
-import { ImageLoader } from '@loaders.gl/images'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, loadTraditionalColors, raycast, screenToWorldRay } from './helpers'
+import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, raycast, screenToWorldRay } from './helpers'
 import { createShader } from './helpers/shader'
 import { createChunks, applyVoxelDataToChunks, gather } from './helpers/world/chunk'
 import { createRegionConfig } from './helpers/world/chunk'
 import { createVoxelProcessor } from './helpers/voxel/processor'
-import { loadGoogleMapsTiles, extractTileGeometry } from './helpers/tiles/loader'
+import { loadCesiumGltfModel, voxelizeCesiumData } from './helpers/tiles/loader'
 import { selectTilesInRegion } from './helpers/tiles/traversal'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
@@ -25,6 +23,7 @@ export interface CanvasProps {
         }
         onReady?: () => void
         isBuilding?: boolean
+        onSemanticVoxel?: (v: any) => void
 }
 
 export const Canvas = (props: CanvasProps = {}) => {
@@ -36,47 +35,16 @@ export const Canvas = (props: CanvasProps = {}) => {
 
         const processor = useMemo(() => createVoxelProcessor(), [])
 
-        // Initialize cultural metaverse system with 3D Tiles
+        // 初期化のみ。取得系は client.tsx 側で完結させる
         useEffect(() => {
                 const init = async () => {
                         await loadTraditionalColors()
 
-                        if (region) {
-                                const url = `/api/v1/atlas?lat=${region.lat}&lng=${region.lng}&zoom=${region.zoom || 15}`
-                                const head = await fetch(url, { method: 'HEAD' })
-                                if (head.ok) {
-                                        const res = await fetch(url)
-                                        const buf = await res.arrayBuffer()
-                                        const img: any = await load(buf, ImageLoader, { image: { type: 'data' } })
-                                        const rgba = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer.slice(0)) : img.data
-                                        shader.updateAtlas({ src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as any)
-                                        const chunks = createChunks()
-                                        await applyVoxelDataToChunks(chunks as any, { file: { key: 'atlas', data: rgba, raw: rgba }, dims: { size: [256, 256, 256] as any, center: [128, 128, 128] as any } } as any)
-                                        const m = gather(chunks as any)
-                                        setPendingMesh({ pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] })
-                                } else {
-                                        const cfg = createRegionConfig(region.lat, region.lng, region.zoom || 15)
-                                        const tileset = await loadGoogleMapsTiles(cfg.lat, cfg.lng, cfg.zoom!, cfg.apiKey)
-                                        const tiles = tileset ? selectTilesInRegion(tileset as any, cfg.bounds) : []
-                                        const bufs: ArrayBuffer[] = []
-                                        for (const t of tiles) {
-                                                const b = extractTileGeometry(t as any)
-                                                if (b) bufs.push(b)
-                                        }
-                                        const merged = concatArrayBuffers(bufs)
-                                        const out = await processor.processRegion(cfg as any, merged)
-                                        if (out.success && out.data) {
-                                                const built = out.data
-                                                shader.updateAtlas({ src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as any)
-                                                const chunks = createChunks()
-                                                await applyVoxelDataToChunks(chunks as any, built as any)
-                                                const m = gather(chunks as any)
-                                                setPendingMesh({ pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] })
-                                        }
-                                }
-                        } else {
-                                // Fallback to default atlas
-                                if (!props.atlas) await initAtlasWorld('/texture/world.png')
+                        if (props.atlas && props.mesh) {
+                                shader.updateAtlas(props.atlas as any)
+                                setPendingMesh(props.mesh as any)
+                        } else if (!props.atlas) {
+                                await initAtlasWorld('/texture/world.png')
                         }
 
                         const world = await createDefaultCulturalWorld()
@@ -133,7 +101,7 @@ export const Canvas = (props: CanvasProps = {}) => {
                 },
         })
 
-        // Cultural voxel interaction system
+        // 以降は描画/入力のみ
         const click = (hit?: Hit, near?: number[]) => {
                 if (!hit || !culturalWorld) return
                 const xyz = face(hit, meshes.pos, meshes.scl)
@@ -145,7 +113,6 @@ export const Canvas = (props: CanvasProps = {}) => {
                 const culturalColor = applySeasonalTransform(baseColor, currentSeason, 0.8)
                 const traditionalColor = findNearestTraditionalColor(culturalColor)
 
-                // Create and persist semantic voxel with cultural meaning
                 const semanticVoxel = {
                         chunkId: 'cultural-world-default',
                         localX: xyz[0] % 16,
@@ -157,13 +124,7 @@ export const Canvas = (props: CanvasProps = {}) => {
                         alphaProperties: 255,
                         behavioralSeed: Math.floor(Math.random() * 256),
                 }
-
-                // Store semantic voxel to database
-                fetch('/api/v1/voxels', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(semanticVoxel),
-                })
+                props.onSemanticVoxel?.(semanticVoxel)
 
                 shader.updateHover(hit, near)
                 meshes.update(gl, xyz)

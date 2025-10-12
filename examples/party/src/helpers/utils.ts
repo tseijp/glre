@@ -84,7 +84,9 @@ export const located = (X = 0, Y = 0, Z = 0) => {
         }
 }
 
-// simple timing wrapper for async/sync functions
+/**
+ * ↓↓↓　DO NOT USE timer function ↓↓↓
+ */
 export function timer<Fn extends (...args: any[]) => any>(label: string, fn: Fn): Fn {
         const wrapped = async (...args: Parameters<Fn>): Promise<ReturnType<Fn>> => {
                 const now = () => (globalThis.performance?.now ? globalThis.performance.now() : Date.now())

@@ -1,6 +1,4 @@
-import { Tileset3D } from '@loaders.gl/tiles'
-import type { Tileset, Tile, TileData, VoxelizedTile } from './loader'
-import { voxelizeTileData, generateAtlasPNG } from './loader'
+import type { Tileset, Tile, VoxelizedTile } from './loader'
 
 export type Viewport = {
         longitude: number
@@ -12,91 +10,12 @@ export type Viewport = {
         height: number
 }
 
-export type TileTraversal = {
-        tileset3D: Tileset3D | null
-        visibleTiles: Map<string, Tile>
-        loadedTiles: Map<string, ArrayBuffer>
-        voxelizedTiles: Map<string, VoxelizedTile>
-        update: (viewport: Viewport) => Promise<Tile[]>
-        cleanup: () => void
-        getVoxelizedData: (region: { lat: number; lng: number; zoom: number }) => Promise<VoxelizedTile | null>
-}
+export type TileTraversal = { update: (viewport: Viewport) => Promise<Tile[]>; cleanup: () => void }
 
-export const createTileTraversal = (tileset: Tileset): TileTraversal => {
-        const visibleTiles = new Map<string, Tile>()
-        const loadedTiles = new Map<string, ArrayBuffer>()
-        const voxelizedTiles = new Map<string, VoxelizedTile>()
-        let tileset3D: Tileset3D | null = null
-
-        const getRegionKey = (region: { lat: number; lng: number; zoom: number }) => 
-                `${region.lat.toFixed(4)}_${region.lng.toFixed(4)}_${region.zoom}`
-
-        const initTileset3D = () => {
-                if (!tileset3D) {
-                        tileset3D = new Tileset3D(tileset, {
-                                onTileLoad: (tile: any) => {
-                                        visibleTiles.set(tile.id, tile)
-                                },
-                                onTileUnload: (tile: any) => {
-                                        visibleTiles.delete(tile.id)
-                                        loadedTiles.delete(tile.id)
-                                },
-                                maximumMemoryUsage: 512,
-                                maximumScreenSpaceError: 16,
-                        })
-                }
-        }
-
-        const update = async (_viewport: Viewport): Promise<Tile[]> => {
-                initTileset3D()
-                if (!tileset3D) return []
-                tileset3D.update({} as any)
-                return Array.from(visibleTiles.values())
-        }
-
-        const getVoxelizedData = async (region: { lat: number; lng: number; zoom: number }): Promise<VoxelizedTile | null> => {
-                const key = getRegionKey(region)
-                
-                if (voxelizedTiles.has(key)) {
-                        return voxelizedTiles.get(key)!
-                }
-
-                try {
-                        const tileData: TileData = {
-                                tileset,
-                                region,
-                                processed: false
-                        }
-                        
-                        const voxelized = await voxelizeTileData(tileData)
-                        voxelizedTiles.set(key, voxelized)
-                        return voxelized
-                } catch (error) {
-                        console.error('Failed to voxelize tile data:', error)
-                        return null
-                }
-        }
-
-        const cleanup = () => {
-                if (tileset3D) {
-                        tileset3D.destroy()
-                        tileset3D = null
-                }
-                visibleTiles.clear()
-                loadedTiles.clear()
-                voxelizedTiles.clear()
-        }
-
-        return {
-                tileset3D,
-                visibleTiles,
-                loadedTiles,
-                voxelizedTiles,
-                update,
-                cleanup,
-                getVoxelizedData,
-        }
-}
+export const createTileTraversal = (_tileset: Tileset): TileTraversal => ({
+        update: async (_viewport: Viewport) => [],
+        cleanup: () => {}
+})
 
 export const createFrustumFromViewport = (viewport: Viewport) => {
         const { longitude, latitude, zoom, pitch, bearing, width, height } = viewport
@@ -162,17 +81,14 @@ const isTileInBounds = (tile: Tile, bounds: { min: number[]; max: number[] }): b
 }
 
 export const estimateMemoryUsage = (tiles: Tile[]): number => {
-        let totalBytes = 0
-
+        let n = 0
         for (const tile of tiles) {
-                if (tile.content?.attributes) {
-                        const attrs = tile.content.attributes
-                        if (attrs.positions?.value) totalBytes += attrs.positions.value.byteLength
-                        if (attrs.normals?.value) totalBytes += attrs.normals.value.byteLength
-                        if (attrs.colors?.value) totalBytes += attrs.colors.value.byteLength
-                        if (attrs.texCoords?.value) totalBytes += attrs.texCoords.value.byteLength
-                }
+                const a = tile.content?.attributes
+                if (!a) continue
+                if (a.positions?.value) n += a.positions.value.byteLength
+                if (a.normals?.value) n += a.normals.value.byteLength
+                if (a.colors?.value) n += a.colors.value.byteLength
+                if (a.texCoords?.value) n += a.texCoords.value.byteLength
         }
-
-        return totalBytes
+        return n
 }

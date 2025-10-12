@@ -1,7 +1,7 @@
 import useSWR from 'swr'
 import { useFetch, useSearchParam } from '.'
 import { importWasm } from '../helpers/voxel/wasm'
-import { loadGoogleMapsTiles, voxelizeTileData, generateAtlasPNG } from '../helpers/tiles/loader'
+import { voxelizeCesiumData, generateAtlasPNG } from '../helpers/tiles/loader'
 import type { Atlas, Meshes } from '../helpers/types'
 import { blitChunk64ToWorld, encodeImagePNG } from '../helpers/world/atlas'
 import { createChunks, applyVoxelDataToChunks, gather } from '../helpers/world/chunk'
@@ -57,48 +57,43 @@ const makeDemoParsed = () => {
         return { tris, materials: mats, textures: texs, aabb: { min, max }, model: { extent, center } }
 }
 
-export const useVoxelWorld = (region?: { lat: number; lng: number; zoom: number }) => {
+export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; zoom: number }) => {
         const glb = useSearchParam('glb')
-        const cnt = useFetch<{ count: number }>('chunks', () => fetch('/api/v1/chunks').then((r) => r.json() as any)).data as any
+        const cnt = useFetch<{ count: number }>('chunks', () => client.api.v1.chunks.$get()).data as any
         const should = cnt && typeof cnt.count === 'number' && cnt.count === 0
         const useRegion = region && !glb
         const key = should ? (useRegion ? ['vox-3d', region.lat, region.lng, region.zoom] : ['vox', glb || 'demo']) : null
-        
+
         const swr = useSWR<{ atlas: Atlas; mesh: Meshes }>(key, async () => {
                 if (useRegion && region) {
-                        // Load 3D tiles and voxelize
-                        const cacheUrl = `/api/v1/atlas?lat=${region.lat}&lng=${region.lng}&zoom=${region.zoom}`
-                        
-                        // Check cache first
-                        const headResponse = await fetch(cacheUrl, { method: 'HEAD' })
-                        if (headResponse.ok) {
-                                // Use cached data
-                                const url = cacheUrl
-                                const built = { file: { key: 'atlas.png', data: new Uint8Array(), raw: new Uint8Array() }, dims: { size: [256, 256, 256], center: [128, 128, 128] } } as any
+                        const query = { lat: region.lat, lng: region.lng, zoom: String(region.zoom) }
+                        const exists = await client.api.v1.atlas.exists.$get({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) } })
+                        if (exists.ok) {
+                                const res = await client.api.v1.atlas.$get({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) } })
+                                const buf = await res.arrayBuffer()
+                                const png = new Uint8Array(buf)
+                                const url = `/api/v1/atlas?lat=${query.lat}&lng=${query.lng}&zoom=${query.zoom}`
+                                const built = { file: { key: 'atlas.png', data: png, raw: png }, dims: { size: [256, 256, 256] as any, center: [128, 128, 128] as any } } as any
                                 const chunksMap = createChunks() as any
                                 await applyVoxelDataToChunks(chunksMap, built)
                                 const m = gather(chunksMap)
                                 return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                         }
-                        
-                        // Load and process 3D tiles
-                        const tileData = await loadGoogleMapsTiles(region.lat, region.lng, region.zoom)
-                        if (tileData) {
-                                const voxelized = await voxelizeTileData(tileData)
-                                const png = await generateAtlasPNG(voxelized)
-                                
-                                // Store in cache
-                                await fetch(cacheUrl, { method: 'PUT', body: png })
-                                
-                                const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
-                                const built = { file: { key: 'atlas.png', data: png, raw: voxelized.atlas }, dims: { size: voxelized.dimensions as any, center: [voxelized.dimensions[0]/2, voxelized.dimensions[1]/2, voxelized.dimensions[2]/2] } } as any
-                                const chunksMap = createChunks() as any
-                                await applyVoxelDataToChunks(chunksMap, built)
-                                const m = gather(chunksMap)
-                                return { atlas: { src: url, W: voxelized.dimensions[0], H: voxelized.dimensions[1], planeW: voxelized.dimensions[0], planeH: voxelized.dimensions[1], cols: 1 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
-                        }
+
+                        const assetId = 96188
+                        const vox = await voxelizeCesiumData(assetId, region, client)
+                        const png = await generateAtlasPNG(vox)
+
+                        await client.api.v1.atlas.$put({ query: { lat: String(query.lat), lng: String(query.lng), zoom: String(query.zoom) }, body: png as any, headers: { 'content-type': 'image/png' } as any })
+
+                        const url = `/api/v1/atlas?lat=${query.lat}&lng=${query.lng}&zoom=${query.zoom}`
+                        const built = { file: { key: 'atlas.png', data: png, raw: vox.atlas }, dims: { size: vox.dimensions as any, center: [vox.dimensions[0] / 2, vox.dimensions[1] / 2, vox.dimensions[2] / 2] } } as any
+                        const chunksMap = createChunks() as any
+                        await applyVoxelDataToChunks(chunksMap, built)
+                        const m = gather(chunksMap)
+                        return { atlas: { src: url, W: vox.dimensions[0], H: vox.dimensions[1], planeW: vox.dimensions[0], planeH: vox.dimensions[1], cols: 1 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                 }
-                
+
                 // Default demo voxelization
                 const wasm: any = await importWasm()
                 const parsed = makeDemoParsed()
@@ -116,6 +111,6 @@ export const useVoxelWorld = (region?: { lat: number; lng: number; zoom: number 
                 await applyVoxelDataToChunks(chunksMap, built)
                 const m = gather(chunksMap)
                 return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
-        })
+        }, { revalidateOnFocus: false, revalidateOnReconnect: false, refreshInterval: 0, shouldRetryOnError: false })
         return swr.data
 }

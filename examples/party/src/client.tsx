@@ -9,6 +9,7 @@ import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
 import { useVoxelWorld } from './hooks/useVoxelWorld'
 import { createDefaultCulturalWorld } from './helpers'
+import { loadTraditionalColorsWithClient } from './helpers/color/colors'
 import { useEffect, useState, useMemo } from 'react'
 import type { AppType } from '.'
 
@@ -48,7 +49,7 @@ export const App = () => {
         )
 
         const currentRegion = { ...defaultRegion, ...(region || {}) }
-        const vox = useVoxelWorld(currentRegion)
+        const vox = useVoxelWorld(client, currentRegion)
 
         useEffect(() => {
                 const initializeCulturalWorld = async () => {
@@ -56,6 +57,10 @@ export const App = () => {
                         setCulturalWorld(world)
                 }
                 initializeCulturalWorld()
+        }, [])
+
+        useEffect(() => {
+                loadTraditionalColorsWithClient(client)
         }, [])
 
         const onRegionChange = (lat: number, lng: number, zoom?: number) => {
@@ -77,7 +82,8 @@ export const App = () => {
         const isSignedIn = !!profile
         const traditionalColors = colors || []
 
-        const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} atlas={vox?.atlas as any} mesh={vox?.mesh as any} region={currentRegion} onReady={onCanvasReady} isBuilding={isBuilding} />
+        const onSemanticVoxel = (v: any) => client.api.v1.voxels.$post({ json: v })
+        const children = <Canvas size={16} dims={{ size: [32, 16, 32], center: [16, 8, 16] }} atlas={vox?.atlas as any} mesh={vox?.mesh as any} region={currentRegion} onReady={onCanvasReady} isBuilding={isBuilding} onSemanticVoxel={onSemanticVoxel} />
 
         const props = {
                 isHUD,
