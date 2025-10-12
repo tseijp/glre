@@ -82,8 +82,8 @@ export const App = () => {
                 <Canvas //
                         size={16}
                         dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
-                        atlas={vox?.atlas as any}
-                        mesh={vox?.mesh as any}
+                        atlas={vox?.atlas}
+                        mesh={vox?.mesh}
                         region={currentRegion}
                         onReady={onCanvasReady}
                         isBuilding={isBuilding}

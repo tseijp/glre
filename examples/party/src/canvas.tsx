@@ -1,6 +1,6 @@
 import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
-import { useMemo, useEffect, useState } from 'react'
+import { useMemo, useEffect, useState, useRef } from 'react'
 import { useDrag, useKey } from 'rege/react'
 import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxels, dec, enc, face, findNearestTraditionalColor, K, raycast, screenToWorldRay, loadTraditionalColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
@@ -22,32 +22,24 @@ export interface CanvasProps {
 
 export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, isBuilding, atlas, mesh, onSemanticVoxel }: CanvasProps) => {
         const [culturalWorld, setWorld] = useState<any>(null)
-        const [pendingMesh, setPendingMesh] = useState<Meshes | null>(null)
+        const pendingMeshRef = useRef<Meshes | null>(null)
+        const [instCount, setInstCount] = useState<number>(mesh?.cnt || 1)
 
         const processor = useMemo(() => createVoxels(), [])
 
         useEffect(() => {
                 const init = async () => {
                         await loadTraditionalColors()
-
-                        if (atlas && mesh) {
-                                shader.updateAtlas(atlas as any)
-                                setPendingMesh(mesh as any)
-                        }
-
                         const world = await createDefaultWorld()
                         setWorld(world)
                         onReady?.()
                 }
                 init()
-
-                return () => {
-                        processor.cleanup()
-                }
-        }, [atlas, region])
+                return () => { processor.cleanup() }
+        }, [])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
-        const meshes = useMemo(() => createMeshes(camera, mesh), [camera, mesh])
+        const meshes = useMemo(() => createMeshes(camera), [camera])
         const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
         const player = useMemo(() => createPlayer(camera, meshes, shader), [])
 
@@ -57,18 +49,19 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 isDepth: true,
                 isDebug: false,
                 count: meshes.count,
-                instanceCount: meshes.instanceCount,
+                instanceCount: instCount,
                 loop() {
-                        if (pendingMesh) {
-                                meshes.applyChunks?.(gl, pendingMesh as any)
-                                setPendingMesh(null)
-                        }
+                        const next = pendingMeshRef.current
+                        if (next) { meshes.applyChunks?.(gl, next as any); gl.instanceCount = (next as any).cnt || 1; setInstCount((next as any).cnt || 1); pendingMeshRef.current = null }
                         player.step(gl)
                 },
                 resize() {
                         shader.updateCamera(gl.size)
                 },
         })
+
+        useEffect(() => { if (!atlas) return; shader.updateAtlas(atlas as any) }, [atlas, shader])
+        useEffect(() => { if (!mesh) return; pendingMeshRef.current = mesh as any; setInstCount((mesh as any).cnt || 1) }, [mesh])
 
         const click = (hit?: Hit, near?: number[]) => {
                 if (!hit || !culturalWorld) return
