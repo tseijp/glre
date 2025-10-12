@@ -5,10 +5,11 @@ import { authHandler, initAuthConfig, verifyAuth } from '@hono/auth-js'
 import { drizzle } from 'drizzle-orm/d1'
 import { Hono } from 'hono'
 import { env } from 'hono/adapter'
+import { logger } from 'hono/logger'
 import { createMiddleware } from 'hono/factory'
 import { routePartykitRequest, Server } from 'partyserver'
 import * as Q from './queries'
-import { encodeSemanticVoxel, decodeSemanticVoxel } from './helpers/color/semantic'
+import { encodeSemanticVoxel, decodeSemanticVoxel } from './helpers/voxel/colors'
 import type { Connection, ConnectionContext } from 'partyserver'
 
 /**
@@ -40,18 +41,19 @@ const app = new Hono<{ Bindings: Env }>()
         .use('/parties/*', verifyAuth())
         .use('/parties/*', myMiddleware)
         .use('/api/v1/*', verifyAuth())
+        .use('/api/v1/*', logger())
         .get('/api/v1/res', (c) => c.text('ok'))
         .get('/api/v1/profile', async (c) => {
                 const user = c.get('authUser')?.token?.sub
                 if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
-                const profile = await Q.getCulturalProfile(c.env.DB, user)
+                const profile = await Q.getProfile(c.env.DB, user)
                 return c.json(profile)
         })
         .post('/api/v1/profile', async (c) => {
                 const user = c.get('authUser')?.token?.sub
                 if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
                 const { culturalIdentity } = await c.req.json()
-                await Q.createCulturalProfile(c.env.DB, user, culturalIdentity)
+                await Q.createProfile(c.env.DB, user, culturalIdentity)
                 return c.json({ success: true })
         })
         .get('/api/v1/worlds', async (c) => {
@@ -153,7 +155,7 @@ const app = new Hono<{ Bindings: Env }>()
                 const from = c.req.query('from')
                 const to = c.req.query('to')
                 if (!from || !to) return c.json({ error: 'Missing date parameters' }, { status: 400 })
-                const events = await Q.getCulturalEvents(c.env.DB, new Date(from), new Date(to))
+                const events = await Q.getEvents(c.env.DB, new Date(from), new Date(to))
                 return c.json(events)
         })
         .on('HEAD', '/api/v1/atlas', async (c) => {
@@ -238,8 +240,8 @@ const app = new Hono<{ Bindings: Env }>()
         })
         .post('/api/v1/seed', async (c) => {
                 // Development/admin endpoint for seeding cultural data
-                const { seedAllCulturalData } = await import('./helpers/world/seed')
-                const results = await seedAllCulturalData(c.env.DB)
+                const { seedAllData } = await import('./helpers/world/seed')
+                const results = await seedAllData(c.env.DB)
                 return c.json(results)
         })
         .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
@@ -400,7 +402,7 @@ const app = new Hono<{ Bindings: Env }>()
                                 atlasUrl: `/api/v1/atlas/cesium/${assetId}?size=${size}`,
                                 dimensions: { size: [size * 16, size * 16, size * 16], center: [size * 8, size * 8, size * 8] },
                                 processed: true,
-                                wasmProcessed: true, // Cultural pattern generation complete
+                                wasmProcessed: true, //  pattern generation complete
                         }
 
                         return c.json(voxelData)

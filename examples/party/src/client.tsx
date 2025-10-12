@@ -8,8 +8,8 @@ import SP from './components/SP'
 import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
 import { useVoxelWorld } from './hooks/useVoxelWorld'
-import { createDefaultCulturalWorld } from './helpers'
-import { loadTraditionalColorsWithClient } from './helpers/color/colors'
+import { createDefaultWorld } from './helpers'
+import { loadTraditionalColorsWithClient } from './helpers/voxel/colors'
 import { useEffect, useState, useMemo } from 'react'
 import type { AppType } from '.'
 
@@ -17,9 +17,8 @@ const client = hc<AppType>('/')
 
 export const App = () => {
         const w = useWindowSize()
-        const res = useFetch('res', client.api.v1.res.$get).data
         const colors = useFetch('colors', client.api.v1.colors.$get).data
-        const profile = useFetch('profile', client.api.v1.profile.$get).data
+        const profile = useFetch('profile', () => client.api.v1.profile.$get()).data
         const events = useFetch('events', () =>
                 client.api.v1.events.$get({
                         query: {
@@ -34,7 +33,7 @@ export const App = () => {
         const page = useSearchParam('page')
 
         // Create cultural world context with async loading
-        const [culturalWorld, setCulturalWorld] = useState<any>(null)
+        const [culturalWorld, setWorld] = useState<any>(null)
         const [region, setRegion] = useState<{ lat: number; lng: number; zoom?: number } | null>(null)
         const [isBuilding, setIsBuilding] = useState(false)
 
@@ -52,11 +51,11 @@ export const App = () => {
         const vox = useVoxelWorld(client, currentRegion)
 
         useEffect(() => {
-                const initializeCulturalWorld = async () => {
-                        const world = await createDefaultCulturalWorld()
-                        setCulturalWorld(world)
+                const initializeWorld = async () => {
+                        const world = await createDefaultWorld()
+                        setWorld(world)
                 }
-                initializeCulturalWorld()
+                initializeWorld()
         }, [])
 
         useEffect(() => {
@@ -72,12 +71,10 @@ export const App = () => {
                 setIsBuilding(false)
         }
 
-        if (!res) return null
-
         const isHUD = hud !== '0'
         const isMenu = menu === '1'
         const isModal = modal === '1'
-        const hasCulturalProfile = !!profile
+        const hasProfile = !!profile
         const canSignIn = !profile
         const isSignedIn = !!profile
         const traditionalColors = colors || []
@@ -89,7 +86,7 @@ export const App = () => {
                 isHUD,
                 isMenu,
                 isModal,
-                hasCulturalProfile,
+                hasProfile,
                 canSignIn,
                 isSignedIn,
                 traditionalColors,
@@ -101,8 +98,8 @@ export const App = () => {
                 onRegionChange,
                 currentRegion,
                 isBuilding,
-                // Cultural metaverse 3D Tiles features
-                isCulturalMode: true,
+                //  metaverse 3D Tiles features
+                isMode: true,
                 hasTraditionalColors: true,
                 isSemanticVoxels: true,
                 children,

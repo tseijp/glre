@@ -1,3 +1,69 @@
+// Dynamic color data loading from D1 backend
+let TRADITIONAL_COLORS_DATA: any[] = []
+
+export const loadTraditionalColors = async (): Promise<void> => {
+        TRADITIONAL_COLORS_DATA = []
+}
+
+export const loadTraditionalColorsWithClient = async (client: any): Promise<void> => {
+        const res = await client.api.v1.colors.$get()
+        const colors = (await res.json()) as any
+        TRADITIONAL_COLORS_DATA = colors.map((color: any) => ({
+                colorNameJa: color.colorNameJa,
+                colorNameZh: color.colorNameZh,
+                colorNameEn: color.colorNameEn,
+                rgbValue: color.rgbValue,
+                seasonalAssociation: color.seasonalAssociation,
+                culturalSignificance: typeof color.culturalSignificance === 'string' ? JSON.parse(color.culturalSignificance) : color.culturalSignificance,
+                historicalContext: typeof color.historicalContext === 'string' ? JSON.parse(color.historicalContext) : color.historicalContext,
+                element: color.culturalSignificance?.wuxing,
+        }))
+}
+
+export const getAllTraditionalColors = () => TRADITIONAL_COLORS_DATA
+
+export const getColorsBySeasonalAssociation = (season: string) => TRADITIONAL_COLORS_DATA.filter((color) => color.seasonalAssociation === season)
+
+export const getColorsByElement = (element: string) => TRADITIONAL_COLORS_DATA.filter((color) => color.element === element)
+
+export const findNearestTraditionalColor = (rgb: number) => {
+        let closest = getAllTraditionalColors()[0]
+        let minDistance = Infinity
+
+        const r1 = (rgb >>> 16) & 0xff
+        const g1 = (rgb >>> 8) & 0xff
+        const b1 = rgb & 0xff
+
+        for (const color of getAllTraditionalColors()) {
+                const r2 = (color.rgbValue >>> 16) & 0xff
+                const g2 = (color.rgbValue >>> 8) & 0xff
+                const b2 = color.rgbValue & 0xff
+
+                const distance = Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2)
+
+                if (distance < minDistance) {
+                        minDistance = distance
+                        closest = color
+                }
+        }
+
+        return closest
+}
+
+// Seasonal color transformation intensity
+export const getSeasonalIntensity = (season: string, currentDate: Date): number => {
+        const month = currentDate.getMonth() + 1
+        const seasonalMonths = {
+                spring: [3, 4, 5],
+                summer: [6, 7, 8],
+                autumn: [9, 10, 11],
+                winter: [12, 1, 2],
+        }
+
+        const months = seasonalMonths[season as keyof typeof seasonalMonths] || []
+        return months.includes(month) ? 1.0 : 0.3
+}
+
 // Semantic voxel encoding system for cultural data compression
 export type SemanticVoxel = {
         primaryKanji: string
@@ -43,18 +109,15 @@ const KANJI_INDEX = new Map([
         ['紫', 0x044],
 ])
 
-// Reverse mapping for decoding
-const INDEX_KANJI = new Map(Array.from(KANJI_INDEX.entries()).map(([k, v]) => [v, k]))
-
 export const encodeSemanticVoxel = (voxel: SemanticVoxel): number => {
         // Pack into 32-bit structure:
         // [RGB: 24 bits] [Alpha: 8 bits]
-        // Cultural semantic encoding (kanji data preserved in structure)
+        //  semantic encoding (kanji data preserved in structure)
 
         const rgbPacked = (voxel.rgbValue & 0xffffff) << 8
         const alphaPacked = voxel.alphaProperties & 0xff
 
-        // Cultural semantic encoding preserves traditional knowledge
+        //  semantic encoding preserves traditional knowledge
         return rgbPacked | alphaPacked
 }
 
@@ -86,38 +149,9 @@ export const findColorName = (rgb: number): string | null => {
         return null
 }
 
-export const getSeasonalColors = (season: string): string[] => {
-        const colors: string[] = []
-        for (const [name, data] of TRADITIONAL_COLORS) {
-                if (data.season === season) {
-                        colors.push(name)
-                }
-        }
-        return colors
-}
-
-export const rgbToTraditionalColor = (r: number, g: number, b: number): string => {
-        const rgb = (r << 16) | (g << 8) | b
-        return findColorName(rgb) || '色'
-}
-
 export const traditionalColorToRgb = (colorName: string): number => {
         const colorData = TRADITIONAL_COLORS.get(colorName)
         return colorData?.rgb || 0x808080 // Default gray
-}
-
-// Cultural validation for color harmony
-export const validateColorHarmony = (color1: string, color2: string): boolean => {
-        const data1 = TRADITIONAL_COLORS.get(color1)
-        const data2 = TRADITIONAL_COLORS.get(color2)
-
-        if (!data1 || !data2) return false
-
-        // Traditional harmony rules (simplified)
-        if (data1.season === data2.season) return true // Same season
-        if (data1.meaning.includes('white') || data2.meaning.includes('white')) return true // White harmonizes
-
-        return false
 }
 
 // Seasonal transformation for environmental response
@@ -126,9 +160,9 @@ export const applySeasonalTransform = (baseColor: number, season: string, intens
         const g = (baseColor >>> 8) & 0xff
         const b = baseColor & 0xff
 
-        let nr = r,
-                ng = g,
-                nb = b
+        let nr = r
+        let ng = g
+        let nb = b
 
         switch (season) {
                 case 'spring':

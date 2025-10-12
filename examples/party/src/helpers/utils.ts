@@ -102,3 +102,14 @@ export function timer<Fn extends (...args: any[]) => any>(label: string, fn: Fn)
         // cast back to original type to preserve call signature
         return wrapped as unknown as Fn
 }
+
+export const importWasm = async () => {
+        const wasm: any = await import('../../voxelizer/pkg/voxelizer')
+        await wasm.default()
+        return wasm
+}
+
+export const cancelVoxelizer = async () => {
+        const wasm = await importWasm()
+        if ((wasm as any).cancel) (wasm as any).cancel()
+}

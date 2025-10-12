@@ -1,4 +1,4 @@
-import { importWasm, cancelVoxelizer } from './wasm'
+import { importWasm, cancelVoxelizer } from '../utils'
 import { generateRegionId } from './tiles'
 import type { RegionConfig } from './tiles'
 import type { BuiltState } from '../types'

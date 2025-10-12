@@ -1,8 +1,8 @@
-import { voxelizeCesiumData } from '../tiles/loader'
+import { voxelizeCesiumData } from '../voxel/loader'
 import { createVoxelProcessor } from './processor'
-import type { Tileset, Tile } from '../tiles/loader'
+import type { Tileset, Tile } from '../voxel/loader'
 import type { BuiltState } from '../types'
-import type { Viewport } from '../tiles/traversal'
+import type { Viewport } from '../voxel/traversal'
 
 export type RegionConfig = {
         lat: number

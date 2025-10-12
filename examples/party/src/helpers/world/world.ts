@@ -1,10 +1,10 @@
-import { loadTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, getSeasonalIntensity } from '../color/colors'
+import { loadTraditionalColors, getColorsBySeasonalAssociation, findNearestTraditionalColor, getSeasonalIntensity } from '../voxel/colors'
 export { initAtlasWorld } from './atlas'
-import { traditionalColorToRgb, applySeasonalTransform } from '../color/semantic'
+import { traditionalColorToRgb, applySeasonalTransform } from '../voxel/colors'
 import { CHUNK, GRID } from '../utils'
 
-// Cultural world generation based on traditional principles
-export type CulturalRegion = {
+//  world generation based on traditional principles
+export type Region = {
         theme: string
         season: string
         colors: number[]
@@ -12,8 +12,8 @@ export type CulturalRegion = {
         spiritualSignificance: string
 }
 
-export type CulturalWorld = {
-        regions: CulturalRegion[]
+export type World = {
+        regions: Region[]
         centerPoint: [number, number, number]
         seasonalCycle: string
         culturalNarrative: string
@@ -43,14 +43,14 @@ const CULTURAL_THEMES = {
         },
 }
 
-export const generateCulturalWorld = async (culturalTheme: string = 'zen_garden', seasonalSettings: any = {}): Promise<CulturalWorld> => {
+export const generateWorld = async (culturalTheme: string = 'zen_garden', seasonalSettings: any = {}): Promise<World> => {
         // Initialize color system if not loaded
         await loadTraditionalColors()
         const theme = CULTURAL_THEMES[culturalTheme as keyof typeof CULTURAL_THEMES] || CULTURAL_THEMES.zen_garden
         const currentSeason = seasonalSettings.season || 'spring'
 
         // Generate regions based on traditional principles
-        const regions: CulturalRegion[] = []
+        const regions: Region[] = []
 
         // Central sacred space
         regions.push({
@@ -91,7 +91,7 @@ export const generateCulturalWorld = async (culturalTheme: string = 'zen_garden'
 }
 
 // Generate voxel data for a cultural region
-export const generateRegionVoxels = (region: CulturalRegion, regionCoords: [number, number, number], size: number = 16): Uint8Array => {
+export const generateRegionVoxels = (region: Region, regionCoords: [number, number, number], size: number = 16): Uint8Array => {
         const voxelData = new Uint8Array(size * size * size)
         const [rx, ry, rz] = regionCoords
 
@@ -103,7 +103,7 @@ export const generateRegionVoxels = (region: CulturalRegion, regionCoords: [numb
                                 const worldY = ry * size + y
                                 const worldZ = rz * size + z
 
-                                const voxelType = generateCulturalVoxel(worldX, worldY, worldZ, region)
+                                const voxelType = generateVoxel(worldX, worldY, worldZ, region)
 
                                 const index = x + (y + z * size) * size
                                 voxelData[index] = voxelType
@@ -114,7 +114,7 @@ export const generateRegionVoxels = (region: CulturalRegion, regionCoords: [numb
         return voxelData
 }
 
-const generateCulturalVoxel = (x: number, y: number, z: number, region: CulturalRegion): number => {
+const generateVoxel = (x: number, y: number, z: number, region: Region): number => {
         // Traditional landscape generation based on cultural principles
 
         // Ground level with cultural variation
@@ -192,13 +192,13 @@ export const generateColorPattern = (baseColors: number[], season: string, x: nu
 
         // Apply cultural color harmony validation
         const nearestColor = findNearestTraditionalColor(baseColor)
-        const harmonicColor = validateCulturalHarmony(baseColor, season)
+        const harmonicColor = validateHarmony(baseColor, season)
 
         return applySeasonalTransform(harmonicColor, season, seasonalIntensity)
 }
 
-// Cultural harmony validation using traditional color theory
-const validateCulturalHarmony = (baseColor: number, season: string): number => {
+//  harmony validation using traditional color theory
+const validateHarmony = (baseColor: number, season: string): number => {
         const traditionalColor = findNearestTraditionalColor(baseColor)
 
         // Check if color is appropriate for season
@@ -223,7 +223,7 @@ const getCurrentSeasonalIntensity = (season: string): number => {
 }
 
 // Create PNG atlas from generated voxel data
-export const generateWorldAtlas = async (world: CulturalWorld, size: number = 16): Promise<Uint8Array> => {
+export const generateWorldAtlas = async (world: World, size: number = 16): Promise<Uint8Array> => {
         const atlasSize = 4096
         const chunkSize = 64
         const atlas = new Uint8Array(atlasSize * atlasSize * 4) // RGBA
@@ -257,6 +257,6 @@ export const generateWorldAtlas = async (world: CulturalWorld, size: number = 16
         return atlas
 }
 
-export const createDefaultCulturalWorld = async (): Promise<CulturalWorld> => {
-        return await generateCulturalWorld('zen_garden', { season: 'spring' })
+export const createDefaultWorld = async (): Promise<World> => {
+        return await generateWorld('zen_garden', { season: 'spring' })
 }

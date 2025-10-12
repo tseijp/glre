@@ -2,14 +2,14 @@ import { on } from '../hooks'
 import { GearIcon, PersonIcon, GlobeIcon, HeartIcon, HomeIcon } from '@radix-ui/react-icons'
 import type { Props } from './types'
 
-const PC = ({ isHUD, isMenu, isModal, hasCulturalProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
+const PC = ({ isHUD, isMenu, isModal, hasProfile, traditionalColors, culturalWorld, page = '1', children, onSignIn }: Props) => {
         return (
                 <div className="fixed inset-0 text-black">
                         <div className="fixed inset-0 -z-10">{children}</div>
                         <div className={on(isHUD, 'pointer-events-none fixed inset-0')}>
                                 <div className="fixed top-6 left-8 right-8 flex items-center justify-between">
                                         <div className="flex items-center gap-4">
-                                                {hasCulturalProfile ? (
+                                                {hasProfile ? (
                                                         <div className="glass rounded-xl">
                                                                 <button className="flex items-center gap-2">
                                                                         <PersonIcon />

@@ -74,7 +74,7 @@ export const authenticators = sqliteTable(
  * ↑↑↑　DO NOT CHANGE ↑↑↑
  */
 
-export const userCulturalProfiles = sqliteTable('user_cultural_profile', {
+export const userProfiles = sqliteTable('user_cultural_profile', {
         profileId: text('profile_id')
                 .primaryKey()
                 .$defaultFn(() => crypto.randomUUID()),
@@ -266,7 +266,7 @@ export const culturalAchievements = sqliteTable(
                         .$defaultFn(() => crypto.randomUUID()),
                 profileId: text('profile_id')
                         .notNull()
-                        .references(() => userCulturalProfiles.profileId, { onDelete: 'cascade' }),
+                        .references(() => userProfiles.profileId, { onDelete: 'cascade' }),
                 achievementType: text('achievement_type').notNull(),
                 achievementData: text('achievement_data', { mode: 'json' }),
                 earnedAt: integer('earned_at', { mode: 'timestamp_ms' }).$defaultFn(() => new Date()),
@@ -283,7 +283,7 @@ export const learningProgress = sqliteTable(
                         .$defaultFn(() => crypto.randomUUID()),
                 profileId: text('profile_id')
                         .notNull()
-                        .references(() => userCulturalProfiles.profileId, { onDelete: 'cascade' }),
+                        .references(() => userProfiles.profileId, { onDelete: 'cascade' }),
                 contentId: text('content_id')
                         .notNull()
                         .references(() => educationalContent.contentId, { onDelete: 'cascade' }),

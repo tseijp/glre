@@ -2,7 +2,7 @@ export type Props = {
         isHUD?: boolean
         isMenu?: boolean
         isModal?: boolean
-        hasCulturalProfile?: boolean
+        hasProfile?: boolean
         traditionalColors?: any[]
         culturalWorld?: any
         page?: string

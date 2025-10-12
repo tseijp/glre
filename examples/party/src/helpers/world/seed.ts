@@ -140,7 +140,7 @@ export const seedEducationalContent = async (DB: D1Database) => {
 }
 
 // Seed cultural events based on traditional calendar
-export const seedCulturalEvents = async (DB: D1Database) => {
+export const seedEvents = async (DB: D1Database) => {
         const db = drizzle(DB)
         const currentYear = new Date().getFullYear()
         const events = [
@@ -211,8 +211,8 @@ export const seedCulturalEvents = async (DB: D1Database) => {
         return { success: true, count: events.length }
 }
 
-export const seedAllCulturalData = async (DB: D1Database) => {
-        const results = await Promise.all([seedTraditionalColors(DB), seedEducationalContent(DB), seedCulturalEvents(DB)])
+export const seedAllData = async (DB: D1Database) => {
+        const results = await Promise.all([seedTraditionalColors(DB), seedEducationalContent(DB), seedEvents(DB)])
 
         return {
                 success: true,

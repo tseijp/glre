@@ -2,13 +2,7 @@ import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo, useEffect, useState } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createDefaultCulturalWorld, createMeshes, createPlayer, dec, encOp, face, findNearestTraditionalColor, initAtlasWorld, K, raycast, screenToWorldRay } from './helpers'
-import { createShader } from './helpers/shader'
-import { createChunks, applyVoxelDataToChunks, gather } from './helpers/world/chunk'
-import { createRegionConfig } from './helpers/world/chunk'
-import { createVoxelProcessor } from './helpers/voxel/processor'
-import { loadCesiumGltfModel, voxelizeCesiumData } from './helpers/tiles/loader'
-import { selectTilesInRegion } from './helpers/tiles/traversal'
+import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxelProcessor, dec, encOp, face, findNearestTraditionalColor, K, raycast, screenToWorldRay, loadTraditionalColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
@@ -29,8 +23,7 @@ export interface CanvasProps {
 export const Canvas = (props: CanvasProps = {}) => {
         const { size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, isBuilding } = props
         const [isReady, setIsReady] = useState(false)
-        const [culturalWorld, setCulturalWorld] = useState<any>(null)
-        const [tilesChunks, setTilesChunks] = useState<any>(null)
+        const [culturalWorld, setWorld] = useState<any>(null)
         const [pendingMesh, setPendingMesh] = useState<Meshes | null>(null)
 
         const processor = useMemo(() => createVoxelProcessor(), [])
@@ -43,12 +36,10 @@ export const Canvas = (props: CanvasProps = {}) => {
                         if (props.atlas && props.mesh) {
                                 shader.updateAtlas(props.atlas as any)
                                 setPendingMesh(props.mesh as any)
-                        } else if (!props.atlas) {
-                                await initAtlasWorld('/texture/world.png')
                         }
 
-                        const world = await createDefaultCulturalWorld()
-                        setCulturalWorld(world)
+                        const world = await createDefaultWorld()
+                        setWorld(world)
                         setIsReady(true)
                         onReady?.()
                 }
@@ -74,10 +65,10 @@ export const Canvas = (props: CanvasProps = {}) => {
         const camera = useMemo(() => createCamera(size, dims), [size, dims])
         const meshes = useMemo(() => {
                 // Use tiles chunks if available, otherwise fall back to props
-                const mesh = tilesChunks ? { pos: [], scl: [], cnt: 0, vertex: [], normal: [] } : props.mesh
+                const mesh = props.mesh
                 const m = createMeshes(camera, mesh as any)
                 return m
-        }, [camera, props.mesh, tilesChunks])
+        }, [camera, props.mesh])
         const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
         const player = useMemo(() => createPlayer(camera, meshes, shader), [])
 
@@ -164,7 +155,7 @@ export const Canvas = (props: CanvasProps = {}) => {
                 },
         })
 
-        // Cultural metaverse real-time synchronization
+        //  metaverse real-time synchronization
         const sock = usePartySocket({
                 party: 'v1', // DO NOT CHANGE FROM "v1"
                 room: 'my-room',

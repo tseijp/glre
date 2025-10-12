@@ -1,10 +1,10 @@
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/d1'
-import { users, userCulturalProfiles, worlds, worldRegions, voxelChunks, semanticVoxels, traditionalColors, culturalEvents, communities, communityMemberships, educationalContent, culturalAchievements, learningProgress, knowledgeSharing, colorUsageLogs } from './schema'
+import { users, userProfiles, worlds, worldRegions, voxelChunks, semanticVoxels, traditionalColors, culturalEvents, communities, communityMemberships, educationalContent, culturalAchievements, learningProgress, knowledgeSharing, colorUsageLogs } from './schema'
 
 export const getUserBySub = (DB: D1Database, sub: string) => drizzle(DB).select().from(users).where(eq(users.id, sub)).limit(1)
 
-export const getCulturalProfile = (DB: D1Database, userId: string) => drizzle(DB).select().from(userCulturalProfiles).where(eq(userCulturalProfiles.userId, userId)).limit(1)
+export const getProfile = (DB: D1Database, userId: string) => drizzle(DB).select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1)
 
 export const getWorldsByCreator = (DB: D1Database, creatorId: string) => drizzle(DB).select().from(worlds).where(eq(worlds.creatorId, creatorId)).orderBy(desc(worlds.createdAt))
 
@@ -22,7 +22,7 @@ export const getTraditionalColors = (DB: D1Database, seasonalAssociation?: strin
                 .from(traditionalColors)
                 .where(seasonalAssociation ? eq(traditionalColors.seasonalAssociation, seasonalAssociation) : undefined)
 
-export const getCulturalEvents = (DB: D1Database, timeFrom: Date, timeTo: Date) =>
+export const getEvents = (DB: D1Database, timeFrom: Date, timeTo: Date) =>
         drizzle(DB)
                 .select()
                 .from(culturalEvents)
@@ -61,10 +61,10 @@ export const getLearningProgressByProfile = (DB: D1Database, profileId: string) 
                 .innerJoin(educationalContent, eq(educationalContent.contentId, learningProgress.contentId))
                 .where(eq(learningProgress.profileId, profileId))
 
-export const getCulturalAchievements = (DB: D1Database, profileId: string) => drizzle(DB).select().from(culturalAchievements).where(eq(culturalAchievements.profileId, profileId)).orderBy(desc(culturalAchievements.earnedAt))
+export const getAchievements = (DB: D1Database, profileId: string) => drizzle(DB).select().from(culturalAchievements).where(eq(culturalAchievements.profileId, profileId)).orderBy(desc(culturalAchievements.earnedAt))
 
-export const createCulturalProfile = (DB: D1Database, userId: string, culturalIdentity: string) =>
-        drizzle(DB).insert(userCulturalProfiles).values({
+export const createProfile = (DB: D1Database, userId: string, culturalIdentity: string) =>
+        drizzle(DB).insert(userProfiles).values({
                 userId,
                 culturalIdentity,
                 culturalKnowledgeLevel: 1,
@@ -155,7 +155,7 @@ export const updateLearningProgress = (DB: D1Database, progressId: string, progr
                 })
                 .where(eq(learningProgress.progressId, progressId))
 
-export const awardCulturalAchievement = (DB: D1Database, profileId: string, achievementType: string, achievementData: string, culturalSignificance: string) =>
+export const awardAchievement = (DB: D1Database, profileId: string, achievementType: string, achievementData: string, culturalSignificance: string) =>
         drizzle(DB).insert(culturalAchievements).values({
                 profileId,
                 achievementType,

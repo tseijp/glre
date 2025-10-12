@@ -44,7 +44,7 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
         })
 
         const fs = Fn(([n, local, iPos]: [Vec3, Vec3, Vec3]) => {
-                // Cultural hover highlighting
+                // hover highlighting
                 const sameFace = n.dot(iFace).equal(1)
                 const W = iPos
                         .add(local)
@@ -62,7 +62,7 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
                 const culturalColor = baseColor.toVar('culturalColor')
 
                 If(sameFace.and(isHover), () => {
-                        culturalColor.assign(vec3(1, 0.3, 0.3)) // Cultural highlight color (traditional red)
+                        culturalColor.assign(vec3(1, 0.3, 0.3)) //  highlight color (traditional red)
                 })
 
                 return vec4(culturalColor, 0.85)

@@ -75,13 +75,8 @@ export const extractTileGeometry = (tile: Tile): ArrayBuffer | null => {
 }
 
 export const estimateTileBounds = (tile: Tile): { min: number[]; max: number[] } => {
-        const defaultBounds = {
-                min: [-100, -100, -100],
-                max: [100, 100, 100],
-        }
-
+        const defaultBounds = { min: [-100, -100, -100], max: [100, 100, 100] }
         if (!tile.content?.attributes.positions) return defaultBounds
-
         const positions = tile.content.attributes.positions.value
         const min = [Infinity, Infinity, Infinity]
         const max = [-Infinity, -Infinity, -Infinity]
@@ -105,7 +100,7 @@ export const loadCesiumTileContent = async (assetId: number, tileUrl: string, cl
         return await res.arrayBuffer()
 }
 
-const createCulturalVoxelizedTile = (region: { lat: number; lng: number; zoom: number }, gltfData?: ArrayBuffer): VoxelizedTile => {
+const createVoxelizedTile = (region: { lat: number; lng: number; zoom: number }, gltfData?: ArrayBuffer): VoxelizedTile => {
         const size = 64
         const atlas = new Uint8Array(size * size * 4)
 
@@ -161,8 +156,8 @@ const createCulturalVoxelizedTile = (region: { lat: number; lng: number; zoom: n
 
 export const voxelizeCesiumData = async (assetId: number, region: { lat: number; lng: number; zoom: number }, client?: any): Promise<VoxelizedTile> => {
         const gltfData = await loadCesiumGltfModel(assetId, client)
-        if (gltfData) return createCulturalVoxelizedTile(region, gltfData)
-        return createCulturalVoxelizedTile(region)
+        if (gltfData) return createVoxelizedTile(region, gltfData)
+        return createVoxelizedTile(region)
 }
 
 export const generateAtlasPNG = async (voxelData: VoxelizedTile): Promise<Uint8Array> => {
