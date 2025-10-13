@@ -47,6 +47,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                         applyInstances(gl, { pos, scl, cnt: pos.length / 3, vertex, normal })
                 }
         }
+
         const applyChunks = (gl: any, m: Meshes) => {
                 pos.length = 0
                 scl.length = 0

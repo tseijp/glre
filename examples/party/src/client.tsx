@@ -47,7 +47,7 @@ export const App = () => {
         )
 
         const currentRegion = { ...defaultRegion, ...(region || {}) }
-        const vox = useVoxelWorld(client, currentRegion)
+        const vox = useVoxelWorld(currentRegion)
         useEffect(() => {
                 const initializeWorld = async () => {
                         const world = await createDefaultWorld()
@@ -78,7 +78,19 @@ export const App = () => {
         const Colors = colors || []
 
         const onSemanticVoxel = (v: any) => client.api.v1.voxels.$post({ json: v })
-        const children = (
+        const children = !vox ? (
+                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
+                        <div className="text-center">
+                                <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                                <div className="text-sm text-gray-600">{'伝統色彩システム初期化中...'}</div>
+                                {region && (
+                                        <div className="text-xs text-gray-500 mt-2">
+                                                Region: {region.lat.toFixed(4)}, {region.lng.toFixed(4)}
+                                        </div>
+                                )}
+                        </div>
+                </div>
+        ) : (
                 <Canvas //
                         size={16}
                         dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
@@ -86,7 +98,6 @@ export const App = () => {
                         mesh={vox?.mesh}
                         region={currentRegion}
                         onReady={onCanvasReady}
-                        isBuilding={isBuilding}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
@@ -106,7 +117,6 @@ export const App = () => {
                 onSignIn: () => signIn(),
                 onRegionChange,
                 currentRegion,
-                isBuilding,
                 //  metaverse 3D Tiles features
                 isMode: true,
                 hasColors: true,

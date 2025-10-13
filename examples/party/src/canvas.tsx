@@ -20,7 +20,7 @@ export interface CanvasProps {
         onSemanticVoxel?: (v: any) => void
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, isBuilding, atlas, mesh, onSemanticVoxel }: CanvasProps) => {
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, atlas, mesh, onSemanticVoxel }: CanvasProps) => {
         const [culturalWorld, setWorld] = useState<any>(null)
         const pendingMeshRef = useRef<Meshes | null>(null)
         const [instCount, setInstCount] = useState<number>(mesh?.cnt || 1)
@@ -66,6 +66,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 if (!atlas) return
                 shader.updateAtlas(atlas as any)
         }, [atlas, shader])
+
         useEffect(() => {
                 if (!mesh) return
                 pendingMeshRef.current = mesh as any
@@ -149,21 +150,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 },
         })
 
-        if (isBuilding) {
-                return (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
-                                <div className="text-center">
-                                        <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                                        <div className="text-sm text-gray-600">{isBuilding ? '3D Tiles voxelization中...' : '伝統色彩システム初期化中...'}</div>
-                                        {region && (
-                                                <div className="text-xs text-gray-500 mt-2">
-                                                        Region: {region.lat.toFixed(4)}, {region.lng.toFixed(4)}
-                                                </div>
-                                        )}
-                                </div>
-                        </div>
-                )
-        }
         return (
                 <div ref={key.ref} className="w-full h-full">
                         <div ref={drag.ref as any} className="w-full h-full">
