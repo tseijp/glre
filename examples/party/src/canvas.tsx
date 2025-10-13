@@ -1,6 +1,6 @@
 import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
-import { useMemo, useState, useRef } from 'react'
+import { useMemo, useState } from 'react'
 import { useDrag, useKey } from 'rege/react'
 import { applySeasonalTransform, createCamera, createShader, createMeshes, createPlayer, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
@@ -12,11 +12,12 @@ export interface CanvasProps {
         meshes?: Meshes
         onReady?: () => void
         onSemanticVoxel?: (v: any) => void
+        pages?: Array<{ atlas: Atlas; mesh: Meshes; i: number; j: number; k: number }>
+        mutate?: (data?: any, opts?: any) => any
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, meshes, onSemanticVoxel }: CanvasProps) => {
-        const [culturalWorld, setWorld] = useState<any>(null)
-        const pendingMeshRef = useRef<Meshes | null>(null)
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, pages }: CanvasProps) => {
+        const [culturalWorld] = useState<any>(null)
 
         const camera = useMemo(() => createCamera(size, dims), [])
         const meshes = useMemo(() => createMeshes(camera), [])
@@ -38,6 +39,21 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         shader.updateCamera(gl.size)
                 },
         })
+
+        useMemo(() => {
+                gl.queue(() => {
+                        if (!pages || pages.length === 0) return
+                        const acc = { pos: [0, 0, 0], scl: [0, 0, 0], cnt: 1 }
+                        for (const p of pages) {
+                                if (!p?.mesh?.cnt) continue
+                                acc.pos.push(...p.mesh.pos)
+                                acc.scl.push(...p.mesh.scl)
+                                acc.cnt += p.mesh.cnt
+                        }
+                        meshes.applyChunks(gl, acc)
+                        shader.updateAtlas(pages[0].atlas)
+                })
+        }, [pages])
 
         const click = (hit?: Hit, near?: number[]) => {
                 if (!hit || !culturalWorld) return
@@ -68,12 +84,12 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         }
 
         const drag = useDrag((d) => {
-                const _ = d.memo as any
+                const _ = d.memo
                 const ray = screenToWorldRay(d.value, gl.size, camera)
                 const hit = raycast(ray, meshes)
                 const near = hit ? [ray.origin[0] + ray.dir[0] * hit.near, ray.origin[1] + ray.dir[1] * hit.near, ray.origin[2] + ray.dir[2] * hit.near] : undefined
 
-                shader.updateHover(hit as any, near as any)
+                shader.updateHover(hit, near)
 
                 if (d.isDragStart || d.isDragging) {
                         _.count++

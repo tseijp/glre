@@ -1,82 +1,89 @@
-import useSWR from 'swr'
+import useSWRInfinite from 'swr/infinite'
 import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, loadCesiumTiles } from '../helpers'
 import { useSearchParam } from './useSearchParam'
 import type { Atlas, Meshes } from '../helpers'
+import { useEffect } from 'react'
 
-export const useVoxelWorld = (_region: { lat: number; lng: number; zoom: number }) => {
+const toTile = (lat = 0, lng = 0, z = 0) => {
+        const s = Math.sin((lat * Math.PI) / 180)
+        const n = 1 << z
+        const x = Math.floor(((lng + 180) / 360) * n)
+        const y = Math.floor(((1 - Math.log((1 + s) / (1 - s)) / Math.PI) / 2) * n)
+        return { i: x, j: y, k: z }
+}
+
+const fill = (vox: Map<string, Uint8Array>) => {
+        const map = createChunks() as any
+        for (const [k, rgba] of vox) {
+                const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
+                const id = chunkId(i, j, l)
+                const ch = map.get(id)
+                if (!ch) continue
+                const out = new Uint8Array(16 * 16 * 16)
+                for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
+                ch.vox.set(out)
+                ch.visible = true
+                ch.dirty = true
+                ch.gen = true
+        }
+        meshing(map)
+        return gather(map)
+}
+
+const SWR_CONFIG = { keepPreviousData: true, revalidateOnFocus: false, revalidateIfStale: false }
+
+export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }) => {
         const asset = useSearchParam('asset')
         const assetId = asset ? parseInt(asset) : 96188
 
-        const fillChunks = (voxMap: Map<string, Uint8Array>) => {
-                const chunksMap = createChunks() as any
-                for (const [k, rgba] of voxMap) {
-                        const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
-                        const id = chunkId(i, j, l)
-                        const chunk = chunksMap.get(id)
-                        if (!chunk) continue
-                        const out = new Uint8Array(16 * 16 * 16)
-                        for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
-                        chunk.vox.set(out)
-                        chunk.visible = true
-                        chunk.dirty = true
-                        chunk.gen = true
-                }
-                meshing(chunksMap)
-                const m = gather(chunksMap)
-                return m
+        const keys = ['vox-world', Number(region.lat).toFixed(4), Number(region.lng).toFixed(4), String(region.zoom)] as const
+        const getKey = (index: number) => {
+                if (index > 0) return null
+                return [keys, ''] as const
         }
+        const fetcher = async () => {
+                const { lat, lng, zoom } = region
+                const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+                const head = await fetch(q, { method: 'HEAD' })
+                // if (head.ok) {
+                //         const res = await fetch(q)
+                //         const ab = await res.arrayBuffer()
+                //         const vox = await extractVoxelArraysFromWorldPNG(ab)
+                //         const m = fill(vox)
+                //         const { i, j, k } = toTile(lat, lng, zoom)
+                //         return { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes, i, j, k }
+                // }
+                const wasm: any = await importWasm()
+                const parsed = await loadCesiumTiles(assetId)
+                const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
+                const rgba = new Uint8Array(4096 * 4096 * 4)
+                for (const it of items) {
+                        const [ci, cj, ck] = String(it.key)
+                                .split('.')
+                                .map((v: string) => parseInt(v) | 0)
+                        blitChunk64ToWorld(new Uint8Array(it.rgba as any), ci, cj, ck, rgba)
+                }
+                const png = await encodeImagePNG(rgba, 4096, 4096)
+                const vox = await extractVoxelArraysFromWorldPNG(png.buffer)
+                const m = fill(vox)
+                const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
+                const { i, j, k } = toTile(lat, lng, zoom)
+                return {
+                        atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas,
+                        mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes,
+                        i,
+                        j,
+                        k,
+                }
+        }
+        const swr = useSWRInfinite(getKey as any, fetcher as any, { revalidateFirstPage: false, ...SWR_CONFIG })
 
-        const swr = useSWR<{ atlas: Atlas; mesh: Meshes }>(
-                'vox-glb',
-                async () => {
-                        try {
-                                // const { lat, lng, zoom } = region!
-                                // const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+        // useEffect(() => {
+        //         swr.mutate(undefined, { revalidate: false })
+        //         swr.setSize(1)
+        // }, [keys[0], keys[1], keys[2], keys[3]])
 
-                                // ↓↓↓ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↓↓↓
-                                // const head = await fetch(q, { method: 'HEAD' })
-                                // if (head.ok) {
-                                //         const res = await client.api.v1.atlas.$get({ query: { lat: String(lat), lng: String(lng), zoom: String(zoom) } })
-                                //         const ab = await res.arrayBuffer()
-                                //         const voxMap = await extractVoxelArraysFromWorldPNG(ab)
-                                //         const m = fillChunks(voxMap)
-                                //         return { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
-                                // }
-                                // ↑↑ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↑↑↑
-                                const wasm: any = await importWasm()
-                                const parsed = await loadCesiumTiles(assetId)
-                                const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
+        console.log(swr.data)
 
-                                // ↓↓↓ (DO NOT CHANGE) ↓↓↓
-                                // console.log(JSON.stringify({ parsed, items }, null, '\t'))
-                                // ↑↑ (DO NOT CHANGE) ↑↑↑
-
-                                const atlasRGBA = new Uint8Array(4096 * 4096 * 4)
-                                for (const it of items) {
-                                        const [ci, cj, ck] = String(it.key)
-                                                .split('.')
-                                                .map((v: string) => parseInt(v) | 0)
-                                        blitChunk64ToWorld(new Uint8Array(it.rgba as any), ci, cj, ck, atlasRGBA)
-                                }
-                                const png = await encodeImagePNG(atlasRGBA, 4096, 4096)
-                                const voxMap = await extractVoxelArraysFromWorldPNG(png.buffer)
-                                const m = fillChunks(voxMap)
-
-                                // ↓↓↓ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↓↓↓
-                                // fetch(q, { method: 'PUT', body: png }).catch(() => {})
-                                // ↑↑ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↑↑↑
-
-                                const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
-                                return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
-                        } catch (e) {
-                                console.warn(e)
-                                throw e
-                        }
-                },
-                { revalidateOnFocus: false, revalidateOnReconnect: false, refreshInterval: 0, shouldRetryOnError: false }
-        )
-        // ↓↓↓ (DO NOT CHANGE) ↓↓↓
-        console.log(swr.data) // console.log(JSON.stringify(swr.data, null, '\t'))
-        // ↑↑ (DO NOT CHANGE) ↑↑↑
-        return swr.data
+        return swr
 }

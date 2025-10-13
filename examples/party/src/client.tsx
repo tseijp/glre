@@ -34,7 +34,7 @@ export const App = () => {
         const isSignedIn = !!profile
         const Colors = colors || []
         const onSemanticVoxel = (v: any) => {} // client.api.v1.voxels.$post({ json: v })
-        const children = !vox ? (
+        const children = !vox?.data ? (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
                         <div className="text-center">
                                 <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
@@ -50,8 +50,8 @@ export const App = () => {
                 <Canvas //
                         size={16}
                         dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
-                        atlas={vox?.atlas}
-                        meshes={vox?.mesh}
+                        pages={vox.data as any}
+                        mutate={vox.mutate as any}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
