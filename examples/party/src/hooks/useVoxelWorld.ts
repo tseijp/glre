@@ -46,7 +46,11 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                                 const wasm: any = await importWasm()
                                 const parsed = await loadCesiumTiles(assetId)
                                 const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
+
+                                // ↓↓↓ (DO NOT CHANGE) ↓↓↓
                                 console.log(JSON.stringify({ parsed, items }, null, '\t'))
+                                // ↑↑ (DO NOT CHANGE) ↑↑↑
+
                                 const atlasRGBA = new Uint8Array(4096 * 4096 * 4)
                                 for (const it of items) {
                                         const [ci, cj, ck] = String(it.key)
@@ -65,7 +69,7 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                                 const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
                                 return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                         } catch (e) {
-                                throw e
+                                console.warn(e)
                         }
                 },
                 { revalidateOnFocus: false, revalidateOnReconnect: false, refreshInterval: 0, shouldRetryOnError: false }
