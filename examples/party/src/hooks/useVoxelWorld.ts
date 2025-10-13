@@ -48,7 +48,7 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                                 const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
 
                                 // ↓↓↓ (DO NOT CHANGE) ↓↓↓
-                                console.log(JSON.stringify({ parsed, items }, null, '\t'))
+                                // console.log(JSON.stringify({ parsed, items }, null, '\t'))
                                 // ↑↑ (DO NOT CHANGE) ↑↑↑
 
                                 const atlasRGBA = new Uint8Array(4096 * 4096 * 4)
@@ -70,12 +70,13 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                                 return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } }
                         } catch (e) {
                                 console.warn(e)
+                                throw e
                         }
                 },
                 { revalidateOnFocus: false, revalidateOnReconnect: false, refreshInterval: 0, shouldRetryOnError: false }
         )
         // ↓↓↓ (DO NOT CHANGE) ↓↓↓
-        console.log(JSON.stringify(swr.data, null, '\t'))
+        console.log(swr.data) // console.log(JSON.stringify(swr.data, null, '\t'))
         // ↑↑ (DO NOT CHANGE) ↑↑↑
         return swr.data
 }

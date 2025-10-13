@@ -27,27 +27,27 @@ export const blitChunk64ToWorld = (src: Uint8Array, ci = 0, cj = 0, ck = 0, dst?
 const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
         const raw = new Uint8Array(buf)
         const isRGBA = raw.byteLength === 4096 * 4096 * 4
-        const data: Uint8Array = isRGBA
-                ? raw
-                : await (async () => {
-                          const blob = new Blob([buf], { type: 'image/png' })
-                          const bmp: any = (globalThis as any).createImageBitmap
-                                  ? await createImageBitmap(blob)
-                                  : await new Promise((res) => {
-                                            const img = new Image()
-                                            img.onload = () => res(img)
-                                            img.src = URL.createObjectURL(blob)
-                                    })
-                          const w = bmp.width || 4096
-                          const h = bmp.height || 4096
-                          const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
-                          canvas.width = w
-                          canvas.height = h
-                          const ctx: any = canvas.getContext('2d', { willReadFrequently: true })
-                          ctx.drawImage(bmp, 0, 0)
-                          const { data } = ctx.getImageData(0, 0, w, h)
-                          return new Uint8Array(data.buffer.slice(0))
-                  })()
+        let data: Uint8Array = raw
+        if (!isRGBA)
+                data = await (async () => {
+                        const blob = new Blob([buf], { type: 'image/png' })
+                        const bmp: any = (globalThis as any).createImageBitmap
+                                ? await createImageBitmap(blob)
+                                : await new Promise((res) => {
+                                          const img = new Image()
+                                          img.onload = () => res(img)
+                                          img.src = URL.createObjectURL(blob)
+                                  })
+                        const w = bmp.width || 4096
+                        const h = bmp.height || 4096
+                        const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
+                        canvas.width = w
+                        canvas.height = h
+                        const ctx: any = canvas.getContext('2d', { willReadFrequently: true })
+                        ctx.drawImage(bmp, 0, 0)
+                        const { data } = ctx.getImageData(0, 0, w, h)
+                        return new Uint8Array(data.buffer.slice(0))
+                })()
         const out = new Map<string, Uint8Array>()
         for (let k = 0; k < 16; k++)
                 for (let j = 0; j < 16; j++)

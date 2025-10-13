@@ -7,7 +7,7 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
         const defaultAtlas = atlas || { src: '', W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }
         const MVP = computeCamera(camera, [1280, 800])
         const iMVP = uniform<'mat4'>(MVP, 'MVP')
-        const iAtlas = uniform(defaultAtlas.src ?? 'IGNORE', 'iAtlas')
+        const iAtlas = uniform(defaultAtlas.src || 'IGNORE', 'iAtlas')
         const iAtlasSize = uniform(vec2(defaultAtlas.W, defaultAtlas.H), 'iAtlasSize')
         const iPlaneSize = uniform(vec2(defaultAtlas.planeW, defaultAtlas.planeH), 'iPlaneSize')
         const iPlaneCols = uniform(float(defaultAtlas.cols), 'iPlaneCols')
@@ -33,6 +33,7 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
                 return clamp(uv, vec2(eps), vec2(float(1).sub(eps)))
         })
 
+        console.log(meshes, 'HIHI')
         const vertex = attribute<'vec3'>(meshes.vertex, 'vertex')
         const normal = attribute<'vec3'>(meshes.normal, 'normal')
         const scl = instance<'vec3'>(meshes.scl, 'scl')

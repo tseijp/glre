@@ -10,17 +10,11 @@ export interface CanvasProps {
         dims?: Dims
         atlas?: Atlas
         mesh?: Meshes
-        region?: {
-                lat: number
-                lng: number
-                zoom?: number
-        }
         onReady?: () => void
-        isBuilding?: boolean
         onSemanticVoxel?: (v: any) => void
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, region, onReady, atlas, mesh, onSemanticVoxel }: CanvasProps) => {
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, atlas, mesh, onReady, onSemanticVoxel }: CanvasProps) => {
         const [culturalWorld, setWorld] = useState<any>(null)
         const pendingMeshRef = useRef<Meshes | null>(null)
         const [instCount, setInstCount] = useState<number>(mesh?.cnt || 1)
@@ -45,6 +39,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 frag: shader.frag,
                 isDepth: true,
                 isDebug: false,
+                isWebGL: true,
                 count: meshes.count,
                 instanceCount: instCount,
                 loop() {
