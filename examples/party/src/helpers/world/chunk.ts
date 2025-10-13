@@ -83,9 +83,9 @@ const extractChunkFromAtlas = (worldData: Uint8Array, ci: number, cj: number, ck
                                 const wy = worldY + y
                                 const wz = worldZ + z
                                 if (wx < worldSize[0] && wy < worldSize[1] && wz < worldSize[2]) {
-                                        // Calculate atlas position
-                                        const atlasX = (cj % 4) * 64 + (oz + x)
-                                        const atlasY = Math.floor(cj / 4) * 64 + (pz + y)
+                                        // Calculate atlas position (plane determined by z-chunk = ck)
+                                        const atlasX = (ck % 4) * 64 + (oz + x)
+                                        const atlasY = Math.floor(ck / 4) * 64 + (pz + y)
                                         const atlasIdx = (atlasY * 4096 + atlasX) * 4 + 3 // Alpha channel
                                         const voxelIdx = x + (y + z * 16) * 16
                                         chunkVox[voxelIdx] = worldData[atlasIdx] > 0 ? 1 : 0

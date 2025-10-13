@@ -12,7 +12,7 @@ export interface CanvasProps {
         meshes?: Meshes
         onReady?: () => void
         onSemanticVoxel?: (v: any) => void
-        pages?: Array<{ atlas: Atlas; mesh: Meshes; i: number; j: number; k: number }>
+        pages?: Array<{ atlas: Atlas; mesh: Meshes; region: { i: number; j: number; k: number } }>
         mutate?: (data?: any, opts?: any) => any
 }
 

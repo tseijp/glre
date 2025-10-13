@@ -1,8 +1,6 @@
 import useSWRInfinite from 'swr/infinite'
 import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, loadCesiumTiles } from '../helpers'
-import { useSearchParam } from './useSearchParam'
 import type { Atlas, Meshes } from '../helpers'
-import { useEffect } from 'react'
 
 const toTile = (lat = 0, lng = 0, z = 0) => {
         const s = Math.sin((lat * Math.PI) / 180)
@@ -60,7 +58,7 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                         const [ci, cj, ck] = String(it.key)
                                 .split('.')
                                 .map((v: string) => parseInt(v) | 0)
-                        blitChunk64ToWorld(new Uint8Array(it.rgba as any), ci, cj, ck, rgba)
+                        blitChunk64ToWorld(it.rgba, ci, cj, ck, rgba)
                 }
                 const png = await encodeImagePNG(rgba, 4096, 4096)
                 const vox = await extractVoxelArraysFromWorldPNG(png.buffer)
@@ -70,19 +68,9 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                 return {
                         atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas,
                         mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes,
-                        i,
-                        j,
-                        k,
+                        region: { i, j, k },
                 }
         }
         const swr = useSWRInfinite(getKey as any, fetcher as any, { revalidateFirstPage: false, ...SWR_CONFIG })
-
-        // useEffect(() => {
-        //         swr.mutate(undefined, { revalidate: false })
-        //         swr.setSize(1)
-        // }, [keys[0], keys[1], keys[2], keys[3]])
-
-        console.log(swr.data)
-
         return swr
 }

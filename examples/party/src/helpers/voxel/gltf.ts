@@ -84,11 +84,11 @@ export const buildFromGLTF = (json: any) => {
                                 const uv2: V2 = [0, 0]
                                 if (uv.length > 0) {
                                         uv0[0] = uv[i0 * 2]
-                                        uv0[1] = 1 - uv[i0 * 2 + 1]
+                                        uv0[1] = uv[i0 * 2 + 1]
                                         uv1[0] = uv[i1 * 2]
-                                        uv1[1] = 1 - uv[i1 * 2 + 1]
+                                        uv1[1] = uv[i1 * 2 + 1]
                                         uv2[0] = uv[i2 * 2]
-                                        uv2[1] = 1 - uv[i2 * 2 + 1]
+                                        uv2[1] = uv[i2 * 2 + 1]
                                 }
                                 tris.push({ v0: v0, v1: v1, v2: v2, uv0, uv1, uv2, mat: mi })
                         }
