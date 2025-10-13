@@ -33,11 +33,6 @@ export const loadCesiumTiles = async (assetId: number) => {
         const raw = await fetch(`/api/v1/cesium/${assetId}/content?src=${encodeURIComponent(uri)}`).then((r) => r.arrayBuffer())
         const isB3dm = uri.endsWith('.b3dm') || uri.endsWith('.B3DM')
         const glb = isB3dm ? ext(raw) : raw
-
-        // ↓↓↓ (DO NOT CHANGE) ↓↓↓
-        // console.log(JSON.stringify({ tileset, uri, raw, isB3dm, glb }))
-        // ↑↑ (DO NOT CHANGE) ↑↑↑
-
         const gltf = await load(glb, GLTFLoader, { gltf: { loadBuffers: true, loadImages: true, normalize: true }, image: { type: 'data' } })
         const json = postProcessGLTF(gltf as any)
         return buildFromGLTF(json)

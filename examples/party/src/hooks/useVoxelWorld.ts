@@ -33,8 +33,7 @@ const fill = (vox: Map<string, Uint8Array>) => {
 const SWR_CONFIG = { keepPreviousData: true, revalidateOnFocus: false, revalidateIfStale: false }
 
 export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }) => {
-        const asset = useSearchParam('asset')
-        const assetId = asset ? parseInt(asset) : 96188
+        const assetId = 96188
 
         const keys = ['vox-world', Number(region.lat).toFixed(4), Number(region.lng).toFixed(4), String(region.zoom)] as const
         const getKey = (index: number) => {
@@ -43,8 +42,8 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
         }
         const fetcher = async () => {
                 const { lat, lng, zoom } = region
-                const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
-                const head = await fetch(q, { method: 'HEAD' })
+                // const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+                // const head = await fetch(q, { method: 'HEAD' })
                 // if (head.ok) {
                 //         const res = await fetch(q)
                 //         const ab = await res.arrayBuffer()

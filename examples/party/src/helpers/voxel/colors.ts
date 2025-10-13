@@ -29,24 +29,19 @@ export const getColorsByElement = (element: string) => _COLORS_DATA.filter((colo
 export const findNearestColor = (rgb: number) => {
         let closest = getAllColors()[0]
         let minDistance = Infinity
-
         const r1 = (rgb >>> 16) & 0xff
         const g1 = (rgb >>> 8) & 0xff
         const b1 = rgb & 0xff
-
         for (const color of getAllColors()) {
                 const r2 = (color.rgbValue >>> 16) & 0xff
                 const g2 = (color.rgbValue >>> 8) & 0xff
                 const b2 = color.rgbValue & 0xff
-
                 const distance = Math.sqrt((r1 - r2) ** 2 + (g1 - g2) ** 2 + (b1 - b2) ** 2)
-
                 if (distance < minDistance) {
                         minDistance = distance
                         closest = color
                 }
         }
-
         return closest
 }
 
