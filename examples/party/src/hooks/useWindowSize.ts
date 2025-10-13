@@ -7,7 +7,7 @@ const createWindowSize = () => {
                 w = window.innerWidth
                 update()
         }
-        const get = () => w
+        const get = () => w < 800
         const sub = (_update = () => {}) => {
                 update = _update
                 window.addEventListener('resize', resize)

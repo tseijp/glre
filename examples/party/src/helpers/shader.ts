@@ -33,7 +33,6 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
                 return clamp(uv, vec2(eps), vec2(float(1).sub(eps)))
         })
 
-        console.log(meshes, 'HIHI')
         const vertex = attribute<'vec3'>(meshes.vertex, 'vertex')
         const normal = attribute<'vec3'>(meshes.normal, 'normal')
         const scl = instance<'vec3'>(meshes.scl, 'scl')

@@ -44,14 +44,12 @@ const app = new Hono<{ Bindings: Env }>()
         .use('/api/v1/*', logger())
         .get('/api/v1/res', (c) => c.text('ok'))
         .get('/api/v1/profile', async (c) => {
-                const user = c.get('authUser')?.token?.sub
-                if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
+                const user = c.get('authUser')?.token?.sub!
                 const profile = await Q.getProfile(c.env.DB, user)
                 return c.json(profile)
         })
         .post('/api/v1/profile', async (c) => {
-                const user = c.get('authUser')?.token?.sub
-                if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
+                const user = c.get('authUser')?.token?.sub!
                 const { culturalIdentity } = await c.req.json()
                 await Q.createProfile(c.env.DB, user, culturalIdentity)
                 return c.json({ success: true })
@@ -70,8 +68,7 @@ const app = new Hono<{ Bindings: Env }>()
                 return c.json({ error: 'Missing parameters' }, { status: 400 })
         })
         .post('/api/v1/worlds', async (c) => {
-                const user = c.get('authUser')?.token?.sub
-                if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
+                const user = c.get('authUser')?.token?.sub!
                 const { worldName, culturalTheme } = await c.req.json()
                 const world = await Q.createWorld(c.env.DB, worldName, culturalTheme, user)
                 return c.json(world)
@@ -111,8 +108,7 @@ const app = new Hono<{ Bindings: Env }>()
                 return c.json(semanticVoxels)
         })
         .post('/api/v1/voxels', async (c) => {
-                const user = c.get('authUser')?.token?.sub
-                if (!user) return c.json({ error: 'Not authenticated' }, { status: 401 })
+                const user = c.get('authUser')?.token?.sub!
                 const { chunkId, localX, localY, localZ, primaryKanji, secondaryKanji, rgbValue, alphaProperties, behavioralSeed } = await c.req.json()
 
                 // Create semantic voxel with validation and encoding
@@ -152,9 +148,8 @@ const app = new Hono<{ Bindings: Env }>()
                 return c.json(parsedColors)
         })
         .get('/api/v1/events', async (c) => {
-                const from = c.req.query('from')
-                const to = c.req.query('to')
-                if (!from || !to) return c.json({ error: 'Missing date parameters' }, { status: 400 })
+                const from = new Date().toISOString()
+                const to = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
                 const events = await Q.getEvents(c.env.DB, new Date(from), new Date(to))
                 return c.json(events)
         })

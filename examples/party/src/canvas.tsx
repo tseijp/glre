@@ -1,37 +1,26 @@
 import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
-import { useMemo, useEffect, useState, useRef } from 'react'
+import { useMemo, useState, useRef } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
+import { applySeasonalTransform, createCamera, createShader, createMeshes, createPlayer, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
         size?: number
         dims?: Dims
         atlas?: Atlas
-        mesh?: Meshes
+        meshes?: Meshes
         onReady?: () => void
         onSemanticVoxel?: (v: any) => void
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, atlas, mesh, onReady, onSemanticVoxel }: CanvasProps) => {
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, meshes, onSemanticVoxel }: CanvasProps) => {
         const [culturalWorld, setWorld] = useState<any>(null)
         const pendingMeshRef = useRef<Meshes | null>(null)
-        const [instCount, setInstCount] = useState<number>(mesh?.cnt || 1)
 
-        useEffect(() => {
-                const init = async () => {
-                        await loadColors()
-                        const world = await createDefaultWorld()
-                        setWorld(world)
-                        onReady?.()
-                }
-                init()
-        }, [])
-
-        const camera = useMemo(() => createCamera(size, dims), [size, dims])
-        const meshes = useMemo(() => createMeshes(camera), [camera])
-        const shader = useMemo(() => createShader(camera, meshes), [camera, meshes])
+        const camera = useMemo(() => createCamera(size, dims), [])
+        const meshes = useMemo(() => createMeshes(camera), [])
+        const shader = useMemo(() => createShader(camera, meshes), [])
         const player = useMemo(() => createPlayer(camera, meshes, shader), [])
 
         const gl = useGL({
@@ -41,32 +30,14 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 isDebug: false,
                 isWebGL: true,
                 count: meshes.count,
-                instanceCount: instCount,
+                instanceCount: meshes.instanceCount,
                 loop() {
-                        const next = pendingMeshRef.current
-                        if (next) {
-                                meshes.applyChunks?.(gl, next as any)
-                                gl.instanceCount = (next as any).cnt || 1
-                                setInstCount((next as any).cnt || 1)
-                                pendingMeshRef.current = null
-                        }
                         player.step(gl)
                 },
                 resize() {
                         shader.updateCamera(gl.size)
                 },
         })
-
-        useEffect(() => {
-                if (!atlas) return
-                shader.updateAtlas(atlas as any)
-        }, [atlas, shader])
-
-        useEffect(() => {
-                if (!mesh) return
-                pendingMeshRef.current = mesh as any
-                setInstCount((mesh as any).cnt || 1)
-        }, [mesh])
 
         const click = (hit?: Hit, near?: number[]) => {
                 if (!hit || !culturalWorld) return
@@ -91,7 +62,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         behavioralSeed: Math.floor(Math.random() * 256),
                 }
                 onSemanticVoxel?.(semanticVoxel)
-
                 shader.updateHover(hit, near)
                 meshes.update(gl, xyz)
                 sock.send(enc(xyz[0], xyz[1], xyz[2]))

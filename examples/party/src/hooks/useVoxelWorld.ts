@@ -3,7 +3,7 @@ import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxel
 import { useSearchParam } from './useSearchParam'
 import type { Atlas, Meshes } from '../helpers'
 
-export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }) => {
+export const useVoxelWorld = (_region: { lat: number; lng: number; zoom: number }) => {
         const asset = useSearchParam('asset')
         const assetId = asset ? parseInt(asset) : 96188
 
@@ -30,8 +30,8 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                 'vox-glb',
                 async () => {
                         try {
-                                const { lat, lng, zoom } = region!
-                                const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+                                // const { lat, lng, zoom } = region!
+                                // const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
 
                                 // ↓↓↓ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↓↓↓
                                 // const head = await fetch(q, { method: 'HEAD' })

@@ -7,68 +7,25 @@ import PC from './components/PC'
 import SP from './components/SP'
 import Canvas from './canvas'
 import { useFetch, useSearchParam, useWindowSize } from './hooks'
-import { createDefaultWorld, loadColorsWithClient } from './helpers'
 import { useVoxelWorld } from './hooks/useVoxelWorld'
-import { useEffect, useState, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import type { AppType } from '.'
 
 const client = hc<AppType>('/')
 
 export const App = () => {
-        const w = useWindowSize()
         const colors = useFetch('colors', client.api.v1.colors.$get).data
-        const profile = useFetch('profile', () => client.api.v1.profile.$get()).data
-        const events = useFetch('events', () =>
-                client.api.v1.events.$get({
-                        query: {
-                                from: new Date().toISOString(),
-                                to: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
-                        },
-                })
-        ).data
+        const profile = useFetch('profile', client.api.v1.profile.$get).data
+        const events = useFetch('events', client.api.v1.events.$get).data
+        const [region, setRegion] = useState<{ lat: number; lng: number; zoom: number } | null>(null)
+        const defaultRegion = useMemo(() => ({ lat: 35.6762, lng: 139.6503, zoom: 15 }), [])
+        const currentRegion = region || defaultRegion
+        const onRegionChange = (lat: number, lng: number, zoom: number) => setRegion({ lat, lng, zoom })
+        const vox = useVoxelWorld(currentRegion)
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')
         const page = useSearchParam('page')
-
-        // Create cultural world context with async loading
-        const [culturalWorld, setWorld] = useState<any>(null)
-        const [region, setRegion] = useState<{ lat: number; lng: number; zoom?: number } | null>(null)
-        const [isBuilding, setIsBuilding] = useState(false)
-
-        // Default to Tokyo coordinates for 3D Tiles
-        const defaultRegion = useMemo(
-                () => ({
-                        lat: 35.6762,
-                        lng: 139.6503,
-                        zoom: 15,
-                }),
-                []
-        )
-
-        const currentRegion = { ...defaultRegion, ...(region || {}) }
-        const vox = useVoxelWorld(currentRegion)
-        useEffect(() => {
-                const initializeWorld = async () => {
-                        const world = await createDefaultWorld()
-                        setWorld(world)
-                }
-                initializeWorld()
-        }, [])
-
-        useEffect(() => {
-                loadColorsWithClient(client)
-        }, [])
-
-        const onRegionChange = (lat: number, lng: number, zoom?: number) => {
-                setIsBuilding(true)
-                setRegion({ lat, lng, zoom })
-        }
-
-        const onCanvasReady = () => {
-                setIsBuilding(false)
-        }
-
         const isHUD = hud !== '0'
         const isMenu = menu === '1'
         const isModal = modal === '1'
@@ -76,8 +33,7 @@ export const App = () => {
         const canSignIn = !profile
         const isSignedIn = !!profile
         const Colors = colors || []
-
-        const onSemanticVoxel = (v: any) => client.api.v1.voxels.$post({ json: v })
+        const onSemanticVoxel = (v: any) => {} // client.api.v1.voxels.$post({ json: v })
         const children = !vox ? (
                 <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
                         <div className="text-center">
@@ -95,13 +51,10 @@ export const App = () => {
                         size={16}
                         dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
                         atlas={vox?.atlas}
-                        mesh={vox?.mesh}
-                        region={currentRegion}
-                        onReady={onCanvasReady}
+                        meshes={vox?.mesh}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
-
         const props = {
                 isHUD,
                 isMenu,
@@ -110,9 +63,7 @@ export const App = () => {
                 canSignIn,
                 isSignedIn,
                 Colors,
-                culturalWorld,
                 culturalEvents: Array.isArray(events) ? events : [],
-                seasonalColors: colors?.filter((c: any) => c.seasonalAssociation === culturalWorld?.seasonalCycle) || [],
                 page: page || '1',
                 onSignIn: () => signIn(),
                 onRegionChange,
@@ -123,8 +74,7 @@ export const App = () => {
                 isSemanticVoxels: true,
                 children,
         }
-
-        if (w < 800) return <SP {...props} />
+        if (useWindowSize()) return <SP {...props} />
         return <PC {...props} />
 }
 
