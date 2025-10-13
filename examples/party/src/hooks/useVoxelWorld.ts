@@ -1,5 +1,5 @@
 import useSWR from 'swr'
-import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, parseGLB, loadCesiumModel } from '../helpers'
+import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, loader, loadCesiumModel } from '../helpers'
 import { useSearchParam } from './useSearchParam'
 import type { Atlas, Meshes } from '../helpers'
 
@@ -48,9 +48,10 @@ export const useVoxelWorld = (client: any, region?: { lat: number; lng: number; 
                         // ↑↑ TEMPORARY COMMENT OUTED (DO NOT CHANGE) ↑↑↑
 
                         const wasm: any = await importWasm()
-                        const glbBuf = await loadCesiumModel(assetId, client)
-                        if (!glbBuf) return undefined as any
-                        const parsed = await parseGLB(glbBuf)
+                        const res = await client.api.v1.cesium[':assetId'].$get({ param: { assetId: String(assetId) } })
+                        if (!res.ok) throw Error(`Error: client.api.v1.cesium[':assetId'].$get is not ok`)
+                        const glbBuf = await res.arrayBuffer()
+                        const parsed = await loader(glbBuf)
                         const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
                         const atlasRGBA = new Uint8Array(4096 * 4096 * 4)
                         for (const it of items) {

@@ -244,12 +244,6 @@ const app = new Hono<{ Bindings: Env }>()
                 await Q.shareKnowledge(c.env.DB, communityId, user, knowledgeType, Wisdom, culturalContext)
                 return c.json({ success: true })
         })
-        .post('/api/v1/seed', async (c) => {
-                // Development/admin endpoint for seeding cultural data
-                const { seedAllData } = await import('./helpers/world/seed')
-                const results = await seedAllData(c.env.DB)
-                return c.json(results)
-        })
         .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
         .get('/api/v1/cesium/:assetId', async (c) => {
                 const assetId = parseInt(c.req.param('assetId'))
