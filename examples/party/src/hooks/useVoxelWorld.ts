@@ -54,12 +54,7 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                 const parsed = await loadCesiumTiles(assetId)
                 const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
                 const rgba = new Uint8Array(4096 * 4096 * 4)
-                for (const it of items) {
-                        const [ci, cj, ck] = String(it.key)
-                                .split('.')
-                                .map((v: string) => parseInt(v) | 0)
-                        blitChunk64ToWorld(it.rgba, ci, cj, ck, rgba)
-                }
+                blitChunk64ToWorld(items, rgba)
                 const png = await encodeImagePNG(rgba, 4096, 4096)
                 const vox = await extractVoxelArraysFromWorldPNG(png.buffer)
                 const m = fill(vox)

@@ -9,18 +9,24 @@ export const encodeImagePNG = async (pix: Uint8Array, w: number, h: number) => {
         return new Uint8Array(await blob.arrayBuffer())
 }
 
-export const blitChunk64ToWorld = (src: Uint8Array, ci = 0, cj = 0, ck = 0, dst?: Uint8Array) => {
-        const world = dst
-        if (!world) return
-        const planeX = cj & 3
-        const planeY = cj >> 2
-        const ox = planeX * 1024 + ci * 64
-        const oy = planeY * 1024 + ck * 64
-        for (let y = 0; y < 64; y++) {
-                const dy = oy + y
-                const di = (dy * 4096 + ox) * 4
-                const si = y * 64 * 4
-                world.set(src.subarray(si, si + 64 * 4), di)
+export const blitChunk64ToWorld = (items: any, dst: Uint8Array) => {
+        const write = (ci = 0, cj = 0, ck = 0, src: Uint8Array) => {
+                const planeX = cj & 3
+                const planeY = cj >> 2
+                const ox = planeX * 1024 + ci * 64
+                const oy = planeY * 1024 + ck * 64
+                for (let y = 0; y < 64; y++) {
+                        const dy = oy + y
+                        const di = (dy * 4096 + ox) * 4
+                        const si = y * 64 * 4
+                        dst.set(src.subarray(si, si + 64 * 4), di)
+                }
+        }
+        for (const it of items) {
+                const [ci, cj, ck] = String(it.key)
+                        .split('.')
+                        .map((v: string) => parseInt(v) | 0)
+                write(ci, cj, ck, it.rgba)
         }
 }
 
