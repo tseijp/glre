@@ -2,7 +2,7 @@ import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo, useEffect, useState, useRef } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, createVoxels, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
+import { applySeasonalTransform, createCamera, createShader, createDefaultWorld, createMeshes, createPlayer, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
 import type { Atlas, Meshes, Dims, Hit } from './helpers'
 
 export interface CanvasProps {
@@ -25,8 +25,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         const pendingMeshRef = useRef<Meshes | null>(null)
         const [instCount, setInstCount] = useState<number>(mesh?.cnt || 1)
 
-        const processor = useMemo(() => createVoxels(), [])
-
         useEffect(() => {
                 const init = async () => {
                         await loadColors()
@@ -35,9 +33,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         onReady?.()
                 }
                 init()
-                return () => {
-                        processor.cleanup()
-                }
         }, [])
 
         const camera = useMemo(() => createCamera(size, dims), [size, dims])

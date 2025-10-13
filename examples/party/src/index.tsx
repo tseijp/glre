@@ -261,6 +261,39 @@ const app = new Hono<{ Bindings: Env }>()
                 const respHeaders = { 'content-type': contentType, 'cache-control': 'public, max-age=3600' }
                 return new Response(fileRes.body, { headers: respHeaders })
         })
+        .get('/api/v1/cesium/:assetId/tileset', async (c) => {
+                const assetId = parseInt(c.req.param('assetId'))
+                if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
+                const endpointUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint`
+                const epRes = await fetch(endpointUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
+                if (!epRes.ok) return c.body(null, { status: 502 })
+                const ep = (await epRes.json()) as any
+                if (!ep || !ep.url) return c.body(null, { status: 502 })
+                const token = ep.accessToken || ep.token || ''
+                const headers = token ? { Authorization: `Bearer ${token}` } : void 0
+                const ts = await fetch(ep.url, { headers })
+                if (!ts.ok) return c.body(null, { status: 502 })
+                const body = await ts.arrayBuffer()
+                return new Response(body, { headers: { 'content-type': 'application/json' } })
+        })
+        .get('/api/v1/cesium/:assetId/content', async (c) => {
+                const assetId = parseInt(c.req.param('assetId'))
+                const src = c.req.query('src') || ''
+                if (!src) return c.body(null, { status: 400 })
+                if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
+                const endpointUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint`
+                const epRes = await fetch(endpointUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
+                if (!epRes.ok) return c.body(null, { status: 502 })
+                const ep = (await epRes.json()) as any
+                const token = ep.accessToken || ep.token || ''
+                const headers = token ? { Authorization: `Bearer ${token}` } : void 0
+                const base = new URL(ep.url)
+                const abs = new URL(src, base)
+                const res2 = await fetch(abs.toString(), { headers })
+                if (!res2.ok) return c.body(null, { status: 502 })
+                const ct = res2.headers.get('content-type') || 'application/octet-stream'
+                return new Response(res2.body, { headers: { 'content-type': ct } })
+        })
 
 type AppType = typeof app
 
