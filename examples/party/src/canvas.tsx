@@ -14,9 +14,11 @@ export interface CanvasProps {
         onSemanticVoxel?: (v: any) => void
         regions?: Region[]
         mutate?: (data?: any, opts?: any) => any
+        setSize?: (n: number) => any
+        updateCamera?: (camera: any, setSize: (n: number) => any) => any
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, regions, mutate }: CanvasProps) => {
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, regions, mutate, setSize, updateCamera }: CanvasProps) => {
         const camera = useMemo(() => createCamera(size, dims), [])
         const meshes = useMemo(() => createMeshes(camera), [])
         const shader = useMemo(() => createShader(camera, meshes), [])
@@ -32,6 +34,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 instanceCount: meshes.cnt,
                 loop() {
                         player.step(gl)
+                        // if (setSize && updateCamera) updateCamera(camera as any, setSize)
                 },
                 resize() {
                         shader.updateCamera(gl.size)
@@ -42,7 +45,10 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 gl.queue(() => {
                         if (!regions || regions.length === 0) return
                         meshes.applyRegions(regions)
-                        shader.updateAtlas(regions[0].atlas)
+                        const atlases = regions.slice(0, 8).map((r) => r.atlas)
+                        const offs = regions.slice(0, 8).map((r) => [r.x, r.y, r.z])
+                        if ((shader as any).updateAtlases) (shader as any).updateAtlases(atlases, offs)
+                        else shader.updateAtlas(regions[0].atlas)
                         applyInstances(gl, meshes)
                 })
         }, [regions])
@@ -107,6 +113,11 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         })
                 },
         })
+
+        useMemo(() => {
+                if (!setSize || !updateCamera) return
+                gl.queue(() => updateCamera(camera as any, setSize))
+        }, [camera, setSize, updateCamera])
 
         //  metaverse real-time synchronization
         const sock = usePartySocket({

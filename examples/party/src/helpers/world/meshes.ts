@@ -40,16 +40,20 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
         // instance attributes
         const pos = mesh?.pos || [0, 0, 0]
         const scl = mesh?.scl || [16, 16, 16]
+        const aid: number[] = [0]
         let cnt = mesh?.cnt || 1
 
         const applyRegions = (regions: Region[]) => {
                 pos.length = 0
                 scl.length = 0
+                aid.length = 0
                 cnt = 0
-                for (const region of regions) {
+                for (let r = 0; r < regions.length; r++) {
+                        const region = regions[r]
                         if (!region?.mesh?.cnt) continue
                         pos.push(...region.mesh.pos)
                         scl.push(...region.mesh.scl)
+                        for (let i = 0; i < region.mesh.cnt; i++) aid.push(r)
                         cnt += region.mesh.cnt
                 }
         }
@@ -59,6 +63,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                 normal,
                 pos,
                 scl,
+                aid,
                 count,
                 applyRegions,
                 get cnt() {
@@ -80,7 +85,18 @@ export const applyInstances = (gl: any, mesh: Meshes) => {
                 c.vertexAttribPointer(loc, 3, c.FLOAT, false, 0, 0)
                 c.vertexAttribDivisor(loc, 1)
         }
+        const push1 = (key: string, data: number[]) => {
+                const array = new Float32Array(data)
+                const buffer = c.createBuffer()!
+                const loc = c.getAttribLocation(pg, key)
+                c.bindBuffer(c.ARRAY_BUFFER, buffer)
+                c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
+                c.enableVertexAttribArray(loc)
+                c.vertexAttribPointer(loc, 1, c.FLOAT, false, 0, 0)
+                c.vertexAttribDivisor(loc, 1)
+        }
         push('scl', mesh.scl)
         push('pos', mesh.pos)
+        if ((mesh as any).aid?.length) push1('aid', (mesh as any).aid as number[])
         gl.instanceCount = mesh.cnt
 }

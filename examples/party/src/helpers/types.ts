@@ -15,6 +15,7 @@ export type Meshes = {
         // instance attribute
         pos: number[]
         scl: number[]
+        aid?: number[]
         cnt: number
         update?: (gl: any, xyz?: [number, number, number]) => void
         applyChunks?: (gl: any, m: Meshes) => void

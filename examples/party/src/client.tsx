@@ -1,7 +1,7 @@
 // client.tsx
 import './components/style.css'
 import { SessionProvider, signIn } from '@hono/auth-js/react'
-import useSWRImmutable from 'swr/immutable'
+import useSWRInfinite from 'swr/infinite'
 import { hc } from 'hono/client'
 import { createRoot } from 'react-dom/client'
 import PC from './components/PC'
@@ -19,7 +19,7 @@ export const App = () => {
         const profile = useFetch('profile', client.api.v1.profile.$get).data
         const events = useFetch('events', client.api.v1.events.$get).data
         const regions = useMemo(() => createRegions(), [])
-        const swr = useSWRImmutable(regions.getKey, regions.fetcher, { ...SWR_CONFIG, revalidateFirstPage: false })
+        const swr = useSWRInfinite(regions.getKey, regions.fetcher as any, { ...SWR_CONFIG, revalidateFirstPage: false })
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')
@@ -44,10 +44,13 @@ export const App = () => {
                         size={16}
                         dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
                         mutate={swr.mutate as any}
-                        regions={[swr.data] as any}
+                        setSize={swr.setSize}
+                        updateCamera={regions.updateCamera}
+                        regions={(swr.data as any)?.filter(Boolean) as any}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
+        console.log(swr.data)
         const props = {
                 isHUD,
                 isMenu,
