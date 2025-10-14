@@ -73,68 +73,6 @@ const app = new Hono<{ Bindings: Env }>()
                 const world = await Q.createWorld(c.env.DB, worldName, culturalTheme, user)
                 return c.json(world)
         })
-        .get('/api/v1/voxels/:chunkId', async (c) => {
-                const chunkId = c.req.param('chunkId')
-                const voxels = await Q.getSemanticVoxels(c.env.DB, chunkId)
-                // Return voxels with semantic data properly formatted and decoded
-                const semanticVoxels = voxels.map((v) => {
-                        const decodedVoxel = decodeSemanticVoxel(
-                                encodeSemanticVoxel({
-                                        primaryKanji: v.primaryKanji || '桜',
-                                        secondaryKanji: v.secondaryKanji || '色',
-                                        rgbValue: v.rgbValue,
-                                        alphaProperties: v.alphaProperties || 255,
-                                        behavioralSeed: v.behavioralSeed || 0,
-                                })
-                        )
-                        return {
-                                ...v,
-                                semanticData: {
-                                        primaryKanji: v.primaryKanji,
-                                        secondaryKanji: v.secondaryKanji,
-                                        alphaProperties: v.alphaProperties,
-                                        behavioralSeed: v.behavioralSeed,
-                                        encoded: encodeSemanticVoxel({
-                                                primaryKanji: v.primaryKanji || '桜',
-                                                secondaryKanji: v.secondaryKanji || '色',
-                                                rgbValue: v.rgbValue,
-                                                alphaProperties: v.alphaProperties || 255,
-                                                behavioralSeed: v.behavioralSeed || 0,
-                                        }),
-                                        decoded: decodedVoxel,
-                                },
-                        }
-                })
-                return c.json(semanticVoxels)
-        })
-        .post('/api/v1/voxels', async (c) => {
-                const user = c.get('authUser')?.token?.sub!
-                const { chunkId, localX, localY, localZ, primaryKanji, secondaryKanji, rgbValue, alphaProperties, behavioralSeed } = await c.req.json()
-
-                // Create semantic voxel with validation and encoding
-                const semanticVoxelData = {
-                        primaryKanji: primaryKanji || '桜',
-                        secondaryKanji: secondaryKanji || '色',
-                        rgbValue: rgbValue || 0xfef4f4,
-                        alphaProperties: alphaProperties || 255,
-                        behavioralSeed: behavioralSeed || 0,
-                }
-
-                // Encode and decode to validate semantic data
-                const encoded = encodeSemanticVoxel(semanticVoxelData)
-                const decoded = decodeSemanticVoxel(encoded)
-
-                const voxel = await Q.createSemanticVoxel(c.env.DB, chunkId || 'default', localX || 0, localY || 0, localZ || 0, semanticVoxelData.primaryKanji, semanticVoxelData.secondaryKanji, semanticVoxelData.rgbValue, user, semanticVoxelData.alphaProperties, semanticVoxelData.behavioralSeed)
-
-                return c.json({
-                        ...voxel,
-                        semanticData: {
-                                encoded,
-                                decoded,
-                                validated: true,
-                        },
-                })
-        })
         .get('/api/v1/colors', async (c) => {
                 const seasonalAssociation = c.req.query('season')
                 const colors = await Q.getColors(c.env.DB, seasonalAssociation)
@@ -238,56 +176,6 @@ const app = new Hono<{ Bindings: Env }>()
                 const { communityId, knowledgeType, Wisdom, culturalContext } = await c.req.json()
                 await Q.shareKnowledge(c.env.DB, communityId, user, knowledgeType, Wisdom, culturalContext)
                 return c.json({ success: true })
-        })
-        .get('/api/v1/chunks', async (c) => c.json({ count: 0 }))
-        .get('/api/v1/cesium/:assetId', async (c) => {
-                const assetId = parseInt(c.req.param('assetId'))
-                if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
-                const endpointUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint`
-                const epRes = await fetch(endpointUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!epRes.ok) return c.body(null, { status: 502 })
-                const ep = (await epRes.json()) as any
-                if (!ep || !ep.url) return c.body(null, { status: 502 })
-                const token = ep.accessToken || ep.token || ''
-                const headers = token ? { Authorization: `Bearer ${token}` } : void 0
-                const fileRes = await fetch(ep.url, { headers })
-                if (!fileRes.ok) return c.body(null, { status: 502 })
-                const contentType = fileRes.headers.get('content-type') || 'model/gltf-binary'
-                const respHeaders = { 'content-type': contentType, 'cache-control': 'public, max-age=3600' }
-                return new Response(fileRes.body, { headers: respHeaders })
-        })
-        .get('/api/v1/cesium/:assetId/tileset', async (c) => {
-                const assetId = parseInt(c.req.param('assetId'))
-                if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
-                const endpointUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint`
-                const epRes = await fetch(endpointUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!epRes.ok) return c.body(null, { status: 502 })
-                const ep = (await epRes.json()) as any
-                if (!ep || !ep.url) return c.body(null, { status: 502 })
-                const token = ep.accessToken || ep.token || ''
-                const headers = token ? { Authorization: `Bearer ${token}` } : void 0
-                const ts = await fetch(ep.url, { headers })
-                if (!ts.ok) return c.body(null, { status: 502 })
-                const body = await ts.arrayBuffer()
-                return new Response(body, { headers: { 'content-type': 'application/json' } })
-        })
-        .get('/api/v1/cesium/:assetId/content', async (c) => {
-                const assetId = parseInt(c.req.param('assetId'))
-                const src = c.req.query('src') || ''
-                if (!src) return c.body(null, { status: 400 })
-                if (!c.env.CESIUM_API_KEY) return c.body(null, { status: 500 })
-                const endpointUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint`
-                const epRes = await fetch(endpointUrl, { headers: { Authorization: `Bearer ${c.env.CESIUM_API_KEY}` } })
-                if (!epRes.ok) return c.body(null, { status: 502 })
-                const ep = (await epRes.json()) as any
-                const token = ep.accessToken || ep.token || ''
-                const headers = token ? { Authorization: `Bearer ${token}` } : void 0
-                const base = new URL(ep.url)
-                const abs = new URL(src, base)
-                const res2 = await fetch(abs.toString(), { headers })
-                if (!res2.ok) return c.body(null, { status: 502 })
-                const ct = res2.headers.get('content-type') || 'application/octet-stream'
-                return new Response(res2.body, { headers: { 'content-type': ct } })
         })
 
 type AppType = typeof app

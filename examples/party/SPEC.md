@@ -52,6 +52,13 @@ The platform implements sophisticated translation systems that preserve cultural
 
 Regional social hubs recreate traditional gathering spaces such as village squares, temple courtyards, and market districts where players naturally encounter diverse perspectives and cultural expressions. These spaces host regular cultural events, educational presentations, and collaborative projects that strengthen community bonds while preserving traditional social patterns.
 
+```txt
+Chat ←→ PartyServer(room=chatId) ←→ World
+▲            ▲                     │
+│            └── API (persist) ────┘
+└── OAuth + D1 (identity)
+```
+
 ### 2.3. Procedural Cultural Content Generation and Emergent Storytelling
 
 The platform employs advanced procedural generation algorithms trained on traditional literature, folklore, and historical narratives to create endless cultural content that maintains authenticity while providing novelty. Generated stories, quests, and environmental narratives draw from vast databases of traditional tales, adapting them to player actions and collaborative storytelling efforts.
@@ -131,6 +138,17 @@ The Distributed Reality Synchronization system maintains consistent cultural sta
 
 Cloudflare's global edge network provides sub-50ms latency worldwide while our hibernating Durable Objects architecture supports massive scale with minimal resource consumption. Each cultural region operates as an independent microverse that can scale from single-user contemplation spaces to festival gatherings of tens of thousands of participants.
 
+```txt
+[ Client (SPA) ]──HTTPS──[ Edge CDN ]
+    │                     │
+    │ REST(JSON)          │ WSS
+    ▼                     ▼
+[ Hono API / Workers ] ──▶ [ PartyServer (DO) ]
+    │                     │
+    ▼                     ▼
+[ D1 (users/chats/msg) ]   [ R2 (world.png, palettes) ]
+```
+
 ### 4.2. Next-Generation WebGPU Cultural Rendering Pipeline
 
 The rendering system leverages cutting-edge WebGPU capabilities to deliver unprecedented visual quality while maintaining cultural authenticity and accessibility across diverse hardware platforms. Our progressive enhancement strategy ensures full functionality from mobile devices to high-end VR systems through adaptive quality scaling and intelligent feature degradation.
@@ -153,6 +171,12 @@ Cross-platform optimization ensures consistent cultural experience regardless of
 
 Multi-user rendering optimization minimizes bandwidth usage through cultural content prediction algorithms that anticipate likely user interests based on traditional behavior patterns, seasonal relevance, and community activity cycles.
 
+```txt
+[encOp]
+byte 0: kind=1 (OP)
+1..4:   x (u32)   5..8: y (u32)   9..12: z (u32)  13..16: type(u32)
+```
+
 ### 4.3. Scalable Real-Time Cultural Synchronization
 
 The platform implements revolutionary synchronization technology that maintains cultural authenticity while supporting massive concurrent participation. Our approach recognizes that traditional cultures emphasize community consensus and gradual change rather than individual dominance, leading to synchronization strategies that reflect these values.
@@ -173,6 +197,11 @@ Conflict resolution algorithms prioritize community harmony over individual pref
 Bandwidth optimization strategies leverage cultural pattern recognition to compress update streams efficiently. Traditional artistic patterns, architectural elements, and seasonal transitions exhibit mathematical regularity that enables superior compression ratios while preserving semantic richness.
 
 Global distribution architecture ensures low-latency access worldwide while respecting cultural data sovereignty requirements. Traditional knowledge remains under appropriate community control while enabling global sharing and cross-cultural collaboration through carefully designed permission systems.
+
+```txt
+GLB tris → bin by chunk → scanline rays → Möller–Trumbore hit
+→ barycentric UV → sample material/texture → RGBA tile → stitch
+```
 
 ## 5. Data Requirements
 
@@ -218,6 +247,12 @@ Semantic Voxel Structure (32 bits):
 ```
 
 The RGB Cultural Encoding utilizes a custom compression algorithm that maps 16.7 million RGB values to traditional color name combinations while preserving visual accuracy. The mapping process prioritizes culturally-significant colors and provides fallback mechanisms for non-traditional color requests.
+
+```txt
+Chunk tile (64×64) packs 16 Z‑slices (16×16) as 4×4 tiles
+Region (4096×4096) packs 16×16 chunk tiles as 4×4 planes
+RGBA per texel: R,G,B=color, A=occupancy/trait
+```
 
 Kanji Pair Encoding represents breakthrough innovation in cultural data compression, storing traditional color names as 12-bit indices into curated kanji databases. This encoding enables 4,096 unique kanji characters per position, supporting the full range of traditional Chinese and Japanese color terminology while allowing for future expansion.
 

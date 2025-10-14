@@ -1,5 +1,5 @@
 import useSWRInfinite from 'swr/infinite'
-import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, meshing, loadCesiumTiles } from '../helpers'
+import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, loader, meshing } from '../helpers'
 import type { Atlas, Meshes } from '../helpers'
 
 const toTile = (lat = 0, lng = 0, z = 0) => {
@@ -31,8 +31,6 @@ const fill = (vox: Map<string, Uint8Array>) => {
 const SWR_CONFIG = { keepPreviousData: true, revalidateOnFocus: false, revalidateIfStale: false }
 
 export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }) => {
-        const assetId = 96188
-
         const keys = ['vox-world', Number(region.lat).toFixed(4), Number(region.lng).toFixed(4), String(region.zoom)] as const
         const getKey = (index: number) => {
                 if (index > 0) return null
@@ -50,20 +48,24 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                 //         const { i, j, k } = toTile(lat, lng, zoom)
                 //         return { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes, i, j, k }
                 // }
-                const wasm: any = await importWasm()
-                const parsed = await loadCesiumTiles(assetId)
-                const items = Array.from(wasm.voxelize_glb(parsed, 16, 16, 16) || []) as any[]
-                const rgba = new Uint8Array(4096 * 4096 * 4)
-                blitChunk64ToWorld(items, rgba)
-                const png = await encodeImagePNG(rgba, 4096, 4096)
-                const vox = await extractVoxelArraysFromWorldPNG(png.buffer)
-                const m = fill(vox)
-                const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
-                const { i, j, k } = toTile(lat, lng, zoom)
-                return {
-                        atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas,
-                        mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes,
-                        region: { i, j, k },
+                try {
+                        const wasm: any = await importWasm()
+                        const res = await fetch('/model/monkey.glb')
+                        const buf = await res.arrayBuffer()
+                        const parsed = await loader(buf)
+                        const items = wasm.voxelize_glb(parsed, 16, 16, 16) || []
+                        const rgba = blitChunk64ToWorld(items)
+                        const png = await encodeImagePNG(rgba, 4096, 4096)
+                        const m = fill(await extractVoxelArraysFromWorldPNG(png.buffer))
+                        const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
+                        const { i, j, k } = toTile(lat, lng, zoom)
+                        return {
+                                atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas,
+                                mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes,
+                                region: { i, j, k },
+                        }
+                } catch (e) {
+                        console.warn(e)
                 }
         }
         const swr = useSWRInfinite(getKey as any, fetcher as any, { revalidateFirstPage: false, ...SWR_CONFIG })

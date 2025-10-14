@@ -9,7 +9,7 @@ export const encodeImagePNG = async (pix: Uint8Array, w: number, h: number) => {
         return new Uint8Array(await blob.arrayBuffer())
 }
 
-export const blitChunk64ToWorld = (items: any, dst: Uint8Array) => {
+export const blitChunk64ToWorld = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) => {
         const write = (ci = 0, cj = 0, ck = 0, src: Uint8Array) => {
                 const planeX = cj & 3
                 const planeY = cj >> 2
@@ -28,6 +28,7 @@ export const blitChunk64ToWorld = (items: any, dst: Uint8Array) => {
                         .map((v: string) => parseInt(v) | 0)
                 write(ci, cj, ck, it.rgba)
         }
+        return dst
 }
 
 const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
@@ -78,18 +79,17 @@ const splitChunk64ToVoxRGBA = (png64: Uint8Array) => {
         const dst = new Uint8Array(16 * 16 * 16 * 4)
         const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
         const put = (x = 0, y = 0, z = 0) => (((z * 16 + y) * 16 + x) * 4) | 0
-        for (let z = 0; z < 16; z++)
-                for (let y = 0; y < 16; y++)
-                        for (let x = 0; x < 16; x++) {
-                                const ox = (z & 3) * 16
-                                const oy = (z >> 2) * 16
-                                const si = get(ox + x, oy + y)
-                                const di = put(x, y, z)
-                                dst[di] = png64[si]
-                                dst[di + 1] = png64[si + 1]
-                                dst[di + 2] = png64[si + 2]
-                                dst[di + 3] = png64[si + 3]
-                        }
+        const write = (x = 0, y = 0, z = 0) => {
+                const ox = (z & 3) * 16
+                const oy = (z >> 2) * 16
+                const si = get(ox + x, oy + y)
+                const di = put(x, y, z)
+                dst[di] = png64[si]
+                dst[di + 1] = png64[si + 1]
+                dst[di + 2] = png64[si + 2]
+                dst[di + 3] = png64[si + 3]
+        }
+        for (let z = 0; z < 16; z++) for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) write(x, y, z)
         return dst
 }
 

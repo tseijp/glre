@@ -1,5 +1,5 @@
 import { loadColors, getColorsBySeasonalAssociation } from '../voxel/colors'
-export { initAtlasWorld } from './atlas'
+export { initAtlasWorld } from '../voxel/atlas'
 import { ColorToRgb } from '../voxel/colors'
 import { CHUNK, GRID } from '../utils'
 
