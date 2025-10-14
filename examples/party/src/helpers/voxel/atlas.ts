@@ -30,14 +30,14 @@ export const stitchAtlas = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) =
 
 export const readAtlasChunks = async (buf: ArrayBuffer) => {
         const img = (await load(buf, ImageLoader, { image: { type: 'data' } })) as any
-        const dat = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer.slice(0)) : img.data
+        const dat = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer, img.data.byteOffset, img.width * img.height * 4) : img.data
         const out = new Map<string, Uint8Array>()
         eachChunk((i, j, k) => {
                 const dst = new Uint8Array(64 * 64 * 4)
-                const planeX = k & 3
-                const planeY = k >> 2
+                const planeX = j & 3
+                const planeY = j >> 2
                 const ox = planeX * 1024 + i * 64
-                const oy = planeY * 1024 + j * 64
+                const oy = planeY * 1024 + k * 64
                 for (let y = 0; y < 64; y++) {
                         const sy = oy + y
                         const si = (sy * 4096 + ox) * 4
@@ -74,7 +74,7 @@ export const atlasToVox = async (buf: ArrayBuffer) => {
         return out
 }
 
-export const normalizeVox = (vox: any[]) => {
+export const itemsToVox = (vox: any[]) => {
         const ret = new Map<string, Uint8Array>()
         for (const it of vox) ret.set(it.key, tileToVox(it.rgba))
         return ret

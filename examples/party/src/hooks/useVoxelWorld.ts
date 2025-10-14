@@ -1,5 +1,5 @@
 import useSWRInfinite from 'swr/infinite'
-import { stitchAtlas, chunkId, createChunks, encodePng, gather, importWasm, loader, meshing, atlasToVox, normalizeVox } from '../helpers'
+import { stitchAtlas, chunkId, createChunks, encodePng, gather, importWasm, loader, meshing, atlasToVox, itemsToVox } from '../helpers'
 import type { Atlas, Meshes } from '../helpers'
 
 const toTile = (lat = 0, lng = 0, z = 0) => {
@@ -51,7 +51,7 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                 }
                 try {
                         const wasm: any = await importWasm()
-                        const res = await fetch('/model/monkey.glb')
+                        const res = await fetch('/model/untitled.glb')
                         const buf = await res.arrayBuffer()
                         const parsed = await loader(buf)
                         const items = wasm.voxelize_glb(parsed, 16, 16, 16)
@@ -60,7 +60,7 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                         await fetch(q, { method: 'PUT', body: png })
                         const t = toTile(lat, lng, zoom)
                         await fetch('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i: t.i, j: t.j, k: t.k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })
-                        const m = fillChunk(normalizeVox(items))
+                        const m = fillChunk(itemsToVox(items))
                         console.log(q)
                         return { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] }, region: toTile(lat, lng, zoom) }
                 } catch (e) {
