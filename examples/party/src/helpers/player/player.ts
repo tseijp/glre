@@ -75,7 +75,7 @@ export const createPlayer = (camera: Camera, meshes: Meshes, shader: any) => {
                 vel[2] = move[2]
                 if (mode) vel[1] += GRAV * dt
                 vec3.add(pos, pos, vel)
-                // collide()
+                // if (mode) collider(meshes.chunks, state)
                 if (pos[1] < 0) pos[1] = 0
                 face = faceDir(face, yaw, pitch)
                 setLook()

@@ -39,6 +39,7 @@ export type RegionConfig = {
 }
 
 export const createRegions = (config: RegionConfig = { lat: 35.6762, lng: 139.6503, zoom: 15 }) => {
+        const regions = new Map()
         const getKey = (index: number) => {
                 const keys = ['vox-world', Number(config.lat).toFixed(4), Number(config.lng).toFixed(4), String(config.zoom)] as const
                 return keys // @TODO FIX
@@ -73,5 +74,6 @@ export const createRegions = (config: RegionConfig = { lat: 35.6762, lng: 139.65
                         // ↑↑↑ DO NOT CHANGE ↑↑↑
                 }
         }
+        const updateCamera = () => {}
         return { getKey, fetcher }
 }

@@ -20,7 +20,6 @@ export const App = () => {
         const events = useFetch('events', client.api.v1.events.$get).data
         const regions = useMemo(() => createRegions(), [])
         const swr = useSWRImmutable(regions.getKey, regions.fetcher, { ...SWR_CONFIG, revalidateFirstPage: false })
-        console.log(swr.data)
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')

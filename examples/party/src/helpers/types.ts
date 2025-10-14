@@ -1,3 +1,12 @@
+export type Atlas = {
+        src: string
+        W: number
+        H: number
+        planeW: number
+        planeH: number
+        cols: number
+}
+
 export type Meshes = {
         // attributes
         vertex: number[]
@@ -9,15 +18,6 @@ export type Meshes = {
         cnt: number
         update?: (gl: any, xyz?: [number, number, number]) => void
         applyChunks?: (gl: any, m: Meshes) => void
-}
-
-export type Atlas = {
-        src: string
-        W: number
-        H: number
-        planeW: number
-        planeH: number
-        cols: number
 }
 
 export type Chunk = {
