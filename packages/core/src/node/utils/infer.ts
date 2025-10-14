@@ -1,11 +1,5 @@
 import { isConstants, isElement, isX, isSwizzle } from './utils'
-import {
-        BUILTIN_TYPES,
-        COMPONENT_COUNT_TO_TYPE,
-        FUNCTION_RETURN_TYPES,
-        getOperatorResultType,
-        validateOperatorTypes,
-} from './const'
+import { BUILTIN_TYPES, COMPONENT_COUNT_TO_TYPE, FUNCTION_RETURN_TYPES, getOperatorResultType, validateOperatorTypes } from './const'
 import { is, getStride } from '../../utils/helpers'
 import type { Constants as C, NodeContext, X, Y } from '../types'
 
@@ -14,8 +8,7 @@ const inferBuiltin = <T extends C>(id: string | undefined) => {
 }
 
 const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
-        if (!validateOperatorTypes(L, R, op))
-                console.warn(`GLRE Type Warning: Invalid operator '${op}' between types '${L}' and '${R}'`)
+        if (!validateOperatorTypes(L, R, op)) console.warn(`GLRE Type Warning: Invalid operator '${op}' between types '${L}' and '${R}'`)
         return getOperatorResultType(L, R, op) as T
 }
 
@@ -30,8 +23,7 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
 
 const inferFromCount = <T extends C>(count: number) => {
         const ret = COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
-        if (!ret)
-                throw `glre node system error: Cannot infer type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`
+        if (!ret) throw `glre node system error: Cannot infer type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`
         return ret
 }
 
