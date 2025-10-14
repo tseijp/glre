@@ -1,12 +1,12 @@
 export type Meshes = {
+        // attributes
+        vertex: number[]
+        normal: number[]
+        count: number
+        // instance attribute
         pos: number[]
         scl: number[]
         cnt: number
-        vertex: number[]
-        normal: number[]
-        // runtime fields/methods provided by createMeshes
-        count?: number
-        instanceCount?: number
         update?: (gl: any, xyz?: [number, number, number]) => void
         applyChunks?: (gl: any, m: Meshes) => void
 }
@@ -20,10 +20,39 @@ export type Atlas = {
         cols: number
 }
 
-export type FileData = { key: string; data: Uint8Array; raw?: Uint8Array; tag?: string }
+export type Chunk = {
+        i: number
+        j: number
+        k: number
+        x: number
+        y: number
+        z: number
+        vox: Uint8Array
+        pos: number[]
+        scl: number[]
+        cnt: number
+        gen?: boolean
+        dirty?: boolean
+        visible?: boolean
+}
 
-export type Built = { atlas: Atlas; mesh: Meshes }
+export type Chunks = Map<number, Chunk>
 
+export type Region = {
+        i: number
+        j: number
+        k: number
+        x: number
+        y: number
+        z: number
+        lat: number
+        lng: number
+        zoom: number
+        atlas: Atlas
+        mesh: Meshes
+        chunks: Chunks
+        visible?: boolean
+}
+
+// @TODO REMOVE
 export type Dims = { size: [number, number, number]; center: [number, number, number] }
-
-export type BuiltState = { file: FileData | string; dims: Dims }

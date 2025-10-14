@@ -6,7 +6,6 @@ import type { Key } from 'swr'
 export * from './useCallback'
 export * from './useSearchParam'
 export * from './useWindowSize'
-export * from './useVoxelWorld'
 
 export const on = (isActive?: boolean, className = '') => (isActive ? className : 'hidden')
 
@@ -14,7 +13,7 @@ export const q = (params: any, key: string, fallback: any = '') => {
         return params?.get ? params.get(key) ?? fallback : params?.[key] ?? fallback
 }
 
-const SWR_CONFIG = {
+export const SWR_CONFIG = {
         keepPreviousData: true,
         revalidateOnFocus: false,
         revalidateIfStale: false,

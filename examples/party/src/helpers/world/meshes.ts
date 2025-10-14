@@ -1,4 +1,4 @@
-import { Meshes } from '../types'
+import type { Meshes, Region } from '../types'
 
 const createVertexData = () => {
         const p = 0.5
@@ -33,27 +33,25 @@ let _vertex: number[]
 let _normal: number[]
 
 export const createMeshes = (_camera: any, mesh?: Meshes) => {
+        // attributes
         const vertex = (_vertex = _vertex ?? createVertexData())
         const normal = (_normal = _normal ?? createNormalData())
+        const count = 36 // vertex.length / 3
+        // instance attributes
         const pos = mesh?.pos || [0, 0, 0]
         const scl = mesh?.scl || [16, 16, 16]
-        const count = vertex.length / 3
-        const instanceCount = mesh?.cnt || 1
+        let cnt = mesh?.cnt || 1
 
-        const update = (gl: any, xyz?: [number, number, number]) => {
-                if (xyz) {
-                        pos.push(...xyz)
-                        scl.push(1, 1, 1)
-                        applyInstances(gl, { pos, scl, cnt: pos.length / 3, vertex, normal })
-                }
-        }
-
-        const applyChunks = (gl: any, m: { pos: number[]; scl: number[]; cnt: number }) => {
+        const applyRegions = (regions: Region[]) => {
                 pos.length = 0
                 scl.length = 0
-                pos.push(...m.pos, 1, 1, 1)
-                scl.push(...m.scl, 1, 1, 1)
-                applyInstances(gl, { pos, scl, cnt: m.cnt + 1, vertex, normal })
+                cnt = 0
+                for (const region of regions) {
+                        if (!region?.mesh?.cnt) continue
+                        pos.push(...region.mesh.pos)
+                        scl.push(...region.mesh.scl)
+                        cnt += region.mesh.cnt
+                }
         }
 
         return {
@@ -62,11 +60,9 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                 pos,
                 scl,
                 count,
-                instanceCount,
-                update,
-                applyChunks,
+                applyRegions,
                 get cnt() {
-                        return instanceCount
+                        return cnt
                 },
         }
 }

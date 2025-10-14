@@ -1,23 +1,5 @@
 import { vec3 } from 'gl-matrix'
 
-export type Chunk = {
-        i: number
-        j: number
-        k: number
-        x: number
-        y: number
-        z: number
-        vox: Uint8Array
-        pos: number[]
-        scl: number[]
-        cnt: number
-        dirty: boolean
-        visible: boolean
-        gen?: boolean
-}
-
-export type Chunks = Map<number, Chunk>
-
 /**
  * math
  */

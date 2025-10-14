@@ -1,5 +1,6 @@
 import { vec3 } from 'gl-matrix'
-import { Chunks, located } from '../utils'
+import { located } from '../utils'
+import type { Chunks } from '../types'
 
 export type ColliderState = { pos: vec3; vel: vec3; size: vec3; isGround: boolean }
 

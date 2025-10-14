@@ -1,20 +1,19 @@
 import { greedyMesh } from './greedy'
 // import { culling } from './culling'
-import { Camera } from '../player/camera'
-import { CHUNK, Chunk, chunkId, Chunks, eachChunk, located, SIZE } from '../utils'
-import type { BuiltState } from '../types'
+import { CHUNK, chunkId, eachChunk, located, SIZE } from '../utils'
+import type { Chunk, Chunks } from '../types'
 
 export const createChunks = () => {
-        const ret = new Map()
+        const chunks = new Map()
         eachChunk((i, j, k) => {
                 const vox = new Uint8Array(SIZE)
                 const id = chunkId(i, j, k)
                 const x = i * CHUNK
                 const y = j * CHUNK
                 const z = k * CHUNK
-                ret.set(id, { i, j, k, x, y, z, vox, pos: [], scl: [], cnt: 0, dirty: false, visible: false, gen: false })
+                chunks.set(id, { i, j, k, x, y, z, vox, pos: [], scl: [], cnt: 0, dirty: false, visible: false, gen: false })
         })
-        return ret
+        return chunks
 }
 
 const _meshing = (chunk: Chunk) => {
@@ -56,11 +55,4 @@ export const gather = (chunks: Map<number, Chunk>) => {
                 cnt += c.cnt
         })
         return { pos, scl, cnt }
-}
-
-export const generate = (_camera: Camera) => {
-        const chunks = createChunks()
-        meshing(chunks)
-        // @TODO culling
-        return chunks
 }

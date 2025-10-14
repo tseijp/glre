@@ -1,9 +1,9 @@
 import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { applySeasonalTransform, createCamera, createShader, createMeshes, createPlayer, dec, enc, face, findNearestColor, K, raycast, screenToWorldRay, loadColors } from './helpers'
-import type { Atlas, Meshes, Dims, Hit } from './helpers'
+import { createCamera, createShader, createMeshes, createPlayer, raycast, screenToWorldRay, applyInstances } from './helpers'
+import type { Atlas, Meshes, Dims, Region } from './helpers'
 
 export interface CanvasProps {
         size?: number
@@ -12,13 +12,11 @@ export interface CanvasProps {
         meshes?: Meshes
         onReady?: () => void
         onSemanticVoxel?: (v: any) => void
-        pages?: Array<{ atlas: Atlas; mesh: Meshes; region: { i: number; j: number; k: number } }>
+        regions?: Region[]
         mutate?: (data?: any, opts?: any) => any
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, pages, mutate }: CanvasProps) => {
-        const [culturalWorld] = useState<any>(null)
-
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, regions, mutate }: CanvasProps) => {
         const camera = useMemo(() => createCamera(size, dims), [])
         const meshes = useMemo(() => createMeshes(camera), [])
         const shader = useMemo(() => createShader(camera, meshes), [])
@@ -31,7 +29,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 isDebug: false,
                 isWebGL: true,
                 count: meshes.count,
-                instanceCount: meshes.instanceCount,
+                instanceCount: meshes.cnt,
                 loop() {
                         player.step(gl)
                 },
@@ -42,46 +40,39 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
 
         useMemo(() => {
                 gl.queue(() => {
-                        if (!pages || pages.length === 0) return
-                        const acc = { pos: [0, 0, 0], scl: [0, 0, 0], cnt: 1 }
-                        for (const p of pages) {
-                                if (!p?.mesh?.cnt) continue
-                                acc.pos.push(...p.mesh.pos)
-                                acc.scl.push(...p.mesh.scl)
-                                acc.cnt += p.mesh.cnt
-                        }
-                        meshes.applyChunks(gl, acc)
-                        shader.updateAtlas(pages[0].atlas)
+                        if (!regions || regions.length === 0) return
+                        meshes.applyRegions(regions)
+                        shader.updateAtlas(regions[0].atlas)
+                        applyInstances(gl, meshes)
                 })
-        }, [pages])
+        }, [regions])
 
-        const click = (hit?: Hit, near?: number[]) => {
-                if (!hit || !culturalWorld) return
-                const xyz = face(hit, meshes.pos, meshes.scl)
-                if (!xyz) return
-
-                // Apply cultural semantic encoding to placed voxels
-                const currentSeason = culturalWorld.seasonalCycle
-                const baseColor = 0xfef4f4 // 桜色 (cherry blossom)
-                const culturalColor = applySeasonalTransform(baseColor, currentSeason, 0.8)
-                const Color = findNearestColor(culturalColor)
-
-                const semanticVoxel = {
-                        chunkId: 'cultural-world-default',
-                        localX: xyz[0] % 16,
-                        localY: xyz[1] % 16,
-                        localZ: xyz[2] % 16,
-                        primaryKanji: '桜',
-                        secondaryKanji: '色',
-                        rgbValue: Color.rgbValue,
-                        alphaProperties: 255,
-                        behavioralSeed: Math.floor(Math.random() * 256),
-                }
-                onSemanticVoxel?.(semanticVoxel)
-                shader.updateHover(hit, near)
-                meshes.update(gl, xyz)
-                sock.send(enc(xyz[0], xyz[1], xyz[2]))
-        }
+        // @TODO FIX
+        // const click = (hit?: Hit, near?: number[]) => {
+        //         if (!hit || !culturalWorld) return
+        //         const xyz = face(hit, meshes.pos, meshes.scl)
+        //         if (!xyz) return
+        //         // Apply cultural semantic encoding to placed voxels
+        //         const currentSeason = culturalWorld.seasonalCycle
+        //         const baseColor = 0xfef4f4 // 桜色 (cherry blossom)
+        //         const culturalColor = applySeasonalTransform(baseColor, currentSeason, 0.8)
+        //         const Color = findNearestColor(culturalColor)
+        //         const semanticVoxel = {
+        //                 localX: xyz[0] % 16,
+        //                 localY: xyz[1] % 16,
+        //                 localZ: xyz[2] % 16,
+        //                 primaryKanji: '桜',
+        //                 secondaryKanji: '色',
+        //                 rgbValue: Color.rgbValue,
+        //                 alphaProperties: 255,
+        //                 behavioralSeed: Math.floor(Math.random() * 256),
+        //         }
+        //         onSemanticVoxel?.(semanticVoxel)
+        //         shader.updateHover(hit, near)
+        //         meshes.update(xyz)
+        //         applyInstances(gl, meshes)
+        //         sock.send(enc(xyz[0], xyz[1], xyz[2]))
+        // }
 
         const drag = useDrag((d) => {
                 const _ = d.memo
@@ -95,8 +86,9 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         _.count++
                         player.turn(d.delta)
                 } else {
-                        const isClick = _.count === 1 || _.count === 2
-                        if (isClick) click(_.hit, _.near)
+                        // @TODO FIX
+                        // const isClick = _.count === 1 || _.count === 2
+                        // if (isClick) click(_.hit, _.near)
                         _.count = 0
                         d.active = d._active = false
                 }
@@ -121,6 +113,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 party: 'v1', // DO NOT CHANGE FROM "v1"
                 room: 'my-room',
                 async onMessage(e) {
+                        // @TODO FIX
                         // if (typeof e.data === 'string') {
                         //         const msg = JSON.parse(e.data)
                         //         if (msg?.t === 'atlas:ready') mutate?.()
