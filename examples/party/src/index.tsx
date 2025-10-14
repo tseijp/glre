@@ -91,6 +91,30 @@ const app = new Hono<{ Bindings: Env }>()
                 const events = await Q.getEvents(c.env.DB, new Date(from), new Date(to))
                 return c.json(events)
         })
+        .get('/api/v1/clear', async (c) => {
+                await Q.clear(c.env.DB, c.env.R2)
+                return c.json({ ok: true })
+        })
+        .get('/api/v1/region', async (c) => {
+                const world = c.req.query('world') || 'default'
+                const i = parseInt(c.req.query('i') || '0') | 0
+                const j = parseInt(c.req.query('j') || '0') | 0
+                const k = parseInt(c.req.query('k') || '0') | 0
+                const [w] = await Q.getWorldByName(c.env.DB, world)
+                if (!w) return c.json({ error: 'world not found' }, { status: 404 })
+                const [r] = await Q.getRegionByCoords(c.env.DB, w.worldId, i, j, k)
+                if (!r) return c.json({ error: 'region not found' }, { status: 404 })
+                return c.json(r)
+        })
+        .post('/api/v1/region', async (c) => {
+                const user = c.get('authUser')?.token?.sub!
+                const { world = 'default', i, j, k, url } = await c.req.json()
+                const [w] = await Q.getWorldByName(c.env.DB, world)
+                const W = w || (await Q.createWorld(c.env.DB, world, 'default', user))
+                const [r] = await Q.getRegionByCoords(c.env.DB, W.worldId, i | 0, j | 0, k | 0)
+                if (!r) return c.json(await Q.insertRegion(c.env.DB, W.worldId, i | 0, j | 0, k | 0, String(url)))
+                return c.json((await Q.updateRegionPng(c.env.DB, r.regionId, String(url))) || r)
+        })
         .on('HEAD', '/api/v1/atlas', async (c) => {
                 const lat = c.req.query('lat')
                 const lng = c.req.query('lng')

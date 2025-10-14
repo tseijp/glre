@@ -31,7 +31,7 @@ export const stitchAtlas = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) =
         return dst
 }
 
-const readAtlasChunks = async (buf: ArrayBuffer) => {
+export const readAtlasChunks = async (buf: ArrayBuffer) => {
         const raw = new Uint8Array(buf)
         const isRGBA = raw.byteLength === 4096 * 4096 * 4
         let data: Uint8Array = raw

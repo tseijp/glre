@@ -16,7 +16,7 @@ export interface CanvasProps {
         mutate?: (data?: any, opts?: any) => any
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, pages }: CanvasProps) => {
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, pages, mutate }: CanvasProps) => {
         const [culturalWorld] = useState<any>(null)
 
         const camera = useMemo(() => createCamera(size, dims), [])
@@ -121,13 +121,16 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 party: 'v1', // DO NOT CHANGE FROM "v1"
                 room: 'my-room',
                 async onMessage(e) {
-                        if (!(e.data instanceof Blob)) return
-                        const data = await e.data.arrayBuffer()
-                        const m = dec(data)
-                        if (m.kind === K.OP) {
-                                // Apply cultural validation to remote voxel operations
-                                meshes.update(gl, [m.x!, m.y!, m.z!])
-                        }
+                        // if (typeof e.data === 'string') {
+                        //         const msg = JSON.parse(e.data)
+                        //         if (msg?.t === 'atlas:ready') mutate?.()
+                        //         return
+                        // }
+                        // if (e.data instanceof Blob) {
+                        //         const data = await e.data.arrayBuffer()
+                        //         const m = dec(data)
+                        //         if (m.kind === K.OP) meshes.update(gl, [m.x!, m.y!, m.z!])
+                        // }
                 },
         })
 

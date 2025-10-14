@@ -1,6 +1,30 @@
 import { and, desc, eq, gte, lte, sql } from 'drizzle-orm'
 import { drizzle } from 'drizzle-orm/d1'
-import { users, userProfiles, worlds, worldRegions, voxelChunks, semanticVoxels, Colors, culturalEvents, communities, communityMemberships, educationalContent, culturalAchievements, learningProgress, knowledgeSharing, colorUsageLogs } from './schema'
+import {
+        users,
+        accounts,
+        sessions,
+        verificationTokens,
+        authenticators,
+        userProfiles,
+        worlds,
+        worldRegions,
+        voxelChunks,
+        semanticVoxels,
+        Colors,
+        culturalEvents,
+        Activities,
+        eventParticipation,
+        communities,
+        communityMemberships,
+        culturalProjects,
+        educationalContent,
+        culturalAchievements,
+        learningProgress,
+        knowledgeSharing,
+        colorUsageLogs,
+        culturalContexts,
+} from './schema'
 
 export const getUserBySub = (DB: D1Database, sub: string) => drizzle(DB).select().from(users).where(eq(users.id, sub)).limit(1)
 
@@ -162,3 +186,50 @@ export const awardAchievement = (DB: D1Database, profileId: string, achievementT
                 achievementData,
                 culturalSignificance,
         })
+
+// region helpers
+export const getWorldByName = (DB: D1Database, worldName: string) => drizzle(DB).select().from(worlds).where(eq(worlds.worldName, worldName)).limit(1)
+
+export const getRegionByCoords = (DB: D1Database, worldId: string, i: number, j: number, k: number) =>
+        drizzle(DB)
+                .select()
+                .from(worldRegions)
+                .where(and(eq(worldRegions.worldId, worldId), eq(worldRegions.regionX, i), eq(worldRegions.regionY, j), eq(worldRegions.regionZ, k)))
+                .limit(1)
+
+export const insertRegion = (DB: D1Database, worldId: string, i: number, j: number, k: number, pngAtlasUrl: string, culturalContext = '') => drizzle(DB).insert(worldRegions).values({ worldId, regionX: i, regionY: j, regionZ: k, pngAtlasUrl, culturalContext, environmentalState: '{}' })
+
+export const updateRegionPng = (DB: D1Database, regionId: string, pngAtlasUrl: string) =>
+        drizzle(DB)
+                .update(worldRegions)
+                .set({ pngAtlasUrl, lastModified: sql`(strftime('%s','now')*1000)` })
+                .where(eq(worldRegions.regionId, regionId))
+
+export const clear = async (DB: D1Database, R2: R2Bucket) => {
+        const db = drizzle(DB)
+        await db.delete(semanticVoxels)
+        await db.delete(voxelChunks)
+        await db.delete(worldRegions)
+        await db.delete(worlds)
+        await db.delete(eventParticipation)
+        await db.delete(Activities)
+        await db.delete(culturalEvents)
+        await db.delete(communityMemberships)
+        await db.delete(culturalProjects)
+        await db.delete(knowledgeSharing)
+        await db.delete(communities)
+        await db.delete(learningProgress)
+        await db.delete(culturalAchievements)
+        await db.delete(culturalContexts)
+        await db.delete(educationalContent)
+        await db.delete(colorUsageLogs)
+        await db.delete(Colors)
+        await db.delete(accounts)
+        await db.delete(sessions)
+        await db.delete(authenticators)
+        await db.delete(verificationTokens)
+        await db.delete(userProfiles)
+        await db.delete(users)
+        const items = await R2.list()
+        await Promise.all(items.objects.map((it) => R2.delete(it.key)))
+}

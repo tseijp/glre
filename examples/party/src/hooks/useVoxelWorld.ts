@@ -1,5 +1,5 @@
 import useSWRInfinite from 'swr/infinite'
-import { stitchAtlas, chunkId, createChunks, encodePng, tileToVox, gather, importWasm, loader, meshing } from '../helpers'
+import { stitchAtlas, chunkId, createChunks, encodePng, tileToVox, gather, importWasm, loader, meshing, atlasToVox } from '../helpers'
 import type { Atlas, Meshes } from '../helpers'
 
 const toTile = (lat = 0, lng = 0, z = 0) => {
@@ -10,8 +10,13 @@ const toTile = (lat = 0, lng = 0, z = 0) => {
         return { i: x, j: y, k: z }
 }
 
-const fill = (vox: Map<string, Uint8Array>) => {
-        const map = createChunks() as any
+const fillChunk = (vox: Map<string, Uint8Array> | any[]) => {
+        if (!(vox instanceof Map)) {
+                const _vox = new Map<string, Uint8Array>()
+                for (const it of vox) _vox.set(it.key, tileToVox(it.rgba))
+                vox = _vox
+        }
+        const map = createChunks()
         for (const [k, rgba] of vox) {
                 const [ci, cz, cy] = k.split('.').map((v: string) => parseInt(v) | 0)
                 const id = chunkId(ci, cy, cz)
@@ -38,30 +43,31 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
         }
         const fetcher = async () => {
                 const { lat, lng, zoom } = region
-                // const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
-                // const head = await fetch(q, { method: 'HEAD' })
-                // if (head.ok) {
-                //         const res = await fetch(q)
-                //         const ab = await res.arrayBuffer()
-                //         const vox = await extractVoxelArraysFromWorldPNG(ab)
-                //         const m = fill(vox)
-                //         const { i, j, k } = toTile(lat, lng, zoom)
-                //         return { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes, i, j, k }
-                // }
+                const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+                const head = await fetch(q, { method: 'HEAD' })
+                if (head.ok) {
+                        const res = await fetch(q)
+                        const ab = await res.arrayBuffer()
+                        const vox = await readAtlasChunks(ab)
+                        console.log(res, ab, vox)
+                        const m = fillChunk(vox)
+                        const t = toTile(lat, lng, zoom)
+                        return { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes, region: t }
+                }
                 try {
                         const wasm: any = await importWasm()
                         const res = await fetch('/model/monkey.glb')
                         const buf = await res.arrayBuffer()
                         const parsed = await loader(buf)
-                        const items: any[] = wasm.voxelize_glb(parsed, 16, 16, 16) || []
-                        const vox = new Map<string, Uint8Array>()
-                        for (const it of items) vox.set(String(it.key), tileToVox(it.rgba))
-                        const m = fill(vox)
+                        const items = wasm.voxelize_glb(parsed, 16, 16, 16)
                         const rgba = stitchAtlas(items)
                         const png = await encodePng(rgba, 4096, 4096)
-                        const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
-                        const { i, j, k } = toTile(lat, lng, zoom)
-                        return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes, region: { i, j, k } }
+                        await fetch(q, { method: 'PUT', body: png })
+                        const t = toTile(lat, lng, zoom)
+                        await fetch('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i: t.i, j: t.j, k: t.k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })
+                        const url = q
+                        const m = fillChunk(items)
+                        return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] }, region: toTile(lat, lng, zoom) }
                 } catch (e) {
                         // ↓↓↓ DO NOT CHANGE ↓↓↓
                         console.warn(e) // ← DO NOT CHANGE
