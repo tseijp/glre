@@ -1,12 +1,11 @@
+import { encode, load } from '@loaders.gl/core'
+import { ImageLoader, ImageWriter } from '@loaders.gl/images'
+import { eachChunk } from '../utils'
+
 export const encodePng = async (pix: Uint8Array, w: number, h: number) => {
-        const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
-        canvas.width = w
-        canvas.height = h
-        const ctx: any = canvas.getContext('2d', { willReadFrequently: true })
-        const img = new ImageData(new Uint8ClampedArray(pix.buffer, pix.byteOffset, w * h * 4) as any, w, h)
-        ctx.putImageData(img, 0, 0)
-        const blob: Blob = canvas.convertToBlob ? await canvas.convertToBlob({ type: 'image/png' }) : await new Promise((res) => (canvas as HTMLCanvasElement).toBlob((b) => res(b as Blob), 'image/png'))
-        return new Uint8Array(await blob.arrayBuffer())
+        const data = new Uint8ClampedArray(pix.buffer, pix.byteOffset, w * h * 4)
+        const ab = await encode({ data, width: w, height: h }, ImageWriter, { image: { mimeType: 'image/png' } as any })
+        return new Uint8Array(ab as ArrayBuffer)
 }
 
 export const stitchAtlas = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) => {
@@ -23,55 +22,30 @@ export const stitchAtlas = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) =
                 }
         }
         for (const it of items) {
-                const [ci, cj, ck] = String(it.key)
-                        .split('.')
-                        .map((v: string) => parseInt(v) | 0)
+                const [ci, cj, ck] = it.key.split('.').map((v: string) => parseInt(v) | 0)
                 write(ci, cj, ck, it.rgba)
         }
         return dst
 }
 
 export const readAtlasChunks = async (buf: ArrayBuffer) => {
-        const raw = new Uint8Array(buf)
-        const isRGBA = raw.byteLength === 4096 * 4096 * 4
-        let data: Uint8Array = raw
-        if (!isRGBA)
-                data = await (async () => {
-                        const blob = new Blob([buf], { type: 'image/png' })
-                        const bmp: any = (globalThis as any).createImageBitmap
-                                ? await createImageBitmap(blob)
-                                : await new Promise((res) => {
-                                          const img = new Image()
-                                          img.onload = () => res(img)
-                                          img.src = URL.createObjectURL(blob)
-                                  })
-                        const w = bmp.width || 4096
-                        const h = bmp.height || 4096
-                        const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
-                        canvas.width = w
-                        canvas.height = h
-                        const ctx: any = canvas.getContext('2d', { willReadFrequently: true })
-                        ctx.drawImage(bmp, 0, 0)
-                        const { data } = ctx.getImageData(0, 0, w, h)
-                        return new Uint8Array(data.buffer.slice(0))
-                })()
+        const img = (await load(buf, ImageLoader, { image: { type: 'data' } })) as any
+        const dat = img.data instanceof Uint8ClampedArray ? new Uint8Array(img.data.buffer.slice(0)) : img.data
         const out = new Map<string, Uint8Array>()
-        for (let k = 0; k < 16; k++)
-                for (let j = 0; j < 16; j++)
-                        for (let i = 0; i < 16; i++) {
-                                const dst = new Uint8Array(64 * 64 * 4)
-                                const planeX = k & 3
-                                const planeY = k >> 2
-                                const ox = planeX * 1024 + i * 64
-                                const oy = planeY * 1024 + j * 64
-                                for (let y = 0; y < 64; y++) {
-                                        const sy = oy + y
-                                        const si = (sy * 4096 + ox) * 4
-                                        const di = y * 64 * 4
-                                        dst.set(data.subarray(si, si + 64 * 4), di)
-                                }
-                                out.set(i + '.' + j + '.' + k, dst)
-                        }
+        eachChunk((i, j, k) => {
+                const dst = new Uint8Array(64 * 64 * 4)
+                const planeX = k & 3
+                const planeY = k >> 2
+                const ox = planeX * 1024 + i * 64
+                const oy = planeY * 1024 + j * 64
+                for (let y = 0; y < 64; y++) {
+                        const sy = oy + y
+                        const si = (sy * 4096 + ox) * 4
+                        const di = y * 64 * 4
+                        dst.set(dat.subarray(si, si + 64 * 4), di)
+                }
+                out.set(i + '.' + j + '.' + k, dst)
+        })
         return out
 }
 
@@ -98,4 +72,10 @@ export const atlasToVox = async (buf: ArrayBuffer) => {
         const out = new Map<string, Uint8Array>()
         for (const [k, v] of pngs) out.set(k, tileToVox(v))
         return out
+}
+
+export const normalizeVox = (vox: any[]) => {
+        const ret = new Map<string, Uint8Array>()
+        for (const it of vox) ret.set(it.key, tileToVox(it.rgba))
+        return ret
 }

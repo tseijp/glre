@@ -201,6 +201,28 @@ const app = new Hono<{ Bindings: Env }>()
                 await Q.shareKnowledge(c.env.DB, communityId, user, knowledgeType, Wisdom, culturalContext)
                 return c.json({ success: true })
         })
+        .get('/api/v1/r2', async (c) => {
+                const prefix = c.req.query('prefix') ?? undefined
+                const list = await c.env.R2.list({ prefix, limit: 1000 })
+                return c.json(
+                        list.objects.map((o) => ({
+                                key: o.key,
+                                size: o.size,
+                                uploaded: o.uploaded,
+                                etag: o.etag,
+                        }))
+                )
+        })
+        .get('/api/v1/r2/*', async (c) => {
+                const url = new URL(c.req.url)
+                const prefix = '/api/v1/r2/'
+                const key = decodeURIComponent(url.pathname.slice(prefix.length))
+                if (!key) return c.text('key required', 400)
+                const obj = await c.env.R2.get(key)
+                if (!obj) return c.text('Not Found', 404)
+                const type = obj.httpMetadata?.contentType ?? 'application/octet-stream'
+                return new Response(obj.body, { headers: { 'Content-Type': type } })
+        })
 
 type AppType = typeof app
 
