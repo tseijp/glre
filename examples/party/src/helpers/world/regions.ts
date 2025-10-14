@@ -3,6 +3,7 @@ import { atlasToVox, encodePng, itemsToVox, stitchAtlas } from '../voxel/atlas'
 import { loader } from '../voxel/loader'
 import { createChunks, gather, meshing } from './chunk'
 import type { Camera } from '../player/camera'
+import { culling } from '../voxel/culling'
 
 // @TODO FIX
 const toTile = (lat = 0, lng = 0, z = 0) => {
@@ -13,7 +14,7 @@ const toTile = (lat = 0, lng = 0, z = 0) => {
         return { i: x, j: y, k: z }
 }
 
-const fillChunk = (vox: Map<string, Uint8Array>) => {
+const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>) => {
         const chunks = createChunks()
         for (const [k, rgba] of vox) {
                 const [ci, cz, cy] = k.split('.').map((v: string) => parseInt(v) | 0)
@@ -28,7 +29,7 @@ const fillChunk = (vox: Map<string, Uint8Array>) => {
                 ch.gen = true
         }
         meshing(chunks)
-        // @TODO culling
+        culling(chunks, camera)
         const mesh = gather(chunks)
         return { mesh, chunks }
 }
@@ -39,7 +40,7 @@ export type RegionConfig = {
         zoom: number
 }
 
-export const createRegions = (config: RegionConfig = { lat: 35.6762, lng: 139.6503, zoom: 15 }) => {
+export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6762, lng: 139.6503, zoom: 15 }) => {
         const keys: string[] = []
         const seen = new Set<string>()
         const R = CHUNK * GRID[0]
@@ -71,7 +72,7 @@ export const createRegions = (config: RegionConfig = { lat: 35.6762, lng: 139.65
                         const res = await fetch(q)
                         const ab = await res.arrayBuffer()
                         const vox = await atlasToVox(ab)
-                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, ...fillChunk(vox) }
+                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, ...fillChunk(camera, vox) }
                         return reg
                 }
                 const wasm: any = await importWasm()
@@ -82,7 +83,7 @@ export const createRegions = (config: RegionConfig = { lat: 35.6762, lng: 139.65
                 const png = await encodePng(stitchAtlas(items), 4096, 4096)
                 await Promise.all([fetch(q, { method: 'PUT', body: png }), fetch('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
                 const vox = itemsToVox(items)
-                const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, ...fillChunk(vox) }
+                const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, ...fillChunk(camera, vox) }
                 return reg
         }
         const updateCamera = (camera: Camera, setSize: (n: number) => any) => {

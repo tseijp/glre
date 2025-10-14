@@ -9,7 +9,7 @@ import SP from './components/SP'
 import Canvas from './canvas'
 import { SWR_CONFIG, useFetch, useSearchParam, useWindowSize } from './hooks'
 import { useMemo } from 'react'
-import { createRegions } from './helpers'
+import { createCamera, createRegions } from './helpers'
 import type { AppType } from '.'
 
 const client = hc<AppType>('/')
@@ -18,7 +18,8 @@ export const App = () => {
         const colors = useFetch('colors', client.api.v1.colors.$get).data
         const profile = useFetch('profile', client.api.v1.profile.$get).data
         const events = useFetch('events', client.api.v1.events.$get).data
-        const regions = useMemo(() => createRegions(), [])
+        const camera = useMemo(() => createCamera(16, { size: [32, 16, 32], center: [16, 8, 16] }), [])
+        const regions = useMemo(() => createRegions(camera), [])
         const swr = useSWRInfinite(regions.getKey, regions.fetcher as any, { ...SWR_CONFIG, revalidateFirstPage: false })
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
@@ -41,8 +42,7 @@ export const App = () => {
                 </div>
         ) : (
                 <Canvas //
-                        size={16}
-                        dims={{ size: [32, 16, 32], center: [16, 8, 16] }}
+                        camera={camera}
                         mutate={swr.mutate as any}
                         setSize={swr.setSize}
                         updateCamera={regions.updateCamera}

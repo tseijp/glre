@@ -116,7 +116,7 @@ export const createShader = (camera: Camera, meshes: Meshes, atlas?: Atlas) => {
         })
 
         const fs = Fn(([n, local, iPos, iAid]: [Vec3, Vec3, Vec3, any]) => {
-                // return vec4(1, 0, 0, 1)
+                return vec4(1, 0, 0, 1)
                 const sameFace = n.dot(iFace).equal(1)
                 const W = iPos
                         .add(local)
