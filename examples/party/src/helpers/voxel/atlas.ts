@@ -1,4 +1,4 @@
-export const encodeImagePNG = async (pix: Uint8Array, w: number, h: number) => {
+export const encodePng = async (pix: Uint8Array, w: number, h: number) => {
         const canvas: any = typeof OffscreenCanvas !== 'undefined' ? new OffscreenCanvas(w, h) : document.createElement('canvas')
         canvas.width = w
         canvas.height = h
@@ -9,7 +9,7 @@ export const encodeImagePNG = async (pix: Uint8Array, w: number, h: number) => {
         return new Uint8Array(await blob.arrayBuffer())
 }
 
-export const blitChunk64ToWorld = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) => {
+export const stitchAtlas = (items: any, dst = new Uint8Array(4096 * 4096 * 4)) => {
         const write = (ci = 0, cj = 0, ck = 0, src: Uint8Array) => {
                 const planeX = cj & 3
                 const planeY = cj >> 2
@@ -31,7 +31,7 @@ export const blitChunk64ToWorld = (items: any, dst = new Uint8Array(4096 * 4096 
         return dst
 }
 
-const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
+const readAtlasChunks = async (buf: ArrayBuffer) => {
         const raw = new Uint8Array(buf)
         const isRGBA = raw.byteLength === 4096 * 4096 * 4
         let data: Uint8Array = raw
@@ -75,7 +75,7 @@ const extractChunksFromWorldPNG = async (buf: ArrayBuffer) => {
         return out
 }
 
-const splitChunk64ToVoxRGBA = (png64: Uint8Array) => {
+export const tileToVox = (png64: Uint8Array) => {
         const dst = new Uint8Array(16 * 16 * 16 * 4)
         const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
         const put = (x = 0, y = 0, z = 0) => (((z * 16 + y) * 16 + x) * 4) | 0
@@ -93,34 +93,9 @@ const splitChunk64ToVoxRGBA = (png64: Uint8Array) => {
         return dst
 }
 
-export const extractVoxelArraysFromWorldPNG = async (buf: ArrayBuffer) => {
-        const pngs = await extractChunksFromWorldPNG(buf)
+export const atlasToVox = async (buf: ArrayBuffer) => {
+        const pngs = await readAtlasChunks(buf)
         const out = new Map<string, Uint8Array>()
-        for (const [k, v] of pngs) out.set(k, splitChunk64ToVoxRGBA(v))
+        for (const [k, v] of pngs) out.set(k, tileToVox(v))
         return out
-}
-
-let chunks = new Map<string, Uint8Array>()
-
-export const FLOOR_MAX_Y = 4
-
-export const initAtlasWorld = async (url: string) => {
-        const ab = await fetch(url).then((r) => r.arrayBuffer())
-        const rgba = await extractVoxelArraysFromWorldPNG(ab)
-        const to01 = (data: Uint8Array, jChunk: number) => {
-                const out = new Uint8Array(16 * 16 * 16)
-                for (let i = 0, v = 0; i < out.length; i++, v += 4) out[i] = data[v + 3] > 0 ? 1 : 0
-                if (jChunk === 0)
-                        for (let z = 0; z < 16; z++)
-                                for (let y = 0; y <= FLOOR_MAX_Y && y < 16; y++)
-                                        for (let x = 0; x < 16; x++) {
-                                                out[x + (y + z * 16) * 16] = 1
-                                        }
-                return out
-        }
-        for (const [k, v] of rgba) {
-                const parts = k.split('.')
-                const j = parseInt(parts[1] || '0') | 0
-                chunks.set(k, to01(v, j))
-        }
 }

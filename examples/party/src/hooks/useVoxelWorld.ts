@@ -1,5 +1,5 @@
 import useSWRInfinite from 'swr/infinite'
-import { blitChunk64ToWorld, chunkId, createChunks, encodeImagePNG, extractVoxelArraysFromWorldPNG, gather, importWasm, loader, meshing } from '../helpers'
+import { stitchAtlas, chunkId, createChunks, encodePng, tileToVox, gather, importWasm, loader, meshing } from '../helpers'
 import type { Atlas, Meshes } from '../helpers'
 
 const toTile = (lat = 0, lng = 0, z = 0) => {
@@ -13,8 +13,8 @@ const toTile = (lat = 0, lng = 0, z = 0) => {
 const fill = (vox: Map<string, Uint8Array>) => {
         const map = createChunks() as any
         for (const [k, rgba] of vox) {
-                const [i, j, l] = k.split('.').map((v: string) => parseInt(v) | 0)
-                const id = chunkId(i, j, l)
+                const [ci, cz, cy] = k.split('.').map((v: string) => parseInt(v) | 0)
+                const id = chunkId(ci, cy, cz)
                 const ch = map.get(id)
                 if (!ch) continue
                 const out = new Uint8Array(16 * 16 * 16)
@@ -53,21 +53,24 @@ export const useVoxelWorld = (region: { lat: number; lng: number; zoom: number }
                         const res = await fetch('/model/monkey.glb')
                         const buf = await res.arrayBuffer()
                         const parsed = await loader(buf)
-                        const items = wasm.voxelize_glb(parsed, 16, 16, 16) || []
-                        const rgba = blitChunk64ToWorld(items)
-                        const png = await encodeImagePNG(rgba, 4096, 4096)
-                        const m = fill(await extractVoxelArraysFromWorldPNG(png.buffer))
+                        const items: any[] = wasm.voxelize_glb(parsed, 16, 16, 16) || []
+                        const vox = new Map<string, Uint8Array>()
+                        for (const it of items) vox.set(String(it.key), tileToVox(it.rgba))
+                        const m = fill(vox)
+                        const rgba = stitchAtlas(items)
+                        const png = await encodePng(rgba, 4096, 4096)
                         const url = URL.createObjectURL(new Blob([png], { type: 'image/png' }))
                         const { i, j, k } = toTile(lat, lng, zoom)
-                        return {
-                                atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas,
-                                mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes,
-                                region: { i, j, k },
-                        }
+                        return { atlas: { src: url, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 } as Atlas, mesh: { pos: m.pos, scl: m.scl, cnt: m.cnt, vertex: [], normal: [] } as Meshes, region: { i, j, k } }
                 } catch (e) {
-                        console.warn(e)
+                        // ↓↓↓ DO NOT CHANGE ↓↓↓
+                        console.warn(e) // ← DO NOT CHANGE
+                        // ↑↑↑ DO NOT CHANGE ↑↑↑
                 }
         }
         const swr = useSWRInfinite(getKey as any, fetcher as any, { revalidateFirstPage: false, ...SWR_CONFIG })
+        // ↓↓↓ DO NOT CHANGE ↓↓↓
+        console.log(swr.data) // ← DO NOT CHANGE
+        // ↑↑↑ DO NOT CHANGE ↑↑↑
         return swr
 }
