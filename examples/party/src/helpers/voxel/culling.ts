@@ -1,6 +1,7 @@
 import { mat4, vec3 } from 'gl-matrix'
-import { Camera } from '../player/camera'
-import { CHUNK, Chunk, Chunks } from '../utils'
+import { CHUNK } from '../utils'
+import type { Camera } from '../player/camera'
+import type { Chunk, Chunks } from '../types'
 
 let chunks = new Map<string, Uint8Array>()
 
