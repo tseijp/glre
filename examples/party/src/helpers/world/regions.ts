@@ -88,35 +88,26 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 const x = rx * R
                 const y = 0
                 const z = rz * R
+                const atlas = { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }
+                let vox
                 if (head.ok) {
                         const res = await _(q, fetch)(q)
-                        const ab = await res.arrayBuffer()
-                        const vox = await atlasToVox(ab)
-                        const { mesh, chunks } = fillChunk(camera, vox)
-                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: regionCulling(rx, rz, camera), mesh, chunks }
-                        regionMap.set(key, reg as Region)
-                        return reg
-                }
-                try {
+                        vox = await atlasToVox(await res.arrayBuffer())
+                } else {
                         const wasm: any = await importWasm()
-                        const glb = await _('/model/torus.glb', fetch)('/model/torus.glb')
-                        const buf = await glb.arrayBuffer()
-                        const parsed = await _('loader', loader)(buf)
-                        const items = wasm.voxelize_glb(parsed, 16, 16, 16)
+                        const buf = await (await _('/model/torus.glb', fetch)('/model/torus.glb')).arrayBuffer()
+                        const items = wasm.voxelize_glb(await _('loader', loader)(buf), 16, 16, 16)
                         const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
-                        await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
-                        const vox = itemsToVox(items)
-                        const { mesh, chunks } = fillChunk(camera, vox)
-                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: regionCulling(rx, rz, camera), mesh, chunks }
-                        regionMap.set(key, reg as Region)
-                        return reg
-                } catch (error) {
-                        console.warn(error)
+                        await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${lat.toFixed(4)}_${lng.toFixed(4)}_${zoom}.png` }) })])
+                        vox = itemsToVox(items)
                 }
+                if (!vox) return
+                const { mesh, chunks } = fillChunk(camera, vox)
+                const reg = { atlas, i, j, k, x, y, z, lat, lng, zoom, visible: regionCulling(rx, rz, camera), mesh, chunks }
+                regionMap.set(key, reg as Region)
+                return reg
         }
-        const fetchRegions = async () => {
-                return Array.from(regionMap.values())
-        }
+        const fetchRegions = async () => Array.from(regionMap.values())
         const updateCamera = (camera: Camera, mutate?: any) => {
                 const now = Date.now()
                 if (now - lastUpdateTime < 100) return
@@ -124,15 +115,10 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 if (debounceTimeout) clearTimeout(debounceTimeout)
                 debounceTimeout = setTimeout(async () => {
                         for (const [key, region] of regionMap.entries()) {
-                                const { rx: regionRx, rz: regionRz } = fromKey(key)
-                                region.visible = regionCulling(regionRx, regionRz, camera)
+                                const { rx, rz } = fromKey(key)
+                                region.visible = regionCulling(rx, rz, camera)
                         }
-                        const keys = getVisibleKeys()
-                        if (keys.length > 0) {
-                                for (const key of keys) {
-                                        await fetchRegion(key)
-                                }
-                        }
+                        for (const key of getVisibleKeys()) await fetchRegion(key)
                         if (mutate) mutate()
                 }, 300)
         }

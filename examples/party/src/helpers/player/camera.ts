@@ -31,7 +31,7 @@ export const createCamera = (size: number, dims: Dims) => {
                 position: vec3.fromValues(x, y, z),
                 target: vec3.fromValues(x, y, z + 10),
                 near: 0.1,
-                far: CHUNK * 16 * 4,
+                far: CHUNK * 16 * 16,
                 fov: Math.PI / 4,
                 V: mat4.create(),
                 P: mat4.create(),
@@ -56,7 +56,7 @@ export const createCamera = (size: number, dims: Dims) => {
                         camera.target[0] = cx
                         camera.target[1] = cy
                         camera.target[2] = cz
-                        camera.far = CHUNK * 16 * 4
+                        camera.far = CHUNK * 16 * 16
                 },
         }
         computeCamera(camera, [1280, 800])
