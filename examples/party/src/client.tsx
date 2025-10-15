@@ -46,7 +46,7 @@ export const App = () => {
                         mutate={swr.mutate as any}
                         setSize={swr.setSize}
                         updateCamera={regions.updateCamera}
-                        regions={(swr.data as any)?.filter(Boolean) as any}
+                        regions={(swr.data ? swr.data.flat().filter(Boolean) : []) as any}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )

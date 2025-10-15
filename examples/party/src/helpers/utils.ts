@@ -89,7 +89,7 @@ export function timer<Fn extends (...args: any[]) => any>(label: string, fn: Fn)
                 } finally {
                         const end = now()
                         // eslint-disable-next-line no-console
-                        console.log(`[timer] ${label}: ${(end - start).toFixed(1)}ms`)
+                        console.log(`[timer]\t${(end - start).toFixed(1)}ms\t${label}`)
                 }
         }
         // cast back to original type to preserve call signature

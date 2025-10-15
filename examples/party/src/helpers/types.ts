@@ -19,6 +19,7 @@ export type Meshes = {
         cnt: number
         update?: (gl: any, xyz?: [number, number, number]) => void
         applyChunks?: (gl: any, m: Meshes) => void
+        applyRegions?: (regions: Region[]) => void
 }
 
 export type Chunk = {

@@ -3,7 +3,7 @@ import type { Camera } from './camera'
 import type { Meshes } from '../types'
 
 const MODE = 0 // 0 is creative
-const TIME = 0.01
+const TIME = 0.1
 const GRAV = -0.06
 const JUMP = 0.15
 const TURN = 0.005

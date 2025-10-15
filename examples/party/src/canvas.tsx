@@ -3,13 +3,14 @@ import usePartySocket from 'partysocket/react'
 import { useMemo } from 'react'
 import { useDrag, useKey } from 'rege/react'
 import { createCamera, createShader, createMeshes, createPlayer, raycast, screenToWorldRay, applyInstances } from './helpers'
-import type { Atlas, Meshes, Dims, Region } from './helpers'
+import type { Atlas, Meshes, Dims, Region, Camera } from './helpers'
 
 export interface CanvasProps {
         size?: number
         dims?: Dims
         atlas?: Atlas
         meshes?: Meshes
+        camera: Camera
         onReady?: () => void
         onSemanticVoxel?: (v: any) => void
         regions?: Region[]
@@ -27,6 +28,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         const gl = useGL({
                 vert: shader.vert,
                 frag: shader.frag,
+                wireframe: true,
                 isDepth: true,
                 isDebug: false,
                 isWebGL: true,
@@ -44,11 +46,12 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         useMemo(() => {
                 gl.queue(() => {
                         if (!regions || regions.length === 0) return
-                        meshes.applyRegions(regions)
-                        const atlases = regions.slice(0, 8).map((r) => r.atlas)
-                        const offs = regions.slice(0, 8).map((r) => [r.x, r.y, r.z])
+                        const visibleRegions = regions.filter((r) => r.visible)
+                        meshes.applyRegions?.(visibleRegions)
+                        const atlases = visibleRegions.slice(0, 8).map((r) => r.atlas)
+                        const offs = visibleRegions.slice(0, 8).map((r) => [r.x, r.y, r.z])
                         if ((shader as any).updateAtlases) (shader as any).updateAtlases(atlases, offs)
-                        else shader.updateAtlas(regions[0].atlas)
+                        else if (visibleRegions[0]) shader.updateAtlas(visibleRegions[0].atlas)
                         applyInstances(gl, meshes)
                 })
         }, [regions])
