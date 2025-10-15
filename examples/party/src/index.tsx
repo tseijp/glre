@@ -93,7 +93,7 @@ const app = new Hono<{ Bindings: Env }>()
         })
         .get('/api/v1/clear', async (c) => {
                 await Q.clear(c.env.DB, c.env.R2)
-                return c.json({ ok: true })
+                return c.redirect('/api/auth/signin')
         })
         .get('/api/v1/region', async (c) => {
                 const world = c.req.query('world') || 'default'
@@ -116,33 +116,30 @@ const app = new Hono<{ Bindings: Env }>()
                 return c.json((await Q.updateRegionPng(c.env.DB, r.regionId, String(url))) || r)
         })
         .on('HEAD', '/api/v1/atlas', async (c) => {
-                const lat = c.req.query('lat')
-                const lng = c.req.query('lng')
-                const zoom = c.req.query('zoom')
-                if (!lat || !lng || !zoom) return c.body(null, { status: 400 })
-                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const rx = c.req.query('rx')
+                const rz = c.req.query('rz')
+                if (!rx || !rz) return c.body(null, { status: 400 })
+                const key = `atlas/${rx}_${rz}.png`
                 const obj = await c.env.R2.head(key)
                 if (!obj) return c.body(null, { status: 404 })
                 if ((obj as any).size === 0) return c.body(null, { status: 404 })
                 return c.body(null, { status: 200 })
         })
         .get('/api/v1/atlas/exists', async (c) => {
-                const lat = c.req.query('lat')
-                const lng = c.req.query('lng')
-                const zoom = c.req.query('zoom')
-                if (!lat || !lng || !zoom) return c.body(null, { status: 400 })
-                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const rx = c.req.query('rx')
+                const rz = c.req.query('rz')
+                if (!rx || !rz) return c.body(null, { status: 400 })
+                const key = `atlas/${rx}_${rz}.png`
                 const obj = await c.env.R2.head(key)
                 if (!obj) return c.body(null, { status: 404 })
                 if ((obj as any).size === 0) return c.body(null, { status: 404 })
                 return c.body(null, { status: 200 })
         })
         .get('/api/v1/atlas', async (c) => {
-                const lat = c.req.query('lat')
-                const lng = c.req.query('lng')
-                const zoom = c.req.query('zoom')
-                if (!lat || !lng || !zoom) return c.json({ error: 'missing' }, { status: 400 })
-                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const rx = c.req.query('rx')
+                const rz = c.req.query('rz')
+                if (!rx || !rz) return c.json({ error: 'missing' }, { status: 400 })
+                const key = `atlas/${rx}_${rz}.png`
                 const obj = await c.env.R2.get(key)
                 if (!obj) return c.json({ error: 'not found' }, { status: 404 })
                 const head = await c.env.R2.head(key)
@@ -152,11 +149,10 @@ const app = new Hono<{ Bindings: Env }>()
                 return new Response(body, { headers: { 'content-type': 'image/png' } })
         })
         .put('/api/v1/atlas', async (c) => {
-                const lat = c.req.query('lat')
-                const lng = c.req.query('lng')
-                const zoom = c.req.query('zoom')
-                if (!lat || !lng || !zoom) return c.json({ error: 'missing' }, { status: 400 })
-                const key = `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png`
+                const rx = c.req.query('rx')
+                const rz = c.req.query('rz')
+                if (!rx || !rz) return c.json({ error: 'missing' }, { status: 400 })
+                const key = `atlas/${rx}_${rz}.png`
                 const ab = await c.req.arrayBuffer()
                 if (!ab || ab.byteLength === 0) return c.json({ error: 'empty body' }, { status: 400 })
                 await c.env.R2.put(key, ab, { httpMetadata: { contentType: 'image/png' } })

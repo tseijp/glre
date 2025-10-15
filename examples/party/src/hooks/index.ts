@@ -17,6 +17,9 @@ export const SWR_CONFIG = {
         keepPreviousData: true,
         revalidateOnFocus: false,
         revalidateIfStale: false,
+        onError(err: Error) {
+                console.error(`SWR FETCH ERROR: ${err.message}`)
+        },
 }
 
 export const useFetch = <T>(key: Key, fun: () => Promise<ClientResponse<T, StatusCode>>) => {

@@ -7,15 +7,6 @@ import { culling, visSphereRegion } from '../voxel/culling'
 import type { Region } from '../types'
 import { vec3 } from 'gl-matrix'
 
-// @TODO FIX
-const toTile = (lat = 0, lng = 0, z = 0) => {
-        const s = Math.sin((lat * Math.PI) / 180)
-        const n = 1 << z
-        const x = Math.floor(((lng + 180) / 360) * n)
-        const y = Math.floor(((1 - Math.log((1 + s) / (1 - s)) / Math.PI) / 2) * n)
-        return { i: x, j: y, k: z }
-}
-
 const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>) => {
         const chunks = createChunks()
         for (const [k, rgba] of vox) {
@@ -35,22 +26,15 @@ const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>) => {
         return { mesh, chunks }
 }
 
-export type RegionConfig = {
-        lat: number
-        lng: number
-        zoom: number
-}
-
-export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6762, lng: 139.6503, zoom: 15 }) => {
+export const createRegions = (camera: Camera) => {
         const regionMap = new Map<string, Region>()
         const R = CHUNK * GRID[0]
-        const DEG_PER_REGION = 0.0023
         let lastUpdateTime = 0
         let debounceTimeout: NodeJS.Timeout | null = null
-        const toKey = (lat: number, lng: number, zoom: number, rx: number, rz: number) => `vox|${lat.toFixed(4)}|${lng.toFixed(4)}|${zoom}|${rx}|${rz}`
+        const toKey = (rx: number, rz: number) => `vox|${rx}|${rz}`
         const fromKey = (key: string) => {
-                const [, a, b, z, rx, rz] = key.split('|')
-                return { lat: parseFloat(a), lng: parseFloat(b), zoom: parseInt(z) | 0, rx: parseInt(rx) | 0, rz: parseInt(rz) | 0 }
+                const [, rx, rz] = key.split('|')
+                return { rx: parseInt(rx) | 0, rz: parseInt(rz) | 0 }
         }
         const regionCulling = (rx: number, rz: number, camera: Camera) => {
                 const regionX = rx * R
@@ -70,9 +54,7 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                                 const regionRx = rx + x
                                 const regionRz = rz + z
                                 if (regionCulling(regionRx, regionRz, camera)) {
-                                        const lat = config.lat + regionRz * DEG_PER_REGION
-                                        const lng = config.lng + regionRx * DEG_PER_REGION
-                                        const key = toKey(lat, lng, config.zoom, regionRx, regionRz)
+                                        const key = toKey(regionRx, regionRz)
                                         if (!regionMap.has(key)) keys.push(key)
                                 }
                         }
@@ -81,10 +63,9 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
         }
         const fetchRegion = async (key: string) => {
                 if (regionMap.has(key)) return regionMap.get(key)
-                const { lat, lng, zoom, rx, rz } = fromKey(key)
-                const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
+                const { rx, rz } = fromKey(key)
+                const q = `/api/v1/atlas?rx=${rx}&rz=${rz}`
                 const head = await fetch(q, { method: 'HEAD' })
-                const { i, j, k } = toTile(lat, lng, zoom)
                 const x = rx * R
                 const y = 0
                 const z = rz * R
@@ -95,15 +76,15 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                         vox = await atlasToVox(await res.arrayBuffer())
                 } else {
                         const wasm: any = await importWasm()
-                        const buf = await (await _('/model/torus.glb', fetch)('/model/torus.glb')).arrayBuffer()
+                        const buf = await (await _('/model/*.glb', fetch)('/model/sphere.glb')).arrayBuffer()
                         const items = wasm.voxelize_glb(await _('loader', loader)(buf), 16, 16, 16)
                         const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
-                        await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${lat.toFixed(4)}_${lng.toFixed(4)}_${zoom}.png` }) })])
+                        await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i: rx, j: 0, k: rz, url: `atlas/${rx}_${rz}.png` }) })])
                         vox = itemsToVox(items)
                 }
                 if (!vox) return
                 const { mesh, chunks } = fillChunk(camera, vox)
-                const reg = { atlas, i, j, k, x, y, z, lat, lng, zoom, visible: regionCulling(rx, rz, camera), mesh, chunks }
+                const reg = { atlas, i: rx, j: 0, k: rz, x, y, z, lat: 0, lng: 0, zoom: 0, visible: regionCulling(rx, rz, camera), mesh, chunks }
                 regionMap.set(key, reg as Region)
                 return reg
         }
