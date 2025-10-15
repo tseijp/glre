@@ -36,7 +36,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 instanceCount: meshes.cnt,
                 loop() {
                         player.step(gl)
-                        // if (setSize && updateCamera) updateCamera(camera as any, setSize)
+                        if (setSize && updateCamera) updateCamera(camera as any, setSize)
                 },
                 resize() {
                         shader.updateCamera(gl.size)
@@ -117,10 +117,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 },
         })
 
-        useMemo(() => {
-                if (!setSize || !updateCamera) return
-                gl.queue(() => updateCamera(camera as any, setSize))
-        }, [camera, setSize, updateCamera])
 
         //  metaverse real-time synchronization
         const sock = usePartySocket({

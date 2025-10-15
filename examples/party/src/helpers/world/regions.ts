@@ -61,10 +61,11 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 return dist < viewDist
         }
         const getKey = (index: number) => {
-                const keys = Array.from(regionMap.values())
+                const visibleKeys = Array.from(regionMap.values())
                         .filter((r) => r.visible && !r.fetched)
                         .map((r) => r.key)
-                return keys[index] || null
+                console.log(visibleKeys[index] || null)
+                return visibleKeys[index] || null
         }
         const fetcher = async (key: string) => {
                 const entry = regionMap.get(key)
@@ -88,7 +89,7 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                         const glb = await _('/model/torus.glb', fetch)('/model/torus.glb')
                         const buf = await glb.arrayBuffer()
                         const parsed = await _('loader', loader)(buf)
-                        const items = _('voxelize_glb', wasm.voxelize_glb)(parsed, 16, 16, 16)
+                        const items = wasm.voxelize_glb(parsed, 16, 16, 16)
                         const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
                         await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
                         const vox = itemsToVox(items)
@@ -122,8 +123,22 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 setSize(unfetchedCount)
         }
         const seed = () => {
-                const key = toKey(config.lat, config.lng, config.zoom, 0, 0)
-                regionMap.set(key, { key, visible: true, fetched: false })
+                const rx = Math.floor(camera.position[0] / R)
+                const rz = Math.floor(camera.position[2] / R)
+                const d = 2
+                for (let z = -d; z <= d; z++) {
+                        for (let x = -d; x <= d; x++) {
+                                const regionRx = rx + x
+                                const regionRz = rz + z
+                                const isVisible = regionCulling(regionRx, regionRz, camera)
+                                if (isVisible) {
+                                        const lat = config.lat + regionRz * DEG_PER_REGION
+                                        const lng = config.lng + regionRx * DEG_PER_REGION
+                                        const key = toKey(lat, lng, config.zoom, regionRx, regionRz)
+                                        regionMap.set(key, { key, visible: true, fetched: false })
+                                }
+                        }
+                }
         }
         seed()
         return { getKey, fetcher, updateCamera }
