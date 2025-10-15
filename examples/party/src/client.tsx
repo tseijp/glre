@@ -20,7 +20,13 @@ export const App = () => {
         const events = useFetch('events', client.api.v1.events.$get).data
         const camera = useMemo(() => createCamera(16, { size: [32, 16, 32], center: [16, 8, 16] }), [])
         const regions = useMemo(() => createRegions(camera), [])
-        const { data: regionData, mutate } = useSWR('regions', regions.fetchRegions, { ...SWR_CONFIG })
+        const { data: regionData, mutate } = useSWR('regions', async () => {
+                const keys = regions.initialKeys
+                for (const key of keys) {
+                        await regions.fetchRegion(key)
+                }
+                return regions.getRegions()
+        }, { ...SWR_CONFIG })
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')

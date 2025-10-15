@@ -80,6 +80,7 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 return keys
         }
         const fetchRegion = async (key: string) => {
+                if (regionMap.has(key)) return regionMap.get(key)
                 const { lat, lng, zoom, rx, rz } = fromKey(key)
                 const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
                 const head = await fetch(q, { method: 'HEAD' })
@@ -114,28 +115,25 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 }
         }
         const fetchRegions = async () => {
-                const ret = []
-                for (const key of initialKeys) {
-                        if (regionMap.has(key)) {
-                                ret.push(regionMap.get(key))
-                        } else ret.push(await fetchRegion(key))
-                }
-                return ret
+                return Array.from(regionMap.values())
         }
         const updateCamera = (camera: Camera, mutate?: any) => {
-                console.log('HIHI')
                 const now = Date.now()
                 if (now - lastUpdateTime < 100) return
                 lastUpdateTime = now
                 if (debounceTimeout) clearTimeout(debounceTimeout)
                 debounceTimeout = setTimeout(async () => {
+                        for (const [key, region] of regionMap.entries()) {
+                                const { rx: regionRx, rz: regionRz } = fromKey(key)
+                                region.visible = regionCulling(regionRx, regionRz, camera)
+                        }
                         const keys = getVisibleKeys()
-                        if (keys.length > 0 && mutate) {
+                        if (keys.length > 0) {
                                 for (const key of keys) {
                                         await fetchRegion(key)
                                 }
-                                mutate()
                         }
+                        if (mutate) mutate()
                 }, 300)
         }
         const getRegions = () => Array.from(regionMap.values()).filter((r) => r.visible)
