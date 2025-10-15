@@ -1,3 +1,4 @@
+import { eulerView } from './../../../../../packages/core/src/addons/space/eulerView'
 import { chunkId, importWasm, GRID, CHUNK, timer as _ } from '../utils'
 import { atlasToVox, encodePng, itemsToVox, stitchAtlas } from '../voxel/atlas'
 import { loader } from '../voxel/loader'
@@ -82,16 +83,20 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                         const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
                         return reg
                 }
-                const wasm: any = await importWasm()
-                const glb = await _('/model/torus.glb', fetch)('/model/torus.glb')
-                const buf = await _('arrayBuffer', glb.arrayBuffer)()
-                const parsed = await _('loader', loader)(buf)
-                const items = _('voxelize_glb', wasm.voxelize_glb)(parsed, 16, 16, 16)
-                const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
-                await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
-                const vox = itemsToVox(items)
-                const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
-                return reg
+                try {
+                        const wasm: any = await importWasm()
+                        const glb = await _('/model/torus.glb', fetch)('/model/torus.glb')
+                        const buf = await glb.arrayBuffer()
+                        const parsed = await _('loader', loader)(buf)
+                        const items = _('voxelize_glb', wasm.voxelize_glb)(parsed, 16, 16, 16)
+                        const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
+                        await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
+                        const vox = itemsToVox(items)
+                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
+                        return reg
+                } catch (error) {
+                        console.warn(error)
+                }
         }
         const updateCamera = (camera: Camera, setSize: (n: number) => any) => {
                 const rx = Math.floor(camera.position[0] / R)
