@@ -43,9 +43,11 @@ export type RegionConfig = {
 }
 
 export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6762, lng: 139.6503, zoom: 15 }) => {
-        const regionMap = new Map<string, { key: string; visible: boolean; fetched: boolean }>()
+        const regionMap = new Map<string, Region>()
         const R = CHUNK * GRID[0]
         const DEG_PER_REGION = 0.0023
+        let lastUpdateTime = 0
+        let debounceTimeout: NodeJS.Timeout | null = null
         const toKey = (lat: number, lng: number, zoom: number, rx: number, rz: number) => `vox|${lat.toFixed(4)}|${lng.toFixed(4)}|${zoom}|${rx}|${rz}`
         const fromKey = (key: string) => {
                 const [, a, b, z, rx, rz] = key.split('|')
@@ -60,16 +62,26 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 const viewDist = camera.far + R * Math.sqrt(2)
                 return dist < viewDist
         }
-        const getKey = (index: number) => {
-                const visibleKeys = Array.from(regionMap.values())
-                        .filter((r) => r.visible && !r.fetched)
-                        .map((r) => r.key)
-                console.log(visibleKeys[index] || null)
-                return visibleKeys[index] || null
+        const getVisibleKeys = () => {
+                const rx = Math.floor(camera.position[0] / R)
+                const rz = Math.floor(camera.position[2] / R)
+                const keys = []
+                const d = 2
+                for (let z = -d; z <= d; z++) {
+                        for (let x = -d; x <= d; x++) {
+                                const regionRx = rx + x
+                                const regionRz = rz + z
+                                if (regionCulling(regionRx, regionRz, camera)) {
+                                        const lat = config.lat + regionRz * DEG_PER_REGION
+                                        const lng = config.lng + regionRx * DEG_PER_REGION
+                                        const key = toKey(lat, lng, config.zoom, regionRx, regionRz)
+                                        if (!regionMap.has(key)) keys.push(key)
+                                }
+                        }
+                }
+                return keys
         }
-        const fetcher = async (key: string) => {
-                const entry = regionMap.get(key)
-                if (entry) entry.fetched = true
+        const fetchRegion = async (key: string) => {
                 const { lat, lng, zoom, rx, rz } = fromKey(key)
                 const q = `/api/v1/atlas?lat=${lat}&lng=${lng}&zoom=${zoom}`
                 const head = await fetch(q, { method: 'HEAD' })
@@ -78,15 +90,16 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 const y = 0
                 const z = rz * R
                 if (head.ok) {
-                        const res = await fetch(q)
+                        const res = await _(q, fetch)(q)
                         const ab = await res.arrayBuffer()
-                        const vox = await atlasToVox(ab)
+                        const vox = await _('atlasToVox', atlasToVox)(ab)
                         const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
+                        regionMap.set(key, reg as Region)
                         return reg
                 }
                 try {
                         const wasm: any = await importWasm()
-                        const glb = await _('/model/torus.glb', fetch)('/model/torus.glb')
+                        const glb = await _('/model/untitled.glb', fetch)('/model/untitled.glb')
                         const buf = await glb.arrayBuffer()
                         const parsed = await _('loader', loader)(buf)
                         const items = wasm.voxelize_glb(parsed, 16, 16, 16)
@@ -94,52 +107,28 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                         await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
                         const vox = itemsToVox(items)
                         const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
+                        regionMap.set(key, reg as Reg)
                         return reg
                 } catch (error) {
                         console.warn(error)
                 }
         }
-        const updateCamera = (camera: Camera, setSize: (n: number) => any) => {
-                const rx = Math.floor(camera.position[0] / R)
-                const rz = Math.floor(camera.position[2] / R)
-                const d = 2
-                for (let z = -d; z <= d; z++) {
-                        for (let x = -d; x <= d; x++) {
-                                const regionRx = rx + x
-                                const regionRz = rz + z
-                                const isVisible = regionCulling(regionRx, regionRz, camera)
-                                const lat = config.lat + regionRz * DEG_PER_REGION
-                                const lng = config.lng + regionRx * DEG_PER_REGION
-                                const key = toKey(lat, lng, config.zoom, regionRx, regionRz)
-                                const existing = regionMap.get(key)
-                                if (existing) {
-                                        existing.visible = isVisible
-                                } else if (isVisible) {
-                                        regionMap.set(key, { key, visible: true, fetched: false })
+        const updateCamera = (camera: Camera, mutate?: any) => {
+                const now = Date.now()
+                if (now - lastUpdateTime < 100) return
+                lastUpdateTime = now
+                if (debounceTimeout) clearTimeout(debounceTimeout)
+                debounceTimeout = setTimeout(async () => {
+                        const keys = getVisibleKeys()
+                        if (keys.length > 0 && mutate) {
+                                for (const key of keys) {
+                                        await fetchRegion(key)
                                 }
+                                mutate()
                         }
-                }
-                const unfetchedCount = Array.from(regionMap.values()).filter((r) => r.visible && !r.fetched).length
-                setSize(unfetchedCount)
+                }, 300)
         }
-        const seed = () => {
-                const rx = Math.floor(camera.position[0] / R)
-                const rz = Math.floor(camera.position[2] / R)
-                const d = 2
-                for (let z = -d; z <= d; z++) {
-                        for (let x = -d; x <= d; x++) {
-                                const regionRx = rx + x
-                                const regionRz = rz + z
-                                const isVisible = regionCulling(regionRx, regionRz, camera)
-                                if (isVisible) {
-                                        const lat = config.lat + regionRz * DEG_PER_REGION
-                                        const lng = config.lng + regionRx * DEG_PER_REGION
-                                        const key = toKey(lat, lng, config.zoom, regionRx, regionRz)
-                                        regionMap.set(key, { key, visible: true, fetched: false })
-                                }
-                        }
-                }
-        }
-        seed()
-        return { getKey, fetcher, updateCamera }
+        const getRegions = () => Array.from(regionMap.values()).filter((r) => regionCulling(Math.floor(r.x / R), Math.floor(r.z / R), camera))
+        const initialKeys = getVisibleKeys()
+        return { getRegions, fetchRegion, updateCamera, initialKeys }
 }

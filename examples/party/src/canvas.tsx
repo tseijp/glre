@@ -15,15 +15,14 @@ export interface CanvasProps {
         onSemanticVoxel?: (v: any) => void
         regions?: Region[]
         mutate?: (data?: any, opts?: any) => any
-        setSize?: (n: number) => any
-        updateCamera?: (camera: any, setSize: (n: number) => any) => any
+        updateCamera?: (camera: any, mutate?: any) => any
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, regions, mutate, setSize, updateCamera }: CanvasProps) => {
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, regions, mutate, updateCamera }: CanvasProps) => {
         const camera = useMemo(() => createCamera(size, dims), [])
         const meshes = useMemo(() => createMeshes(camera), [])
         const shader = useMemo(() => createShader(camera, meshes), [])
-        const player = useMemo(() => createPlayer(camera, meshes, shader), [])
+        const player = useMemo(() => createPlayer(camera, meshes, shader, updateCamera, mutate), [])
 
         const gl = useGL({
                 vert: shader.vert,
@@ -36,7 +35,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                 instanceCount: meshes.cnt,
                 loop() {
                         player.step(gl)
-                        if (setSize && updateCamera) updateCamera(camera as any, setSize)
                 },
                 resize() {
                         shader.updateCamera(gl.size)
@@ -116,7 +114,6 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
                         })
                 },
         })
-
 
         //  metaverse real-time synchronization
         const sock = usePartySocket({

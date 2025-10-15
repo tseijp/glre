@@ -1,7 +1,7 @@
 // client.tsx
 import './components/style.css'
 import { SessionProvider, signIn } from '@hono/auth-js/react'
-import useSWRInfinite from 'swr/infinite'
+import useSWR from 'swr'
 import { hc } from 'hono/client'
 import { createRoot } from 'react-dom/client'
 import PC from './components/PC'
@@ -20,7 +20,14 @@ export const App = () => {
         const events = useFetch('events', client.api.v1.events.$get).data
         const camera = useMemo(() => createCamera(16, { size: [32, 16, 32], center: [16, 8, 16] }), [])
         const regions = useMemo(() => createRegions(camera), [])
-        const swr = useSWRInfinite(regions.getKey, regions.fetcher as any, { ...SWR_CONFIG, revalidateFirstPage: false })
+        const { data: regionData, mutate } = useSWR(
+                'regions',
+                async () => {
+                        const promises = regions.initialKeys.map(regions.fetchRegion)
+                        return await Promise.all(promises)
+                },
+                { ...SWR_CONFIG }
+        )
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')
@@ -33,24 +40,16 @@ export const App = () => {
         const isSignedIn = !!profile
         const Colors = colors || []
         const onSemanticVoxel = (_v: any) => {} // client.api.v1.voxels.$post({ json: v })
-        const children = !swr?.data ? (
-                <div className="w-full h-full flex items-center justify-center bg-gradient-to-b from-sky-200 to-green-100">
-                        <div className="text-center">
-                                <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                                <div className="text-sm text-gray-600">{'伝統色彩システム初期化中...'}</div>
-                        </div>
-                </div>
-        ) : (
+        const children = (
                 <Canvas //
                         camera={camera}
-                        mutate={swr.mutate as any}
-                        setSize={swr.setSize}
+                        mutate={mutate}
                         updateCamera={regions.updateCamera}
-                        regions={(swr.data ? swr.data.flat().filter(Boolean) : []) as any}
+                        regions={regionData ? regionData.filter(Boolean) as any : []}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
-        console.log(swr.data)
+        console.log('Regions', regionData)
         const props = {
                 isHUD,
                 isMenu,
