@@ -22,7 +22,7 @@ const _meshing = (chunk: Chunk) => {
         const m = greedyMesh(chunk.vox, CHUNK)
         for (let i = 0; i < m.cnt; i++) {
                 const j = i * 3
-                m.pos[j] += chunk.x + Math.random() / 100
+                m.pos[j] += chunk.x
                 m.pos[j + 1] += chunk.y
                 m.pos[j + 2] += chunk.z
         }

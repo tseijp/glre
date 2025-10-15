@@ -58,7 +58,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                                 for (let i = 0; i < region.mesh.cnt; i++) aid.push(r)
                                 cnt += region.mesh.cnt
                         }
-                        pos.push(region.x + 128, region.y + 1.5, region.z + 128)
+                        pos.push(128, 1.5, 128)
                         scl.push(256, 3, 256)
                         aid.push(r)
                         cnt++
