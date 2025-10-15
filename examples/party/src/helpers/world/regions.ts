@@ -1,11 +1,11 @@
-import { eulerView } from './../../../../../packages/core/src/addons/space/eulerView'
 import { chunkId, importWasm, GRID, CHUNK, timer as _ } from '../utils'
 import { atlasToVox, encodePng, itemsToVox, stitchAtlas } from '../voxel/atlas'
 import { loader } from '../voxel/loader'
 import { createChunks, gather, meshing } from './chunk'
 import type { Camera } from '../player/camera'
-import { culling } from '../voxel/culling'
+import { culling, visSphereRegion } from '../voxel/culling'
 import type { Region } from '../types'
+import { vec3 } from 'gl-matrix'
 
 // @TODO FIX
 const toTile = (lat = 0, lng = 0, z = 0) => {
@@ -26,12 +26,11 @@ const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>) => {
                 const out = new Uint8Array(16 * 16 * 16)
                 for (let t = 0, v = 3; t < out.length; t++, v += 4) out[t] = rgba[v] > 0 ? 1 : 0
                 ch.vox.set(out)
-                ch.visible = true
                 ch.dirty = true
                 ch.gen = true
         }
-        meshing(chunks)
         culling(chunks, camera)
+        meshing(chunks)
         const mesh = gather(chunks)
         return { mesh, chunks }
 }
@@ -56,11 +55,10 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
         const regionCulling = (rx: number, rz: number, camera: Camera) => {
                 const regionX = rx * R
                 const regionZ = rz * R
-                const dx = camera.position[0] - (regionX + R * 0.5)
-                const dz = camera.position[2] - (regionZ + R * 0.5)
-                const dist = Math.sqrt(dx * dx + dz * dz)
-                const viewDist = camera.far + R * Math.sqrt(2)
-                return dist < viewDist
+                const ctr = vec3.fromValues(regionX + R * 0.5, R * 0.5, regionZ + R * 0.5)
+                if (vec3.sqrDist(ctr, camera.position) > camera.far * camera.far) return false
+                const RAD = R * Math.sqrt(3) * 0.5
+                return visSphereRegion(camera.VP, ctr, RAD)
         }
         const getVisibleKeys = () => {
                 const rx = Math.floor(camera.position[0] / R)
@@ -92,28 +90,40 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                 if (head.ok) {
                         const res = await _(q, fetch)(q)
                         const ab = await res.arrayBuffer()
-                        const vox = await _('atlasToVox', atlasToVox)(ab)
-                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
+                        const vox = await atlasToVox(ab)
+                        const { mesh, chunks } = fillChunk(camera, vox)
+                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: regionCulling(rx, rz, camera), mesh, chunks }
                         regionMap.set(key, reg as Region)
                         return reg
                 }
                 try {
                         const wasm: any = await importWasm()
-                        const glb = await _('/model/untitled.glb', fetch)('/model/untitled.glb')
+                        const glb = await _('/model/torus.glb', fetch)('/model/torus.glb')
                         const buf = await glb.arrayBuffer()
                         const parsed = await _('loader', loader)(buf)
                         const items = wasm.voxelize_glb(parsed, 16, 16, 16)
                         const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
                         await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i, j, k, url: `atlas/${Number(lat).toFixed(4)}_${Number(lng).toFixed(4)}_${zoom}.png` }) })])
                         const vox = itemsToVox(items)
-                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: true, ...fillChunk(camera, vox) }
-                        regionMap.set(key, reg as Reg)
+                        const { mesh, chunks } = fillChunk(camera, vox)
+                        const reg = { atlas: { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4 }, i, j, k, x, y, z, lat, lng, zoom, visible: regionCulling(rx, rz, camera), mesh, chunks }
+                        regionMap.set(key, reg as Region)
                         return reg
                 } catch (error) {
                         console.warn(error)
                 }
         }
+        const fetchRegions = async () => {
+                const ret = []
+                for (const key of initialKeys) {
+                        if (regionMap.has(key)) {
+                                ret.push(regionMap.get(key))
+                        } else ret.push(await fetchRegion(key))
+                }
+                return ret
+        }
         const updateCamera = (camera: Camera, mutate?: any) => {
+                console.log('HIHI')
                 const now = Date.now()
                 if (now - lastUpdateTime < 100) return
                 lastUpdateTime = now
@@ -128,7 +138,7 @@ export const createRegions = (camera: Camera, config: RegionConfig = { lat: 35.6
                         }
                 }, 300)
         }
-        const getRegions = () => Array.from(regionMap.values()).filter((r) => regionCulling(Math.floor(r.x / R), Math.floor(r.z / R), camera))
+        const getRegions = () => Array.from(regionMap.values()).filter((r) => r.visible)
         const initialKeys = getVisibleKeys()
-        return { getRegions, fetchRegion, updateCamera, initialKeys }
+        return { getRegions, fetchRegion, fetchRegions, updateCamera, initialKeys }
 }

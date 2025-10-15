@@ -20,14 +20,7 @@ export const App = () => {
         const events = useFetch('events', client.api.v1.events.$get).data
         const camera = useMemo(() => createCamera(16, { size: [32, 16, 32], center: [16, 8, 16] }), [])
         const regions = useMemo(() => createRegions(camera), [])
-        const { data: regionData, mutate } = useSWR(
-                'regions',
-                async () => {
-                        const promises = regions.initialKeys.map(regions.fetchRegion)
-                        return await Promise.all(promises)
-                },
-                { ...SWR_CONFIG }
-        )
+        const { data: regionData, mutate } = useSWR('regions', regions.fetchRegions, { ...SWR_CONFIG })
         const hud = useSearchParam('hud')
         const menu = useSearchParam('menu')
         const modal = useSearchParam('modal')
@@ -45,7 +38,7 @@ export const App = () => {
                         camera={camera}
                         mutate={mutate}
                         updateCamera={regions.updateCamera}
-                        regions={regionData ? regionData.filter(Boolean) as any : []}
+                        regions={regionData ? (regionData.filter(Boolean) as any) : []}
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )

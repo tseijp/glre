@@ -51,6 +51,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                 for (let r = 0; r < regions.length; r++) {
                         const region = regions[r]
                         if (!region) continue
+                        if (!region.visible) continue
                         if (region.mesh?.cnt) {
                                 pos.push(...region.mesh.pos)
                                 scl.push(...region.mesh.scl)
