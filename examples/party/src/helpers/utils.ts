@@ -72,8 +72,15 @@ export const importWasm = async () => {
         return wasm
 }
 
-export const importModel = async () => {
-        const res = await fetch('/model/sphere.glb')
+export const importModel = async (rx = 0, rz = 0) => {
+        if (rx % 2 === 0 && rz % 2 === 0) {
+                const res = await fetch('/model/cube.glb')
+                return await res.arrayBuffer()
+        }
+        const models = ['sphere.glb', 'cone.glb', 'torus.glb', 'monkey.glb', 'icosa.glb']
+        const index = (Math.abs(rx) + Math.abs(rz)) % models.length
+        const modelName = models[index]
+        const res = await fetch(`/model/${modelName}`)
         return await res.arrayBuffer()
 }
 export const cancelVoxelizer = async () => {

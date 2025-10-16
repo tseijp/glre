@@ -1,6 +1,7 @@
 import { vec3, mat4 } from 'gl-matrix'
 import type { Camera } from './camera'
-import type { Meshes } from '../types'
+import type { Meshes, Region } from '../types'
+import { collider, collectNearbyChunks } from './collider'
 
 const MODE = 0 // 0 is creative
 const TIME = 0.1
@@ -38,7 +39,7 @@ const moveDir = (out: vec3, dir: vec3, speed: number) => {
         return out
 }
 
-export const createPlayer = (camera: Camera, meshes: Meshes, shader: any, updateCamera?: (camera: Camera, mutate?: any) => void, mutate?: any) => {
+export const createPlayer = (camera: Camera, _meshes: Meshes, shader: any, updateCamera?: (camera: Camera, mutate?: any) => void, mutate?: any, regions?: Region[]) => {
         const pos = vec3.clone(camera.position)
         const vel = vec3.create()
         const dir = vec3.create()
@@ -75,13 +76,17 @@ export const createPlayer = (camera: Camera, meshes: Meshes, shader: any, update
                 vel[2] = move[2]
                 if (mode) vel[1] += GRAV * dt
                 vec3.add(pos, pos, vel)
-                // if (mode) collider(meshes.chunks, state)
+                if (mode && regions) {
+                        const nearbyChunks = collectNearbyChunks(regions, pos)
+                        collider(nearbyChunks, state)
+                }
                 if (pos[1] < 0) pos[1] = 0
                 face = faceDir(face, yaw, pitch)
                 setLook()
                 shader.updateCamera(gl.size)
                 if (camera.needsUpdate) {
                         camera.needsUpdate = false
+                        if (updateCamera) updateCamera(camera, mutate)
                 }
         }
         let last = time
@@ -95,7 +100,6 @@ export const createPlayer = (camera: Camera, meshes: Meshes, shader: any, update
                 if (time - last < 100) return
                 last = time
                 camera.needsUpdate = true
-                if (updateCamera) updateCamera(camera, mutate)
         }
         const press = (k = '', isPress = false) => {
                 k = k.toLowerCase()

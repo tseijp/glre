@@ -76,7 +76,7 @@ export const createRegions = (camera: Camera) => {
                         vox = await atlasToVox(await res.arrayBuffer())
                 } else {
                         const wasm: any = await importWasm()
-                        const buf = await _('importModel', importModel)()
+                        const buf = await _('importModel', importModel)(rx, rz)
                         const items = wasm.voxelize_glb(await _('loader', loader)(buf), 16, 16, 16)
                         const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
                         await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i: rx, j: 0, k: rz, url: `atlas/${rx}_${rz}.png` }) })])

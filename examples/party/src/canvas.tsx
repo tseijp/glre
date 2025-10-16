@@ -21,7 +21,7 @@ export interface CanvasProps {
 export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, camera, onSemanticVoxel, regions, mutate, updateCamera }: CanvasProps) => {
         const meshes = useMemo(() => createMeshes(camera), [])
         const shader = useMemo(() => createShader(camera, meshes), [])
-        const player = useMemo(() => createPlayer(camera, meshes, shader, updateCamera, mutate), [])
+        const player = useMemo(() => createPlayer(camera, meshes, shader, updateCamera, mutate, regions), [])
 
         const gl = useGL({
                 vert: shader.vert,
