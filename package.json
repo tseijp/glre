@@ -13,7 +13,7 @@
                 "android": "cd examples/native && npm run android",
                 "ios": "cd examples/native && npm run ios",
                 "web": "cd examples/native && npm run web",
-                "dev": "cd examples/hono && npm run dev",
+                "dev": "cd examples/party && npm run dev",
                 "qwik": "cd examples/qwik && npm run dev",
                 "solid": "cd examples/solid && npm run start",
                 "watch": "cd packages/core && npx jest --watch --runInBand",
