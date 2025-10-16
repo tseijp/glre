@@ -2,7 +2,7 @@ import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { createCamera, createShader, createMeshes, createPlayer, raycast, raycastRegion, screenToWorldRay, applyInstances } from './helpers'
+import { createShader, createMeshes, createPlayer, raycast, raycastRegion, screenToWorldRay, applyInstances } from './helpers'
 import type { Atlas, Meshes, Dims, Region, Camera } from './helpers'
 
 export interface CanvasProps {

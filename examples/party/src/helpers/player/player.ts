@@ -6,9 +6,9 @@ import { collider, collectNearbyChunks } from './collider'
 const MODE = 0 // 0 is creative
 const TIME = 0.01
 const GRAV = -0.06
-const JUMP = 0.15
+const JUMP = 10.15
 const TURN = 0.005
-const MOVE = 0.09
+const MOVE = 10.09
 const DASH = 2
 const SLOW = 0.4
 const PMAX = Math.PI / 2 - 0.01

@@ -31,17 +31,6 @@ export const App = () => {
                 },
                 { ...SWR_CONFIG }
         )
-        const hud = useSearchParam('hud')
-        const menu = useSearchParam('menu')
-        const modal = useSearchParam('modal')
-        const page = useSearchParam('page')
-        const isHUD = hud !== '0'
-        const isMenu = menu === '1'
-        const isModal = modal === '1'
-        const hasProfile = !!profile
-        const canSignIn = !profile
-        const isSignedIn = !!profile
-        const Colors = colors || []
         const onSemanticVoxel = (_v: any) => {} // client.api.v1.voxels.$post({ json: v })
         const children = (
                 <Canvas //
@@ -52,25 +41,39 @@ export const App = () => {
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
-        const props = {
-                isHUD,
-                isMenu,
-                isModal,
-                hasProfile,
-                canSignIn,
-                isSignedIn,
-                Colors,
-                culturalEvents: Array.isArray(events) ? events : [],
-                page: page || '1',
-                onSignIn: () => signIn(),
-                //  metaverse 3D Tiles features
-                isMode: true,
-                hasColors: true,
-                isSemanticVoxels: true,
-                children,
-        }
-        if (useWindowSize()) return <SP {...props} />
-        return <PC {...props} />
+        return children
+        // ↓↓↓ DO NOT CHANGE ↓↓↓
+        // const hud = useSearchParam('hud')
+        // const menu = useSearchParam('menu')
+        // const modal = useSearchParam('modal')
+        // const page = useSearchParam('page')
+        // const isHUD = hud !== '0'
+        // const isMenu = menu === '1'
+        // const isModal = modal === '1'
+        // const hasProfile = !!profile
+        // const canSignIn = !profile
+        // const isSignedIn = !!profile
+        // const Colors = colors || []
+        // const props = {
+        //         isHUD,
+        //         isMenu,
+        //         isModal,
+        //         hasProfile,
+        //         canSignIn,
+        //         isSignedIn,
+        //         Colors,
+        //         culturalEvents: Array.isArray(events) ? events : [],
+        //         page: page || '1',
+        //         onSignIn: () => signIn(),
+        //         //  metaverse 3D Tiles features
+        //         isMode: true,
+        //         hasColors: true,
+        //         isSemanticVoxels: true,
+        //         children,
+        // }
+        // if (useWindowSize()) return <SP {...props} />
+        // return <PC {...props} />
+        // ↑↑↑ DO NOT CHANGE ↑↑↑
 }
 
 createRoot(document.getElementById('root')!).render(
