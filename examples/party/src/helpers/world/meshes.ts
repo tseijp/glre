@@ -84,28 +84,51 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
 export const applyInstances = (gl: any, mesh: Meshes) => {
         const c = gl.webgl.context as WebGL2RenderingContext
         const pg = gl.webgl.program as WebGLProgram
-        const push = (key: string, data: number[]) => {
-                const array = new Float32Array(data)
-                const buffer = c.createBuffer()!
+        const bufs = ((mesh as any)._bufs = (mesh as any)._bufs || {})
+        const bind3 = (key: string, data: number[]) => {
                 const loc = c.getAttribLocation(pg, key)
-                c.bindBuffer(c.ARRAY_BUFFER, buffer)
-                c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
-                c.enableVertexAttribArray(loc)
-                c.vertexAttribPointer(loc, 3, c.FLOAT, false, 0, 0)
-                c.vertexAttribDivisor(loc, 1)
-        }
-        const push1 = (key: string, data: number[]) => {
                 const array = new Float32Array(data)
-                const buffer = c.createBuffer()!
-                const loc = c.getAttribLocation(pg, key)
-                c.bindBuffer(c.ARRAY_BUFFER, buffer)
-                c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
-                c.enableVertexAttribArray(loc)
-                c.vertexAttribPointer(loc, 1, c.FLOAT, false, 0, 0)
-                c.vertexAttribDivisor(loc, 1)
+                const buf = (bufs[key] = bufs[key] || c.createBuffer())
+                c.bindBuffer(c.ARRAY_BUFFER, buf)
+                if (!bufs[key + ':init']) {
+                        c.bufferData(c.ARRAY_BUFFER, array, c.DYNAMIC_DRAW)
+                        c.enableVertexAttribArray(loc)
+                        c.vertexAttribPointer(loc, 3, c.FLOAT, false, 0, 0)
+                        c.vertexAttribDivisor(loc, 1)
+                        bufs[key + ':init'] = 1
+                        bufs[key + ':len'] = array.length
+                        return
+                }
+                if (bufs[key + ':len'] !== array.length) {
+                        c.bufferData(c.ARRAY_BUFFER, array, c.DYNAMIC_DRAW)
+                        bufs[key + ':len'] = array.length
+                        return
+                }
+                c.bufferSubData(c.ARRAY_BUFFER, 0, array)
         }
-        push('scl', mesh.scl)
-        push('pos', mesh.pos)
-        if ((mesh as any).aid?.length) push1('aid', (mesh as any).aid as number[])
+        const bind1 = (key: string, data: number[]) => {
+                const loc = c.getAttribLocation(pg, key)
+                const array = new Float32Array(data)
+                const buf = (bufs[key] = bufs[key] || c.createBuffer())
+                c.bindBuffer(c.ARRAY_BUFFER, buf)
+                if (!bufs[key + ':init']) {
+                        c.bufferData(c.ARRAY_BUFFER, array, c.DYNAMIC_DRAW)
+                        c.enableVertexAttribArray(loc)
+                        c.vertexAttribPointer(loc, 1, c.FLOAT, false, 0, 0)
+                        c.vertexAttribDivisor(loc, 1)
+                        bufs[key + ':init'] = 1
+                        bufs[key + ':len'] = array.length
+                        return
+                }
+                if (bufs[key + ':len'] !== array.length) {
+                        c.bufferData(c.ARRAY_BUFFER, array, c.DYNAMIC_DRAW)
+                        bufs[key + ':len'] = array.length
+                        return
+                }
+                c.bufferSubData(c.ARRAY_BUFFER, 0, array)
+        }
+        bind3('scl', mesh.scl)
+        bind3('pos', mesh.pos)
+        if ((mesh as any).aid?.length) bind1('aid', (mesh as any).aid as number[])
         gl.instanceCount = mesh.cnt
 }

@@ -93,3 +93,58 @@ export const face = (hit: Hit, pos: number[], scl: number[]): [number, number, n
         o[axis[2]] += uv[1]
         return [o[0], o[1], o[2]]
 }
+
+export const raycastRegion = (
+        ray: Ray,
+        meshes: { pos: number[]; scl: number[]; cnt: number; aid?: number[] },
+        rid: number,
+        off: [number, number, number]
+) => {
+        const A = (meshes as any).aid as number[]
+        if (!A || !A.length) return raycast(ray, meshes)
+        let s = -1
+        let e = -1
+        for (let i = 0; i < A.length; i++) {
+                if (A[i] === rid && s < 0) s = i
+                if (s >= 0 && A[i] !== rid) {
+                        e = i
+                        break
+                }
+        }
+        if (s < 0) return null
+        if (e < 0) e = A.length
+        let id = -1
+        let near = Infinity
+        const c = vec3.create()
+        const h = vec3.create()
+        const min = vec3.create()
+        const max = vec3.create()
+        const offv = vec3.fromValues(off[0], off[1], off[2])
+        const faceN = vec3.create()
+        for (let i = s; i < e; i++) {
+                                read(h, meshes.scl, i)
+                                read(c, meshes.pos, i)
+                                vec3.scale(h, h, 0.5)
+                                vec3.add(c, c, offv)
+                                vec3.sub(min, c, h)
+                                vec3.add(max, c, h)
+                                const hit = slab(ray, min, max)
+                                if (!hit || hit.near < 0 || near < hit.near) continue
+                                const axis = hit.min[0] === hit.near ? 0 : hit.min[1] === hit.near ? 1 : 2
+                                vec3.set(faceN, 0, 0, 0)
+                                faceN[axis] = Math.sign(ray.dir[axis]) * -1
+                                id = i
+                                near = hit.near
+        }
+        if (id < 0) return null
+        read(h, meshes.scl, id)
+        read(c, meshes.pos, id)
+        vec3.scale(h, h, 0.5)
+        vec3.add(c, c, offv)
+        const v = vec3.scaleAndAdd(vec3.create(), ray.origin, ray.dir, near)
+        vec3.sub(v, v, c)
+        vec3.add(v, v, h)
+        const axis = axisOf(faceN)
+        const uv = [Math.floor(v[axis[1]]), Math.floor(v[axis[2]])]
+        return { id, uv, face: faceN, near, axis }
+}

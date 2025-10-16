@@ -2,7 +2,7 @@ import { useGL } from 'glre/src/react'
 import usePartySocket from 'partysocket/react'
 import { useMemo } from 'react'
 import { useDrag, useKey } from 'rege/react'
-import { createCamera, createShader, createMeshes, createPlayer, raycast, screenToWorldRay, applyInstances } from './helpers'
+import { createCamera, createShader, createMeshes, createPlayer, raycast, raycastRegion, screenToWorldRay, applyInstances } from './helpers'
 import type { Atlas, Meshes, Dims, Region, Camera } from './helpers'
 
 export interface CanvasProps {
@@ -82,7 +82,38 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         const drag = useDrag((d) => {
                 const _ = d.memo
                 const ray = screenToWorldRay(d.value, gl.size, camera)
-                const hit = raycast(ray, meshes)
+                let hit = null as any
+                if (regions && regions.length) {
+                        const R = 16 * 16
+                        const cx = camera.position[0]
+                        const cz = camera.position[2]
+                        let rid = -1
+                        for (let r = 0; r < Math.min(regions.length, 8); r++) {
+                                const rg = regions[r]
+                                if (!rg) continue
+                                const inX = rg.x <= cx && cx < rg.x + R
+                                const inZ = rg.z <= cz && cz < rg.z + R
+                                if (inX && inZ) {
+                                        rid = r
+                                        break
+                                }
+                        }
+                        if (rid < 0) {
+                                let md = Infinity
+                                for (let r = 0; r < Math.min(regions.length, 8); r++) {
+                                        const rg = regions[r]
+                                        const dx = cx - (rg.x + R * 0.5)
+                                        const dz = cz - (rg.z + R * 0.5)
+                                        const d2 = dx * dx + dz * dz
+                                        if (d2 < md) {
+                                                md = d2
+                                                rid = r
+                                        }
+                                }
+                        }
+                        if (rid >= 0) hit = raycastRegion(ray, meshes as any, rid, [regions[rid].x, regions[rid].y, regions[rid].z] as any)
+                }
+                if (!hit) hit = raycast(ray, meshes)
                 const near = hit ? [ray.origin[0] + ray.dir[0] * hit.near, ray.origin[1] + ray.dir[1] * hit.near, ray.origin[2] + ray.dir[2] * hit.near] : undefined
 
                 shader.updateHover(hit, near)

@@ -52,7 +52,6 @@ export const App = () => {
                         onSemanticVoxel={onSemanticVoxel}
                 />
         )
-        console.log('Regions', regionData)
         const props = {
                 isHUD,
                 isMenu,

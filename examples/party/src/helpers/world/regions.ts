@@ -36,19 +36,20 @@ export const createRegions = (camera: Camera) => {
                 const [, rx, rz] = key.split('|')
                 return { rx: parseInt(rx) | 0, rz: parseInt(rz) | 0 }
         }
-        const regionCulling = (rx: number, rz: number, camera: Camera) => {
+        const _ctrR = vec3.create()
+        const regionCulling = (rx: number, rz: number, cam: Camera) => {
                 const regionX = rx * R
                 const regionZ = rz * R
-                const ctr = vec3.fromValues(regionX + R * 0.5, R * 0.5, regionZ + R * 0.5)
-                if (vec3.sqrDist(ctr, camera.position) > camera.far * camera.far) return false
+                vec3.set(_ctrR, regionX + R * 0.5, R * 0.5, regionZ + R * 0.5)
+                if (vec3.sqrDist(_ctrR, cam.position) > cam.far * cam.far) return false
                 const RAD = R * Math.sqrt(3) * 0.5
-                return visSphereRegion(camera.VP, ctr, RAD)
+                return visSphereRegion(cam.VP, _ctrR, RAD)
         }
         const getVisibleKeys = (currentCamera: Camera) => {
                 const rx = Math.floor(currentCamera.position[0] / R)
                 const rz = Math.floor(currentCamera.position[2] / R)
                 const keys = []
-                const checkRange = 1
+                const checkRange = 2
                 for (let z = -checkRange; z <= checkRange; z++) {
                         for (let x = -checkRange; x <= checkRange; x++) {
                                 const regionRx = rx + x
@@ -89,7 +90,12 @@ export const createRegions = (camera: Camera) => {
                 return reg
         }
         const fetchRegions = async () => Array.from(regionMap.values())
-        const updateCamera = (camera: Camera, mutate?: any) => {
+        const _offPos = vec3.create()
+        const _offTgt = vec3.create()
+        const _V = mat4.create()
+        const _VP = mat4.create()
+        const _up = vec3.fromValues(0, 1, 0)
+        const updateCamera = (cam: Camera, mutate?: any) => {
                 const now = Date.now()
                 if (now - updateTime < 100) return
                 updateTime = now
@@ -99,28 +105,19 @@ export const createRegions = (camera: Camera) => {
                         for (const [key, region] of regionMap.entries()) {
                                 const { rx, rz } = fromKey(key)
                                 const wasVisible = region.visible
-                                region.visible = regionCulling(rx, rz, camera)
+                                region.visible = regionCulling(rx, rz, cam)
                                 if (wasVisible !== region.visible) hasChanges = true
                                 if (region.visible && region.chunks) {
-                                        const offsetPosition = vec3.fromValues(camera.position[0] - region.x, camera.position[1] - region.y, camera.position[2] - region.z)
-                                        const offsetTarget = vec3.fromValues(camera.target[0] - region.x, camera.target[1] - region.y, camera.target[2] - region.z)
-                                        const V = mat4.create()
-                                        const up = vec3.fromValues(0, 1, 0)
-                                        mat4.lookAt(V, offsetPosition, offsetTarget, up)
-                                        const VP = mat4.create()
-                                        mat4.multiply(VP, camera.P, V)
-                                        const offsetCamera = {
-                                                ...camera,
-                                                position: offsetPosition,
-                                                target: offsetTarget,
-                                                V: V,
-                                                VP: VP,
-                                        }
-                                        culling(region.chunks, offsetCamera)
+                                        vec3.set(_offPos, cam.position[0] - region.x, cam.position[1] - region.y, cam.position[2] - region.z)
+                                        vec3.set(_offTgt, cam.target[0] - region.x, cam.target[1] - region.y, cam.target[2] - region.z)
+                                        mat4.lookAt(_V, _offPos, _offTgt, _up)
+                                        mat4.multiply(_VP, cam.P, _V)
+                                        const offCam = { ...cam, position: _offPos, target: _offTgt, V: _V, VP: _VP } as any
+                                        culling(region.chunks, offCam)
                                         meshing(region.chunks)
                                 }
                         }
-                        const newKeys = getVisibleKeys(camera)
+                        const newKeys = getVisibleKeys(cam)
                         if (newKeys.length > 0) {
                                 for (const key of newKeys) await fetchRegion(key)
                                 hasChanges = true

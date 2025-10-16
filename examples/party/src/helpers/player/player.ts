@@ -4,11 +4,11 @@ import type { Meshes, Region } from '../types'
 import { collider, collectNearbyChunks } from './collider'
 
 const MODE = 0 // 0 is creative
-const TIME = 0.1
+const TIME = 0.01
 const GRAV = -0.06
-const JUMP = 10.15
+const JUMP = 0.15
 const TURN = 0.005
-const MOVE = 10.09
+const MOVE = 0.09
 const DASH = 2
 const SLOW = 0.4
 const PMAX = Math.PI / 2 - 0.01
@@ -80,7 +80,7 @@ export const createPlayer = (camera: Camera, _meshes: Meshes, shader: any, updat
                         const nearbyChunks = collectNearbyChunks(regions, pos)
                         collider(nearbyChunks, state)
                 }
-                if (pos[1] < 0) pos[1] = 0
+                if (pos[1] < 3) pos[1] = 3
                 face = faceDir(face, yaw, pitch)
                 setLook()
                 shader.updateCamera(gl.size)
@@ -90,6 +90,10 @@ export const createPlayer = (camera: Camera, _meshes: Meshes, shader: any, updat
                 }
         }
         let last = time
+        const fire = () => {
+                if (time - last < 100) return true
+                last = time
+        }
         const turn = (delta: number[]) => {
                 yaw -= delta[0] * TURN
                 pitch += delta[1] * TURN
@@ -97,17 +101,21 @@ export const createPlayer = (camera: Camera, _meshes: Meshes, shader: any, updat
                 pitch = Math.max(pitch, -PMAX)
                 faceDir(face, yaw, pitch)
                 setLook()
-                if (time - last < 100) return
-                last = time
+                if (fire()) return
+                camera.needsUpdate = true
+        }
+        const asdw = (axis = 0, delta = 0) => {
+                dir[axis] = delta
+                if (fire()) return
                 camera.needsUpdate = true
         }
         const press = (k = '', isPress = false) => {
                 k = k.toLowerCase()
                 if (k === ' ') _jump(isPress, 1)
-                if (k === 'w') dir[2] = isPress ? 1 : 0
-                if (k === 's') dir[2] = isPress ? -1 : 0
-                if (k === 'a') dir[0] = isPress ? 1 : 0
-                if (k === 'd') dir[0] = isPress ? -1 : 0
+                if (k === 'w') asdw(2, isPress ? 1 : 0)
+                if (k === 's') asdw(2, isPress ? -1 : 0)
+                if (k === 'a') asdw(0, isPress ? 1 : 0)
+                if (k === 'd') asdw(0, isPress ? -1 : 0)
                 if (k === 'meta') speed = isPress ? DASH : 1
                 if (k === 'control') speed = isPress ? DASH : 1
                 if (k === 'shift') {
