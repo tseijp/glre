@@ -5,6 +5,7 @@ export type Atlas = {
         planeW: number
         planeH: number
         cols: number
+        buf?: ArrayBuffer
 }
 
 export type Meshes = {

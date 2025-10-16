@@ -26,7 +26,7 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         const gl = useGL({
                 vert: shader.vert,
                 frag: shader.frag,
-                wireframe: true,
+                // wireframe: true,
                 isDepth: true,
                 isDebug: false,
                 isWebGL: true,
@@ -43,11 +43,11 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         useMemo(() => {
                 gl.queue(() => {
                         if (!regions || regions.length === 0) return
-                        meshes.applyRegions?.(regions)
-                        const atlases = regions.slice(0, 8).map((r) => r.atlas)
-                        const offs = regions.slice(0, 8).map((r) => [r.x, r.y, r.z])
-                        if ((shader as any).updateAtlases) (shader as any).updateAtlases(atlases, offs)
-                        else if (regions[0]) shader.updateAtlas(regions[0].atlas)
+                        const vis = regions.slice(0, 8)
+                        meshes.applyRegions?.(vis)
+                        const atlases = vis.map((r) => r.atlas)
+                        const offs = vis.map((r) => [r.x, r.y, r.z])
+                        shader.uploadAtlasesGL(gl, atlases, offs)
                         applyInstances(gl, meshes)
                 })
         }, [regions])
