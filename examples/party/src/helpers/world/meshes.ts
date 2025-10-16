@@ -44,15 +44,18 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
         const aid: number[] = [0]
         let cnt = mesh?.cnt || 1
 
+        let _aidRange: Record<number, [number, number]> = {}
         const applyRegions = (regions: Region[]) => {
                 pos.length = 0
                 scl.length = 0
                 aid.length = 0
                 cnt = 0
+                _aidRange = {}
                 for (let r = 0; r < regions.length; r++) {
                         const region = regions[r]
                         if (!region) continue
                         if (!region.visible) continue
+                        const start = cnt
                         if (region.chunks) {
                                 const mesh = gather(region.chunks)
                                 for (let i = 0; i < mesh.pos.length; i++) pos.push(mesh.pos[i])
@@ -64,6 +67,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                         scl.push(256, 3, 256)
                         aid.push(r)
                         cnt++
+                        _aidRange[r] = [start, cnt]
                 }
         }
 
@@ -75,6 +79,7 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                 aid,
                 count,
                 applyRegions,
+                get _aidRange() { return _aidRange },
                 get cnt() {
                         return cnt
                 },

@@ -9,11 +9,12 @@ const ndcToWorld = (out: vec3, x: number, y: number, z: number, iVP: mat4) => {
 }
 
 export const screenToWorldRay = (mouse: number[], size: number[], camera: Camera) => {
-        mat4.invert(camera.VP, camera.VP)
+        const iVP = mat4.create()
+        mat4.invert(iVP, camera.VP)
         const ndcX = (mouse[0] / size[0]) * 2 - 1
         const ndcY = 1 - (mouse[1] / size[1]) * 2
-        const near = ndcToWorld(vec3.create(), ndcX, ndcY, -1, camera.VP)
-        const far = ndcToWorld(vec3.create(), ndcX, ndcY, 1, camera.VP)
+        const near = ndcToWorld(vec3.create(), ndcX, ndcY, -1, iVP)
+        const far = ndcToWorld(vec3.create(), ndcX, ndcY, 1, iVP)
         const dir = vec3.sub(vec3.create(), far, near)
         vec3.normalize(dir, dir)
         return { origin: near, dir }
@@ -104,12 +105,14 @@ export const raycastRegion = (
         if (!A || !A.length) return raycast(ray, meshes)
         let s = -1
         let e = -1
-        for (let i = 0; i < A.length; i++) {
+        const R = (meshes as any)._aidRange as Record<number, [number, number]> | undefined
+        if (R && R[rid]) {
+                s = R[rid][0]
+                e = R[rid][1]
+        }
+        if (s < 0) for (let i = 0; i < A.length; i++) {
                 if (A[i] === rid && s < 0) s = i
-                if (s >= 0 && A[i] !== rid) {
-                        e = i
-                        break
-                }
+                if (s >= 0 && A[i] !== rid) { e = i; break }
         }
         if (s < 0) return null
         if (e < 0) e = A.length
