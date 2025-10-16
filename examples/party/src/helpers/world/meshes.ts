@@ -45,6 +45,20 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
         let cnt = mesh?.cnt || 1
 
         let _aidRange: Record<number, [number, number]> = {}
+        const applyGround = (region: Region, r = 0) => {
+                pos.push(region.x + 128, 1.5, region.z + 128)
+                scl.push(256, 3, 256)
+                aid.push(r)
+                cnt++
+        }
+        const applyRegion = (region: Region, r: number) => {
+                if (!region.chunks) return
+                const mesh = gather(region.chunks)
+                for (let i = 0; i < mesh.pos.length; i++) pos.push(mesh.pos[i])
+                for (let i = 0; i < mesh.scl.length; i++) scl.push(mesh.scl[i])
+                for (let i = 0; i < mesh.cnt; i++) aid.push(r)
+                cnt += mesh.cnt
+        }
         const applyRegions = (regions: Region[]) => {
                 pos.length = 0
                 scl.length = 0
@@ -56,17 +70,8 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                         if (!region) continue
                         if (!region.visible) continue
                         const start = cnt
-                        if (region.chunks) {
-                                const mesh = gather(region.chunks)
-                                for (let i = 0; i < mesh.pos.length; i++) pos.push(mesh.pos[i])
-                                for (let i = 0; i < mesh.scl.length; i++) scl.push(mesh.scl[i])
-                                for (let i = 0; i < mesh.cnt; i++) aid.push(r)
-                                cnt += mesh.cnt
-                        }
-                        pos.push(region.x + 128, 1.5, region.z + 128)
-                        scl.push(256, 3, 256)
-                        aid.push(r)
-                        cnt++
+                        applyRegion(region, r)
+                        applyGround(region, r)
                         _aidRange[r] = [start, cnt]
                 }
         }
@@ -79,7 +84,9 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                 aid,
                 count,
                 applyRegions,
-                get _aidRange() { return _aidRange },
+                get _aidRange() {
+                        return _aidRange
+                },
                 get cnt() {
                         return cnt
                 },
