@@ -5,7 +5,7 @@ import { createChunks, gather, meshing } from './chunk'
 import type { Camera } from '../player/camera'
 import { culling, visSphereRegion } from '../voxel/culling'
 import type { Region } from '../types'
-import { vec3 } from 'gl-matrix'
+import { mat4, vec3 } from 'gl-matrix'
 
 const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>) => {
         const chunks = createChunks()
@@ -101,6 +101,26 @@ export const createRegions = (camera: Camera) => {
                                 const wasVisible = region.visible
                                 region.visible = regionCulling(rx, rz, camera)
                                 if (wasVisible !== region.visible) hasChanges = true
+                                if (region.visible && region.chunks) {
+                                        const offsetPosition = vec3.fromValues(camera.position[0] - region.x, camera.position[1] - region.y, camera.position[2] - region.z)
+                                        const offsetTarget = vec3.fromValues(camera.target[0] - region.x, camera.target[1] - region.y, camera.target[2] - region.z)
+                                        const V = mat4.create()
+                                        const up = vec3.fromValues(0, 1, 0)
+                                        mat4.lookAt(V, offsetPosition, offsetTarget, up)
+                                        const VP = mat4.create()
+                                        mat4.multiply(VP, camera.P, V)
+                                        const offsetCamera = {
+                                                ...camera,
+                                                position: offsetPosition,
+                                                target: offsetTarget,
+                                                V: V,
+                                                VP: VP,
+                                        }
+                                        culling(region.chunks, offsetCamera)
+                                        meshing(region.chunks)
+                                        const newMesh = gather(region.chunks)
+                                        region.mesh = { ...region.mesh, ...newMesh }
+                                }
                         }
                         const newKeys = getVisibleKeys(camera)
                         if (newKeys.length > 0) {
