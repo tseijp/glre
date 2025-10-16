@@ -1,4 +1,4 @@
-import { chunkId, importWasm, GRID, CHUNK, timer as _ } from '../utils'
+import { chunkId, importWasm, GRID, CHUNK, timer as _, importModel } from '../utils'
 import { atlasToVox, encodePng, itemsToVox, stitchAtlas } from '../voxel/atlas'
 import { loader } from '../voxel/loader'
 import { createChunks, gather, meshing } from './chunk'
@@ -29,8 +29,8 @@ const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>) => {
 export const createRegions = (camera: Camera) => {
         const regionMap = new Map<string, Region>()
         const R = CHUNK * GRID[0]
-        let lastUpdateTime = 0
-        let debounceTimeout: NodeJS.Timeout | null = null
+        let updateTime = 0
+        let timeoutId: NodeJS.Timeout | null = null
         const toKey = (rx: number, rz: number) => `vox|${rx}|${rz}`
         const fromKey = (key: string) => {
                 const [, rx, rz] = key.split('|')
@@ -44,16 +44,16 @@ export const createRegions = (camera: Camera) => {
                 const RAD = R * Math.sqrt(3) * 0.5
                 return visSphereRegion(camera.VP, ctr, RAD)
         }
-        const getVisibleKeys = () => {
-                const rx = Math.floor(camera.position[0] / R)
-                const rz = Math.floor(camera.position[2] / R)
+        const getVisibleKeys = (currentCamera: Camera) => {
+                const rx = Math.floor(currentCamera.position[0] / R)
+                const rz = Math.floor(currentCamera.position[2] / R)
                 const keys = []
-                const d = 2
-                for (let z = -d; z <= d; z++) {
-                        for (let x = -d; x <= d; x++) {
+                const checkRange = 1
+                for (let z = -checkRange; z <= checkRange; z++) {
+                        for (let x = -checkRange; x <= checkRange; x++) {
                                 const regionRx = rx + x
                                 const regionRz = rz + z
-                                if (regionCulling(regionRx, regionRz, camera)) {
+                                if (regionCulling(regionRx, regionRz, currentCamera)) {
                                         const key = toKey(regionRx, regionRz)
                                         if (!regionMap.has(key)) keys.push(key)
                                 }
@@ -76,7 +76,7 @@ export const createRegions = (camera: Camera) => {
                         vox = await atlasToVox(await res.arrayBuffer())
                 } else {
                         const wasm: any = await importWasm()
-                        const buf = await (await _('/model/*.glb', fetch)('/model/sphere.glb')).arrayBuffer()
+                        const buf = await _('importModel', importModel)()
                         const items = wasm.voxelize_glb(await _('loader', loader)(buf), 16, 16, 16)
                         const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
                         await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i: rx, j: 0, k: rz, url: `atlas/${rx}_${rz}.png` }) })])
@@ -91,19 +91,26 @@ export const createRegions = (camera: Camera) => {
         const fetchRegions = async () => Array.from(regionMap.values())
         const updateCamera = (camera: Camera, mutate?: any) => {
                 const now = Date.now()
-                if (now - lastUpdateTime < 100) return
-                lastUpdateTime = now
-                if (debounceTimeout) clearTimeout(debounceTimeout)
-                debounceTimeout = setTimeout(async () => {
+                if (now - updateTime < 100) return
+                updateTime = now
+                if (timeoutId) clearTimeout(timeoutId)
+                timeoutId = setTimeout(async () => {
+                        let hasChanges = false
                         for (const [key, region] of regionMap.entries()) {
                                 const { rx, rz } = fromKey(key)
+                                const wasVisible = region.visible
                                 region.visible = regionCulling(rx, rz, camera)
+                                if (wasVisible !== region.visible) hasChanges = true
                         }
-                        for (const key of getVisibleKeys()) await fetchRegion(key)
-                        if (mutate) mutate()
-                }, 300)
+                        const newKeys = getVisibleKeys(camera)
+                        if (newKeys.length > 0) {
+                                for (const key of newKeys) await fetchRegion(key)
+                                hasChanges = true
+                        }
+                        if (hasChanges && mutate) mutate()
+                }, 10)
         }
         const getRegions = () => Array.from(regionMap.values()).filter((r) => r.visible)
-        const initialKeys = getVisibleKeys()
+        const initialKeys = getVisibleKeys(camera)
         return { getRegions, fetchRegion, fetchRegions, updateCamera, initialKeys }
 }

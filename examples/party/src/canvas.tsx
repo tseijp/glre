@@ -18,8 +18,7 @@ export interface CanvasProps {
         updateCamera?: (camera: any, mutate?: any) => any
 }
 
-export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, onSemanticVoxel, regions, mutate, updateCamera }: CanvasProps) => {
-        const camera = useMemo(() => createCamera(size, dims), [])
+export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8, 16] }, camera, onSemanticVoxel, regions, mutate, updateCamera }: CanvasProps) => {
         const meshes = useMemo(() => createMeshes(camera), [])
         const shader = useMemo(() => createShader(camera, meshes), [])
         const player = useMemo(() => createPlayer(camera, meshes, shader, updateCamera, mutate), [])
@@ -44,12 +43,11 @@ export const Canvas = ({ size = 16, dims = { size: [32, 16, 32], center: [16, 8,
         useMemo(() => {
                 gl.queue(() => {
                         if (!regions || regions.length === 0) return
-                        const visibleRegions = regions.filter((r) => r.visible)
-                        meshes.applyRegions?.(visibleRegions)
-                        const atlases = visibleRegions.slice(0, 8).map((r) => r.atlas)
-                        const offs = visibleRegions.slice(0, 8).map((r) => [r.x, r.y, r.z])
+                        meshes.applyRegions?.(regions)
+                        const atlases = regions.slice(0, 8).map((r) => r.atlas)
+                        const offs = regions.slice(0, 8).map((r) => [r.x, r.y, r.z])
                         if ((shader as any).updateAtlases) (shader as any).updateAtlases(atlases, offs)
-                        else if (visibleRegions[0]) shader.updateAtlas(visibleRegions[0].atlas)
+                        else if (regions[0]) shader.updateAtlas(regions[0].atlas)
                         applyInstances(gl, meshes)
                 })
         }, [regions])

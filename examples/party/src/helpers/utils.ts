@@ -72,6 +72,10 @@ export const importWasm = async () => {
         return wasm
 }
 
+export const importModel = async () => {
+        const res = await fetch('/model/sphere.glb')
+        return await res.arrayBuffer()
+}
 export const cancelVoxelizer = async () => {
         const wasm = await importWasm()
         if ((wasm as any).cancel) (wasm as any).cancel()
