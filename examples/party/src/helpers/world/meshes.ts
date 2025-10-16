@@ -1,4 +1,5 @@
 import type { Meshes, Region } from '../types'
+import { gather } from './chunk'
 
 const createVertexData = () => {
         const p = 0.5
@@ -52,13 +53,14 @@ export const createMeshes = (_camera: any, mesh?: Meshes) => {
                         const region = regions[r]
                         if (!region) continue
                         if (!region.visible) continue
-                        if (region.mesh?.cnt) {
-                                pos.push(...region.mesh.pos)
-                                scl.push(...region.mesh.scl)
-                                for (let i = 0; i < region.mesh.cnt; i++) aid.push(r)
-                                cnt += region.mesh.cnt
+                        if (region.chunks) {
+                                const mesh = gather(region.chunks)
+                                for (let i = 0; i < mesh.pos.length; i++) pos.push(mesh.pos[i])
+                                for (let i = 0; i < mesh.scl.length; i++) scl.push(mesh.scl[i])
+                                for (let i = 0; i < mesh.cnt; i++) aid.push(r)
+                                cnt += mesh.cnt
                         }
-                        pos.push(128, 1.5, 128)
+                        pos.push(region.x + 128, 1.5, region.z + 128)
                         scl.push(256, 3, 256)
                         aid.push(r)
                         cnt++

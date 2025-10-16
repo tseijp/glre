@@ -118,8 +118,6 @@ export const createRegions = (camera: Camera) => {
                                         }
                                         culling(region.chunks, offsetCamera)
                                         meshing(region.chunks)
-                                        const newMesh = gather(region.chunks)
-                                        region.mesh = { ...region.mesh, ...newMesh }
                                 }
                         }
                         const newKeys = getVisibleKeys(camera)
