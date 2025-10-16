@@ -33,7 +33,7 @@ const myMiddleware = createMiddleware(async (c) => {
  * ↑↑↑　DO NOT CHANGE ↑↑↑
  */
 
-type Env = { DB: D1Database; R2: R2Bucket; CESIUM_API_KEY: string }
+type Env = { DB: D1Database; R2: R2Bucket; CESIUM_API_KEY: string; GOOGLE_MAP_API_KEY: string }
 
 const app = new Hono<{ Bindings: Env }>()
         .use('*', googleOAuthMiddleware)
@@ -218,6 +218,34 @@ const app = new Hono<{ Bindings: Env }>()
                 if (!obj) return c.text('Not Found', 404)
                 const type = obj.httpMetadata?.contentType ?? 'application/octet-stream'
                 return new Response(obj.body, { headers: { 'Content-Type': type } })
+        })
+        .get('/api/v1/google-proxy/tileset', async (c) => {
+                const apiKey = c.env.GOOGLE_MAP_API_KEY
+                if (!apiKey) return c.json({ error: 'api key not configured' }, { status: 500 })
+                const url = `https://tile.googleapis.com/v1/3dtiles/root.json`
+                const response = await fetch(url, {
+                        headers: { 'X-GOOG-API-KEY': apiKey },
+                })
+                if (!response.ok) return c.json({ error: 'google api error' })
+                const data = await response.json()
+                return c.json(data)
+        })
+        .get('/api/v1/google-proxy/tile', async (c) => {
+                const uri = c.req.query('uri')
+                if (!uri) return c.json({ error: 'missing uri' }, { status: 400 })
+                const apiKey = c.env.GOOGLE_MAP_API_KEY
+                if (!apiKey) return c.json({ error: 'api key not configured' }, { status: 500 })
+                const decodedUri = decodeURIComponent(uri)
+                const baseUrl = 'https://tile.googleapis.com'
+                const fullUrl = decodedUri.startsWith('http') ? decodedUri : `${baseUrl}${decodedUri}`
+                const response = await fetch(fullUrl, {
+                        headers: { 'X-GOOG-API-KEY': apiKey },
+                })
+                if (!response.ok) return c.json({ error: 'google api error' })
+                const data = await response.arrayBuffer()
+                return new Response(data, {
+                        headers: { 'Content-Type': response.headers.get('Content-Type') || 'application/octet-stream' },
+                })
         })
 
 type AppType = typeof app
