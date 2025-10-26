@@ -29,10 +29,10 @@ const metersToLatLng = (rx: number, rz: number) => {
         const deltaX = rx * METERS_PER_REGION
         const deltaZ = rz * METERS_PER_REGION
         const deltaLat = (deltaZ / EARTH_RADIUS) * (180 / Math.PI)
-        const deltaLng = (deltaX / EARTH_RADIUS) * (180 / Math.PI) / Math.cos((ORIGIN_LAT * Math.PI) / 180)
-        return { 
-                lat: ORIGIN_LAT + deltaLat, 
-                lng: ORIGIN_LNG + deltaLng 
+        const deltaLng = ((deltaX / EARTH_RADIUS) * (180 / Math.PI)) / Math.cos((ORIGIN_LAT * Math.PI) / 180)
+        return {
+                lat: ORIGIN_LAT + deltaLat,
+                lng: ORIGIN_LNG + deltaLng,
         }
 }
 
@@ -48,7 +48,7 @@ const calculateRegionBounds = (rx: number, rz: number) => {
                 maxLat: topRight.lat,
                 minLng: bottomLeft.lng,
                 maxLng: topRight.lng,
-                center
+                center,
         }
 }
 
@@ -67,8 +67,7 @@ const shouldRefineChild = (child: any, targetBounds: any): boolean => {
 
 const traverseTileset = async (tileset: any, targetBounds: any, collectedTiles: any[] = [], maxDepth = 3, currentDepth = 0): Promise<any[]> => {
         if (currentDepth >= maxDepth || !tileset) return collectedTiles
-        
-        if (tileset.content && tileset.content.uri) {
+        if (tileset.content && tileset.content.uri)
                 if (tileIntersectsBounds(tileset.boundingVolume, targetBounds)) {
                         const tileUrl = `/api/v1/google-proxy/tile?uri=${encodeURIComponent(tileset.content.uri)}`
                         const response = await fetch(tileUrl)
@@ -77,77 +76,54 @@ const traverseTileset = async (tileset: any, targetBounds: any, collectedTiles: 
                                 collectedTiles.push({
                                         data,
                                         uri: tileset.content.uri,
-                                        boundingVolume: tileset.boundingVolume
+                                        boundingVolume: tileset.boundingVolume,
                                 })
                         }
                 }
-        }
-        
-        if (tileset.children) {
+        if (tileset.children)
                 for (const child of tileset.children) {
-                        if (child.refine === 'REPLACE' || shouldRefineChild(child, targetBounds)) {
-                                await traverseTileset(child, targetBounds, collectedTiles, maxDepth, currentDepth + 1)
-                        }
+                        if (child.refine === 'REPLACE' || shouldRefineChild(child, targetBounds)) await traverseTileset(child, targetBounds, collectedTiles, maxDepth, currentDepth + 1)
                 }
-        }
-        
         return collectedTiles
 }
 
 export const fetchGoogleTiles = async (options: GoogleTile3DOptions): Promise<GoogleRegionData> => {
         const { rx, rz } = options
         const bounds = calculateRegionBounds(rx, rz)
-        
         const response = await fetch('/api/v1/google-proxy/tileset')
-        if (!response.ok) {
-                throw new Error(`Failed to fetch root tileset: ${response.status}`)
-        }
-        
-        const rootTileset = await response.json() as any
+        if (!response.ok) throw new Error(`Failed to fetch root tileset: ${response.status}`)
+        const rootTileset = (await response.json()) as any
         const tiles = await traverseTileset(rootTileset.root || rootTileset, bounds)
-        
         return {
                 lat: bounds.center.lat,
                 lng: bounds.center.lng,
                 zoom: 15,
                 tiles,
-                boundingBox: bounds
+                boundingBox: bounds,
         }
 }
 
 export const loadGoogleTile3D = async (rx: number, rz: number): Promise<ArrayBuffer> => {
         const regionData = await fetchGoogleTiles({ rx, rz })
-        
+
         if (regionData.tiles.length === 0) {
                 const fallbackModel = await fetch('/model/cube.glb')
                 return await fallbackModel.arrayBuffer()
         }
-        
+
         return regionData.tiles[0].data
 }
 
-export const createGoogleTile3DLayer = (options: {
-        lat: number
-        lng: number
-        zoom: number
-        apiKey?: string
-        onTilesetLoad?: (tileset: any) => void
-        onTileLoad?: (tile: any) => void
-}) => {
+export const createGoogleTile3DLayer = (options: { lat: number; lng: number; zoom: number; apiKey?: string; onTilesetLoad?: (tileset: any) => void; onTileLoad?: (tile: any) => void }) => {
         const tilesetUrl = `/api/v1/google-proxy/tileset`
-        
+        let headers = {}
+        if (options.apiKey) headers = { 'X-GOOG-API-KEY': options.apiKey }
         return new Tile3DLayer({
                 id: 'google-3d-tiles',
                 data: tilesetUrl,
                 loader: Tiles3DLoader,
-                loadOptions: {
-                        fetch: {
-                                headers: options.apiKey ? {
-                                        'X-GOOG-API-KEY': options.apiKey
-                                } : {}
-                        }
-                },
+                loadOptions: { fetch: { headers } },
                 onTilesetLoad: options.onTilesetLoad,
-                onTileLoad: options.onTileLoad
+                onTileLoad: options.onTileLoad,
         })
 }
