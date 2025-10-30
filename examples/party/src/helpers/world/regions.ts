@@ -66,38 +66,17 @@ export const createRegions = (camera: Camera) => {
         const fetchRegion = async (key: string) => {
                 if (regionMap.has(key)) return regionMap.get(key)
                 const { rx, rz } = fromKey(key)
-                const q = `/api/v1/atlas?rx=${rx}&rz=${rz}`
-                const head = await fetch(q, { method: 'HEAD' })
-                const x = rx * R
-                const y = 0
-                const z = rz * R
+                const rx2 = (((rx % 4) + 4) % 4) + 76
+                const rz2 = (((rx % 4) + 4) % 4) + 76
+                const q = `/logs/${rx2}_${rz2}.png`
                 const coord = calculateRegionLatLng(rx, rz)
-                let vox
-                let aSrc = q
-                if (head.ok) {
-                        const res = await _(q, fetch)(q)
-                        const ab = await res.arrayBuffer()
-                        vox = await atlasToVox(ab)
-                        aSrc = '/texture/world.png'
-                        const atlas = { src: aSrc, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4, buf: ab }
-                        const { mesh, chunks } = fillChunk(camera, vox)
-                        const reg = { atlas, i: rx, j: 0, k: rz, x, y, z, lat: coord.lat, lng: coord.lng, zoom: 15, visible: regionCulling(rx, rz, camera), mesh, chunks }
-                        regionMap.set(key, reg as Region)
-                        return reg
-                } else {
-                        const wasm: any = await importWasm()
-                        const buf = await _('loadGoogleTile3D', loadGoogleTile3D)(rx, rz)
-                        const items = wasm.voxelize_glb(await _('loader', loader)(buf), 16, 16, 16)
-                        const png = await _('encodePng', encodePng)(stitchAtlas(items), 4096, 4096)
-                        await Promise.all([_(q, fetch)(q, { method: 'PUT', body: png }), _('/api/v1/region', fetch)('/api/v1/region', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ world: 'default', i: rx, j: 0, k: rz, url: `atlas/${rx}_${rz}.png` }) })])
-                        aSrc = '/texture/world.png'
-                        vox = itemsToVox(items)
-                        const atlas = { src: aSrc, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4, buf: png }
-                        const { mesh, chunks } = fillChunk(camera, vox)
-                        const reg = { atlas, i: rx, j: 0, k: rz, x, y, z, lat: coord.lat, lng: coord.lng, zoom: 15, visible: regionCulling(rx, rz, camera), mesh, chunks }
-                        regionMap.set(key, reg as unknown as Region)
-                        return reg
-                }
+                const ab = await (await fetch(q)).arrayBuffer()
+                const vox = await atlasToVox(ab)
+                const atlas = { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4, buf: ab }
+                const { mesh, chunks } = fillChunk(camera, vox)
+                const reg = { atlas, i: rx, j: 0, k: rz, x: rx * R, y: 0, z: rz * R, lat: coord.lat, lng: coord.lng, zoom: 15, visible: regionCulling(rx, rz, camera), mesh, chunks }
+                regionMap.set(key, reg as Region)
+                return reg
         }
         const fetchRegions = async () => Array.from(regionMap.values())
         const _offPos = vec3.create()
