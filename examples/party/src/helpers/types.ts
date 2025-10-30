@@ -37,6 +37,7 @@ export type Chunk = {
         gen?: boolean
         dirty?: boolean
         visible?: boolean
+        stamp?: string
 }
 
 export type Chunks = Map<number, Chunk>

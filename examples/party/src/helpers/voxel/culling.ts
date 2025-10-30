@@ -39,23 +39,27 @@ const generate = (c: Chunk) => {
 
 const ctr = vec3.create()
 
-const _culling = (camera: Camera, c: Chunk) => {
+const _culling = (camera: Camera, c: Chunk, stamp: string) => {
+        if (c.stamp === stamp) return
         vec3.set(ctr, c.x + CHUNK * 0.5, c.y + CHUNK * 0.5, c.z + CHUNK * 0.5)
         if (vec3.sqrDist(ctr, camera.position) > camera.far * camera.far) {
                 c.visible = false
+                c.stamp = stamp
                 return
         }
         const RAD = CHUNK * Math.sqrt(3) * 0.5
         if (!visSphere(camera.VP, ctr, RAD)) {
                 c.visible = false
+                c.stamp = stamp
                 return
         }
         if (!c.visible) c.dirty = true
         c.visible = true
         generate(c)
+        c.stamp = stamp
 }
 
-export const culling = (chunks: Chunks, camera: Camera) => chunks.forEach(_culling.bind(null, camera))
+export const culling = (chunks: Chunks, camera: Camera, stamp = '') => chunks.forEach((c) => _culling(camera, c, stamp))
 
 export const visSphereRegion = (m: mat4, c: vec3, r: number) => {
         const x = c[0]
