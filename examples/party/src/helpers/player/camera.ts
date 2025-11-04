@@ -48,7 +48,7 @@ export const createCamera = (size: number, dims: Dims) => {
                         const cz = d * 0.5
                         const pit = camera.pitch * 0.01
                         const yaw = camera.yaw * 0.01
-                        const R = Math.max(w, h, d) * 1.6
+                        const R = Math.max(w, h, d) * 1.6 * 4
                         const yoff = Math.max(2, h * 0.2)
                         camera.position[0] = cx + R * Math.cos(pit) * Math.sin(yaw)
                         camera.position[1] = cy + R * Math.sin(pit) + yoff

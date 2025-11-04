@@ -1,7 +1,6 @@
-import { chunkId, importWasm, GRID, CHUNK, timer as _, importModel } from '../utils'
-import { loadGoogleTile3D, calculateRegionLatLng } from '../voxel/google'
-import { atlasToVox, encodePng, itemsToVox, stitchAtlas } from '../voxel/atlas'
-import { loader } from '../voxel/loader'
+import { chunkId, GRID, CHUNK, timer as _ } from '../utils'
+import { calculateRegionLatLng } from '../voxel/google'
+import { atlasToVox } from '../voxel/atlas'
 import { createChunks, gather, meshing } from './chunk'
 import type { Camera } from '../player/camera'
 import { culling, visSphereRegion } from '../voxel/culling'
@@ -113,15 +112,21 @@ export const createRegions = (camera: Camera) => {
                 const { rx, rz } = fromKey(key)
                 if (rx < 0) return
                 if (rz < 0) return
-                if (rx > 4) return
-                if (rz > 4) return
+                // if (1 <= rx) return
+                // if (1 <= rz) return
+                if (4 <= rx) return
+                if (4 <= rz) return
+                // const rx2 = ((rx % 4) + 4) % 4
+                // const rz2 = ((rz % 4) + 4) % 4
                 const rx2 = (((rx % 4) + 4) % 4) + 76
                 const rz2 = (((rz % 4) + 4) % 4) + 76
+                // const rx2 = 76 // (((rx % 4) + 4) % 4) + 76
+                // const rz2 = 76 // (((rz % 4) + 4) % 4) + 76
                 const q = `/logs/${rx2}_${rz2}.png`
                 const coord = calculateRegionLatLng(rx, rz)
                 const ab = await (await fetch(q)).arrayBuffer()
                 const atlas = { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4, buf: ab }
-                const visibleNow = regionCulling(rx, rz, camera)
+                const visibleNow = true // regionCulling(rx, rz, camera)
                 if (!visibleNow) {
                         const reg = { atlas, i: rx, j: 0, k: rz, x: rx * R, y: 0, z: rz * R, lat: coord.lat, lng: coord.lng, zoom: 15, visible: false } as any
                         regionMap.set(key, reg as Region)
