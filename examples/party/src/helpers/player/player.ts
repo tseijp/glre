@@ -11,6 +11,7 @@ const TURN = 0.005
 const MOVE = 10.09
 const DASH = 2
 const SLOW = 0.4
+const MINY = 18
 const PMAX = Math.PI / 2 - 0.01
 const SIZE = vec3.fromValues(0.7, 1.8, 0.7)
 const EYE = vec3.fromValues(0, 1.6 - SIZE[1] * 0.5, 0)
@@ -80,7 +81,7 @@ export const createPlayer = (camera: Camera, _meshes: Meshes, shader: any, updat
                         const nearbyChunks = collectNearbyChunks(regions, pos)
                         collider(nearbyChunks, state)
                 }
-                if (pos[1] < 3) pos[1] = 3
+                if (pos[1] < MINY) pos[1] = MINY
                 face = faceDir(face, yaw, pitch)
                 setLook()
                 shader.updateCamera(gl.size)

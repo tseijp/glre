@@ -1,11 +1,11 @@
+import { mat4, vec3 } from 'gl-matrix'
 import { chunkId, GRID, CHUNK, timer as _ } from '../utils'
 import { calculateRegionLatLng } from '../voxel/google'
 import { atlasToVox } from '../voxel/atlas'
 import { createChunks, gather, meshing } from './chunk'
-import type { Camera } from '../player/camera'
 import { culling, visSphereRegion } from '../voxel/culling'
+import type { Camera } from '../player/camera'
 import type { Region } from '../types'
-import { mat4, vec3 } from 'gl-matrix'
 
 const fillChunk = (camera: Camera, vox: Map<string, Uint8Array>, doMesh = true) => {
         const chunks = createChunks()
@@ -64,7 +64,7 @@ export const createRegions = (camera: Camera) => {
         }
         const regionCulling = (rx: number, rz: number, cam: Camera) => {
                 const regionX = rx * R
-                const regionZ = rz * R
+                const regionZ = -rz * R
                 vec3.set(_ctrR, regionX + R * 0.5, R * 0.5, regionZ + R * 0.5)
                 if (vec3.sqrDist(_ctrR, cam.position) > cam.far * cam.far) return false
                 const RAD = R * Math.sqrt(3) * 0.5
@@ -72,7 +72,7 @@ export const createRegions = (camera: Camera) => {
         }
         const getVisibleKeys = (currentCamera: Camera) => {
                 const rx = Math.floor(currentCamera.position[0] / R)
-                const rz = Math.floor(currentCamera.position[2] / R)
+                const rz = Math.floor(-currentCamera.position[2] / R)
                 const keys = []
                 const checkRange = 2
                 for (let z = -checkRange; z <= checkRange; z++) {
@@ -89,7 +89,7 @@ export const createRegions = (camera: Camera) => {
         }
         const getPrefetchKeys = (currentCamera: Camera, limit = 2) => {
                 const rx = Math.floor(currentCamera.position[0] / R)
-                const rz = Math.floor(currentCamera.position[2] / R)
+                const rz = Math.floor(-currentCamera.position[2] / R)
                 const cand: { key: string; d2: number }[] = []
                 const range = 3
                 for (let z = -range; z <= range; z++)
@@ -98,7 +98,7 @@ export const createRegions = (camera: Camera) => {
                                 const regionRz = rz + z
                                 const key = toKey(regionRx, regionRz)
                                 if (regionMap.has(key)) continue
-                                vec3.set(_ctrTmp, regionRx * R + R * 0.5, R * 0.5, regionRz * R + R * 0.5)
+                                vec3.set(_ctrTmp, regionRx * R + R * 0.5, R * 0.5, -regionRz * R + R * 0.5)
                                 const d2 = vec3.sqrDist(_ctrTmp, currentCamera.position)
                                 cand.push({ key, d2 })
                         }
@@ -114,12 +114,16 @@ export const createRegions = (camera: Camera) => {
                 if (rz < 0) return
                 // if (1 <= rx) return
                 // if (1 <= rz) return
-                if (4 <= rx) return
-                if (4 <= rz) return
+                // if (96 <= rx) return
+                if (96 <= rx) return
+                if (5 <= rz) return
                 // const rx2 = ((rx % 4) + 4) % 4
                 // const rz2 = ((rz % 4) + 4) % 4
-                const rx2 = (((rx % 4) + 4) % 4) + 76
-                const rz2 = (((rz % 4) + 4) % 4) + 76
+                // const rx2 = (((rx % 4) + 4) % 4) + 76
+                const rx2 = (((rx % 96) + 96) % 96) + 28 // 28 ~ 123 の 96 個
+                const rz2 = (((rz % 5) + 5) % 5) + 75
+                console.log({ rx, rz, rx2, rz2 })
+                // const rz2 = (((rz % 12) + 12) % 12) + 72 // or 80
                 // const rx2 = 76 // (((rx % 4) + 4) % 4) + 76
                 // const rz2 = 76 // (((rz % 4) + 4) % 4) + 76
                 const q = `/logs/${rx2}_${rz2}.png`
@@ -128,13 +132,13 @@ export const createRegions = (camera: Camera) => {
                 const atlas = { src: q, W: 4096, H: 4096, planeW: 1024, planeH: 1024, cols: 4, buf: ab }
                 const visibleNow = true // regionCulling(rx, rz, camera)
                 if (!visibleNow) {
-                        const reg = { atlas, i: rx, j: 0, k: rz, x: rx * R, y: 0, z: rz * R, lat: coord.lat, lng: coord.lng, zoom: 15, visible: false } as any
+                        const reg = { atlas, i: rx, j: 0, k: rz, x: rx * R, y: 0, z: -rz * R, lat: coord.lat, lng: coord.lng, zoom: 15, visible: false } as any
                         regionMap.set(key, reg as Region)
                         return reg
                 }
                 const vox = await atlasToVox(ab)
                 const { mesh, chunks } = fillChunk(camera, vox, true)
-                const reg = { atlas, i: rx, j: 0, k: rz, x: rx * R, y: 0, z: rz * R, lat: coord.lat, lng: coord.lng, zoom: 15, visible: true, mesh, chunks } as any
+                const reg = { atlas, i: rx, j: 0, k: rz, x: rx * R, y: 0, z: -rz * R, lat: coord.lat, lng: coord.lng, zoom: 15, visible: true, mesh, chunks } as any
                 regionMap.set(key, reg as Region)
                 activeKeys.add(key)
                 return reg
@@ -171,7 +175,7 @@ export const createRegions = (camera: Camera) => {
                                 return
                         }
                         const rx = Math.floor(cam.position[0] / R)
-                        const rz = Math.floor(cam.position[2] / R)
+                        const rz = Math.floor(-cam.position[2] / R)
                         const cand = new Set<string>()
                         for (let z = -3; z <= 3; z++) for (let x = -3; x <= 3; x++) cand.add(toKey(rx + x, rz + z))
                         const scan = new Set<string>()
