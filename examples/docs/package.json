@@ -17,6 +17,7 @@
         },
         "dependencies": {
                 "glre": "*",
+                "gl-matrix": "*",
                 "clsx": "*",
                 "leva": "0.10.0",
                 "stats.js": "0.17.0",
