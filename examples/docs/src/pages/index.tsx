@@ -1,3 +1,4 @@
+// @ts-ignore
 import Layout from '@theme/Layout'
 import * as m from 'gl-matrix'
 import { useEffect, useState } from 'react'
@@ -5,11 +6,10 @@ import { GL, useGL } from 'glre/src/react'
 import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, Vec3, vec2, texture, clamp, If, Float, Vec2 } from 'glre/src/node'
 type Mesh = { vertex: number[]; normal: number[]; pos: number[]; scl: number[]; aid: number[]; count: number; cnt: number; _buf: any }
 type Chunk = { i: number; j: number; k: number; x: number; y: number; z: number; vox: Uint8Array; pos: number[]; scl: number[]; cnt: number; visible: boolean; dirty: boolean; gen: boolean }
-type Region = { rx: number; ry: number; x: number; y: number; z: number; slot: number; loaded: boolean; pending: boolean; chunks: Map<number, Chunk>; visible: boolean }
+type Region = { rx: number; ry: number; x: number; y: number; z: number; slot: number; loaded: boolean; chunks: Map<number, Chunk>; visible: boolean }
 type Camera = { position: m.vec3; target: m.vec3; up: m.vec3; fov: number; near: number; far: number }
 const VERTEX = [-0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5]
 const NORMAL = [-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1]
-const FPS = 30
 const RX0 = 28
 const RX1 = 123
 const RY0 = 75
@@ -18,10 +18,12 @@ const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const SLOT = 8
 const CHUNK = 16
 const REGION = 256
-const MOVIE = '/tokyo23-atlas-96x5.mp4'
 const X = Math.random() * ROW * REGION // 256
 const Y = 50
 const Z = 256 * 2.5
+const urlOfFrame = (rx: number, ry: number) => `http://localhost:5173/logs/${rx}_${ry}.png`
+const frameOf = (rx = 0, ry = 0) => (ry - RY0) * ROW + (rx - RX0)
+const offOf = (rx = RX0, ry = RY0) => [REGION * (rx - RX0), 0, REGION * (RY1 - ry)]
 const range = (n = 0) => [...Array(n).keys()]
 const chunkId = (i = 0, j = 0, k = 0) => i + j * CHUNK + k * CHUNK * CHUNK
 const regionId = (i = 0, j = 0) => i + 160 * j // DO NOT CHANGE
@@ -29,6 +31,12 @@ const cullChunk = (VP: m.mat4, region: Region, c: Chunk) => visSphere(VP, region
 const cullRegion = (VP: m.mat4, region: Region) => visSphere(VP, region.x + 128, region.y + 128, region.z + 128, Math.sqrt(256 * 256 * 3) * 0.5)
 const eachChunk = (f: (i: number, j: number, k: number) => void) => {
         for (let k = 0; k < CHUNK; k++) for (let j = 0; j < CHUNK; j++) for (let i = 0; i < CHUNK; i++) f(i, j, k)
+}
+const loadImage = async (src: string) => {
+        const img = new Image()
+        Object.assign(img, { src, crossOrigin: 'anonymous' })
+        await img.decode()
+        return img
 }
 const _P = m.mat4.create()
 const _V = m.mat4.create()
@@ -104,14 +112,14 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
  */
 const createShader = (mesh: Mesh) => {
         const iMVP = uniform<'mat4'>([...m.mat4.create()], 'iMVP')
-        const iOff = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOff${i}`))
+        const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
         const iAtlas = range(SLOT).map((i) => uniform('/world.png', `iAtlas${i}`))
         const atlasUV = Fn(([n, local, p, id]: [Vec3, Vec3, Vec3, Float]) => {
                 const half = float(0.5)
                 const off = vec3(0, 0, 0).toVar('off')
                 range(SLOT).forEach((i) => {
                         If(id.equal(i), () => {
-                                off.assign(iOff[i])
+                                off.assign(iOffset[i])
                         })
                 })
                 const W = p.sub(off).add(local).sub(n.sign().mul(half)).floor().toVar('W')
@@ -152,7 +160,7 @@ const createShader = (mesh: Mesh) => {
         })
         const frag = fs(vertexStage(normal), vertexStage(vertex.mul(scl)), vertexStage(pos), vertexStage(aid))
         const vert = iMVP.mul(vec4(vertex.mul(scl).add(pos), 1))
-        return { vert, frag, iMVP, iOff, iAtlas }
+        return { vert, frag, iMVP, iOffset, iAtlas }
 }
 /**
  * region
@@ -167,7 +175,7 @@ const createRegion = (rx = RX0, ry = RY0, slot = -1): Region => {
                 chunks.set(id, { i, j, k, x, y, z, vox: new Uint8Array(16 * 16 * 16), pos: [], scl: [], cnt: 0, visible: false, dirty: false, gen: false })
         })
         const [x, y, z] = offOf(rx, ry)
-        return { rx, ry, x, y, z, slot, loaded: false, pending: false, chunks, visible: false }
+        return { rx, ry, x, y, z, slot, loaded: false, chunks, visible: false }
 }
 /**
  * slot
@@ -179,8 +187,7 @@ const createViewer = async () => {
         let MVP: m.mat4
         let dist = 0
         const shader = createShader(mesh)
-        const video = await createVideo()
-        const slots = createSlots(video, shader)
+        const slots = createSlots(shader)
         const regions = new Map<number, Region>()
         const ensureRegion = (rx = RX0, ry = RY0) => {
                 const id = regionId(rx, ry)
@@ -201,7 +208,9 @@ const createViewer = async () => {
                 shader.iMVP.value = [...MVP]
         }
         const dir = m.vec3.create()
-        const render = (gl: GL) => {
+        let prev = t0
+        let busy = false
+        const render = async (gl: GL) => {
                 const t1 = performance.now()
                 const dt = (t1 - t0) / 1000
                 dist += dt * 32
@@ -216,26 +225,14 @@ const createViewer = async () => {
                 t0 = t1
                 MVP = perspective(cam, gl.size[0] / gl.size[1], MVP)
                 shader.iMVP.value = [...MVP]
+                // if (t1 - prev < 1000) return
+                // prev = t1
+                if (busy) return
                 mesh.pos.length = mesh.scl.length = mesh.aid.length = mesh.cnt = 0
                 const keep = visRegions()
-                keep.forEach((r) => {
-                        const slot = slots.assign(r)
-                        if (slot < 0) return
-                        if (!r.loaded && !r.pending) {
-                                r.pending = true
-                                slots.jobs.push({ r, slot, t: timeOf(frameOf(r.rx, r.ry)) })
-                                slots.prime(gl)
-                        }
-                        if (!r.loaded) return
-                        r.chunks.forEach((c) => {
-                                if (cullChunk(MVP, r, c)) meshChunk(slots.slotCtx[slot], r, c)
-                                if (!c.visible) return
-                                mesh.pos.push(...c.pos)
-                                mesh.scl.push(...c.scl)
-                                for (let n = 0; n < c.cnt; n++) mesh.aid.push(slot)
-                                mesh.cnt += c.cnt
-                        })
-                })
+                const promises = Array.from(keep).map((r) => slots.assign(MVP, mesh, r))
+                busy = true
+                await Promise.all(promises)
                 if (!mesh.cnt) {
                         mesh.pos = [0, 0, 0]
                         mesh.scl = [0, 0, 0]
@@ -244,61 +241,102 @@ const createViewer = async () => {
                 }
                 applyInstances(gl, mesh)
                 slots.release(keep)
+                busy = false
         }
         return { vert: shader.vert, frag: shader.frag, count: mesh.count, instanceCount: mesh.cnt, render, resize, asdw }
 }
-const frameOf = (rx = 0, ry = 0) => (ry - RY0) * ROW + (rx - RX0)
-const timeOf = (f = 0) => f / FPS
-const offOf = (rx = RX0, ry = RY0) => [REGION * (rx - RX0), 0, REGION * (RY1 - ry)]
-const createSlots = (video: any, shader: any) => {
-        const owners: (Region | null)[] = Array(SLOT).fill(null)
-        const assign = (r: Region) => {
-                if (r.slot >= 0) return r.slot
-                const i = owners.findIndex((o) => o === null)
-                if (i < 0) return -1
-                owners[i] = r
+const createSlots = (shader: any) => {
+        const slots = [] as { ctx: CanvasRenderingContext2D; region?: Region }[]
+        const cache = new Map<number, HTMLImageElement>()
+        range(SLOT).forEach((i) => {
+                slots[i] = { ctx: createCanvas().getContext('2d', { willReadFrequently: true })! }
+        })
+        const ensureImage = async (r: Region) => {
+                const frame = frameOf(r.rx, r.ry)
+                if (cache.has(frame)) return cache.get(frame)!
+                const img = new Image()
+                img.crossOrigin = 'anonymous'
+                const loaded = new Promise<HTMLImageElement>((resolve) => {
+                        img.onload = () => resolve(img)
+                })
+                img.src = urlOfFrame(r.rx, r.ry)
+                await loaded
+                cache.set(frame, img)
+                return img
+        }
+        const assign = async (MVP: any, mesh: Mesh, r: Region) => {
+                if (r.loaded || r.slot >= 0) return
+                const i = slots.findIndex((slot) => !slot?.region)
+                if (i < 0) return
+                const slot = slots[i]
+                const { ctx } = slot
+                slot.region = r
                 r.slot = i
-                return i
+                const img = await ensureImage(r)
+                if (slots[i].region !== r || r.slot !== i) return
+                ctx.clearRect(0, 0, 4096, 4096)
+                ctx.drawImage(img, 0, 0, 4096, 4096)
+                shader.iAtlas[i].value = img
+                shader.iOffset[i].value = [r.x, r.y, r.z]
+                r.loaded = true
+                r.chunks.forEach((c) => {
+                        if (cullChunk(MVP, r, c)) {
+                                if (c.gen) return
+                                // extractTile64
+                                const planeX = c.k & 3
+                                const planeY = c.k >> 2
+                                const ox = planeX * 1024 + c.i * 64
+                                const oy = planeY * 1024 + c.j * 64
+                                const tile = ctx.getImageData(ox, oy, 64, 64).data
+                                // split64ToVox01
+                                const vox = new Uint8Array(CHUNK * CHUNK * CHUNK)
+                                const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
+                                let p = 0
+                                const T = 8
+                                eachChunk((x, y, z) => {
+                                        const ox = (z & 3) * 16
+                                        const oy = (z >> 2) * 16
+                                        const si = get(ox + x, oy + y)
+                                        const r = tile[si]
+                                        const g = tile[si + 1]
+                                        const b = tile[si + 2]
+                                        const s = r + g + b
+                                        vox[p++] = s > T ? 1 : 0
+                                })
+                                // meshChunk
+                                const m = greedyMesh(vox, CHUNK)
+                                for (let i = 0; i < m.cnt; i++) {
+                                        const j = i * 3
+                                        m.pos[j] += r.x + c.x
+                                        m.pos[j + 1] += r.y + c.y
+                                        m.pos[j + 2] += r.z + c.z
+                                }
+                                c.pos = m.pos
+                                c.scl = m.scl
+                                c.cnt = m.cnt
+                                c.gen = true
+                        }
+                        mesh.pos.push(...c.pos)
+                        mesh.scl.push(...c.scl)
+                        for (let n = 0; n < c.cnt; n++) mesh.aid.push(i)
+                        mesh.cnt += c.cnt
+                })
         }
         const release = (keep: Set<Region>) => {
-                for (let i = 0; i < owners.length; i++) {
-                        const r = owners[i]
-                        if (!r) continue
-                        if (keep.has(r)) continue
-                        owners[i] = null
-                        r.slot = -1
-                        r.loaded = false
-                        r.pending = false
+                for (let i = 0; i < slots.length; i++) {
+                        const slot = slots[i]
+                        if (!slot) continue
+                        if (!slot.region) continue
+                        if (keep.has(slot.region)) continue
+                        const region = slot.region
+                        region.loaded = false
+                        region.slot = -1
+                        slot.region = null
                 }
         }
-        const slotCanvas = range(SLOT).map(createCanvas) as HTMLCanvasElement[]
-        const slotCtx = slotCanvas.map((cv) => cv.getContext('2d', { willReadFrequently: true }) as CanvasRenderingContext2D)
-        const jobs: { r: Region; slot: number; t: number }[] = []
-        const prime = async (gl: GL) => {
-                const job = jobs.shift()
-                if (!job) return
-                await seek(video, job.t)
-                if (owners[job.slot] !== job.r) {
-                        return prime(gl)
-                }
-                const cv = slotCanvas[job.slot]
-                const ctx = slotCtx[job.slot]
-                ctx.drawImage(video, 0, 0, 4096, 4096)
-                shader.iAtlas[job.slot].value = cv
-                const owner = owners[job.slot]!
-                shader.iOff[job.slot].value = [owner.x, owner.y, owner.z]
-                job.r.loaded = true
-                job.r.pending = false
-                prime(gl)
-        }
-        return { slotCtx, jobs, assign, release, prime }
+        return { slots, assign, release }
 }
-// @TODO REMOVE
-const seek = (video: HTMLVideoElement, t = 0) =>
-        new Promise<void>((resolve) => {
-                video.addEventListener('seeked', () => resolve(), { once: true })
-                video.currentTime = t
-        })
+
 /**
  * App
  */
@@ -334,50 +372,12 @@ const Canvas = ({ viewer }: any) => {
 export default function Home() {
         const [viewer, set] = useState<any>()
         useEffect(() => void createViewer().then(set), [])
-        return viewer ? <Canvas viewer={viewer} /> : null
         return <Layout noFooter>{viewer ? <Canvas viewer={viewer} /> : null}</Layout>
 }
 
 /**
  * @TODO REMOVE
  */
-const meshChunk = (ctx: CanvasRenderingContext2D, region: Region, c: Chunk) => {
-        if (c.gen) return
-        // extractTile64
-        const planeX = c.k & 3
-        const planeY = c.k >> 2
-        const ox = planeX * 1024 + c.i * 64
-        const oy = planeY * 1024 + c.j * 64
-        const tile = ctx.getImageData(ox, oy, 64, 64).data
-        // split64ToVox01
-        const vox = new Uint8Array(CHUNK * CHUNK * CHUNK)
-        const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
-        let p = 0
-        const T = 8
-        eachChunk((x, y, z) => {
-                const ox = (z & 3) * 16
-                const oy = (z >> 2) * 16
-                const si = get(ox + x, oy + y)
-                const r = tile[si]
-                const g = tile[si + 1]
-                const b = tile[si + 2]
-                const s = r + g + b
-                vox[p++] = s > T ? 1 : 0
-        })
-        // meshChunk
-        const m = greedyMesh(vox, CHUNK)
-        for (let i = 0; i < m.cnt; i++) {
-                const j = i * 3
-                m.pos[j] += region.x + c.x
-                m.pos[j + 1] += region.y + c.y
-                m.pos[j + 2] += region.z + c.z
-        }
-        c.pos = m.pos
-        c.scl = m.scl
-        c.cnt = m.cnt
-        c.gen = true
-        c.visible = !!m.cnt
-}
 const applyInstances = (gl: GL, mesh: Mesh) => {
         const c = gl.webgl.context as WebGL2RenderingContext
         const pg = gl.webgl.program as WebGLProgram
@@ -414,18 +414,7 @@ const createCanvas = () => {
         cv.height = 4096
         return cv
 }
-const createVideo = () => {
-        return new Promise((resolve) => {
-                const video = document.createElement('video') as HTMLVideoElement
-                video.crossOrigin = 'anonymous'
-                video.muted = true
-                video.preload = 'auto'
-                video.playsInline = true
-                video.src = MOVIE
-                video.addEventListener('loadedmetadata', () => resolve(video), { once: true })
-                video.load()
-        })
-}
+
 const windowCoords = (cam: Camera, VPmat: m.mat4) => {
         const cx = cam.position[0]
         const cz = cam.position[2]
