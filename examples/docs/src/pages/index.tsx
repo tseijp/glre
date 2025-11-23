@@ -378,14 +378,14 @@ const createRegions = () => {
                         add(rx, ry)
                         // prettier-ignore
                         for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]] as const) {
-                        const nx = rx + dx
-                        const ny = ry + dy
-                        if (nx < RX0 || nx > RX1 || ny < RY0 || ny > RY1) continue
-                        const key = nx + ',' + ny
-                        if (seen.has(key)) continue
-                        seen.add(key)
-                        q.push([nx, ny])
-                }
+                                const nx = rx + dx
+                                const ny = ry + dy
+                                if (nx < RX0 || nx > RX1 || ny < RY0 || ny > RY1) continue
+                                const key = nx + ',' + ny
+                                if (seen.has(key)) continue
+                                seen.add(key)
+                                q.push([nx, ny])
+                        }
                 }
                 list.sort((a, b) => a.d - b.d)
                 return list.slice(0, SLOT).map((e) => [e.i, e.j] as [number, number])
