@@ -14,11 +14,15 @@ const RY0 = 75
 const RY1 = 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const SLOT = 16
+const SPEED = 50
 const CHUNK = 16
 const REGION = 256
-const CAMERA_X = Math.random() * ROW * REGION // 256
-const CAMERA_Y = 50
+const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
+const CAMERA_Y = 400
 const CAMERA_Z = 256 * 2.5
+const TARGET_X = -100
+const TARGET_Y = 100
+const LIGHT = [-0.3, 0.7, 0.5]
 const urlOfFrame = (rx: number, ry: number) => `http://localhost:5173/logs/${rx}_${ry}.png`
 const offOf = (i = RX0, j = RY0) => [REGION * (i - RX0), 0, REGION * (RY1 - j)]
 const range = (n = 0) => [...Array(n).keys()]
@@ -147,7 +151,7 @@ const createShader = (mesh: Mesh) => {
         const pos = instance<'vec3'>(mesh.pos, 'pos')
         const aid = instance<'float'>(mesh.aid, 'aid')
         const fs = Fn(([n, local, p, id]: [Vec3, Vec3, Vec3, Float]) => {
-                const L = vec3(0.3, 0.7, 0.5).normalize()
+                const L = vec3(LIGHT).normalize()
                 const diffuse = n.normalize().dot(L).max(0.25)
                 const uv = atlasUV(n, local, p, id).toVar('uv')
                 const texel = pick(id, uv).toVar('t')
@@ -220,84 +224,74 @@ const createRegion = (i = RX0, j = RY0, slot = -1) => {
         }
         return { i, j, x, y, z, slot, chunks, loadStart, load }
 }
-const createSlots = (shader: Shader) => {
-        const owner = [] as { ctx: CanvasRenderingContext2D; region?: Region }[]
-        range(SLOT).forEach((i) => {
-                owner[i] = { ctx: createContext() }
-        })
-        // const assign = async (MVP: m.mat4, mesh: Mesh, r: any) => {
-        //         const i = owner.findIndex((slot) => !slot?.region)
-        //         if (i < 0) return
-        //         const slot = owner[i]
-        //         const { ctx } = slot
-        //         slot.region = r
-        //         r.slot = i
-        //         const img = await r.loadStart()
-        //         if (owner[i].region !== r || r.slot !== i) return
-        //         ctx.clearRect(0, 0, 4096, 4096)
-        //         ctx.drawImage(img, 0, 0, 4096, 4096)
-        //         shader.iAtlas[i].value = img // DO NOT USE ctx.canvas
-        //         shader.iOffset[i].value = [r.x, r.y, r.z]
-        //         r.load(MVP, ctx, mesh, i)
-        // }
-        // const assign = async (MVP: m.mat4, mesh: Mesh, r: any) => {
-        //         let i = r.slot
-        //         if (i < 0) {
-        //                 i = owner.findIndex((slot) => !slot?.region)
-        //                 if (i < 0) return
-        //                 const slot = owner[i]
-        //                 const ctx = slot.ctx
-        //                 slot.region = r
-        //                 r.slot = i
-        //                 const img = await r.loadStart()
-        //                 if (owner[i].region !== r || r.slot !== i) return
-        //                 ctx.clearRect(0, 0, 4096, 4096)
-        //                 ctx.drawImage(img, 0, 0, 4096, 4096)
-        //                 shader.iAtlas[i].value = img
-        //                 shader.iOffset[i].value = [r.x, r.y, r.z]
-        //         }
-        //         const slot = owner[i]
-        //         if (!slot) return
-        //         const ctx = slot.ctx
-        //         r.load(MVP, ctx, mesh, i)
-        // }
-        const assign = async (MVP: m.mat4, mesh: Mesh, r: any) => {
+const createSlot = (index = 0) => {
+        const ctx = createContext()
+        let tex: WebGLTexture
+        let atlas: WebGLUniformLocation
+        let offset: WebGLUniformLocation
+        let region: Region | null = null
+        const apply = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
+                ctx.clearRect(0, 0, 4096, 4096)
+                ctx.drawImage(img, 0, 0, 4096, 4096)
+                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)
+                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)
+                if (!atlas || !offset) return
+                if (!tex) {
+                        tex = c.createTexture()
+                        if (!tex) return
+                        c.activeTexture(c.TEXTURE0 + index)
+                        c.bindTexture(c.TEXTURE_2D, tex)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
+                } else {
+                        c.activeTexture(c.TEXTURE0 + index)
+                        c.bindTexture(c.TEXTURE_2D, tex)
+                }
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img) // Do not use ctx.canvas, as some image data will be lost
+                c.uniform1i(atlas, index)
+                c.uniform3fv(offset, new Float32Array([region.x, region.y, region.z]))
+        }
+        const release = () => {
+                if (!region) return
+                region.slot = -1
+                region = void 0
+        }
+        return { apply, release, getCtx: () => ctx, getRegion: () => region, setRegion: (r: Region) => (region = r) }
+}
+const createSlots = () => {
+        const owner = range(SLOT).map(createSlot)
+        const assign = async (MVP: m.mat4, mesh: Mesh, r: Region, gl: GL) => {
                 let i = r.slot
                 if (i < 0) {
-                        i = owner.findIndex((slot) => !slot?.region)
+                        i = owner.findIndex((slot) => !slot?.getRegion())
                         if (i < 0) return
                         const slot = owner[i]
-                        const ctx = slot.ctx
-                        slot.region = r
+                        slot.setRegion(r)
                         r.slot = i
                         const img = await r.loadStart()
-                        if (owner[i].region !== r || r.slot !== i) return
-                        ctx.clearRect(0, 0, 4096, 4096)
-                        ctx.drawImage(img, 0, 0, 4096, 4096)
-                        shader.iAtlas[i].value = img
-                        shader.iOffset[i].value = [r.x, r.y, r.z]
+                        if (owner[i].getRegion() !== r || r.slot !== i) return
+                        const c = gl.webgl.context as WebGL2RenderingContext
+                        const pg = gl.webgl.program as WebGLProgram
+                        if (!pg) return
+                        c.useProgram(pg)
+                        slot.apply(c, pg, img)
                 }
-                const slot = owner[i]
-                if (!slot) return
-                const ctx = slot.ctx
-                r.load(MVP, ctx, mesh, i)
+                if (owner[i]) r.load(MVP, owner[i].getCtx(), mesh, i)
         }
         const release = (keep: Set<Region>) => {
                 for (let i = 0; i < owner.length; i++) {
                         const slot = owner[i]
                         if (!slot) continue
-                        if (!slot.region) continue
-                        if (keep.has(slot.region)) continue
-                        const region = slot.region
-                        region.slot = -1
-                        slot.region = void 0
+                        if (keep.has(slot.getRegion())) continue
+                        slot.release()
                 }
         }
         return { assign, release }
 }
-
 const createViewer = () => {
-        const cam = { position: m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z), target: m.vec3.fromValues(CAMERA_X + 128, CAMERA_Y, CAMERA_Z), up: m.vec3.fromValues(0, 1, 0), fov: 60, near: 0.1, far: 4000 }
+        const cam = { position: m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z), target: m.vec3.fromValues(CAMERA_X + TARGET_X, TARGET_Y, CAMERA_Z), up: m.vec3.fromValues(0, 1, 0), fov: 60, near: 0.1, far: 4000 }
         const mesh = { vertex: VERTEX, normal: NORMAL, pos: [0, 0, 0], scl: [0, 0, 0], aid: [0], count: 36, cnt: 1, _buf: {} }
         let t0 = performance.now()
         let MVP: m.mat4
@@ -305,7 +299,7 @@ const createViewer = () => {
         let prev = t0
         let isLoading = false
         const shader = createShader(mesh)
-        const slots = createSlots(shader)
+        const slots = createSlots()
         const regions = new Map<number, Region>()
         const ensureRegion = (rx = RX0, ry = RY0) => {
                 const id = regionId(rx, ry)
@@ -329,9 +323,10 @@ const createViewer = () => {
         const render = async (gl: GL) => {
                 const t1 = performance.now()
                 const dt = (t1 - t0) / 1000
-                dist += dt * 32
-                cam.position[0] = cam.target[0] = (CAMERA_X + dist) % (ROW * REGION)
-                cam.target[0] += 128
+                dist -= dt * SPEED
+                cam.position[0] = cam.target[0] = CAMERA_X + dist
+                if (cam.position[0] < 0) cam.position[0] = ROW * REGION
+                cam.target[0] += TARGET_X
                 cam.position[0] += dir[0]
                 cam.position[1] += dir[1]
                 cam.position[2] += dir[2]
@@ -340,15 +335,13 @@ const createViewer = () => {
                 t0 = t1
                 MVP = perspective(cam, gl.size[0] / gl.size[1], MVP)
                 shader.iMVP.value = [...MVP]
-                if (t1 - prev < 1000) return
+                if (t1 - prev < 100) return
                 prev = t1
                 if (isLoading) return
                 isLoading = true
                 mesh.pos.length = mesh.scl.length = mesh.aid.length = mesh.cnt = 0
                 const keep = visRegions()
-                const promises = Array.from(keep).map((r) => slots.assign(MVP, mesh, r))
-                await Promise.all(promises)
-                console.log(mesh)
+                await Promise.all(Array.from(keep).map((r) => slots.assign(MVP, mesh, r, gl)))
                 if (!mesh.cnt) {
                         mesh.pos = [0, 0, 0]
                         mesh.scl = [0, 0, 0]
@@ -369,7 +362,8 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
         const gl = useGL({
                 isWebGL: true,
                 isDepth: true,
-                isDebug: true,
+                // isDebug: true,
+                // wireframe: true,
                 count: viewer.count,
                 instanceCount: viewer.instanceCount,
                 vert: viewer.vert,
@@ -399,9 +393,6 @@ export default function Home() {
         useEffect(() => void set(createViewer()), [])
         return <Layout noFooter>{viewer ? <Canvas viewer={viewer} /> : null}</Layout>
 }
-/**
- * @TODO REMOVE
- */
 const windowCoords = (cam: Camera, VPmat: m.mat4) => {
         const cx = cam.position[0]
         const cz = cam.position[2]
@@ -465,8 +456,6 @@ const applyInstances = (gl: GL, mesh: Mesh) => {
         bindAttrib('pos', mesh.pos, 3)
         bindAttrib('aid', mesh.aid, 1)
 }
-
 type Viewer = ReturnType<typeof createViewer>
-type Shader = ReturnType<typeof createShader>
 type Chunk = ReturnType<typeof createChunk>
 type Region = ReturnType<typeof createRegion>
