@@ -178,7 +178,7 @@ const createMesh = () => {
 const createShader = (mesh: Mesh) => {
         const iMVP = uniform<'mat4'>([...m.mat4.create()], 'iMVP')
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
-        const iAtlas = range(SLOT).map((i) => uniform('/world.png', `iAtlas${i}`))
+        const iAtlas = range(SLOT).map((i) => uniform('https://r.tsei.jp/texture/world.png', `iAtlas${i}`))
         const atlasUV = Fn(([n, local, p, id]: [Vec3, Vec3, Vec3, Float]) => {
                 const half = float(0.5)
                 const off = vec3(0, 0, 0).toVar('off')
