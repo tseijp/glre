@@ -7,8 +7,8 @@ import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, vec2,
 import type { Float, Vec2, Vec3 } from 'glre/src/node'
 const RX0 = 28
 const RX1 = 123
-const RY0 = 75
-const RY1 = 79
+const RY0 = 76 // 75
+const RY1 = 77 // 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const FAR = Math.sqrt(256 * 256 * 3) * 0.5
 const SLOT = 16
@@ -17,7 +17,7 @@ const CHUNK = 16
 const REGION = 256
 const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
 const CAMERA_Y = 400
-const CAMERA_Z = 256 * 2.5
+const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
 const TARGET_X = -100
 const TARGET_Y = 100
 const LIGHT = [-0.3, 0.7, 0.5] // Afternoon sun
@@ -28,7 +28,7 @@ const chunkId = (i = 0, j = 0, k = 0) => i + j * CHUNK + k * CHUNK * CHUNK
 const regionId = (i = 0, j = 0) => i + 160 * j // DO NOT CHANGE
 const cullChunk = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0, cx = 0, cy = 0, cz = 0) => visSphere(VP, rx + cx + 8, ry + cy + 8, rz + cz + 8, FAR)
 const cullRegion = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0) => visSphere(VP, rx + 128, ry + 128, rz + 128, FAR)
-const solid = (f = (_i = 0, _j = 0, k = 0) => {}, n = CHUNK) => {
+const solid = (f: (i: number, j: number, k: number) => void, n = CHUNK) => {
         for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) f(i, j, k)
 }
 const createContext = () => {
@@ -174,7 +174,7 @@ const createMesh = () => {
         return { reset, merge, draw, pos, scl, aid, count: () => count, buf }
 }
 const createSlot = (index = 0) => {
-        const ctx = createContext()
+        const ctx = createContext()!
         let tex: WebGLTexture
         let atlas: WebGLUniformLocation
         let offset: WebGLUniformLocation
@@ -182,8 +182,8 @@ const createSlot = (index = 0) => {
         const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
                 ctx.clearRect(0, 0, 4096, 4096)
                 ctx.drawImage(img, 0, 0, 4096, 4096)
-                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)
-                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)
+                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)!
+                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)!
                 if (!atlas || !offset) return
                 if (!tex) {
                         tex = c.createTexture()
@@ -208,7 +208,7 @@ const createSlot = (index = 0) => {
         const release = () => {
                 if (!region) return
                 region.slot = -1
-                region = void 0
+                region = void 0 as unknown as Region
         }
         return { assign, release, getCtx: () => ctx, set, region: () => region }
 }
@@ -245,24 +245,14 @@ const createNode = (mesh: Mesh) => {
         const iAtlas = range(SLOT).map((i) => uniform('https://r.tsei.jp/texture/world.png', `iAtlas${i}`))
         const atlasUV = Fn(([n, local, p, id]: [Vec3, Vec3, Vec3, Float]) => {
                 const half = float(0.5)
-                const off = vec3(0, 0, 0).toVar('off')
-                range(SLOT).forEach((i) => {
-                        If(id.equal(i), () => {
-                                off.assign(iOffset[i])
-                        })
-                })
-                const W = p.sub(off).add(local).sub(n.sign().mul(half)).floor().toVar('W')
-                const ci = W.x.div(16).floor().toVar('ci')
-                const cj = W.z.div(16).floor().toVar('cj')
-                const ck = W.y.div(16).floor().toVar('ck')
-                const lx = W.x.mod(16).toVar('lx')
-                const ly = W.y.mod(16).toVar('ly')
-                const lz = W.z.mod(16).toVar('lz')
-                const zt = vec2(cj.mod(4).mul(1024), cj.div(4).floor().mul(1024)) // 1024 is plane size
-                const ct = vec2(ci.mul(64), ck.mul(64))
-                const lt = vec2(lz.mod(4).mul(16).add(lx), lz.div(4).floor().mul(16).add(ly))
-                const uv = zt.add(ct).add(lt).add(vec2(0.5)).div(4096) // 4096 is atlas size
-                const eps = float(0.5).div(4096)
+                const W = p.add(local).sub(n.sign().mul(half)).floor().toVar('W')
+                const c = W.div(16).floor().toVar('c')
+                const l = W.sub(c.mul(16)).toVar('lx')
+                const zt = vec2(c.z.mod(4).mul(1024), c.z.div(4).floor().mul(1024)) // 1024 is plane size
+                const ct = vec2(c.x.mul(64), c.y.mul(64))
+                const lt = vec2(l.z.mod(4).mul(16).add(l.x), l.z.div(4).floor().mul(16).add(l.y))
+                const uv = zt.add(ct).add(lt).add(vec2(0.5)).div(4096)
+                const eps = float(0.5).div(4096) // 4096 is atlas size
                 return clamp(uv, vec2(eps), vec2(float(1).sub(eps)))
         })
         const pick = Fn(([id, uv]: [Float, Vec2]) => {
@@ -287,8 +277,19 @@ const createNode = (mesh: Mesh) => {
                 const rgb = texel.rgb.mul(diffuse).max(diffuse.div(3)).toVar('rgb')
                 return vec4(rgb, 1)
         })
+        const vs = Fn(([pos, scl, aid]: [Vec3, Vec3, Float]) => {
+                const off = vec3(0, 0, 0).toVar('roff')
+                range(SLOT).forEach((i) => {
+                        If(aid.equal(i), () => {
+                                off.assign(iOffset[i])
+                        })
+                })
+                const local = vertex.mul(scl).add(pos)
+                const world = off.add(local)
+                return iMVP.mul(vec4(world, 1))
+        })
         const frag = fs(vertexStage(normal), vertexStage(vertex.mul(scl)), vertexStage(pos), vertexStage(aid))
-        const vert = iMVP.mul(vec4(vertex.mul(scl).add(pos), 1))
+        const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
 const createChunk = (i = 0, j = 0, k = 0) => {
@@ -313,9 +314,9 @@ const createChunk = (i = 0, j = 0, k = 0) => {
                 count = greedyMesh(vox, CHUNK, pos, scl).count
                 for (let i = 0; i < count; i++) {
                         const j = i * 3
-                        pos[j] += rx + x
-                        pos[j + 1] += ry + y
-                        pos[j + 2] += rz + z
+                        pos[j] += x
+                        pos[j + 1] += y
+                        pos[j + 2] += z
                 }
                 isMeshed = true
         }
@@ -438,7 +439,7 @@ const createViewer = () => {
  */
 const Canvas = ({ viewer }: { viewer: Viewer }) => {
         const gl = useGL({
-                wireframe: true,
+                // wireframe: true,
                 isWebGL: true,
                 isDepth: true,
                 // isDebug: true,
