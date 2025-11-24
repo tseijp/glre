@@ -12,7 +12,7 @@ const RY1 = 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const FAR = Math.sqrt(256 * 256 * 3) * 0.5
 const SLOT = 16
-const SPEED = 50
+const SPEED = 10
 const CHUNK = 16
 const REGION = 256
 const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
@@ -21,23 +21,23 @@ const CAMERA_Z = 256 * 2.5
 const TARGET_X = -100
 const TARGET_Y = 100
 const LIGHT = [-0.3, 0.7, 0.5] // Afternoon sun
-const urlOfFrame = (rx: number, ry: number) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png`
+const urlOfFrame = (rx = 0, ry = 0) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png` //  `http://localhost:5173/logs/${rx}_${ry}.png`
 const offOf = (i = RX0, j = RY0) => [REGION * (i - RX0), 0, REGION * (RY1 - j)]
 const range = (n = 0) => [...Array(n).keys()]
 const chunkId = (i = 0, j = 0, k = 0) => i + j * CHUNK + k * CHUNK * CHUNK
 const regionId = (i = 0, j = 0) => i + 160 * j // DO NOT CHANGE
-const cullChunk = (VP: m.mat4, rx = 0, ry = 0, rz = 0, cx = 0, cy = 0, cz = 0) => visSphere(VP, rx + cx + 8, ry + cy + 8, rz + cz + 8, FAR)
-const cullRegion = (VP: m.mat4, rx = 0, ry = 0, rz = 0) => visSphere(VP, rx + 128, ry + 128, rz + 128, FAR)
-const each = (f: (i: number, j: number, k: number) => void) => {
-        for (let k = 0; k < CHUNK; k++) for (let j = 0; j < CHUNK; j++) for (let i = 0; i < CHUNK; i++) f(i, j, k)
+const cullChunk = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0, cx = 0, cy = 0, cz = 0) => visSphere(VP, rx + cx + 8, ry + cy + 8, rz + cz + 8, FAR)
+const cullRegion = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0) => visSphere(VP, rx + 128, ry + 128, rz + 128, FAR)
+const solid = (f = (_i = 0, _j = 0, k = 0) => {}, n = CHUNK) => {
+        for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) f(i, j, k)
 }
 const createContext = () => {
         const el = document.createElement('canvas')
         Object.assign(el, { width: 4096, height: 4096 })
-        return el.getContext('2d', { willReadFrequently: true })!
+        return el.getContext('2d', { willReadFrequently: true })
 }
-const visSphere = (M: m.mat4, cx = 0, cy = 0, cz = 0, r = 1) => {
-        const t = (ax: number, ay: number, az: number, aw: number) => (ax * cx + ay * cy + az * cz + aw) / (Math.hypot(ax, ay, az) || 1) + r < 0
+const visSphere = (M = m.mat4.create(), cx = 0, cy = 0, cz = 0, r = 1) => {
+        const t = (ax = 0, ay = 0, az = 0, aw = 0) => (ax * cx + ay * cy + az * cz + aw) / (Math.hypot(ax, ay, az) || 1) + r < 0
         if (t(M[3] + M[0], M[7] + M[4], M[11] + M[8], M[15] + M[12])) return false
         if (t(M[3] - M[0], M[7] - M[4], M[11] - M[8], M[15] - M[12])) return false
         if (t(M[3] + M[1], M[7] + M[5], M[11] + M[9], M[15] + M[13])) return false
@@ -46,7 +46,7 @@ const visSphere = (M: m.mat4, cx = 0, cy = 0, cz = 0, r = 1) => {
         if (t(M[3] - M[2], M[7] - M[6], M[11] - M[10], M[15] - M[14])) return false
         return true
 }
-const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[] = [], cnt = 0) => {
+const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[] = [], count = 0) => {
         const index = (x = 0, y = 0, z = 0) => x + (y + z * size) * size
         const data = new Uint8Array(src)
         const isHitWidth = (x = 0, y = 0, z = 0) => {
@@ -86,39 +86,36 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
                 const h = hitHeight(x, y, z, w, 1)
                 const d = hitDepth(x, y, z, w, h, 1)
                 markVisited(x, y, z, w, h, d)
-                pos[3 * cnt] = w * 0.5 + x
-                pos[3 * cnt + 1] = h * 0.5 + y
-                pos[3 * cnt + 2] = d * 0.5 + z
-                scl[cnt * 3] = w
-                scl[cnt * 3 + 1] = h
-                scl[cnt * 3 + 2] = d
-                cnt++
+                pos[3 * count] = w * 0.5 + x
+                pos[3 * count + 1] = h * 0.5 + y
+                pos[3 * count + 2] = d * 0.5 + z
+                scl[count * 3] = w
+                scl[count * 3 + 1] = h
+                scl[count * 3 + 2] = d
+                count++
         }
-        for (let x = 0; x < size; x++) for (let y = 0; y < size; y++) for (let z = 0; z < size; z++) tick(x, y, z)
-        return { pos, scl, cnt }
+        solid(tick, size)
+        return { pos, scl, count }
 }
 const createCamera = () => {
+        let x = 0
         const position = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
         const target = m.vec3.fromValues(CAMERA_X + TARGET_X, TARGET_Y, CAMERA_Z)
         const up = m.vec3.fromValues(0, 1, 0)
-        let dist = 0
-        const MVP = m.mat4.create()
         const P = m.mat4.create()
         const V = m.mat4.create()
-        const near = 0.1
-        const fov = 60
-        const far = 4000
-        const perspective = (aspect: number) => {
-                m.mat4.perspective(P, (fov * Math.PI) / 180, aspect, near, far)
+        const MVP = m.mat4.create()
+        const perspective = (aspect = 1) => {
+                m.mat4.perspective(P, (60 * Math.PI) / 180, aspect, 0.1, 4000)
                 m.mat4.lookAt(V, position, target, up)
                 m.mat4.multiply(MVP, P, V)
         }
-        const tick = (dt = 0, dir: m.vec3) => {
-                dist -= dt * SPEED
-                position[0] = target[0] = CAMERA_X + dist
+        const tick = (dt = 0, dir = m.vec3.create()) => {
+                x -= dt * SPEED
+                position[0] = target[0] = CAMERA_X + x
                 if (position[0] < 0) position[0] = ROW * REGION
                 target[0] += TARGET_X
-                position[0] -= dir[0]
+                position[0] += dir[0]
                 position[1] += dir[1]
                 position[2] += dir[2]
                 target[0] += dir[0]
@@ -127,12 +124,12 @@ const createCamera = () => {
         return { tick, perspective, position, target, up, MVP }
 }
 const createMesh = () => {
+        let count = 1
         const pos = [0, 0, 0]
         const scl = [1, 1, 1]
         const aid = [0]
         const buf = {} as Record<string, WebGLBuffer>
-        let cnt = 1
-        const attr = (c: WebGL2RenderingContext, pg: WebGLProgram, key: string, data: number[], size: number) => {
+        const attr = (c: WebGL2RenderingContext, pg: WebGLProgram, data: number[], key = 'pos', size = 3) => {
                 const loc = c.getAttribLocation(pg, key)
                 const array = new Float32Array(data)
                 const buffer = (buf[key] = buf[key] || c.createBuffer())
@@ -154,26 +151,93 @@ const createMesh = () => {
                 c.bufferSubData(c.ARRAY_BUFFER, 0, array)
         }
         const reset = () => {
-                pos.length = scl.length = aid.length = cnt = 0
+                pos.length = scl.length = aid.length = count = 0
         }
-        const merge = (c: Chunk, i: number) => {
+        const merge = (c: Chunk, index = 0) => {
+                count += c.count()
                 pos.push(...c.pos)
                 scl.push(...c.scl)
-                cnt += c.cnt()
-                for (let n = 0; n < c.cnt(); n++) aid.push(i)
+                for (let i = 0; i < c.count(); i++) aid.push(index)
         }
         const draw = (c: WebGL2RenderingContext, pg: WebGLProgram) => {
-                if (!cnt) {
+                if (!count) {
                         pos.push(0, 0, 0)
                         scl.push(1, 1, 1)
                         aid.push(0)
-                        cnt = 1
+                        count = 1
                 }
-                attr(c, pg, 'scl', scl, 3)
-                attr(c, pg, 'pos', pos, 3)
-                attr(c, pg, 'aid', aid, 1)
+                attr(c, pg, scl, 'scl', 3)
+                attr(c, pg, pos, 'pos', 3)
+                attr(c, pg, aid, 'aid', 1)
+                return count
         }
-        return { reset, merge, draw, pos, scl, aid, cnt: () => cnt, buf }
+        return { reset, merge, draw, pos, scl, aid, count: () => count, buf }
+}
+const createSlot = (index = 0) => {
+        const ctx = createContext()
+        let tex: WebGLTexture
+        let atlas: WebGLUniformLocation
+        let offset: WebGLUniformLocation
+        let region: Region
+        const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
+                ctx.clearRect(0, 0, 4096, 4096)
+                ctx.drawImage(img, 0, 0, 4096, 4096)
+                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)
+                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)
+                if (!atlas || !offset) return
+                if (!tex) {
+                        tex = c.createTexture()
+                        c.activeTexture(c.TEXTURE0 + index)
+                        c.bindTexture(c.TEXTURE_2D, tex)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
+                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
+                } else {
+                        c.activeTexture(c.TEXTURE0 + index)
+                        c.bindTexture(c.TEXTURE_2D, tex)
+                }
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img) // Do not use ctx.canvas, as some img data will be lost
+                c.uniform1i(atlas, index)
+                c.uniform3fv(offset, new Float32Array([region.x, region.y, region.z]))
+        }
+        const set = (r: Region, index = 0) => {
+                region = r
+                region.slot = index
+        }
+        const release = () => {
+                if (!region) return
+                region.slot = -1
+                region = void 0
+        }
+        return { assign, release, getCtx: () => ctx, set, region: () => region }
+}
+const createSlots = () => {
+        const owner = range(SLOT).map(createSlot)
+        const _assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region) => {
+                let index = r.slot
+                if (index < 0) {
+                        index = owner.findIndex((slot) => !slot?.region())
+                        if (index < 0) return
+                        const slot = owner[index]
+                        slot.set(r, index)
+                        const img = await r.image()
+                        if (owner[index].region() !== r || r.slot !== index) return
+                        slot.assign(c, pg, img)
+                }
+                if (owner[index]) r.chunk(owner[index].getCtx(), index)
+        }
+        const _release = (keep: Set<Region>) => {
+                owner.forEach((slot) => {
+                        if (!slot || keep.has(slot.region())) return
+                        slot.release()
+                })
+        }
+        const sync = async (c: WebGL2RenderingContext, pg: WebGLProgram, keep: Set<Region>) => {
+                await Promise.all(Array.from(keep).map((r) => _assign(c, pg, r)))
+                _release(keep)
+        }
+        return { sync }
 }
 const createShader = (mesh: Mesh) => {
         const iMVP = uniform<'mat4'>([...m.mat4.create()], 'iMVP')
@@ -225,30 +289,29 @@ const createShader = (mesh: Mesh) => {
         })
         const frag = fs(vertexStage(normal), vertexStage(vertex.mul(scl)), vertexStage(pos), vertexStage(aid))
         const vert = iMVP.mul(vec4(vertex.mul(scl).add(pos), 1))
-        return { vert, frag, iMVP, iOffset, iAtlas }
+        return { vert, frag, iMVP }
 }
 const createChunk = (i = 0, j = 0, k = 0) => {
         let isMeshed = false
-        let cnt: number
-        const pos = [] as number[]
-        const scl = [] as number[]
+        let count = 0
         const id = chunkId(i, j, k)
         const x = i * 16
         const y = j * 16
         const z = k * 16
-        const load = (rx = 0, ry = 0, rz = 0, ctx: CanvasRenderingContext2D) => {
+        const pos = [] as number[]
+        const scl = [] as number[]
+        const load = (ctx: CanvasRenderingContext2D, rx = 0, ry = 0, rz = 0) => {
                 if (isMeshed) return
                 const tile = ctx.getImageData((k & 3) * 1024 + i * 64, (k >> 2) * 1024 + j * 64, 64, 64).data
                 const vox = new Uint8Array(CHUNK * CHUNK * CHUNK)
                 const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
                 let p = 0
-                each((x, y, z) => {
-                        const si = get((z & 3) * CHUNK + x, (z >> 2) * CHUNK + y)
-                        const s = tile[si] + tile[si + 1] + tile[si + 2]
-                        vox[p++] = s > 8 ? 1 : 0
+                solid((ci, cj, ck) => {
+                        const si = get((ck & 3) * CHUNK + ci, (ck >> 2) * CHUNK + cj)
+                        vox[p++] = tile[si + 3] ? 1 : 0
                 })
-                cnt = greedyMesh(vox, CHUNK, pos, scl).cnt
-                for (let i = 0; i < cnt; i++) {
+                count = greedyMesh(vox, CHUNK, pos, scl).count
+                for (let i = 0; i < count; i++) {
                         const j = i * 3
                         pos[j] += rx + x
                         pos[j + 1] += ry + y
@@ -256,116 +319,53 @@ const createChunk = (i = 0, j = 0, k = 0) => {
                 }
                 isMeshed = true
         }
-        return { id, i, j, k, x, y, z, pos, scl, cnt: () => cnt, load }
+        return { id, x, y, z, pos, scl, count: () => count, load }
 }
-const createRegion = (i = RX0, j = RY0, slot = -1) => {
+const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
         let img: HTMLImageElement
         const chunks = new Map<number, Chunk>()
         const [x, y, z] = offOf(i, j)
-        each((ci, cj, ck) => {
+        solid((ci, cj, ck) => {
                 const c = createChunk(ci, cj, ck)
                 chunks.set(c.id, c)
         })
-        const loadStart = async () => {
+        const image = async () => {
                 if (img) return img
                 img = new Image()
                 img.crossOrigin = 'anonymous'
-                const loaded = new Promise<HTMLImageElement>((resolve) => {
+                const promise = new Promise<HTMLImageElement>((resolve) => {
                         img.onload = () => resolve(img)
                 })
                 img.src = urlOfFrame(i, j)
-                return await loaded
+                return await promise
         }
-        const load = (MVP: m.mat4, ctx: CanvasRenderingContext2D, m: Mesh, i = 0) => {
+        const chunk = (ctx: CanvasRenderingContext2D, i = 0) => {
                 chunks.forEach((c) => {
-                        if (!cullChunk(MVP, x, y, z, c.x, c.y, c.z)) return
-                        c.load(x, y, z, ctx)
-                        m.merge(c, i)
+                        if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) return
+                        c.load(ctx, x, y, z)
+                        mesh.merge(c, i)
                 })
         }
-        return { i, j, x, y, z, slot, chunks, loadStart, load }
+        return { x, y, z, slot, image, chunk }
 }
-const createSlot = (index = 0) => {
-        const ctx = createContext()
-        let tex: WebGLTexture
-        let atlas: WebGLUniformLocation
-        let offset: WebGLUniformLocation
-        let region: Region | null = null
-        const apply = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
-                ctx.clearRect(0, 0, 4096, 4096)
-                ctx.drawImage(img, 0, 0, 4096, 4096)
-                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)
-                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)
-                if (!atlas || !offset) return
-                if (!tex) {
-                        tex = c.createTexture()
-                        if (!tex) return
-                        c.activeTexture(c.TEXTURE0 + index)
-                        c.bindTexture(c.TEXTURE_2D, tex)
-                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
-                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
-                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
-                        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
-                } else {
-                        c.activeTexture(c.TEXTURE0 + index)
-                        c.bindTexture(c.TEXTURE_2D, tex)
-                }
-                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img) // Do not use ctx.canvas, as some img data will be lost
-                c.uniform1i(atlas, index)
-                c.uniform3fv(offset, new Float32Array([region.x, region.y, region.z]))
-        }
-        const release = () => {
-                if (!region) return
-                region.slot = -1
-                region = void 0
-        }
-        return { apply, release, getCtx: () => ctx, getRegion: () => region, setRegion: (r: Region) => (region = r) }
-}
-const createSlots = () => {
-        const owner = range(SLOT).map(createSlot)
-        const assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, mesh: Mesh, MVP: m.mat4) => {
-                let i = r.slot
-                if (i < 0) {
-                        i = owner.findIndex((slot) => !slot?.getRegion())
-                        if (i < 0) return
-                        const slot = owner[i]
-                        slot.setRegion(r)
-                        r.slot = i
-                        const img = await r.loadStart()
-                        if (owner[i].getRegion() !== r || r.slot !== i) return
-                        slot.apply(c, pg, img)
-                }
-                if (owner[i]) r.load(MVP, owner[i].getCtx(), mesh, i)
-        }
-        const release = (keep: Set<Region>) => {
-                for (let i = 0; i < owner.length; i++) {
-                        const slot = owner[i]
-                        if (!slot) continue
-                        if (keep.has(slot.getRegion())) continue
-                        slot.release()
-                }
-        }
-        return { assign, release }
-}
-const createRegions = () => {
+const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
-        const ensure = (rx = RX0, ry = RY0) => {
+        const _clamp = (x = 0, a = 0, b = 1) => (x < a ? a : x > b ? b : x)
+        const _ensure = (rx = RX0, ry = RY0) => {
                 const id = regionId(rx, ry)
                 const got = regions.get(id)
                 if (got) return got
-                const r = createRegion(rx, ry, -1)
+                const r = createRegion(mesh, cam, rx, ry, -1)
                 regions.set(id, r)
                 return r
         }
-        const coord = (cam: Camera) => {
+        const _coord = () => {
                 const cx = cam.position[0]
                 const cz = cam.position[2]
-                const clampi = (x: number, a: number, b: number) => (x < a ? a : x > b ? b : x)
-                const start: [number, number] = [clampi(RX0 + Math.floor(cx / REGION), RX0, RX1), clampi(RY1 - Math.floor(cz / REGION), RY0, RY1)]
-                const q: [number, number][] = [start]
+                const start = [_clamp(RX0 + Math.floor(cx / REGION), RX0, RX1), _clamp(RY1 - Math.floor(cz / REGION), RY0, RY1)] as [number, number]
+                const q = [start] as [number, number][]
                 const seen = new Set<string>([start.join(',')])
-                const list: { i: number; j: number; d: number }[] = []
-                const need = SLOT * 2
+                const list = [] as { i: number; j: number; d: number }[]
                 const add = (i: number, j: number) => {
                         const [x, y, z] = offOf(i, j)
                         if (!cullRegion(cam.MVP, x, y, z)) return
@@ -373,7 +373,7 @@ const createRegions = () => {
                         const dz = z + 128 - cz
                         list.push({ i, j, d: Math.hypot(dx, dz) })
                 }
-                for (let i = 0; i < q.length && list.length < need; i++) {
+                for (let i = 0; i < q.length && list.length < SLOT * 2; i++) {
                         const [rx, ry] = q[i]
                         add(rx, ry)
                         // prettier-ignore
@@ -390,50 +390,48 @@ const createRegions = () => {
                 list.sort((a, b) => a.d - b.d)
                 return list.slice(0, SLOT).map((e) => [e.i, e.j] as [number, number])
         }
-        const vis = (cam: Camera) => {
-                const keep = new Set(coord(cam).map(([x, y]) => ensure(x, y)))
+        const vis = () => {
+                const keep = new Set(_coord().map(([x, y]) => _ensure(x, y)))
                 for (const [id, r] of regions) if (!keep.has(r)) regions.delete(id)
                 return keep
         }
         return { vis }
 }
 const createViewer = () => {
-        const cam = createCamera()
-        let t0 = performance.now()
-        let prev = t0
         let isLoading = false
+        let ts = performance.now()
+        let pt = ts
+        let dt = 0
+        let pt2 = pt
+        const dir = m.vec3.create()
+        const cam = createCamera()
         const mesh = createMesh()
         const slots = createSlots()
         const shader = createShader(mesh)
-        const regions = createRegions()
-        const asdw = (axis = 0, delta = 0) => (dir[axis] = delta)
+        const regions = createRegions(mesh, cam)
         const resize = (gl: GL) => {
                 cam.perspective(gl.size[0] / gl.size[1])
                 shader.iMVP.value = [...cam.MVP]
         }
-        const dir = m.vec3.create()
         const render = async (gl: GL) => {
-                const t1 = performance.now()
-                const dt = (t1 - t0) / 1000
-                t0 = t1
+                pt = ts
+                ts = performance.now()
+                dt = (ts - pt) / 1000
                 cam.tick(dt, dir)
                 cam.perspective(gl.size[0] / gl.size[1])
                 shader.iMVP.value = [...cam.MVP]
-                if (t1 - prev < 100) return
-                prev = t1
+                if (ts - pt2 < 100) return
+                pt2 = ts
                 if (isLoading) return
                 isLoading = true
                 mesh.reset()
                 const c = gl.webgl.context as WebGL2RenderingContext
                 const pg = gl.webgl.program as WebGLProgram
-                const keep = regions.vis(cam)
-                await Promise.all(Array.from(keep).map((r) => slots.assign(c, pg, r, mesh, cam.MVP)))
-                mesh.draw(c, pg)
-                slots.release(keep)
-                gl.instanceCount = mesh.cnt()
+                await slots.sync(c, pg, regions.vis())
+                gl.instanceCount = mesh.draw(c, pg)
                 isLoading = false
         }
-        return { vert: shader.vert, frag: shader.frag, instanceCount: mesh.cnt(), render, resize, asdw }
+        return { vert: shader.vert, frag: shader.frag, render, resize, asdw: (axis = 0, delta = 0) => (dir[axis] = delta) }
 }
 /**
  * App
@@ -455,11 +453,11 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         viewer.resize(gl)
                 },
                 mount() {
-                        const press = (isPress: boolean, e: any) => {
+                        const press = (isPress: boolean, e: KeyboardEvent) => {
                                 if (e.key === 'w') viewer.asdw(1, isPress ? 1 : 0)
                                 if (e.key === 's') viewer.asdw(1, isPress ? -1 : 0)
-                                if (e.key === 'a') viewer.asdw(2, isPress ? -1 : 0)
-                                if (e.key === 'd') viewer.asdw(2, isPress ? 1 : 0)
+                                if (e.key === 'a') viewer.asdw(2, isPress ? 1 : 0)
+                                if (e.key === 'd') viewer.asdw(2, isPress ? -1 : 0)
                         }
                         window.addEventListener('keydown', press.bind(null, true))
                         window.addEventListener('keyup', press.bind(null, false))
