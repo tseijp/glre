@@ -20,7 +20,7 @@ const CAMERA_Y = 400
 const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
 const TARGET_X = -100
 const TARGET_Y = 10
-const LIGHT = [-0.3, 0.7, 0.5] // Afternoon sun
+const LIGHT = [-0.33, 0.77, 0.55] // normalized afternoon sun
 const urlOfFrame = (rx = 0, ry = 0) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png` //  `http://localhost:5173/logs/${rx}_${ry}.png`
 const offOf = (i = RX0, j = RY0) => [REGION * (i - RX0), 0, REGION * (RY1 - j)]
 const range = (n = 0) => [...Array(n).keys()]
@@ -106,7 +106,7 @@ const createCamera = () => {
         const V = m.mat4.create()
         const MVP = m.mat4.create()
         const perspective = (aspect = 1) => {
-                m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
+                m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000) // the narrower the fov, the better
                 m.mat4.lookAt(V, position, target, up)
                 m.mat4.multiply(MVP, P, V)
         }
@@ -243,16 +243,16 @@ const createNode = (mesh: Mesh) => {
         const iMVP = uniform<'mat4'>([...m.mat4.create()], 'iMVP')
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
         const iAtlas = range(SLOT).map((i) => uniform('https://r.tsei.jp/texture/world.png', `iAtlas${i}`))
-        const atlasUV = Fn(([n, local, p, id]: [Vec3, Vec3, Vec3, Float]) => {
+        const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
-                const W = p.add(local).sub(n.sign().mul(half)).floor().toVar('W')
-                const c = W.div(16).floor().toVar('c')
-                const l = W.sub(c.mul(16)).toVar('lx')
-                const zt = vec2(c.z.mod(4).mul(1024), c.z.div(4).floor().mul(1024)) // 1024 is plane size
-                const ct = vec2(c.x.mul(64), c.y.mul(64))
-                const lt = vec2(l.z.mod(4).mul(16).add(l.x), l.z.div(4).floor().mul(16).add(l.y))
+                const wp = p.add(local).sub(n.sign().mul(half)).floor().toVar('wp') // world position
+                const ci = wp.div(16).floor().toVar('c') // chunk index in the workd
+                const lp = wp.sub(ci.mul(16)).clamp(0, 15).ceil().toVar('l') // local pos in the chunk
+                const zt = vec2(ci.z.mod(4).mul(1024), ci.z.div(4).floor().mul(1024))
+                const ct = vec2(ci.x.mul(64), ci.y.mul(64))
+                const lt = vec2(lp.z.mod(4).mul(16).add(lp.x), lp.z.div(4).floor().mul(16).add(lp.y))
                 const uv = zt.add(ct).add(lt).add(vec2(0.5)).div(4096)
-                const eps = float(0.5).div(4096) // 4096 is atlas size
+                const eps = float(0.5).div(4096)
                 return clamp(uv, vec2(eps), vec2(float(1).sub(eps)))
         })
         const pick = Fn(([id, uv]: [Float, Vec2]) => {
@@ -269,10 +269,10 @@ const createNode = (mesh: Mesh) => {
         const scl = instance<'vec3'>(mesh.scl, 'scl')
         const pos = instance<'vec3'>(mesh.pos, 'pos')
         const aid = instance<'float'>(mesh.aid, 'aid')
-        const fs = Fn(([n, local, p, id]: [Vec3, Vec3, Vec3, Float]) => {
+        const fs = Fn(([local, p, n, id]: [Vec3, Vec3, Vec3, Float]) => {
                 const L = vec3(LIGHT).normalize()
-                const diffuse = n.normalize().dot(L).max(0.25)
-                const uv = atlasUV(n, local, p, id).toVar('uv')
+                const diffuse = n.normalize().dot(L).mul(0.5).add(0.5)
+                const uv = atlasUV(local, p, n).toVar('uv')
                 const texel = pick(id, uv).toVar('t')
                 const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
@@ -288,7 +288,7 @@ const createNode = (mesh: Mesh) => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(vertexStage(normal), vertexStage(vertex.mul(scl)), vertexStage(pos), vertexStage(aid))
+        const frag = fs(vertexStage(vertex.mul(scl)), vertexStage(pos), vertexStage(normal), vertexStage(aid))
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
@@ -311,7 +311,7 @@ const createChunk = (i = 0, j = 0, k = 0) => {
                 solid((x, y, z) => {
                         const px = (z & 3) * 16 + x
                         const py = (z >> 2) * 16 + y
-                        const si = ((py * 64 + px) * 4) | 0
+                        const si = Math.floor((py * 64 + px) * 4)
                         vox[p++] = tile[si + 3] > 0.5 ? 1 : 0
                 })
                 count = greedyMesh(vox, CHUNK, pos, scl).count
