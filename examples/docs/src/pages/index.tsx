@@ -21,10 +21,8 @@ const JUMP = 12
 const CHUNK = 16
 const REGION = 256
 const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
-const CAMERA_Y = 400
+const CAMERA_Y = 100
 const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
-const TARGET_X = -100
-const TARGET_Y = 10
 const LIGHT = [-0.33, 0.77, 0.55] // normalized afternoon sun
 const urlOfFrame = (rx = 0, ry = 0) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png` //  `http://localhost:5173/logs/${rx}_${ry}.png`
 const offOf = (i = RX0, j = RY0) => [REGION * (i - RX0), 0, REGION * (RY1 - j)]
@@ -102,68 +100,49 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
         solid(tick, size)
         return { pos, scl, count }
 }
+const faceDir = (out = m.vec3.create(), rot = m.vec3.create(), fwd = m.vec3.create(), yaw = 0, pitch = 0) => {
+        m.mat4.identity(rot)
+        m.mat4.rotateY(rot, rot, yaw)
+        if (pitch) m.mat4.rotateX(rot, rot, pitch)
+        m.vec3.transformMat4(out, fwd, rot)
+        return out
+}
+const t0 = m.vec3.create()
+const t1 = m.vec3.create()
+const up = m.vec3.fromValues(0, 1, 0)
+const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number) => {
+        m.vec3.cross(t0, up, out)
+        m.vec3.scale(t0, t0, dir[0])
+        m.vec3.scale(t1, out, dir[2])
+        m.vec3.add(out, t0, t1)
+        m.vec3.scale(out, out, speed)
+        return out
+}
+const perspective = (MVP = m.mat4.create(), V = m.mat4.create(), P = m.mat4.create(), position = m.vec3.create(), target = m.vec3.create(), up = m.vec3.create(), aspect = 1) => {
+        m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
+        m.mat4.lookAt(V, position, target, up)
+        m.mat4.multiply(MVP, P, V)
+}
+const clampToFace = (p: number, half: number, sign = 0) => {
+        const base = Math.floor(p)
+        return sign > 0 ? Math.min(p, base + 1 - half) : Math.max(p, base + half)
+}
 const createCamera = () => {
         let auto = true
         let x = 0
         const position = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
-        const target = m.vec3.fromValues(CAMERA_X + TARGET_X, TARGET_Y, CAMERA_Z)
+        const target = m.vec3.fromValues(CAMERA_X - 10, CAMERA_Y, CAMERA_Z)
         const up = m.vec3.fromValues(0, 1, 0)
         const P = m.mat4.create()
         const V = m.mat4.create()
         const MVP = m.mat4.create()
         const vel = m.vec3.fromValues(0, 0, 0)
-        const size = m.vec3.fromValues(0.9, 1.6, 0.9)
         const dir = m.vec3.fromValues(0, 0, 0)
         const face = m.vec3.fromValues(-1, 0, 0)
         const fwd = m.vec3.fromValues(0, 0, -1)
         const rot = m.mat4.create()
-        let yaw = Math.PI
-        let pitch = 0
-        let probe: ((x: number, y: number, z: number) => number) | null = null
-        const setProbe = (fn: any) => (probe = fn)
-        const clampToFace = (p = 0, half = 0, sign = 0) => {
-                const base = Math.floor(p)
-                return sign > 0 ? Math.min(p, base + 1 - half) : Math.max(p, base + half)
-        }
-        const collideAxis = (axis = 0) => {
-                const v = vel[axis]
-                const s = Math.sign(v)
-                if (!s) return
-                const x = position[0] + (axis === 0 ? s : 0)
-                const y = position[1] + (axis === 1 ? s : 0)
-                const z = position[2] + (axis === 2 ? s : 0)
-                if (!probe || !probe(x, y, z)) return
-                position[axis] = clampToFace(position[axis], size[axis] * 0.5, s)
-                vel[axis] = 0
-        }
-        const collider = () => {
-                collideAxis(1)
-                collideAxis(0)
-                collideAxis(2)
-        }
-        const faceDir = (out: m.vec3 = face, y = 0, p = 0) => {
-                m.mat4.identity(rot)
-                m.mat4.rotateY(rot, rot, y)
-                if (p) m.mat4.rotateX(rot, rot, p)
-                m.vec3.transformMat4(out, fwd, rot)
-                return out
-        }
-        const moveDir = (out: m.vec3, keys: m.vec3, scale = 1) => {
-                out[0] = 0
-                out[1] = 0
-                out[2] = 0
-                if (!keys[1] && !keys[2]) return out
-                const f = m.vec3.fromValues(face[0], 0, face[2])
-                m.vec3.normalize(f, f)
-                const r = m.vec3.fromValues(face[2], 0, -face[0])
-                m.vec3.normalize(r, r)
-                out[0] = f[0] * keys[1] + r[0] * keys[2]
-                out[2] = f[2] * keys[1] + r[2] * keys[2]
-                m.vec3.normalize(out, out)
-                out[0] *= scale
-                out[2] *= scale
-                return out
-        }
+        let yaw = Math.PI / 2
+        let pitch = -0.35
         const setLook = () => {
                 target[0] = position[0] + face[0] * 10
                 target[1] = position[1] + face[1] * 10
@@ -174,54 +153,75 @@ const createCamera = () => {
                 pitch += delta[1] * TURN
                 if (pitch > PMAX) pitch = PMAX
                 if (pitch < -PMAX) pitch = -PMAX
-                faceDir(face, yaw, pitch)
+                faceDir(face, rot, fwd, yaw, pitch)
                 setLook()
         }
-        const align = () => { const dx = target[0] - position[0]; const dy = target[1] - position[1]; const dz = target[2] - position[2]; const h = Math.hypot(dx, dz) || 1; yaw = Math.atan2(dx, -dz); pitch = Math.atan2(dy, h); if (pitch > PMAX) pitch = PMAX; if (pitch < -PMAX) pitch = -PMAX; faceDir(face, yaw, pitch); setLook() }
-        const start = () => { align(); auto = false }
+        const align = () => {
+                faceDir(face, rot, fwd, yaw, pitch)
+                setLook()
+        }
+        const start = () => {
+                align()
+                auto = false
+        }
         const stop = () => {
                 auto = true
         }
+        const size = m.vec3.fromValues(0.8, 1.8, 0.8)
+        let onGround = false
         const jump = () => {
                 if (auto) return
-                if (Math.abs(vel[1]) < 0.0001) vel[1] = JUMP
-        }
-        const perspective = (aspect = 1) => {
-                m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
-                m.mat4.lookAt(V, position, target, up)
-                m.mat4.multiply(MVP, P, V)
+                if (!onGround) return
+                vel[1] = JUMP
         }
         const wrap = () => {
                 if (position[0] < 0) position[0] = ROW * REGION
                 if (position[0] > ROW * REGION) position[0] = 0
         }
-        const tick = (dt = 0) => {
+        const collide = (axis = 0, probe: any = () => 0) => {
+                const v = vel[axis]
+                const s = Math.sign(v)
+                if (!s) return
+                const x = position[0] + (axis === 0 ? s : 0)
+                const y = position[1] + (axis === 1 ? s : 0)
+                const z = position[2] + (axis === 2 ? s : 0)
+                const hit = probe(Math.floor(x), Math.floor(y), Math.floor(z))
+                if (!hit) return
+                position[axis] = clampToFace(position[axis], size[axis] * 0.5, s)
+                vel[axis] = 0
+                if (axis === 1 && s < 0) onGround = true
+        }
+        const tick = (dt = 0, probe: any = () => 0) => {
                 if (auto) {
                         x -= dt * SPEED
                         position[0] = CAMERA_X + x
                         if (position[0] < 0) position[0] = ROW * REGION
-                        target[0] = position[0] + TARGET_X
-                        target[1] = TARGET_Y
-                        target[2] = position[2]
+                        setLook()
                         return
                 }
-                faceDir(face, yaw, pitch)
-                const mv = m.vec3.create()
-                moveDir(mv, dir, MOVE)
-                vel[0] = mv[0]
-                vel[2] = mv[2]
+                faceDir(face, rot, fwd, yaw, pitch)
+                const move = m.vec3.create()
+                moveDir(move, dir, MOVE)
+                vel[0] = move[0]
+                vel[2] = move[2]
                 vel[1] += GRAV * dt
-                position[0] += vel[0] * dt
+                onGround = false
                 position[1] += vel[1] * dt
+                collide(1, probe)
+                position[0] += vel[0] * dt
+                collide(0, probe)
                 position[2] += vel[2] * dt
-                if (probe) collider()
+                collide(2, probe)
                 setLook()
                 wrap()
         }
         const asdw = (axis = 0, delta = 0) => {
-                dir[axis] = delta
+                if (axis === 1) dir[2] = delta
+                if (axis === 2) dir[0] = -delta
         }
-        return { tick, perspective, position, target, up, MVP, turn, start, stop, jump, asdw, setProbe }
+        faceDir(face, rot, fwd, yaw, pitch)
+        setLook()
+        return { tick, perspective, position, dir, target, up, MVP, turn, start, stop, jump, asdw, update: perspective.bind(null, MVP, V, P, position, target, up) }
 }
 const createMesh = () => {
         let count = 1
@@ -521,17 +521,17 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 if (ci < 0 || ci > 15 || cj < 0 || cj > 15 || ck < 0 || ck > 15) return 0
                 const c = r.get(ci, cj, ck)
                 if (!c) return 0
-                if (!c.vox) {
+                if (!c.vox()) {
                         const ctx = r.ctx()
                         if (ctx) c.load(ctx)
                 }
-                if (!c.vox) return 0
+                if (!c.vox()) return 0
                 const vx = Math.floor(lx - ci * CHUNK)
                 const vy = Math.floor(ly - cj * CHUNK)
                 const vz = Math.floor(lz - ck * CHUNK)
                 if (vx < 0 || vx > 15 || vy < 0 || vy > 15 || vz < 0 || vz > 15) return 0
                 const idx = vx + (vy + vz * CHUNK) * CHUNK
-                return c.vox ? c.vox[idx] : 0
+                return c.vox()[idx]
         }
         return { vis, probe }
 }
@@ -540,26 +540,24 @@ const createViewer = () => {
         let ts = performance.now()
         let pt = ts
         let dt = 0
-        let pt2 = pt
-        const dir = m.vec3.create()
+        let pt2 = ts - 200
         const cam = createCamera()
         const mesh = createMesh()
         const node = createNode(mesh)
         const slots = createSlots()
         const regions = createRegions(mesh, cam)
-        cam.setProbe((x: number, y: number, z: number) => regions.probe(x, y, z))
         const resize = (gl: GL) => {
-                cam.perspective(gl.size[0] / gl.size[1])
+                cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
         }
         const render = async (gl: GL) => {
                 pt = ts
                 ts = performance.now()
                 dt = (ts - pt) / 1000
-                cam.tick(dt)
-                cam.perspective(gl.size[0] / gl.size[1])
+                cam.tick(dt, regions.probe)
+                cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
-                if (ts - pt2 < 100) return
+                if (ts - pt2 < 16) return
                 pt2 = ts
                 if (isLoading) return
                 isLoading = true
@@ -575,10 +573,7 @@ const createViewer = () => {
                 frag: node.frag,
                 render,
                 resize,
-                asdw: (axis = 0, delta = 0) => {
-                        dir[axis] = delta
-                        cam.asdw(axis, delta)
-                },
+                asdw: (axis = 0, delta = 0) => cam.asdw(axis, delta),
                 look: (dx = 0, dy = 0) => cam.turn([dx, dy]),
                 start: () => cam.start(),
                 stop: () => cam.stop(),
@@ -613,14 +608,17 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                                 if (e.key === 'd') viewer.asdw(2, isPress ? -1 : 0)
                                 if (isPress && e.code === 'Space') viewer.jump()
                         }
-                        const onMove = (e: MouseEvent) => viewer.look(e.movementX, e.movementY)
+                        const onMove = (e: MouseEvent) => viewer.look(e.movementX, -e.movementY)
                         const onLock = () => {
-                                const locked = document.pointerLockElement === el
-                                if (locked) {
-                                        document.addEventListener('mousemove', onMove)
-                                } else {
-                                        document.removeEventListener('mousemove', onMove)
-                                        viewer.stop()
+                                try {
+                                        const locked = document.pointerLockElement === el
+                                        if (locked) {
+                                                document.addEventListener('mousemove', onMove)
+                                        } else {
+                                                document.removeEventListener('mousemove', onMove)
+                                                viewer.stop()
+                                        }
+                                } finally {
                                 }
                         }
                         const onDown = () => {
