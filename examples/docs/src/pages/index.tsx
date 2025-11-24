@@ -7,8 +7,8 @@ import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, vec2,
 import type { Float, Vec2, Vec3 } from 'glre/src/node'
 const RX0 = 28
 const RX1 = 123
-const RY0 = 76 // 75
-const RY1 = 77 // 79
+const RY0 = 75
+const RY1 = 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const FAR = Math.sqrt(256 * 256 * 3) * 0.5
 const SLOT = 16
@@ -19,7 +19,7 @@ const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
 const CAMERA_Y = 400
 const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
 const TARGET_X = -100
-const TARGET_Y = 100
+const TARGET_Y = 10
 const LIGHT = [-0.3, 0.7, 0.5] // Afternoon sun
 const urlOfFrame = (rx = 0, ry = 0) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png` //  `http://localhost:5173/logs/${rx}_${ry}.png`
 const offOf = (i = RX0, j = RY0) => [REGION * (i - RX0), 0, REGION * (RY1 - j)]
@@ -106,7 +106,7 @@ const createCamera = () => {
         const V = m.mat4.create()
         const MVP = m.mat4.create()
         const perspective = (aspect = 1) => {
-                m.mat4.perspective(P, (60 * Math.PI) / 180, aspect, 0.1, 4000)
+                m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
                 m.mat4.lookAt(V, position, target, up)
                 m.mat4.multiply(MVP, P, V)
         }
@@ -274,7 +274,7 @@ const createNode = (mesh: Mesh) => {
                 const diffuse = n.normalize().dot(L).max(0.25)
                 const uv = atlasUV(n, local, p, id).toVar('uv')
                 const texel = pick(id, uv).toVar('t')
-                const rgb = texel.rgb.mul(diffuse).max(diffuse.div(3)).toVar('rgb')
+                const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
         const vs = Fn(([pos, scl, aid]: [Vec3, Vec3, Float]) => {
@@ -301,15 +301,18 @@ const createChunk = (i = 0, j = 0, k = 0) => {
         const z = k * 16
         const pos = [] as number[]
         const scl = [] as number[]
-        const load = (ctx: CanvasRenderingContext2D, rx = 0, ry = 0, rz = 0) => {
+        const load = (ctx: CanvasRenderingContext2D) => {
                 if (isMeshed) return
-                const tile = ctx.getImageData((k & 3) * 1024 + i * 64, (k >> 2) * 1024 + j * 64, 64, 64).data
+                const ox = (k & 3) * 1024 + i * 64
+                const oy = (k >> 2) * 1024 + j * 64
+                const tile = ctx.getImageData(ox, oy, 64, 64).data
                 const vox = new Uint8Array(CHUNK * CHUNK * CHUNK)
-                const get = (x = 0, y = 0) => ((y * 64 + x) * 4) | 0
                 let p = 0
-                solid((ci, cj, ck) => {
-                        const si = get((ck & 3) * CHUNK + ci, (ck >> 2) * CHUNK + cj)
-                        vox[p++] = tile[si + 3] ? 1 : 0
+                solid((x, y, z) => {
+                        const px = (z & 3) * 16 + x
+                        const py = (z >> 2) * 16 + y
+                        const si = ((py * 64 + px) * 4) | 0
+                        vox[p++] = tile[si + 3] > 0.5 ? 1 : 0
                 })
                 count = greedyMesh(vox, CHUNK, pos, scl).count
                 for (let i = 0; i < count; i++) {
@@ -343,7 +346,7 @@ const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
         const chunk = (ctx: CanvasRenderingContext2D, i = 0) => {
                 chunks.forEach((c) => {
                         if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) return
-                        c.load(ctx, x, y, z)
+                        c.load(ctx)
                         mesh.merge(c, i)
                 })
         }
