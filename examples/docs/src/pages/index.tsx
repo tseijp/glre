@@ -11,18 +11,17 @@ const RY0 = 75
 const RY1 = 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const FAR = Math.sqrt(256 * 256 * 3) * 0.5
-const SLOT = 8 // 16
+const SLOT = 16
 const SPEED = 10
-const MOVE = 6
-const TURN = 0.0025
+const MOVE = 12
+const TURN = 1 / 500
 const PMAX = Math.PI / 2 - 0.01
-const GRAV = 0 // -18
-const GROUND = 10
-const JUMP = 9
+const GRAV = -30
+const JUMP = 12
 const CHUNK = 16
 const REGION = 256
 const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
-const CAMERA_Y = 1000
+const CAMERA_Y = 400
 const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
 const TARGET_X = -100
 const TARGET_Y = 10
@@ -104,100 +103,125 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
         return { pos, scl, count }
 }
 const createCamera = () => {
+        let auto = true
         let x = 0
-        let mode = false
-        let yaw = 0
-        let pitch = 0
-        let last = 0
-        const move = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
-        const dir = m.vec3.fromValues(CAMERA_X + TARGET_X, TARGET_Y, CAMERA_Z)
+        const position = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
+        const target = m.vec3.fromValues(CAMERA_X + TARGET_X, TARGET_Y, CAMERA_Z)
         const up = m.vec3.fromValues(0, 1, 0)
-        const vel = m.vec3.create()
-        const face = m.vec3.fromValues(-1, 0, 0)
-        const right = m.vec3.create()
-        const size = m.vec3.fromValues(0.8, 1.8, 0.8)
         const P = m.mat4.create()
         const V = m.mat4.create()
         const MVP = m.mat4.create()
-        const _rot = m.mat4.create()
-        const _fwd = m.vec3.fromValues(0, 0, -1)
-        const faceDir = (out = m.vec3.create(), yaw = 0, pitch = 0) => {
-                m.mat4.identity(_rot)
-                m.mat4.rotateY(_rot, _rot, yaw)
-                if (pitch) m.mat4.rotateX(_rot, _rot, pitch)
-                m.vec3.transformMat4(out, _fwd, _rot)
-                return out
-        }
-        const moveDir = (out = m.vec3.create(), f = 0, s = 0, mag = 1) => {
-                m.vec3.cross(right, face, up)
-                m.vec3.normalize(right, right)
-                m.vec3.scale(out, face, f)
-                m.vec3.scaleAndAdd(out, out, right, s)
-                m.vec3.normalize(out, out)
-                m.vec3.scale(out, out, mag)
-                return out
-        }
-        const clampToFace = (p = 0, half = 0.5, sign = 0) => {
+        const vel = m.vec3.fromValues(0, 0, 0)
+        const size = m.vec3.fromValues(0.9, 1.6, 0.9)
+        const dir = m.vec3.fromValues(0, 0, 0)
+        const face = m.vec3.fromValues(-1, 0, 0)
+        const fwd = m.vec3.fromValues(0, 0, -1)
+        const rot = m.mat4.create()
+        let yaw = Math.PI
+        let pitch = 0
+        let probe: ((x: number, y: number, z: number) => number) | null = null
+        const setProbe = (fn: any) => (probe = fn)
+        const clampToFace = (p = 0, half = 0, sign = 0) => {
                 const base = Math.floor(p)
                 return sign > 0 ? Math.min(p, base + 1 - half) : Math.max(p, base + half)
         }
-        let grounded = false
-        const collideAxis = (solidAt: (x: number, y: number, z: number) => number, axis = 0) => {
+        const collideAxis = (axis = 0) => {
                 const v = vel[axis]
                 const s = Math.sign(v)
                 if (!s) return
-                const xw = move[0] + (axis === 0 ? s : 0)
-                const yw = move[1] + (axis === 1 ? s : 0)
-                const zw = move[2] + (axis === 2 ? s : 0)
-                if (!solidAt(Math.floor(xw), Math.floor(yw), Math.floor(zw))) return
-                move[axis] = clampToFace(move[axis], size[axis] * 0.5, s)
+                const x = position[0] + (axis === 0 ? s : 0)
+                const y = position[1] + (axis === 1 ? s : 0)
+                const z = position[2] + (axis === 2 ? s : 0)
+                if (!probe || !probe(x, y, z)) return
+                position[axis] = clampToFace(position[axis], size[axis] * 0.5, s)
                 vel[axis] = 0
-                if (axis === 1 && s < 0) grounded = true
         }
-        const perspective = (aspect = 1) => {
-                m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
-                m.mat4.lookAt(V, move, dir, up)
-                m.mat4.multiply(MVP, P, V)
+        const collider = () => {
+                collideAxis(1)
+                collideAxis(0)
+                collideAxis(2)
         }
-        const turn = (delta: number[], time = performance.now()) => {
+        const faceDir = (out: m.vec3 = face, y = 0, p = 0) => {
+                m.mat4.identity(rot)
+                m.mat4.rotateY(rot, rot, y)
+                if (p) m.mat4.rotateX(rot, rot, p)
+                m.vec3.transformMat4(out, fwd, rot)
+                return out
+        }
+        const moveDir = (out: m.vec3, keys: m.vec3, scale = 1) => {
+                out[0] = 0
+                out[1] = 0
+                out[2] = 0
+                if (!keys[1] && !keys[2]) return out
+                const f = m.vec3.fromValues(face[0], 0, face[2])
+                m.vec3.normalize(f, f)
+                const r = m.vec3.fromValues(face[2], 0, -face[0])
+                m.vec3.normalize(r, r)
+                out[0] = f[0] * keys[1] + r[0] * keys[2]
+                out[2] = f[2] * keys[1] + r[2] * keys[2]
+                m.vec3.normalize(out, out)
+                out[0] *= scale
+                out[2] *= scale
+                return out
+        }
+        const setLook = () => {
+                target[0] = position[0] + face[0] * 10
+                target[1] = position[1] + face[1] * 10
+                target[2] = position[2] + face[2] * 10
+        }
+        const turn = (delta: number[]) => {
                 yaw -= delta[0] * TURN
                 pitch += delta[1] * TURN
                 if (pitch > PMAX) pitch = PMAX
                 if (pitch < -PMAX) pitch = -PMAX
                 faceDir(face, yaw, pitch)
-                m.vec3.add(dir, move, face)
-                if (time - last < 100) return
-                last = time
+                setLook()
         }
-        const keydir = { f: 0, s: 0 }
-        const key = (k = '', on = false) => {
-                if (k === 'w') keydir.f = on ? 1 : keydir.f === 1 ? 0 : keydir.f
-                if (k === 's') keydir.f = on ? -1 : keydir.f === -1 ? 0 : keydir.f
-                if (k === 'a') keydir.s = on ? -1 : keydir.s === -1 ? 0 : keydir.s
-                if (k === 'd') keydir.s = on ? 1 : keydir.s === 1 ? 0 : keydir.s
-                if (k === ' ') if (on && grounded) vel[1] = JUMP
+        const align = () => { const dx = target[0] - position[0]; const dy = target[1] - position[1]; const dz = target[2] - position[2]; const h = Math.hypot(dx, dz) || 1; yaw = Math.atan2(dx, -dz); pitch = Math.atan2(dy, h); if (pitch > PMAX) pitch = PMAX; if (pitch < -PMAX) pitch = -PMAX; faceDir(face, yaw, pitch); setLook() }
+        const start = () => { align(); auto = false }
+        const stop = () => {
+                auto = true
         }
-        const tick = (dt = 0, solidAt: (x: number, y: number, z: number) => number) => {
-                if (!mode) {
+        const jump = () => {
+                if (auto) return
+                if (Math.abs(vel[1]) < 0.0001) vel[1] = JUMP
+        }
+        const perspective = (aspect = 1) => {
+                m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
+                m.mat4.lookAt(V, position, target, up)
+                m.mat4.multiply(MVP, P, V)
+        }
+        const wrap = () => {
+                if (position[0] < 0) position[0] = ROW * REGION
+                if (position[0] > ROW * REGION) position[0] = 0
+        }
+        const tick = (dt = 0) => {
+                if (auto) {
                         x -= dt * SPEED
-                        move[0] = dir[0] = CAMERA_X + x
-                        if (move[0] < 0) move[0] = ROW * REGION
-                        dir[0] += TARGET_X
+                        position[0] = CAMERA_X + x
+                        if (position[0] < 0) position[0] = ROW * REGION
+                        target[0] = position[0] + TARGET_X
+                        target[1] = TARGET_Y
+                        target[2] = position[2]
                         return
                 }
                 faceDir(face, yaw, pitch)
-                moveDir(move, keydir.f, keydir.s, MOVE)
+                const mv = m.vec3.create()
+                moveDir(mv, dir, MOVE)
+                vel[0] = mv[0]
+                vel[2] = mv[2]
                 vel[1] += GRAV * dt
-                grounded = false
-                collideAxis(solidAt, 1)
-                collideAxis(solidAt, 0)
-                collideAxis(solidAt, 2)
-                move[0] += vel[0] * dt
-                move[1] += vel[1] * dt
-                move[2] += vel[2] * dt
-                m.vec3.add(dir, move, face)
+                position[0] += vel[0] * dt
+                position[1] += vel[1] * dt
+                position[2] += vel[2] * dt
+                if (probe) collider()
+                setLook()
+                wrap()
         }
-        return { tick, perspective, move, MVP, turn, key, set: (next = false) => (mode = next) }
+        const asdw = (axis = 0, delta = 0) => {
+                dir[axis] = delta
+        }
+        return { tick, perspective, position, target, up, MVP, turn, start, stop, jump, asdw, setProbe }
 }
 const createMesh = () => {
         let count = 1
@@ -371,13 +395,13 @@ const createNode = (mesh: Mesh) => {
 const createChunk = (i = 0, j = 0, k = 0) => {
         let isMeshed = false
         let count = 0
-        let vox: Uint8Array
         const id = chunkId(i, j, k)
         const x = i * 16
         const y = j * 16
         const z = k * 16
         const pos = [] as number[]
         const scl = [] as number[]
+        let vox: Uint8Array
         const load = (ctx: CanvasRenderingContext2D) => {
                 if (isMeshed) return
                 const ox = (k & 3) * 1024 + i * 64
@@ -405,6 +429,7 @@ const createChunk = (i = 0, j = 0, k = 0) => {
 const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
         let img: HTMLImageElement
         const chunks = new Map<number, Chunk>()
+        let ctxLast: CanvasRenderingContext2D | null = null
         const [x, y, z] = offOf(i, j)
         solid((ci, cj, ck) => {
                 const c = createChunk(ci, cj, ck)
@@ -421,27 +446,16 @@ const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
                 return await promise
         }
         const chunk = (ctx: CanvasRenderingContext2D, i = 0) => {
+                ctxLast = ctx
                 chunks.forEach((c) => {
                         if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) return
                         c.load(ctx)
                         mesh.merge(c, i)
                 })
         }
-        const sample = (lx = 0, ly = 0, lz = 0) => {
-                if (lx < 0 || ly < 0 || lz < 0) return 0
-                if (lx >= REGION || ly >= REGION || lz >= REGION) return 0
-                const ci = Math.floor(lx / CHUNK)
-                const cj = Math.floor(ly / CHUNK)
-                const ck = Math.floor(lz / CHUNK)
-                const c = chunks.get(chunkId(ci, cj, ck))
-                if (!c || !c.vox) return 0
-                const vx = lx & 15
-                const vy = ly & 15
-                const vz = lz & 15
-                const idx = vx + (vy + vz * CHUNK) * CHUNK
-                return c.vox()[idx]
-        }
-        return { x, y, z, slot, image, chunk, sample }
+        const get = (ci = 0, cj = 0, ck = 0) => chunks.get(chunkId(ci, cj, ck))
+        const ctx = () => ctxLast
+        return { x, y, z, slot, image, chunk, get, ctx }
 }
 const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
@@ -455,8 +469,8 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 return r
         }
         const _coord = () => {
-                const cx = cam.move[0]
-                const cz = cam.move[2]
+                const cx = cam.position[0]
+                const cz = cam.position[2]
                 const start = [_clamp(RX0 + Math.floor(cx / REGION), RX0, RX1), _clamp(RY1 - Math.floor(cz / REGION), RY0, RY1)] as [number, number]
                 const q = [start] as [number, number][]
                 const seen = new Set<string>([start.join(',')])
@@ -490,8 +504,36 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 for (const [id, r] of regions) if (!keep.has(r)) regions.delete(id)
                 return keep
         }
-        const get = (rx = RX0, ry = RY0) => regions.get(regionId(rx, ry))
-        return { vis, get }
+        const probe = (wx = 0, wy = 0, wz = 0) => {
+                const rxi = RX0 + Math.floor(wx / REGION)
+                const ryj = RY1 - Math.floor(wz / REGION)
+                if (rxi < RX0 || rxi > RX1) return 0
+                if (ryj < RY0 || ryj > RY1) return 0
+                const rid = regionId(rxi, ryj)
+                const r = regions.get(rid)
+                if (!r) return 0
+                const lx = wx - r.x
+                const ly = wy - r.y
+                const lz = wz - r.z
+                const ci = Math.floor(lx / CHUNK)
+                const cj = Math.floor(ly / CHUNK)
+                const ck = Math.floor(lz / CHUNK)
+                if (ci < 0 || ci > 15 || cj < 0 || cj > 15 || ck < 0 || ck > 15) return 0
+                const c = r.get(ci, cj, ck)
+                if (!c) return 0
+                if (!c.vox) {
+                        const ctx = r.ctx()
+                        if (ctx) c.load(ctx)
+                }
+                if (!c.vox) return 0
+                const vx = Math.floor(lx - ci * CHUNK)
+                const vy = Math.floor(ly - cj * CHUNK)
+                const vz = Math.floor(lz - ck * CHUNK)
+                if (vx < 0 || vx > 15 || vy < 0 || vy > 15 || vz < 0 || vz > 15) return 0
+                const idx = vx + (vy + vz * CHUNK) * CHUNK
+                return c.vox ? c.vox[idx] : 0
+        }
+        return { vis, probe }
 }
 const createViewer = () => {
         let isLoading = false
@@ -499,24 +541,13 @@ const createViewer = () => {
         let pt = ts
         let dt = 0
         let pt2 = pt
+        const dir = m.vec3.create()
         const cam = createCamera()
         const mesh = createMesh()
         const node = createNode(mesh)
         const slots = createSlots()
         const regions = createRegions(mesh, cam)
-        const solidAt = (x = 0, y = 0, z = 0) => {
-                if (x < 0 || z < 0) return 0
-                const rx = RX0 + Math.floor(x / REGION)
-                const ry = RY1 - Math.floor(z / REGION)
-                if (rx < RX0 || rx > RX1) return 0
-                if (ry < RY0 || ry > RY1) return 0
-                const r = regions.get(rx, ry)
-                if (!r) return 0
-                const lx = x - r.x
-                const ly = y - r.y
-                const lz = z - r.z
-                return r.sample(lx, ly, lz)
-        }
+        cam.setProbe((x: number, y: number, z: number) => regions.probe(x, y, z))
         const resize = (gl: GL) => {
                 cam.perspective(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
@@ -525,7 +556,7 @@ const createViewer = () => {
                 pt = ts
                 ts = performance.now()
                 dt = (ts - pt) / 1000
-                cam.tick(dt, solidAt)
+                cam.tick(dt)
                 cam.perspective(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
                 if (ts - pt2 < 100) return
@@ -539,7 +570,20 @@ const createViewer = () => {
                 gl.instanceCount = mesh.draw(c, pg)
                 isLoading = false
         }
-        return { vert: node.vert, frag: node.frag, cam, render, resize, turn: (dx = 0, dy = 0) => cam.turn([dx, dy]), key: (k = '', on = false) => cam.key(k, on) }
+        return {
+                vert: node.vert,
+                frag: node.frag,
+                render,
+                resize,
+                asdw: (axis = 0, delta = 0) => {
+                        dir[axis] = delta
+                        cam.asdw(axis, delta)
+                },
+                look: (dx = 0, dy = 0) => cam.turn([dx, dy]),
+                start: () => cam.start(),
+                stop: () => cam.stop(),
+                jump: () => cam.jump(),
+        }
 }
 /**
  * App
@@ -561,28 +605,31 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         viewer.resize(gl)
                 },
                 mount() {
-                        const press = (on: boolean, e: KeyboardEvent) => {
-                                if (document.pointerLockElement !== gl.el) return
-                                if (e.key === 'w') viewer.key('w', on)
-                                if (e.key === 's') viewer.key('s', on)
-                                if (e.key === 'a') viewer.key('a', on)
-                                if (e.key === 'd') viewer.key('d', on)
-                                if (e.key === ' ') viewer.key(' ', on)
+                        const el = gl.el
+                        const press = (isPress: boolean, e: KeyboardEvent) => {
+                                if (e.key === 'w') viewer.asdw(1, isPress ? 1 : 0)
+                                if (e.key === 's') viewer.asdw(1, isPress ? -1 : 0)
+                                if (e.key === 'a') viewer.asdw(2, isPress ? 1 : 0)
+                                if (e.key === 'd') viewer.asdw(2, isPress ? -1 : 0)
+                                if (isPress && e.code === 'Space') viewer.jump()
                         }
-                        const move = (e: MouseEvent) => {
-                                if (document.pointerLockElement !== gl.el) return
-                                viewer.turn(e.movementX, e.movementY)
+                        const onMove = (e: MouseEvent) => viewer.look(e.movementX, e.movementY)
+                        const onLock = () => {
+                                const locked = document.pointerLockElement === el
+                                if (locked) {
+                                        document.addEventListener('mousemove', onMove)
+                                } else {
+                                        document.removeEventListener('mousemove', onMove)
+                                        viewer.stop()
+                                }
                         }
-                        const lock = () => {
-                                if (document.pointerLockElement === gl.el) viewer.cam.set(true)
-                                else viewer.cam.set(false)
+                        const onDown = () => {
+                                if (!el) return
+                                el.requestPointerLock()
+                                viewer.start()
                         }
-                        const click = () => {
-                                gl.el?.requestPointerLock()
-                        }
-                        gl.el.addEventListener('click', click)
-                        window.addEventListener('pointerlockchange', lock)
-                        window.addEventListener('mousemove', move)
+                        el.addEventListener('mousedown', onDown)
+                        document.addEventListener('pointerlockchange', onLock)
                         window.addEventListener('keydown', press.bind(null, true))
                         window.addEventListener('keyup', press.bind(null, false))
                 },
