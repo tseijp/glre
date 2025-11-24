@@ -239,7 +239,7 @@ const createSlots = () => {
         }
         return { sync }
 }
-const createShader = (mesh: Mesh) => {
+const createNode = (mesh: Mesh) => {
         const iMVP = uniform<'mat4'>([...m.mat4.create()], 'iMVP')
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
         const iAtlas = range(SLOT).map((i) => uniform('https://r.tsei.jp/texture/world.png', `iAtlas${i}`))
@@ -406,12 +406,12 @@ const createViewer = () => {
         const dir = m.vec3.create()
         const cam = createCamera()
         const mesh = createMesh()
+        const node = createNode(mesh)
         const slots = createSlots()
-        const shader = createShader(mesh)
         const regions = createRegions(mesh, cam)
         const resize = (gl: GL) => {
                 cam.perspective(gl.size[0] / gl.size[1])
-                shader.iMVP.value = [...cam.MVP]
+                node.iMVP.value = [...cam.MVP]
         }
         const render = async (gl: GL) => {
                 pt = ts
@@ -419,7 +419,7 @@ const createViewer = () => {
                 dt = (ts - pt) / 1000
                 cam.tick(dt, dir)
                 cam.perspective(gl.size[0] / gl.size[1])
-                shader.iMVP.value = [...cam.MVP]
+                node.iMVP.value = [...cam.MVP]
                 if (ts - pt2 < 100) return
                 pt2 = ts
                 if (isLoading) return
@@ -431,7 +431,7 @@ const createViewer = () => {
                 gl.instanceCount = mesh.draw(c, pg)
                 isLoading = false
         }
-        return { vert: shader.vert, frag: shader.frag, render, resize, asdw: (axis = 0, delta = 0) => (dir[axis] = delta) }
+        return { vert: node.vert, frag: node.frag, render, resize, asdw: (axis = 0, delta = 0) => (dir[axis] = delta) }
 }
 /**
  * App
@@ -471,7 +471,7 @@ export default function Home() {
         return <Layout noFooter>{viewer ? <Canvas viewer={viewer} /> : null}</Layout>
 }
 type Camera = ReturnType<typeof createCamera>
-type Viewer = ReturnType<typeof createViewer>
-type Region = ReturnType<typeof createRegion>
 type Chunk = ReturnType<typeof createChunk>
 type Mesh = ReturnType<typeof createMesh>
+type Region = ReturnType<typeof createRegion>
+type Viewer = ReturnType<typeof createViewer>
