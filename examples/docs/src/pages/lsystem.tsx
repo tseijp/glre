@@ -102,28 +102,8 @@ void main() {
         fragColor = fragment(gl_FragCoord);
 }
  */
-
-import {
-        Break,
-        Fn,
-        Float,
-        If,
-        Loop,
-        Vec2,
-        Vec4,
-        float,
-        iResolution,
-        int,
-        Int,
-        iTime,
-        mat3,
-        position,
-        smoothstep,
-        uniform,
-        vec2,
-        vec3,
-        vec4,
-} from 'glre/src/node'
+import Layout from '@theme/Layout'
+import { Break, Fn, Float, If, Loop, Vec2, Vec4, float, iResolution, int, Int, iTime, mat3, position, smoothstep, uniform, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 
@@ -248,5 +228,9 @@ export default function App() {
                         WIDF: { value: 0.4, min: 0, max: 1 },
                 })
         )
-        return <canvas ref={gl.ref} />
+        return (
+                <Layout noFooter>
+                        <canvas ref={gl.ref} />
+                </Layout>
+        )
 }

@@ -1,24 +1,5 @@
-import {
-        Float,
-        Fn,
-        If,
-        Loop,
-        Vec3,
-        Vec4,
-        bool,
-        constant,
-        float,
-        iResolution,
-        iTime,
-        int,
-        mat3,
-        position,
-        struct,
-        uniform,
-        vec2,
-        vec3,
-        vec4,
-} from 'glre/src/node'
+import Layout from '@theme/Layout'
+import { Float, Fn, If, Loop, Vec3, Vec4, bool, constant, float, iResolution, iTime, int, mat3, position, struct, uniform, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 import { useDrag } from 'rege/react'
@@ -63,11 +44,7 @@ const gyroid = Fn(([pos]: [Vec3]) => {
         const c = p.cos().toVar('c')
         const s = p.sin().toVar('s')
         const t = s.x.mul(c.y).add(s.y.mul(c.z)).add(s.z.mul(c.x))
-        const n = vec3(
-                c.x.mul(c.y).sub(s.z.mul(s.x)),
-                c.y.mul(c.z).sub(s.x.mul(s.y)),
-                c.z.mul(c.x).sub(s.y.mul(s.z))
-        ).mul(scale)
+        const n = vec3(c.x.mul(c.y).sub(s.z.mul(s.x)), c.y.mul(c.z).sub(s.x.mul(s.y)), c.z.mul(c.x).sub(s.y.mul(s.z))).mul(scale)
         return Ray({ hit: bool(true), t, n })
 })
 
@@ -130,13 +107,7 @@ const harnack = Fn(([ro, rd]: Vec3[]) => {
 })
 
 const shade = Fn(([hitPos, rd, nor]: Vec3[]) => {
-        const outwardNormal = nor
-                .dot(rd)
-                .greaterThan(0)
-                .toFloat()
-                .mul(nor.negate())
-                .add(nor.dot(rd).lessThanEqual(0).toFloat().mul(nor))
-                .toVar('outwardNormal')
+        const outwardNormal = nor.dot(rd).greaterThan(0).toFloat().mul(nor.negate()).add(nor.dot(rd).lessThanEqual(0).toFloat().mul(nor)).toVar('outwardNormal')
         const lightDir = lightPosition.sub(hitPos).normalize().toVar('lightDir')
         const viewDir = rd.negate().toVar('viewDir')
         const halfDir = lightDir.add(viewDir).normalize().toVar('halfDir')
@@ -224,8 +195,10 @@ export default function App() {
         )
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', top: 0, left: 0, touchAction: 'none' }}>
-                        <canvas ref={gl.ref} />
-                </div>
+                <Layout noFooter>
+                        <div ref={drag.ref} style={{ position: 'fixed', top: 0, left: 0, touchAction: 'none' }}>
+                                <canvas ref={gl.ref} />
+                        </div>
+                </Layout>
         )
 }
