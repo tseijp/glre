@@ -200,7 +200,7 @@ const createCamera = () => {
                         return
                 }
                 faceDir(face, rot, fwd, yaw, pitch)
-                const move = m.vec3.create()
+                const move = m.vec3.clone(face)
                 moveDir(move, dir, MOVE)
                 vel[0] = move[0]
                 vel[2] = move[2]
