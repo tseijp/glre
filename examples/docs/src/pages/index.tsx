@@ -111,7 +111,7 @@ const faceDir = (out = m.vec3.create(), yaw = 0, pitch = 0) => {
         m.vec3.transformMat4(out, _fwd, _t2)
         return out
 }
-const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number, planar = false) => {
+const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed = 1, planar = false) => {
         m.vec3.copy(_t1, out)
         _t1[1] = 0
         if (m.vec3.squaredLength(_t1) < 1e-8) {
@@ -160,7 +160,7 @@ const createCamera = ({ yaw = Math.PI * 0.5, pitch = -Math.PI * 0.45, mode = -1,
                 if (mode === 0) asdw(0, isPress ? 1 : 0)
                 if (mode === 1 && isGround && isPress) vel[1] = JUMP
         }
-        const turn = (delta: number[]) => {
+        const turn = (delta = [0, 0]) => {
                 const r = mode === 1 ? 1 : 0.1
                 yaw += delta[0] * r * TURN
                 pitch += delta[1] * r * TURN
