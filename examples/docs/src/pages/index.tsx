@@ -584,8 +584,6 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 mount() {
                         const el = gl.el
                         const press = (isPress: boolean, e: KeyboardEvent) => {
-                                e.preventDefault()
-                                e.stopPropagation()
                                 const k = e.code
                                 if (k === 'KeyW') viewer.cam.asdw(1, isPress ? 1 : 0)
                                 if (k === 'KeyS') viewer.cam.asdw(1, isPress ? -1 : 0)
