@@ -314,18 +314,23 @@ const createSlot = (index = 0) => {
 }
 const createSlots = () => {
         const owner = range(SLOT).map(createSlot)
-        const _assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region) => {
+        let pending: Region[] = []
+        let keep = new Set<Region>()
+        const _assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, budget = Infinity) => {
                 let index = r.slot
                 if (index < 0) {
                         index = owner.findIndex((slot) => !slot?.region())
-                        if (index < 0) return
+                        if (index < 0) return true
                         const slot = owner[index]
                         slot.set(r, index)
                         const img = await r.image()
-                        if (owner[index].region() !== r || r.slot !== index) return
+                        if (owner[index].region() !== r || r.slot !== index) return true
                         slot.assign(c, pg, img)
                 }
-                if (owner[index]) r.chunk(owner[index].ctx(), index)
+                const slot = owner[index]
+                if (!slot) return true
+                const ctx = slot.ctx()
+                return r.chunk(ctx, index, budget)
         }
         const _release = (keep: Set<Region>) => {
                 owner.forEach((slot) => {
@@ -333,11 +338,23 @@ const createSlots = () => {
                         slot.release()
                 })
         }
-        const sync = async (c: WebGL2RenderingContext, pg: WebGLProgram, keep: Set<Region>) => {
+        const begin = (next: Set<Region>) => {
+                keep = next
                 _release(keep)
-                for (const r of Array.from(keep)) await _assign(c, pg, r)
+                pending = Array.from(keep)
+                pending.forEach((r) => r.reset())
         }
-        return { sync }
+        const step = async (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
+                const start = performance.now()
+                while (pending.length && performance.now() - start < budget) {
+                        const remaining = Math.max(0, budget - (performance.now() - start))
+                        const done = await _assign(c, pg, pending[0], remaining)
+                        if (!done) return false
+                        pending.shift()
+                }
+                return pending.length === 0
+        }
+        return { begin, step }
 }
 const createNode = () => {
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
@@ -431,24 +448,34 @@ const createRegion = (mesh: Mesh, cam: Camera, i = SCOPE.x0, j = SCOPE.y0, slot 
         let ctx: CanvasRenderingContext2D | null = null
         const chunks = new Map<number, Chunk>()
         const [x, y, z] = offOf(i, j)
+        const queue: Chunk[] = []
         solid((ci, cj, ck) => {
                 const c = createChunk(ci, cj, ck)
                 chunks.set(c.id, c)
+                queue.push(c)
         })
+        let cursor = 0
+        const reset = () => {
+                cursor = 0
+        }
         const image = async () => {
                 if (img) return img
                 return (img = await createImage(`${ATLAS_URL}/${i}_${j}.png`))
         }
-        const chunk = (_ctx: CanvasRenderingContext2D, i = 0) => {
+        const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = Infinity) => {
                 ctx = _ctx
-                chunks.forEach((c) => {
-                        if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) return
+                const start = performance.now()
+                while (cursor < queue.length) {
+                        if (performance.now() - start >= budget) return false
+                        const c = queue[cursor++]
+                        if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) continue
                         c.load(ctx)
                         mesh.merge(c, i)
-                })
+                }
+                return true
         }
         const get = (ci = 0, cj = 0, ck = 0) => chunks.get(chunkId(ci, cj, ck))
-        return { x, y, z, slot, image, chunk, get, ctx: () => ctx }
+        return { x, y, z, slot, image, chunk, get, ctx: () => ctx, reset }
 }
 const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
@@ -548,20 +575,23 @@ const createViewer = () => {
         const render = async (gl: GL) => {
                 pt = ts
                 ts = performance.now()
-                if (isLoading) return
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
                 cam.tick(dt, regions.pick)
                 cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
-                if (ts - pt2 < 100) return
-                pt2 = ts
-                isLoading = true
-                mesh.reset()
                 const c = gl.webgl.context as WebGL2RenderingContext
                 const pg = gl.webgl.program as WebGLProgram
-                await slots.sync(c, pg, regions.vis())
+                if (!isLoading && ts - pt2 >= 100) {
+                        pt2 = ts
+                        mesh.reset()
+                        slots.begin(regions.vis())
+                        isLoading = true
+                }
+                if (isLoading) {
+                        const done = await slots.step(c, pg, 6)
+                        if (done) isLoading = false
+                }
                 gl.instanceCount = mesh.draw(c, pg)
-                isLoading = false
         }
         return { mode, node, cam, render, resize, pt: 0 }
 }
