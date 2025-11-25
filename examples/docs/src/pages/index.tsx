@@ -46,88 +46,89 @@ const visSphere = (M = m.mat4.create(), cx = 0, cy = 0, cz = 0, r = 1) => {
         return true
 }
 const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[] = [], count = 0) => {
-        const rowMasks = new Uint32Array(size * size)
+        const rows = new Uint32Array(size * size)
         const ctz = (v = 0) => 31 - Math.clz32(v & -v)
-        const add = (a = 0, b = 0): number => {
+        const bitAdd = (a = 0, b = 0): number => {
                 if (!b) return a
-                return add(a ^ b, (a & b) << 1)
+                return bitAdd(a ^ b, (a & b) << 1)
         }
-        const sub = (a = 0, b = 0): number => add(a, add(~b, 1))
-        const mul = (a = 0, b = 0, acc = 0): number => {
+        const bitSub = (a = 0, b = 0): number => bitAdd(a, bitAdd(~b, 1))
+        const bitMul = (a = 0, b = 0, acc = 0): number => {
                 if (!b) return acc
                 const next = acc ^ ((b & 1) ? a : 0)
-                return mul(a << 1, b >>> 1, next)
+                return bitMul(a << 1, b >>> 1, next)
         }
-        const rowOf = (z = 0, y = 0) => add(mul(z, size), y)
-        const seedMasks = (p = 0, z = 0, y = 0, x = 0, mask = 0): number => {
+        const rowOf = (z = 0, y = 0) => bitAdd(bitMul(z, size), y)
+        const seed = (p = 0, z = 0, y = 0, x = 0, mask = 0): number => {
                 if (z >= size) return p
-                if (y >= size) return seedMasks(p, add(z, 1), 0, 0, 0)
+                if (y >= size) return seed(p, bitAdd(z, 1), 0, 0, 0)
                 if (x >= size) {
-                        rowMasks[rowOf(z, y)] = mask
-                        return seedMasks(p, z, add(y, 1), 0, 0)
+                        rows[rowOf(z, y)] = mask
+                        return seed(p, z, bitAdd(y, 1), 0, 0)
                 }
-                const nextMask = mask | ((src[p] & 1) << x)
-                return seedMasks(add(p, 1), z, y, add(x, 1), nextMask)
+                const paint = mask | ((src[p] & 1) << x)
+                return seed(bitAdd(p, 1), z, y, bitAdd(x, 1), paint)
         }
-        seedMasks()
-        const spanWidth = (mask = 0, x = 0): number => ctz(~(mask >> x) | 0)
-        const spanHeight = (z = 0, y = 0, runMask = 0, h = 1): number => {
-                if (add(y, h) >= size) return h
-                if ((rowMasks[rowOf(z, add(y, h))] & runMask) !== runMask) return h
-                return spanHeight(z, y, runMask, add(h, 1))
+        seed()
+        const spanX = (mask = 0, x = 0): number => ctz(~(mask >> x) | 0)
+        const spanY = (z = 0, y = 0, run = 0, h = 1): number => {
+                if (bitAdd(y, h) >= size) return h
+                if ((rows[rowOf(z, bitAdd(y, h))] & run) !== run) return h
+                return spanY(z, y, run, bitAdd(h, 1))
         }
-        const layerFull = (z = 0, y = 0, h = 0, runMask = 0): boolean => {
+        const layer = (z = 0, y = 0, h = 0, run = 0): boolean => {
                 if (h <= 0) return true
-                if ((rowMasks[rowOf(z, y)] & runMask) !== runMask) return false
-                return layerFull(z, sub(y, 1), sub(h, 1), runMask)
+                if ((rows[rowOf(z, y)] & run) !== run) return false
+                return layer(z, bitSub(y, 1), bitSub(h, 1), run)
         }
-        const spanDepth = (z = 0, y = 0, runMask = 0, h = 0, d = 1): number => {
-                if (add(z, d) >= size) return d
-                if (!layerFull(add(z, d), y, h, runMask)) return d
-                return spanDepth(z, y, runMask, h, add(d, 1))
+        const spanZ = (z = 0, y = 0, run = 0, h = 0, d = 1): number => {
+                if (bitAdd(z, d) >= size) return d
+                if (!layer(bitAdd(z, d), y, h, run)) return d
+                return spanZ(z, y, run, h, bitAdd(d, 1))
         }
-        const wipeHeight = (z = 0, y = 0, h = 0, runMask = 0): void => {
+        const wipeY = (z = 0, y = 0, h = 0, run = 0): void => {
                 if (h <= 0) return
-                rowMasks[rowOf(z, y)] &= ~runMask
-                wipeHeight(z, sub(y, 1), sub(h, 1), runMask)
+                rows[rowOf(z, y)] &= ~run
+                wipeY(z, bitSub(y, 1), bitSub(h, 1), run)
         }
-        const wipeDepth = (z = 0, y = 0, h = 0, d = 0, runMask = 0): void => {
+        const wipeZ = (z = 0, y = 0, h = 0, d = 0, run = 0): void => {
                 if (d <= 0) return
-                wipeHeight(z, y, h, runMask)
-                wipeDepth(sub(z, 1), y, h, sub(d, 1), runMask)
+                wipeY(z, y, h, run)
+                wipeZ(bitSub(z, 1), y, h, bitSub(d, 1), run)
         }
         const emit = (curr = 0, x = 0, y = 0, z = 0, w = 0, h = 0, d = 0): number => {
-                const centerX = Math.fround(add(x << 1, w << 1) * 0.25)
-                const centerY = Math.fround(add(y << 1, h << 1) * 0.25)
-                const centerZ = Math.fround(add(z << 1, d << 1) * 0.25)
-                pos[mul(curr, 3)] = centerX
-                pos[add(mul(curr, 3), 1)] = centerY
-                pos[add(mul(curr, 3), 2)] = centerZ
-                scl[mul(curr, 3)] = w
-                scl[add(mul(curr, 3), 1)] = h
-                scl[add(mul(curr, 3), 2)] = d
-                return add(curr, 1)
+                const cx = Math.fround(bitAdd(x << 1, w << 1) * 0.25)
+                const cy = Math.fround(bitAdd(y << 1, h << 1) * 0.25)
+                const cz = Math.fround(bitAdd(z << 1, d << 1) * 0.25)
+                const p3 = bitMul(curr, 3)
+                pos[p3] = cx
+                pos[bitAdd(p3, 1)] = cy
+                pos[bitAdd(p3, 2)] = cz
+                scl[p3] = w
+                scl[bitAdd(p3, 1)] = h
+                scl[bitAdd(p3, 2)] = d
+                return bitAdd(curr, 1)
         }
-        const walkRow = (z = 0, y = 0, curr = 0): number => {
-                const mask = rowMasks[rowOf(z, y)]
+        const walkX = (z = 0, y = 0, curr = 0): number => {
+                const mask = rows[rowOf(z, y)]
                 if (!mask) return curr
                 const x = ctz(mask)
-                const width = spanWidth(mask, x)
-                const runMask = ((1 << width) - 1) << x
-                const height = spanHeight(z, y, runMask)
-                const depth = spanDepth(z, y, runMask, height)
-                wipeDepth(z, y, height, depth, runMask)
-                return walkRow(z, y, emit(curr, x, y, z, width, height, depth))
+                const w = spanX(mask, x)
+                const run = (((1 << w) - 1) << x) >>> 0
+                const h = spanY(z, y, run)
+                const d = spanZ(z, y, run, h)
+                wipeZ(z, y, h, d, run)
+                return walkX(z, y, emit(curr, x, y, z, w, h, d))
         }
-        const walkLayer = (z = 0, y = 0, curr = 0): number => {
+        const walkY = (z = 0, y = 0, curr = 0): number => {
                 if (y >= size) return curr
-                return walkLayer(z, add(y, 1), walkRow(z, y, curr))
+                return walkY(z, bitAdd(y, 1), walkX(z, y, curr))
         }
-        const walkVolume = (z = 0, curr = 0): number => {
+        const walkZ = (z = 0, curr = 0): number => {
                 if (z >= size) return curr
-                return walkVolume(add(z, 1), walkLayer(z, 0, curr))
+                return walkZ(bitAdd(z, 1), walkY(z, 0, curr))
         }
-        return { pos, scl, count: walkVolume(0, count) }
+        return { pos, scl, count: walkZ(0, count) }
 }
 const _fwd = m.vec3.fromValues(0, 0, -1)
 const _up = m.vec3.fromValues(0, 1, 0)
