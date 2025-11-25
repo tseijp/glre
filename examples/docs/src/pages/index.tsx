@@ -59,42 +59,42 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
                 return mul(a << 1, b >>> 1, next)
         }
         const rowOf = (z = 0, y = 0) => add(mul(z, size), y)
-        const writeRows = (p = 0, z = 0, y = 0, x = 0, mask = 0): number => {
+        const seedMasks = (p = 0, z = 0, y = 0, x = 0, mask = 0): number => {
                 if (z >= size) return p
-                if (y >= size) return writeRows(p, add(z, 1), 0, 0, 0)
+                if (y >= size) return seedMasks(p, add(z, 1), 0, 0, 0)
                 if (x >= size) {
                         rowMasks[rowOf(z, y)] = mask
-                        return writeRows(p, z, add(y, 1), 0, 0)
+                        return seedMasks(p, z, add(y, 1), 0, 0)
                 }
                 const nextMask = mask | ((src[p] & 1) << x)
-                return writeRows(add(p, 1), z, y, add(x, 1), nextMask)
+                return seedMasks(add(p, 1), z, y, add(x, 1), nextMask)
         }
-        writeRows()
-        const widthOf = (mask = 0, x = 0): number => ctz(~(mask >> x) | 0)
-        const heightOf = (z = 0, y = 0, runMask = 0, h = 1): number => {
+        seedMasks()
+        const spanWidth = (mask = 0, x = 0): number => ctz(~(mask >> x) | 0)
+        const spanHeight = (z = 0, y = 0, runMask = 0, h = 1): number => {
                 if (add(y, h) >= size) return h
                 if ((rowMasks[rowOf(z, add(y, h))] & runMask) !== runMask) return h
-                return heightOf(z, y, runMask, add(h, 1))
+                return spanHeight(z, y, runMask, add(h, 1))
         }
         const layerFull = (z = 0, y = 0, h = 0, runMask = 0): boolean => {
                 if (h <= 0) return true
                 if ((rowMasks[rowOf(z, y)] & runMask) !== runMask) return false
                 return layerFull(z, sub(y, 1), sub(h, 1), runMask)
         }
-        const depthOf = (z = 0, y = 0, runMask = 0, h = 0, d = 1): number => {
+        const spanDepth = (z = 0, y = 0, runMask = 0, h = 0, d = 1): number => {
                 if (add(z, d) >= size) return d
                 if (!layerFull(add(z, d), y, h, runMask)) return d
-                return depthOf(z, y, runMask, h, add(d, 1))
+                return spanDepth(z, y, runMask, h, add(d, 1))
         }
-        const clearHeight = (z = 0, y = 0, h = 0, runMask = 0): void => {
+        const wipeHeight = (z = 0, y = 0, h = 0, runMask = 0): void => {
                 if (h <= 0) return
                 rowMasks[rowOf(z, y)] &= ~runMask
-                clearHeight(z, sub(y, 1), sub(h, 1), runMask)
+                wipeHeight(z, sub(y, 1), sub(h, 1), runMask)
         }
-        const clearDepth = (z = 0, y = 0, h = 0, d = 0, runMask = 0): void => {
+        const wipeDepth = (z = 0, y = 0, h = 0, d = 0, runMask = 0): void => {
                 if (d <= 0) return
-                clearHeight(z, y, h, runMask)
-                clearDepth(sub(z, 1), y, h, sub(d, 1), runMask)
+                wipeHeight(z, y, h, runMask)
+                wipeDepth(sub(z, 1), y, h, sub(d, 1), runMask)
         }
         const emit = (curr = 0, x = 0, y = 0, z = 0, w = 0, h = 0, d = 0): number => {
                 const centerX = Math.fround(add(x << 1, w << 1) * 0.25)
@@ -108,26 +108,26 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
                 scl[add(mul(curr, 3), 2)] = d
                 return add(curr, 1)
         }
-        const processRow = (z = 0, y = 0, curr = 0): number => {
+        const walkRow = (z = 0, y = 0, curr = 0): number => {
                 const mask = rowMasks[rowOf(z, y)]
                 if (!mask) return curr
                 const x = ctz(mask)
-                const width = widthOf(mask, x)
+                const width = spanWidth(mask, x)
                 const runMask = ((1 << width) - 1) << x
-                const height = heightOf(z, y, runMask)
-                const depth = depthOf(z, y, runMask, height)
-                clearDepth(z, y, height, depth, runMask)
-                return processRow(z, y, emit(curr, x, y, z, width, height, depth))
+                const height = spanHeight(z, y, runMask)
+                const depth = spanDepth(z, y, runMask, height)
+                wipeDepth(z, y, height, depth, runMask)
+                return walkRow(z, y, emit(curr, x, y, z, width, height, depth))
         }
-        const processLayer = (z = 0, y = 0, curr = 0): number => {
+        const walkLayer = (z = 0, y = 0, curr = 0): number => {
                 if (y >= size) return curr
-                return processLayer(z, add(y, 1), processRow(z, y, curr))
+                return walkLayer(z, add(y, 1), walkRow(z, y, curr))
         }
-        const processVolume = (z = 0, curr = 0): number => {
+        const walkVolume = (z = 0, curr = 0): number => {
                 if (z >= size) return curr
-                return processVolume(add(z, 1), processLayer(z, 0, curr))
+                return walkVolume(add(z, 1), walkLayer(z, 0, curr))
         }
-        return { pos, scl, count: processVolume(0, count) }
+        return { pos, scl, count: walkVolume(0, count) }
 }
 const _fwd = m.vec3.fromValues(0, 0, -1)
 const _up = m.vec3.fromValues(0, 1, 0)
