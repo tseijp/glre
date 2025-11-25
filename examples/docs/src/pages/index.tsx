@@ -48,34 +48,50 @@ const visSphere = (M = m.mat4.create(), cx = 0, cy = 0, cz = 0, r = 1) => {
 const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[] = [], count = 0) => {
         const rowMasks = new Uint32Array(size * size)
         const ctz = (v = 0) => 31 - Math.clz32(v & -v)
+        const add = (a = 0, b = 0): number => (b ? add(a ^ b, (a & b) << 1) : a)
+        const sub = (a = 0, b = 0): number => add(a, add(~b, 1))
+        const mul = (a = 0, b = 0, acc = 0): number => (b ? mul(a << 1, b >>> 1, acc ^ ((b & 1) ? a : 0)) : acc)
+        const rowOf = (z = 0, y = 0) => add(mul(z, size), y)
         const writeRows = (p = 0, z = 0, y = 0, x = 0, mask = 0): number =>
                 z >= size
                         ? p
                         : y >= size
-                          ? writeRows(p, z + 1, 0, 0, 0)
+                          ? writeRows(p, add(z, 1), 0, 0, 0)
                           : x >= size
-                            ? (rowMasks[y + z * size] = mask, writeRows(p, z, y + 1, 0, 0))
-                            : writeRows(p - ~0, z, y, x - ~0, mask | ((src[p] & 1) << x))
+                            ? (rowMasks[rowOf(z, y)] = mask, writeRows(p, z, add(y, 1), 0, 0))
+                            : writeRows(add(p, 1), z, y, add(x, 1), mask | ((src[p] & 1) << x))
         writeRows()
         const widthOf = (mask = 0, x = 0): number => ctz(~(mask >> x) | 0)
         const heightOf = (z = 0, y = 0, runMask = 0, h = 1): number =>
-                y + h >= size || (rowMasks[y + h + z * size] & runMask) !== runMask
+                add(y, h) >= size || (rowMasks[rowOf(z, add(y, h))] & runMask) !== runMask
                         ? h
-                        : heightOf(z, y, runMask, h - ~0)
+                        : heightOf(z, y, runMask, add(h, 1))
         const layerFull = (z = 0, y = 0, h = 0, runMask = 0): boolean =>
-                h <= 0 || ((rowMasks[y + z * size] & runMask) === runMask && layerFull(z, y - ~0, h - ~0, runMask))
+                h <= 0 || ((rowMasks[rowOf(z, y)] & runMask) === runMask && layerFull(z, sub(y, 1), sub(h, 1), runMask))
         const depthOf = (z = 0, y = 0, runMask = 0, h = 0, d = 1): number =>
-                z + d >= size || !layerFull(z + d, y, h, runMask) ? d : depthOf(z, y, runMask, h, d - ~0)
+                add(z, d) >= size || !layerFull(add(z, d), y, h, runMask) ? d : depthOf(z, y, runMask, h, add(d, 1))
         const clearHeight = (z = 0, y = 0, h = 0, runMask = 0): void =>
                 h <= 0
                         ? void 0
-                        : (rowMasks[y + z * size] &= ~runMask, clearHeight(z, y - ~0, h - ~0, runMask))
+                        : (rowMasks[rowOf(z, y)] &= ~runMask, clearHeight(z, sub(y, 1), sub(h, 1), runMask))
         const clearDepth = (z = 0, y = 0, h = 0, d = 0, runMask = 0): void =>
                 d <= 0
                         ? void 0
-                        : (clearHeight(z, y, h, runMask), clearDepth(z - ~0, y, h, d - ~0, runMask))
+                        : (clearHeight(z, y, h, runMask), clearDepth(sub(z, 1), y, h, sub(d, 1), runMask))
+        const emit = (curr = 0, x = 0, y = 0, z = 0, w = 0, h = 0, d = 0): number => {
+                const centerX = Math.fround(add(x << 1, w << 1) * 0.25)
+                const centerY = Math.fround(add(y << 1, h << 1) * 0.25)
+                const centerZ = Math.fround(add(z << 1, d << 1) * 0.25)
+                pos[mul(curr, 3)] = centerX
+                pos[add(mul(curr, 3), 1)] = centerY
+                pos[add(mul(curr, 3), 2)] = centerZ
+                scl[mul(curr, 3)] = w
+                scl[add(mul(curr, 3), 1)] = h
+                scl[add(mul(curr, 3), 2)] = d
+                return add(curr, 1)
+        }
         const processRow = (z = 0, y = 0, curr = 0): number => {
-                const mask = rowMasks[y + z * size]
+                const mask = rowMasks[rowOf(z, y)]
                 if (!mask) return curr
                 const x = ctz(mask)
                 const width = widthOf(mask, x)
@@ -83,18 +99,12 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
                 const height = heightOf(z, y, runMask)
                 const depth = depthOf(z, y, runMask, height)
                 clearDepth(z, y, height, depth, runMask)
-                pos[curr * 3] = (width << 1) * 0.25 + x
-                pos[curr * 3 + 1] = (height << 1) * 0.25 + y
-                pos[curr * 3 + 2] = (depth << 1) * 0.25 + z
-                scl[curr * 3] = width
-                scl[curr * 3 + 1] = height
-                scl[curr * 3 + 2] = depth
-                return processRow(z, y, curr - ~0)
+                return processRow(z, y, emit(curr, x, y, z, width, height, depth))
         }
         const processLayer = (z = 0, y = 0, curr = 0): number =>
-                y >= size ? curr : processLayer(z, y - ~0, processRow(z, y, curr))
+                y >= size ? curr : processLayer(z, add(y, 1), processRow(z, y, curr))
         const processVolume = (z = 0, curr = 0): number =>
-                z >= size ? curr : processVolume(z - ~0, processLayer(z, 0, curr))
+                z >= size ? curr : processVolume(add(z, 1), processLayer(z, 0, curr))
         return { pos, scl, count: processVolume(0, count) }
 }
 const _fwd = m.vec3.fromValues(0, 0, -1)
