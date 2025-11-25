@@ -8,7 +8,7 @@ import type { Float, Vec2, Vec3 } from 'glre/src/node'
 const RX0 = 28
 const RX1 = 123
 const RY0 = 75
-const RY1 = 78
+const RY1 = 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const FAR = Math.sqrt(256 * 256 * 3) * 0.5
 const SLOT = 16
@@ -23,7 +23,7 @@ const CHUNK = 16
 const GROUND = 0
 const REGION = 256
 const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
-const CAMERA_Y = 1000
+const CAMERA_Y = 800
 const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
 const CAMERA_YAW = Math.PI * 0.5
 const CAMERA_PITCH = -Math.PI * 0.45
@@ -106,131 +106,114 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
         solid(tick, size)
         return { pos, scl, count }
 }
-const faceDir = (out = m.vec3.create(), rot = m.vec3.create(), fwd = m.vec3.create(), yaw = 0, pitch = 0) => {
-        m.mat4.identity(rot)
-        m.mat4.rotateY(rot, rot, yaw)
-        if (pitch) m.mat4.rotateX(rot, rot, pitch)
-        m.vec3.transformMat4(out, fwd, rot)
+const _fwd = m.vec3.fromValues(0, 0, -1)
+const _rot = m.mat4.create()
+const _up = m.vec3.fromValues(0, 1, 0)
+const _t0 = m.vec3.create()
+const _t1 = m.vec3.create()
+const _P = m.mat4.create()
+const _V = m.mat4.create()
+const clampToFace = (pos = 0, half = 0.5, sign = 0, base = Math.floor(pos)) => (sign > 0 ? Math.min(pos, base + 1 - half) : Math.max(pos, base + half))
+const lookAt = (eye = m.vec3.create(), pos = m.vec3.create(), face = m.vec3.create()) => m.vec3.scaleAndAdd(eye, pos, face, 10)
+const faceDir = (out = m.vec3.create(), yaw = 0, pitch = 0) => {
+        m.mat4.identity(_rot)
+        m.mat4.rotateY(_rot, _rot, yaw)
+        if (pitch) m.mat4.rotateX(_rot, _rot, pitch)
+        m.vec3.transformMat4(out, _fwd, _rot)
         return out
 }
-const t0 = m.vec3.create()
-const t1 = m.vec3.create()
-const up = m.vec3.fromValues(0, 1, 0)
 const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number) => {
-        m.vec3.cross(t0, up, out)
-        m.vec3.scale(t0, t0, dir[0])
-        m.vec3.scale(t1, out, dir[2])
-        m.vec3.add(out, t0, t1)
+        m.vec3.cross(_t0, _up, out)
+        m.vec3.scale(_t0, _t0, dir[0])
+        m.vec3.scale(_t1, out, dir[2])
+        m.vec3.add(out, _t0, _t1)
         m.vec3.scale(out, out, speed)
         return out
 }
-const perspective = (MVP = m.mat4.create(), V = m.mat4.create(), P = m.mat4.create(), position = m.vec3.create(), target = m.vec3.create(), up = m.vec3.create(), aspect = 1) => {
-        m.mat4.perspective(P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
-        m.mat4.lookAt(V, position, target, up)
-        m.mat4.multiply(MVP, P, V)
-}
-const clampToFace = (p: number, half: number, sign = 0) => {
-        const base = Math.floor(p)
-        return sign > 0 ? Math.min(p, base + 1 - half) : Math.max(p, base + half)
+const perspective = (MVP = m.mat4.create(), pos = m.vec3.create(), eye = m.vec3.create(), aspect = 1) => {
+        m.mat4.perspective(_P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
+        m.mat4.lookAt(_V, pos, eye, _up)
+        m.mat4.multiply(MVP, _P, _V)
 }
 const createCamera = () => {
-        let mode = 0 // 0 is creative
-        let speed = 1
         let x = 0
-        const position = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
-        const target = m.vec3.fromValues(CAMERA_X - 10, CAMERA_Y, CAMERA_Z)
-        const up = m.vec3.fromValues(0, 1, 0)
-        const P = m.mat4.create()
-        const V = m.mat4.create()
+        let yaw = CAMERA_YAW
+        let pitch = CAMERA_PITCH
+        let speed = 1
+        let mode = -1 // 0 is creative, 1 is survive
+        let isGround = false
         const MVP = m.mat4.create()
+        const eye = m.vec3.fromValues(CAMERA_X - 10, CAMERA_Y, CAMERA_Z)
+        const pos = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
         const vel = m.vec3.fromValues(0, 0, 0)
         const dir = m.vec3.fromValues(0, 0, 0)
         const face = m.vec3.fromValues(-1, 0, 0)
-        const fwd = m.vec3.fromValues(0, 0, -1)
-        const rot = m.mat4.create()
-        let yaw = CAMERA_YAW
-        let pitch = CAMERA_PITCH
-        const setLook = () => {
-                target[0] = position[0] + face[0] * 10
-                target[1] = position[1] + face[1] * 10
-                target[2] = position[2] + face[2] * 10
-        }
-        const align = () => {
-                faceDir(face, rot, fwd, yaw, pitch)
-                setLook()
-        }
-        const turn = (delta: number[]) => {
-                yaw -= delta[0] * TURN
-                pitch += delta[1] * TURN
-                if (pitch > PMAX) pitch = PMAX
-                if (pitch < -PMAX) pitch = -PMAX
-                align()
-        }
-        const set = (next = 0) => {
-                if (!mode) align()
-                mode = next
-        }
         const size = m.vec3.fromValues(0.8, 1.8, 0.8)
-        let onGround = false
+        const turn = (delta: number[]) => {
+                const r = mode === 1 ? 1 : 0.1
+                yaw += delta[0] * TURN * r
+                pitch += delta[1] * TURN * r
+                pitch = Math.min(pitch, PMAX)
+                pitch = Math.max(pitch, -PMAX)
+                faceDir(face, yaw, pitch)
+                lookAt(eye, pos, face)
+        }
         const jump = () => {
-                if (!mode) return
-                if (!onGround) return
-                vel[1] = JUMP
+                if (mode === 1 && isGround) vel[1] = JUMP
         }
         const wrap = () => {
-                if (position[0] < 0) position[0] = ROW * REGION
-                if (position[0] > ROW * REGION) position[0] = 0
+                if (pos[0] < 0) pos[0] = ROW * REGION
+                if (pos[0] > ROW * REGION) pos[0] = 0
         }
-        const collide = (axis = 0, probe: any = () => 0) => {
+        const wrap2 = () => {
+                if (pos[1] < GROUND) void ((pos[1] = CAMERA_Y), (vel[1] = 0))
+        }
+        const collide = (axis = 0, probe = (_x = 0, _y = 0, _z = 0) => 0) => {
                 const v = vel[axis]
+                if (!v) return
                 const s = Math.sign(v)
-                if (!s) return
-                const x = position[0] + (axis === 0 ? s : 0)
-                const y = position[1] + (axis === 1 ? s : 0)
-                const z = position[2] + (axis === 2 ? s : 0)
-                const hit = probe(Math.floor(x), Math.floor(y), Math.floor(z))
-                if (!hit) return
-                position[axis] = clampToFace(position[axis], size[axis] * 0.5, s)
+                const xyz = m.vec3.clone(pos)
+                xyz[axis] += s
+                if (!probe(...m.vec3.floor(xyz, xyz))) return
+                if (axis === 1 && s < 0) isGround = true
+                pos[axis] = clampToFace(pos[axis], size[axis] * 0.5, s)
                 vel[axis] = 0
-                if (axis === 1 && s < 0) onGround = true
         }
-        const tick = (dt = 0, probe: any = () => 0) => {
-                if (!mode) {
+        const tick = (dt = 0, probe = (_x = 0, _y = 0, _z = 0) => 0) => {
+                if (mode === 2) return
+                if (mode === -1) {
                         x -= dt * SPEED
-                        position[0] = CAMERA_X + x
-                        if (position[0] < 0) position[0] = ROW * REGION
-                        setLook()
+                        pos[0] = CAMERA_X + x
+                        wrap()
+                        lookAt(eye, pos, face)
                         return
                 }
-                if (mode % 2 === 0) return
-                faceDir(face, rot, fwd, yaw, pitch)
-                const move = m.vec3.clone(face)
-                moveDir(move, dir, MOVE * speed)
+                const move = moveDir(m.vec3.clone(face), dir, MOVE * speed)
                 vel[0] = move[0]
                 vel[2] = move[2]
                 vel[1] += GRAV * dt
-                onGround = false
-                const steps = Math.max(1, Math.ceil(Math.max(Math.abs(vel[0]), Math.abs(vel[1]), Math.abs(vel[2])) * dt))
+                isGround = false
+                const steps = Math.ceil(dt * Math.max(Math.max(...vel), -Math.min(...vel)))
                 const sdt = dt / steps
                 for (let i = 0; i < steps; i++) {
-                        position[1] += Math.min(50, vel[1]) * sdt
+                        pos[1] += vel[1] * sdt
                         collide(1, probe)
-                        position[0] += Math.min(50, vel[0]) * sdt
+                        pos[0] += vel[0] * sdt
                         collide(0, probe)
-                        position[2] += Math.min(50, vel[2]) * sdt
+                        pos[2] += vel[2] * sdt
                         collide(2, probe)
                 }
-                position[1] = Math.max(position[1], GROUND)
-                setLook()
                 wrap()
+                wrap2()
+                lookAt(eye, pos, face)
         }
         const asdw = (axis = 0, delta = 0) => {
                 if (axis === 1) dir[2] = delta
                 if (axis === 2) dir[0] = -delta
         }
-        faceDir(face, rot, fwd, yaw, pitch)
-        setLook()
-        return { tick, perspective, position, dir, target, up, MVP, turn, set, jump, asdw, speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, V, P, position, target, up) }
+        faceDir(face, yaw, pitch)
+        lookAt(eye, pos, face)
+        return { pos, MVP, tick, perspective, turn, jump, asdw, mode: (x = 0) => (mode = x), speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, pos, eye) }
 }
 const createMesh = () => {
         let count = 1
@@ -280,7 +263,7 @@ const createMesh = () => {
                 attr(c, pg, aid, 'aid', 1)
                 return count
         }
-        return { reset, merge, draw, pos, scl, aid, count: () => count, buf }
+        return { pos, scl, aid, reset, merge, draw, count: () => count }
 }
 const createSlot = (index = 0) => {
         const ctx = createContext()!
@@ -319,7 +302,7 @@ const createSlot = (index = 0) => {
                 region.slot = -1
                 region = void 0 as unknown as Region
         }
-        return { assign, release, getCtx: () => ctx, set, region: () => region }
+        return { assign, release, set, ctx: () => ctx, region: () => region }
 }
 const createSlots = () => {
         const owner = range(SLOT).map(createSlot)
@@ -334,7 +317,7 @@ const createSlots = () => {
                         if (owner[index].region() !== r || r.slot !== index) return
                         slot.assign(c, pg, img)
                 }
-                if (owner[index]) r.chunk(owner[index].getCtx(), index)
+                if (owner[index]) r.chunk(owner[index].ctx(), index)
         }
         const _release = (keep: Set<Region>) => {
                 owner.forEach((slot) => {
@@ -354,7 +337,7 @@ const createNode = (mesh: Mesh) => {
         const iAtlas = range(SLOT).map((i) => uniform('https://r.tsei.jp/texture/world.png', `iAtlas${i}`))
         const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
-                const wp = p.add(local).sub(n.sign().mul(half)).floor().toVar('wp') // world position
+                const wp = p.add(local).sub(n.sign().mul(half)).floor().toVar('wp') // world pos
                 const ci = wp.div(16).floor().toVar('c') // chunk index in the workd
                 const lp = wp.sub(ci.mul(16)).clamp(0, 15).ceil().toVar('l') // local pos in the chunk
                 const zt = vec2(ci.z.mod(4).mul(1024), ci.z.div(4).floor().mul(1024))
@@ -433,12 +416,12 @@ const createChunk = (i = 0, j = 0, k = 0) => {
                 }
                 isMeshed = true
         }
-        return { id, x, y, z, pos, scl, count: () => count, load, vox: () => vox }
+        return { id, x, y, z, pos, scl, load, count: () => count, vox: () => vox }
 }
 const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
         let img: HTMLImageElement
+        let ctx: CanvasRenderingContext2D | null = null
         const chunks = new Map<number, Chunk>()
-        let ctxLast: CanvasRenderingContext2D | null = null
         const [x, y, z] = offOf(i, j)
         solid((ci, cj, ck) => {
                 const c = createChunk(ci, cj, ck)
@@ -454,8 +437,8 @@ const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
                 img.src = urlOfFrame(i, j)
                 return await promise
         }
-        const chunk = (ctx: CanvasRenderingContext2D, i = 0) => {
-                ctxLast = ctx
+        const chunk = (_ctx: CanvasRenderingContext2D, i = 0) => {
+                ctx = _ctx
                 chunks.forEach((c) => {
                         if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) return
                         c.load(ctx)
@@ -463,8 +446,7 @@ const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
                 })
         }
         const get = (ci = 0, cj = 0, ck = 0) => chunks.get(chunkId(ci, cj, ck))
-        const ctx = () => ctxLast
-        return { x, y, z, slot, image, chunk, get, ctx }
+        return { x, y, z, slot, image, chunk, get, ctx: () => ctx }
 }
 const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
@@ -477,7 +459,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 return r
         }
         const _coord = () => {
-                const start = camOf(cam.position)
+                const start = camOf(cam.pos)
                 const list = [{ ...start, d: -1 }]
                 const _tick = (i = 0, j = 0) => {
                         if (i === 0 && j === 0) return
@@ -563,7 +545,7 @@ const createViewer = () => {
                 gl.instanceCount = mesh.draw(c, pg)
                 isLoading = false
         }
-        return { vert: node.vert, frag: node.frag, cam, render, resize, asdw: (axis = 0, delta = 0) => cam.asdw(axis, delta), look: (dx = 0, dy = 0) => cam.turn([dx, dy]) }
+        return { node, cam, render, resize, pt: 0 }
 }
 /**
  * App
@@ -576,8 +558,8 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 // isDebug: true,
                 count: 36, // Total number of cube triangles vertices
                 instanceCount: 1, // count of instanced mesh in initial state
-                vert: viewer.vert,
-                frag: viewer.frag,
+                vert: viewer.node.vert,
+                frag: viewer.node.frag,
                 render() {
                         viewer.render(gl)
                 },
@@ -587,40 +569,48 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 mount() {
                         const el = gl.el
                         const press = (isPress: boolean, e: KeyboardEvent) => {
-                                if (e.key === 'w') viewer.asdw(1, isPress ? 1 : 0)
-                                if (e.key === 's') viewer.asdw(1, isPress ? -1 : 0)
-                                if (e.key === 'a') viewer.asdw(2, isPress ? -1 : 0)
-                                if (e.key === 'd') viewer.asdw(2, isPress ? 1 : 0)
+                                if (e.key === 'w') viewer.cam.asdw(1, isPress ? 1 : 0)
+                                if (e.key === 's') viewer.cam.asdw(1, isPress ? -1 : 0)
+                                if (e.key === 'a') viewer.cam.asdw(2, isPress ? -1 : 0)
+                                if (e.key === 'd') viewer.cam.asdw(2, isPress ? 1 : 0)
                                 if (isPress && e.code === 'Space') viewer.cam.jump()
                                 if (e.key === 'Meta') viewer.cam.speed(isPress ? DASH : 1)
                                 if (e.key === 'Shift') viewer.cam.speed(isPress ? DASH : 1)
                                 if (e.key === 'Control') viewer.cam.speed(isPress ? DASH : 1)
                         }
-                        const onMove = (e: MouseEvent) => viewer.look(e.movementX, -e.movementY)
+                        const onMove = (e: MouseEvent) => {
+                                viewer.cam.turn([-e.movementX, -e.movementY])
+                        }
                         const onLock = () => {
                                 const locked = document.pointerLockElement === el
-                                if (locked) {
-                                        document.addEventListener('mousemove', onMove)
-                                } else {
-                                        document.removeEventListener('mousemove', onMove)
-                                        viewer.cam.set(2)
-                                }
+                                if (locked) return
+                                viewer.pt = performance.now()
+                                viewer.cam.mode(2)
                         }
                         const onDown = () => {
                                 if (!el) return
-                                el.requestPointerLock()
-                                viewer.cam.set(1)
+                                const ts = performance.now()
+                                if (ts - viewer.pt < 2000) return
+                                viewer.pt = performance.now()
+                                viewer.cam.mode(1)
+                                setTimeout(() => {
+                                        try {
+                                                el.requestPointerLock()
+                                        } finally {
+                                        }
+                                }, 1000)
                         }
                         el.addEventListener('mousedown', onDown)
-                        document.addEventListener('pointerlockchange', onLock)
-                        window.addEventListener('keydown', press.bind(null, true))
                         window.addEventListener('keyup', press.bind(null, false))
+                        window.addEventListener('keydown', press.bind(null, true))
+                        document.addEventListener('mousemove', onMove)
+                        document.addEventListener('pointerlockchange', onLock)
                 },
         })
         return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', background: '#212121', width: '100%', height: '100%' }} />
 }
 export default function Home() {
-        const [viewer, set] = useState<any>()
+        const [viewer, set] = useState<Viewer>()
         useEffect(() => void set(createViewer()), [])
         return <Layout noFooter>{viewer ? <Canvas viewer={viewer} /> : null}</Layout>
 }
