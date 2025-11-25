@@ -584,19 +584,25 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 mount() {
                         const el = gl.el
                         const press = (isPress: boolean, e: KeyboardEvent) => {
-                                if (e.key === 'w') viewer.cam.asdw(1, isPress ? 1 : 0)
-                                if (e.key === 's') viewer.cam.asdw(1, isPress ? -1 : 0)
-                                if (e.key === 'a') viewer.cam.asdw(2, isPress ? -1 : 0)
-                                if (e.key === 'd') viewer.cam.asdw(2, isPress ? 1 : 0)
-                                if (e.key === 'ArrowUp') viewer.cam.asdw(1, isPress ? 1 : 0)
-                                if (e.key === 'ArrowDown') viewer.cam.asdw(1, isPress ? -1 : 0)
-                                if (e.key === 'ArrowLeft') viewer.cam.asdw(2, isPress ? -1 : 0)
-                                if (e.key === 'ArrowRight') viewer.cam.asdw(2, isPress ? 1 : 0)
-                                if (e.code === 'Space') viewer.cam.jump(isPress)
-                                if (e.key === 'Shift') viewer.cam.dash(isPress)
-                                if (e.key === 'Control') viewer.cam.dash(isPress)
-                                if (e.key === 'Meta') viewer.cam.dash(isPress)
-                                if (e.key === 'Tab' && isPress) {
+                                e.preventDefault()
+                                e.stopPropagation()
+                                const k = e.code
+                                if (k === 'KeyW') viewer.cam.asdw(1, isPress ? 1 : 0)
+                                if (k === 'KeyS') viewer.cam.asdw(1, isPress ? -1 : 0)
+                                if (k === 'KeyA') viewer.cam.asdw(2, isPress ? -1 : 0)
+                                if (k === 'KeyD') viewer.cam.asdw(2, isPress ? 1 : 0)
+                                if (k === 'ArrowUp') viewer.cam.asdw(1, isPress ? 1 : 0)
+                                if (k === 'ArrowDown') viewer.cam.asdw(1, isPress ? -1 : 0)
+                                if (k === 'ArrowLeft') viewer.cam.asdw(2, isPress ? -1 : 0)
+                                if (k === 'ArrowRight') viewer.cam.asdw(2, isPress ? 1 : 0)
+                                if (k === 'Space') viewer.cam.jump(isPress)
+                                if (k === 'ShiftLeft') viewer.cam.dash(isPress)
+                                if (k === 'ShiftRight') viewer.cam.dash(isPress)
+                                if (k === 'ControlLeft') viewer.cam.dash(isPress)
+                                if (k === 'ControlRight') viewer.cam.dash(isPress)
+                                if (k === 'MetaLeft') viewer.cam.dash(isPress)
+                                if (k === 'MetaRight') viewer.cam.dash(isPress)
+                                if (k === 'Tab' && isPress) {
                                         e.preventDefault()
                                         viewer.cam.mode(viewer.mode.tab())
                                 }
@@ -605,7 +611,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                                 viewer.cam.turn([-e.movementX, -e.movementY])
                         }
                         const onLock = () => {
-                                viewer.mode.pt = performance.now()
+                                viewer.pt = performance.now()
                                 viewer.cam.mode(viewer.mode.esc())
                         }
                         const onDown = () => {
