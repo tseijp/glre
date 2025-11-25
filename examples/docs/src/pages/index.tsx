@@ -3,34 +3,20 @@ import Layout from '@theme/Layout'
 import * as m from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import { GL, useGL } from 'glre/src/react'
-import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, vec2, texture, clamp, If } from 'glre/src/node'
+import { attribute, uniform, vec4, vec3, Fn, vertexStage, instance, float, vec2, texture, clamp, If, mat4, texture2D } from 'glre/src/node'
 import type { Float, Vec2, Vec3 } from 'glre/src/node'
-const RX0 = 28
-const RX1 = 123
-const RY0 = 75
-const RY1 = 79
-const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
-const FAR = Math.sqrt(256 * 256 * 3) * 0.5
+const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
+const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel
+const FAR = Math.sqrt(256 * 256 * 3) * 0.5 // what is this
 const SLOT = 16
 const CHUNK = 16
-const GROUND = 0
 const REGION = 256
-const GRAVITY = -50
-const MOVE_SPEED = 12
-const TURN_SPEED = 1 / 500
-const JUMP_SPEED = 12
-const DASH_SPEED = 2.5
-const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
-const CAMERA_Y = 800
-const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
-const CAMERA_YAW = Math.PI * 0.5
-const CAMERA_PITCH = -Math.PI * 0.45
-const CAMERA_SPEED = 10
-const LIGHT = [-0.33, 0.77, 0.55] // normalized afternoon sun
-const clampRegion = (i = 0, j = 0) => RX0 <= i && i <= RX1 && RY0 <= j && j <= RY1
-const urlOfFrame = (rx = 0, ry = 0) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png` //  `http://localhost:5173/logs/${rx}_${ry}.png`
-const offOf = (i = RX0, j = RY0) => [REGION * (i - RX0), 0, REGION * (RY1 - j)]
-const camOf = (pos = m.vec3.create()) => ({ i: RX0 + Math.floor(pos[0] / REGION), j: RY1 - Math.floor(pos[1] / REGION) })
+const LIGHT_DIR = [-0.33, 0.77, 0.55] // normalized afternoon sun
+// const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
+const ATLAS_URL = `http://localhost:5173/logs`
+const clampScope = (i = 0, j = 0) => SCOPE.x0 <= i && i <= SCOPE.x1 && SCOPE.y0 <= j && j <= SCOPE.y1
+const offOf = (i = SCOPE.x0, j = SCOPE.y0) => [REGION * (i - SCOPE.x0), 0, REGION * (SCOPE.y1 - j)]
+const camOf = (pos = m.vec3.create()) => ({ i: SCOPE.x0 + Math.floor(pos[0] / REGION), j: SCOPE.y1 - Math.floor(pos[1] / REGION) })
 const range = (n = 0) => [...Array(n).keys()]
 const chunkId = (i = 0, j = 0, k = 0) => i + j * CHUNK + k * CHUNK * CHUNK
 const regionId = (i = 0, j = 0) => i + 160 * j // DO NOT CHANGE
@@ -38,6 +24,12 @@ const cullChunk = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0, cx = 0, cy = 0,
 const cullRegion = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0) => visSphere(VP, rx + 128, ry + 128, rz + 128, FAR)
 const solid = (f: (i: number, j: number, k: number) => void, n = CHUNK) => {
         for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) f(i, j, k)
+}
+const createImage = async (src = '') => {
+        const img = new Image()
+        const promise = new Promise<HTMLImageElement>((resolve) => void (img.onload = () => resolve(img)))
+        Object.assign(img, { src, crossOrigin: 'anonymous' })
+        return await promise
 }
 const createContext = () => {
         const el = document.createElement('canvas')
@@ -106,27 +98,25 @@ const greedyMesh = (src: Uint8Array, size = 1, pos: number[] = [], scl: number[]
         return { pos, scl, count }
 }
 const _fwd = m.vec3.fromValues(0, 0, -1)
-const _rot = m.mat4.create()
 const _up = m.vec3.fromValues(0, 1, 0)
 const _t0 = m.vec3.create()
 const _t1 = m.vec3.create()
-const _P = m.mat4.create()
-const _V = m.mat4.create()
+const _t2 = m.mat4.create()
+const _t3 = m.mat4.create()
 const clampToFace = (pos = 0, half = 0.5, sign = 0, base = Math.floor(pos)) => (sign > 0 ? Math.min(pos, base + 1 - half) : Math.max(pos, base + half))
 const lookAt = (eye = m.vec3.create(), pos = m.vec3.create(), face = m.vec3.create()) => m.vec3.scaleAndAdd(eye, pos, face, 10)
 const faceDir = (out = m.vec3.create(), yaw = 0, pitch = 0) => {
-        m.mat4.identity(_rot)
-        m.mat4.rotateY(_rot, _rot, yaw)
-        m.mat4.rotateX(_rot, _rot, pitch)
-        m.vec3.transformMat4(out, _fwd, _rot)
+        m.mat4.identity(_t2)
+        m.mat4.rotateY(_t2, _t2, yaw)
+        m.mat4.rotateX(_t2, _t2, pitch)
+        m.vec3.transformMat4(out, _fwd, _t2)
         return out
 }
 const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number, planar = false) => {
         m.vec3.copy(_t1, out)
         _t1[1] = 0
         if (m.vec3.squaredLength(_t1) < 1e-8) {
-                _t1[0] = 0
-                _t1[1] = 0
+                _t1[0] = _t1[1] = 0
                 _t1[2] = -1
         }
         m.vec3.normalize(_t1, _t1)
@@ -139,38 +129,46 @@ const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number, pl
         m.vec3.scale(out, out, speed)
         return out
 }
-const perspective = (MVP = m.mat4.create(), pos = m.vec3.create(), eye = m.vec3.create(), aspect = 1) => {
-        m.mat4.perspective(_P, (28 * Math.PI) / 180, aspect, 0.1, 4000)
-        m.mat4.lookAt(_V, pos, eye, _up)
-        m.mat4.multiply(MVP, _P, _V)
+const perspective = (MVP = m.mat4.create(), pos = m.vec3.create(), eye = m.vec3.create(), aspect = 1, offsetY = 0) => {
+        m.mat4.perspective(_t2, (28 * Math.PI) / 180, aspect, 0.1, 4000)
+        m.vec3.copy(_t0, pos)
+        m.vec3.copy(_t1, eye)
+        _t0[1] += offsetY
+        _t1[1] += offsetY
+        m.mat4.lookAt(_t3, _t0, _t1, _up)
+        m.mat4.multiply(MVP, _t2, _t3)
 }
-const createCamera = () => {
+const createCamera = ({ yaw = Math.PI * 0.5, pitch = -Math.PI * 0.45, mode = -1, X = 0, Y = 0, Z = 0, DASH = 2.5, MOVE = 12, JUMP = 12, GROUND = 0, SIZE = [0.8, 1.8, 0.8], GRAVITY = -50, TURN = 1 / 500 }) => {
         let x = 0
-        let yaw = CAMERA_YAW
-        let pitch = CAMERA_PITCH
         let speed = 1
-        let mode = -1 // 0 is creative
-        let _mode = 1 // last non-pause mode
         let isGround = false
         const MVP = m.mat4.create()
-        const eye = m.vec3.fromValues(CAMERA_X - 10, CAMERA_Y, CAMERA_Z)
-        const pos = m.vec3.fromValues(CAMERA_X, CAMERA_Y, CAMERA_Z)
+        const pos = m.vec3.fromValues(X, Y, Z)
+        const eye = m.vec3.fromValues(X - 10, Y, Z)
         const vel = m.vec3.fromValues(0, 0, 0)
         const dir = m.vec3.fromValues(0, 0, 0)
         const face = m.vec3.fromValues(-1, 0, 0)
-        const size = m.vec3.fromValues(0.8, 1.8, 0.8)
+        const asdw = (axis = 0, delta = 0) => {
+                if (axis === 0) dir[1] = delta
+                if (axis === 1) dir[2] = delta
+                if (axis === 2) dir[0] = -delta
+        }
+        const dash = (isPress = true) => {
+                if (mode === 0) asdw(0, isPress ? -1 : 0)
+                if (mode === 1 && isGround) speed = isPress ? DASH : 1
+        }
+        const jump = (isPress = true) => {
+                if (mode === 0) asdw(0, isPress ? 1 : 0)
+                if (mode === 1 && isGround && isPress) vel[1] = JUMP
+        }
         const turn = (delta: number[]) => {
                 const r = mode === 1 ? 1 : 0.1
-                yaw += delta[0] * r
-                pitch += delta[1] * r
+                yaw += delta[0] * r * TURN
+                pitch += delta[1] * r * TURN
                 pitch = Math.min(pitch, Math.PI / 2 - 0.01)
                 pitch = Math.max(pitch, -Math.PI / 2 + 0.01)
                 faceDir(face, yaw, pitch)
                 lookAt(eye, pos, face)
-        }
-        const jump = (x = 0) => {
-                if (mode === 0) vel[1] = x
-                if (mode === 1 && isGround) vel[1] = x
         }
         const collide = (axis = 0, pick = (_x = 0, _y = 0, _z = 0) => 0) => {
                 const v = vel[axis]
@@ -180,28 +178,19 @@ const createCamera = () => {
                 xyz[axis] += s
                 if (!pick(...m.vec3.floor(xyz, xyz))) return
                 if (axis === 1 && s < 0) isGround = true
-                pos[axis] = clampToFace(pos[axis], size[axis] * 0.5, s)
+                pos[axis] = clampToFace(pos[axis], SIZE[axis] * 0.5, s)
                 vel[axis] = 0
-        }
-        const tab = () => {
-                if (mode === 0) return (mode = _mode = 1)
-                if (mode === 1) return (mode = _mode = 0)
-        }
-        const esc = () => {
-                if (mode === -1) return (mode = _mode = 1)
-                if (mode === 2) return (mode = _mode)
-                ;[_mode, mode] = [mode, _mode]
         }
         const tick = (dt = 0, pick = (_x = 0, _y = 0, _z = 0) => 0) => {
                 if (mode === 2) return
                 if (mode === -1) {
-                        x -= dt * CAMERA_SPEED
-                        pos[0] = CAMERA_X + x
+                        x -= dt * MOVE
+                        pos[0] = X + x
                         if (pos[0] < 0) pos[0] = ROW * REGION
                         if (pos[0] > ROW * REGION) pos[0] = 0
                         lookAt(eye, pos, face)
                 }
-                const sp = MOVE_SPEED * speed * (mode === 0 ? 20 : 1)
+                const sp = MOVE * speed * (mode === 0 ? 20 : 1)
                 const move = moveDir(m.vec3.clone(face), dir, sp, mode === 1)
                 vel[0] = move[0]
                 vel[2] = move[2]
@@ -223,19 +212,14 @@ const createCamera = () => {
                                 pos[2] += vel[2] * sdt
                                 collide(2, pick)
                         }
-                        if (pos[1] < GROUND) void ((pos[1] = CAMERA_Y), (vel[1] = 0))
+                        if (pos[1] < GROUND) void ((pos[1] = Y), (vel[1] = 0))
                 }
                 lookAt(eye, pos, face)
         }
-        const asdw = (axis = 0, delta = 0) => {
-                // axis: 0 -> vertical, 1 -> forward/back, 2 -> left/right
-                if (axis === 0) dir[1] = delta
-                if (axis === 1) dir[2] = delta
-                if (axis === 2) dir[0] = -delta
-        }
         faceDir(face, yaw, pitch)
         lookAt(eye, pos, face)
-        return { pos, MVP, tick, perspective, turn, jump, asdw, tab, esc, mode: (x = 0) => (mode = x), speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, pos, eye) }
+        const HEAD = SIZE[1] * 0.5
+        return { pos, MVP, tick, turn, dash, jump, asdw, mode: (x = 0) => (mode = x), update: (aspect = 1) => perspective(MVP, pos, eye, aspect, HEAD) }
 }
 const createMesh = () => {
         let count = 1
@@ -353,10 +337,10 @@ const createSlots = () => {
         }
         return { sync }
 }
-const createNode = (mesh: Mesh) => {
-        const iMVP = uniform<'mat4'>([...m.mat4.create()], 'iMVP')
+const createNode = () => {
+        const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
-        const iAtlas = range(SLOT).map((i) => uniform('https://r.tsei.jp/texture/world.png', `iAtlas${i}`))
+        const iAtlas = range(SLOT).map((i) => uniform(texture2D(), `iAtlas${i}`))
         const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
                 const wp = p.add(local).sub(n.sign().mul(half)).floor().toVar('wp') // world pos
@@ -380,11 +364,11 @@ const createNode = (mesh: Mesh) => {
         })
         const vertex = attribute<'vec3'>([-0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5], 'vertex')
         const normal = attribute<'vec3'>([-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], 'normal')
-        const scl = instance<'vec3'>(mesh.scl, 'scl')
-        const pos = instance<'vec3'>(mesh.pos, 'pos')
-        const aid = instance<'float'>(mesh.aid, 'aid')
+        const scl = instance<'vec3'>(vec3(), 'scl')
+        const pos = instance<'vec3'>(vec3(), 'pos')
+        const aid = instance<'float'>(float(), 'aid')
         const fs = Fn(([local, p, n, i]: [Vec3, Vec3, Vec3, Float]) => {
-                const L = vec3(LIGHT).normalize()
+                const L = vec3(LIGHT_DIR).normalize()
                 const diffuse = n.normalize().dot(L).mul(0.5).add(0.5)
                 const uv = atlasUV(local, p, n).toVar('uv')
                 const texel = pick(i, uv).toVar('t')
@@ -440,7 +424,7 @@ const createChunk = (i = 0, j = 0, k = 0) => {
         }
         return { id, x, y, z, pos, scl, load, count: () => count, vox: () => vox }
 }
-const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
+const createRegion = (mesh: Mesh, cam: Camera, i = SCOPE.x0, j = SCOPE.y0, slot = -1) => {
         let img: HTMLImageElement
         let ctx: CanvasRenderingContext2D | null = null
         const chunks = new Map<number, Chunk>()
@@ -451,13 +435,7 @@ const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
         })
         const image = async () => {
                 if (img) return img
-                img = new Image()
-                img.crossOrigin = 'anonymous'
-                const promise = new Promise<HTMLImageElement>((resolve) => {
-                        img.onload = () => resolve(img)
-                })
-                img.src = urlOfFrame(i, j)
-                return await promise
+                return (img = await createImage(`${ATLAS_URL}/${i}_${j}.png`))
         }
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0) => {
                 ctx = _ctx
@@ -472,7 +450,7 @@ const createRegion = (mesh: Mesh, cam: Camera, i = RX0, j = RY0, slot = -1) => {
 }
 const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
-        const _ensure = (rx = RX0, ry = RY0) => {
+        const _ensure = (rx = 0, ry = 0) => {
                 const id = regionId(rx, ry)
                 const got = regions.get(id)
                 if (got) return got
@@ -496,7 +474,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 }
                 for (let i = 0; i < SLOT * 2; i++) for (let j = 0; j < SLOT * 2; j++) _tick(i, j)
                 list.sort((a, b) => a.d - b.d)
-                return list.filter((e) => clampRegion(e.i, e.j)).slice(0, SLOT)
+                return list.filter((e) => clampScope(e.i, e.j)).slice(0, SLOT)
         }
         const vis = () => {
                 const keep = new Set(_coord().map((c) => _ensure(c.i, c.j)))
@@ -504,10 +482,10 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 return keep
         }
         const pick = (wx = 0, wy = 0, wz = 0) => {
-                const rxi = RX0 + Math.floor(wx / REGION)
-                const ryj = RY1 - Math.floor(wz / REGION)
-                if (rxi < RX0 || rxi > RX1) return 0
-                if (ryj < RY0 || ryj > RY1) return 0
+                const rxi = SCOPE.x0 + Math.floor(wx / REGION)
+                const ryj = SCOPE.y1 - Math.floor(wz / REGION)
+                if (rxi < SCOPE.x0 || rxi > SCOPE.x1) return 0
+                if (ryj < SCOPE.y0 || ryj > SCOPE.y1) return 0
                 const rid = regionId(rxi, ryj)
                 const r = regions.get(rid)
                 if (!r) return 0
@@ -534,15 +512,31 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
         }
         return { vis, pick }
 }
+const createMode = () => {
+        let mode = -1 // 0 is creative
+        let _mode = 1 // last non-pause mode
+        const tab = () => {
+                if (mode === 0) return (mode = _mode = 1)
+                if (mode === 1) return (mode = _mode = 0)
+        }
+        const esc = () => {
+                if (mode === -1) return (mode = _mode = 1)
+                if (mode === 2) return (mode = _mode)
+                ;[_mode, mode] = [mode, _mode]
+                return mode
+        }
+        return { tab, esc, current: () => mode }
+}
 const createViewer = () => {
         let isLoading = false
         let ts = performance.now()
         let pt = ts
         let dt = 0
         let pt2 = ts - 200
-        const cam = createCamera()
+        const cam = createCamera({ X: (Math.random() * 0.5 + 0.5) * ROW * REGION, Y: 720, Z: (REGION * (SCOPE.y1 - SCOPE.y0 + 1)) / 2 })
         const mesh = createMesh()
-        const node = createNode(mesh)
+        const mode = createMode()
+        const node = createNode()
         const slots = createSlots()
         const regions = createRegions(mesh, cam)
         const resize = (gl: GL) => {
@@ -557,7 +551,7 @@ const createViewer = () => {
                 cam.tick(dt, regions.pick)
                 cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
-                if (ts - pt2 < 16) return
+                if (ts - pt2 < 100) return
                 pt2 = ts
                 isLoading = true
                 mesh.reset()
@@ -567,11 +561,8 @@ const createViewer = () => {
                 gl.instanceCount = mesh.draw(c, pg)
                 isLoading = false
         }
-        return { node, cam, render, resize, pt: 0 }
+        return { mode, node, cam, render, resize, pt: 0 }
 }
-/**
- * App
- */
 const Canvas = ({ viewer }: { viewer: Viewer }) => {
         const gl = useGL({
                 // wireframe: true,
@@ -599,23 +590,21 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                                 if (e.key === 'ArrowDown') viewer.cam.asdw(1, isPress ? -1 : 0)
                                 if (e.key === 'ArrowLeft') viewer.cam.asdw(2, isPress ? -1 : 0)
                                 if (e.key === 'ArrowRight') viewer.cam.asdw(2, isPress ? 1 : 0)
-                                // Vertical movement in creative mode
-                                if (e.code === 'Space') viewer.cam.asdw(0, isPress ? 1 : 0)
-                                if (isPress && e.code === 'Space') viewer.cam.jump(JUMP_SPEED)
-                                if (e.key === 'Shift') viewer.cam.asdw(0, isPress ? -1 : 0)
-                                if (e.key === 'Control') viewer.cam.speed(isPress ? DASH_SPEED : 1)
-                                if (e.key === 'Meta') viewer.cam.speed(isPress ? DASH_SPEED : 1)
+                                if (e.code === 'Space') viewer.cam.jump(isPress)
+                                if (e.key === 'Shift') viewer.cam.dash(isPress)
+                                if (e.key === 'Control') viewer.cam.dash(isPress)
+                                if (e.key === 'Meta') viewer.cam.dash(isPress)
                                 if (e.key === 'Tab' && isPress) {
                                         e.preventDefault()
-                                        viewer.cam.tab()
+                                        viewer.cam.mode(viewer.mode.tab())
                                 }
                         }
                         const onMove = (e: MouseEvent) => {
-                                viewer.cam.turn([-e.movementX * TURN_SPEED, -e.movementY * TURN_SPEED])
+                                viewer.cam.turn([-e.movementX, -e.movementY])
                         }
                         const onLock = () => {
-                                viewer.pt = performance.now()
-                                viewer.cam.esc()
+                                viewer.mode.pt = performance.now()
+                                viewer.cam.mode(viewer.mode.esc())
                         }
                         const onDown = () => {
                                 if (!el) return
