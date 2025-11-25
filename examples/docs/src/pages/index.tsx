@@ -121,10 +121,20 @@ const faceDir = (out = m.vec3.create(), yaw = 0, pitch = 0) => {
         m.vec3.transformMat4(out, _fwd, _rot)
         return out
 }
-const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number) => {
-        m.vec3.cross(_t0, _up, out)
+const moveDir = (out = m.vec3.create(), dir = m.vec3.create(), speed: number, planar = false) => {
+        m.vec3.copy(_t1, out)
+        _t1[1] = 0
+        if (m.vec3.squaredLength(_t1) < 1e-8) {
+                _t1[0] = 0
+                _t1[1] = 0
+                _t1[2] = -1
+        }
+        m.vec3.normalize(_t1, _t1)
+        m.vec3.cross(_t0, _up, _t1)
+        m.vec3.normalize(_t0, _t0)
+        const fwd = planar ? _t1 : out
         m.vec3.scale(_t0, _t0, dir[0])
-        m.vec3.scale(_t1, out, dir[2])
+        m.vec3.scale(_t1, fwd, dir[2])
         m.vec3.add(out, _t0, _t1)
         m.vec3.scale(out, out, speed)
         return out
@@ -139,7 +149,8 @@ const createCamera = () => {
         let yaw = CAMERA_YAW
         let pitch = CAMERA_PITCH
         let speed = 1
-        let mode = -1 // 0 is creative, 1 is survive
+        let mode = -1 // 0 is creative
+        let _mode = 1 // last non-pause mode
         let isGround = false
         const MVP = m.mat4.create()
         const eye = m.vec3.fromValues(CAMERA_X - 10, CAMERA_Y, CAMERA_Z)
@@ -158,6 +169,7 @@ const createCamera = () => {
                 lookAt(eye, pos, face)
         }
         const jump = (x = 0) => {
+                if (mode === 0) vel[1] = x
                 if (mode === 1 && isGround) vel[1] = x
         }
         const collide = (axis = 0, pick = (_x = 0, _y = 0, _z = 0) => 0) => {
@@ -172,8 +184,13 @@ const createCamera = () => {
                 vel[axis] = 0
         }
         const tab = () => {
-                if (mode === 0) mode = 1
-                if (mode === 1) mode = 0
+                if (mode === 0) return (mode = _mode = 1)
+                if (mode === 1) return (mode = _mode = 0)
+        }
+        const esc = () => {
+                if (mode === -1) return (mode = _mode = 1)
+                if (mode === 2) return (mode = _mode)
+                ;[_mode, mode] = [mode, _mode]
         }
         const tick = (dt = 0, pick = (_x = 0, _y = 0, _z = 0) => 0) => {
                 if (mode === 2) return
@@ -184,19 +201,20 @@ const createCamera = () => {
                         if (pos[0] > ROW * REGION) pos[0] = 0
                         lookAt(eye, pos, face)
                 }
-                const move = moveDir(m.vec3.clone(face), dir, MOVE_SPEED * speed)
+                const sp = MOVE_SPEED * speed * (mode === 0 ? 20 : 1)
+                const move = moveDir(m.vec3.clone(face), dir, sp, mode === 1)
+                vel[0] = move[0]
+                vel[2] = move[2]
                 if (mode === 0) {
-                        vel[0] = move[0]
-                        vel[1] = move[1]
-                        vel[2] = move[2]
+                        pos[0] += vel[0] * dt
+                        pos[1] += dir[1] * dt * sp
+                        pos[2] += vel[2] * dt
                 }
                 if (mode === 1) {
-                        vel[0] = move[0]
-                        vel[2] = move[2]
                         vel[1] += GRAVITY * dt
-                        isGround = false
                         const steps = Math.ceil(dt * Math.max(Math.max(...vel), -Math.min(...vel)))
                         const sdt = dt / steps
+                        isGround = false // update isGround in collide()
                         for (let i = 0; i < steps; i++) {
                                 pos[1] += vel[1] * sdt
                                 collide(1, pick)
@@ -210,12 +228,14 @@ const createCamera = () => {
                 lookAt(eye, pos, face)
         }
         const asdw = (axis = 0, delta = 0) => {
+                // axis: 0 -> vertical, 1 -> forward/back, 2 -> left/right
+                if (axis === 0) dir[1] = delta
                 if (axis === 1) dir[2] = delta
                 if (axis === 2) dir[0] = -delta
         }
         faceDir(face, yaw, pitch)
         lookAt(eye, pos, face)
-        return { pos, MVP, tick, perspective, turn, jump, asdw, tab, mode: (x = 0) => (mode = x), speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, pos, eye) }
+        return { pos, MVP, tick, perspective, turn, jump, asdw, tab, esc, mode: (x = 0) => (mode = x), speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, pos, eye) }
 }
 const createMesh = () => {
         let count = 1
@@ -579,27 +599,29 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                                 if (e.key === 'ArrowDown') viewer.cam.asdw(1, isPress ? -1 : 0)
                                 if (e.key === 'ArrowLeft') viewer.cam.asdw(2, isPress ? -1 : 0)
                                 if (e.key === 'ArrowRight') viewer.cam.asdw(2, isPress ? 1 : 0)
+                                // Vertical movement in creative mode
+                                if (e.code === 'Space') viewer.cam.asdw(0, isPress ? 1 : 0)
                                 if (isPress && e.code === 'Space') viewer.cam.jump(JUMP_SPEED)
-                                if (e.key === 'Meta') viewer.cam.speed(isPress ? DASH_SPEED : 1)
-                                if (e.key === 'Shift') viewer.cam.speed(isPress ? DASH_SPEED : 1)
+                                if (e.key === 'Shift') viewer.cam.asdw(0, isPress ? -1 : 0)
                                 if (e.key === 'Control') viewer.cam.speed(isPress ? DASH_SPEED : 1)
-                                if (e.key === 'Tab') viewer.cam.tab()
+                                if (e.key === 'Meta') viewer.cam.speed(isPress ? DASH_SPEED : 1)
+                                if (e.key === 'Tab' && isPress) {
+                                        e.preventDefault()
+                                        viewer.cam.tab()
+                                }
                         }
                         const onMove = (e: MouseEvent) => {
                                 viewer.cam.turn([-e.movementX * TURN_SPEED, -e.movementY * TURN_SPEED])
                         }
                         const onLock = () => {
-                                const locked = document.pointerLockElement === el
-                                if (locked) return
                                 viewer.pt = performance.now()
-                                viewer.cam.mode(2)
+                                viewer.cam.esc()
                         }
                         const onDown = () => {
                                 if (!el) return
                                 const ts = performance.now()
                                 if (ts - viewer.pt < 2000) return
-                                viewer.pt = performance.now()
-                                viewer.cam.mode(1)
+                                viewer.pt = ts
                                 setTimeout(() => {
                                         try {
                                                 el.requestPointerLock()
