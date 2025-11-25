@@ -12,8 +12,7 @@ const SLOT = 16
 const CHUNK = 16
 const REGION = 256
 const LIGHT_DIR = [-0.33, 0.77, 0.55] // normalized afternoon sun
-// const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
-const ATLAS_URL = `http://localhost:5173/logs`
+const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
 const clampScope = (i = 0, j = 0) => SCOPE.x0 <= i && i <= SCOPE.x1 && SCOPE.y0 <= j && j <= SCOPE.y1
 const offOf = (i = SCOPE.x0, j = SCOPE.y0) => [REGION * (i - SCOPE.x0), 0, REGION * (SCOPE.y1 - j)]
 const camOf = (pos = m.vec3.create()) => ({ i: SCOPE.x0 + Math.floor(pos[0] / REGION), j: SCOPE.y1 - Math.floor(pos[1] / REGION) })
@@ -201,7 +200,10 @@ const createCamera = ({ yaw = Math.PI * 0.5, pitch = -Math.PI * 0.45, mode = -1,
                 }
                 if (mode === 1) {
                         vel[1] += GRAVITY * dt
-                        const steps = Math.ceil(dt * Math.max(Math.max(...vel), -Math.min(...vel)))
+                        const vmax = Math.max(Math.abs(vel[0]), Math.abs(vel[1]), Math.abs(vel[2]))
+                        const STEP = 0.25
+                        let steps = Math.ceil((vmax * dt) / STEP)
+                        if (steps < 1) steps = 1
                         const sdt = dt / steps
                         isGround = false // update isGround in collide()
                         for (let i = 0; i < steps; i++) {
