@@ -12,21 +12,20 @@ const RY1 = 79
 const ROW = RX1 - RX0 + 1 // 96 region = 96×16×16 voxel
 const FAR = Math.sqrt(256 * 256 * 3) * 0.5
 const SLOT = 16
-const SPEED = 10
-const MOVE = 12
-const TURN = 1 / 500
-const PMAX = Math.PI / 2 - 0.01
-const GRAV = -50
-const JUMP = 12
-const DASH = 2.5
 const CHUNK = 16
 const GROUND = 0
 const REGION = 256
+const GRAVITY = -50
+const MOVE_SPEED = 12
+const TURN_SPEED = 1 / 500
+const JUMP_SPEED = 12
+const DASH_SPEED = 2.5
 const CAMERA_X = (Math.random() * 0.5 + 0.5) * ROW * REGION // 256
 const CAMERA_Y = 800
 const CAMERA_Z = (REGION * (RY1 - RY0 + 1)) / 2
 const CAMERA_YAW = Math.PI * 0.5
 const CAMERA_PITCH = -Math.PI * 0.45
+const CAMERA_SPEED = 10
 const LIGHT = [-0.33, 0.77, 0.55] // normalized afternoon sun
 const clampRegion = (i = 0, j = 0) => RX0 <= i && i <= RX1 && RY0 <= j && j <= RY1
 const urlOfFrame = (rx = 0, ry = 0) => `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1/${rx}_${ry}.png` //  `http://localhost:5173/logs/${rx}_${ry}.png`
@@ -118,7 +117,7 @@ const lookAt = (eye = m.vec3.create(), pos = m.vec3.create(), face = m.vec3.crea
 const faceDir = (out = m.vec3.create(), yaw = 0, pitch = 0) => {
         m.mat4.identity(_rot)
         m.mat4.rotateY(_rot, _rot, yaw)
-        if (pitch) m.mat4.rotateX(_rot, _rot, pitch)
+        m.mat4.rotateX(_rot, _rot, pitch)
         m.vec3.transformMat4(out, _fwd, _rot)
         return out
 }
@@ -151,60 +150,63 @@ const createCamera = () => {
         const size = m.vec3.fromValues(0.8, 1.8, 0.8)
         const turn = (delta: number[]) => {
                 const r = mode === 1 ? 1 : 0.1
-                yaw += delta[0] * TURN * r
-                pitch += delta[1] * TURN * r
-                pitch = Math.min(pitch, PMAX)
-                pitch = Math.max(pitch, -PMAX)
+                yaw += delta[0] * r
+                pitch += delta[1] * r
+                pitch = Math.min(pitch, Math.PI / 2 - 0.01)
+                pitch = Math.max(pitch, -Math.PI / 2 + 0.01)
                 faceDir(face, yaw, pitch)
                 lookAt(eye, pos, face)
         }
-        const jump = () => {
-                if (mode === 1 && isGround) vel[1] = JUMP
+        const jump = (x = 0) => {
+                if (mode === 1 && isGround) vel[1] = x
         }
-        const wrap = () => {
-                if (pos[0] < 0) pos[0] = ROW * REGION
-                if (pos[0] > ROW * REGION) pos[0] = 0
-        }
-        const wrap2 = () => {
-                if (pos[1] < GROUND) void ((pos[1] = CAMERA_Y), (vel[1] = 0))
-        }
-        const collide = (axis = 0, probe = (_x = 0, _y = 0, _z = 0) => 0) => {
+        const collide = (axis = 0, pick = (_x = 0, _y = 0, _z = 0) => 0) => {
                 const v = vel[axis]
                 if (!v) return
                 const s = Math.sign(v)
                 const xyz = m.vec3.clone(pos)
                 xyz[axis] += s
-                if (!probe(...m.vec3.floor(xyz, xyz))) return
+                if (!pick(...m.vec3.floor(xyz, xyz))) return
                 if (axis === 1 && s < 0) isGround = true
                 pos[axis] = clampToFace(pos[axis], size[axis] * 0.5, s)
                 vel[axis] = 0
         }
-        const tick = (dt = 0, probe = (_x = 0, _y = 0, _z = 0) => 0) => {
+        const tab = () => {
+                if (mode === 0) mode = 1
+                if (mode === 1) mode = 0
+        }
+        const tick = (dt = 0, pick = (_x = 0, _y = 0, _z = 0) => 0) => {
                 if (mode === 2) return
                 if (mode === -1) {
-                        x -= dt * SPEED
+                        x -= dt * CAMERA_SPEED
                         pos[0] = CAMERA_X + x
-                        wrap()
+                        if (pos[0] < 0) pos[0] = ROW * REGION
+                        if (pos[0] > ROW * REGION) pos[0] = 0
                         lookAt(eye, pos, face)
-                        return
                 }
-                const move = moveDir(m.vec3.clone(face), dir, MOVE * speed)
-                vel[0] = move[0]
-                vel[2] = move[2]
-                vel[1] += GRAV * dt
-                isGround = false
-                const steps = Math.ceil(dt * Math.max(Math.max(...vel), -Math.min(...vel)))
-                const sdt = dt / steps
-                for (let i = 0; i < steps; i++) {
-                        pos[1] += vel[1] * sdt
-                        collide(1, probe)
-                        pos[0] += vel[0] * sdt
-                        collide(0, probe)
-                        pos[2] += vel[2] * sdt
-                        collide(2, probe)
+                const move = moveDir(m.vec3.clone(face), dir, MOVE_SPEED * speed)
+                if (mode === 0) {
+                        vel[0] = move[0]
+                        vel[1] = move[1]
+                        vel[2] = move[2]
                 }
-                wrap()
-                wrap2()
+                if (mode === 1) {
+                        vel[0] = move[0]
+                        vel[2] = move[2]
+                        vel[1] += GRAVITY * dt
+                        isGround = false
+                        const steps = Math.ceil(dt * Math.max(Math.max(...vel), -Math.min(...vel)))
+                        const sdt = dt / steps
+                        for (let i = 0; i < steps; i++) {
+                                pos[1] += vel[1] * sdt
+                                collide(1, pick)
+                                pos[0] += vel[0] * sdt
+                                collide(0, pick)
+                                pos[2] += vel[2] * sdt
+                                collide(2, pick)
+                        }
+                        if (pos[1] < GROUND) void ((pos[1] = CAMERA_Y), (vel[1] = 0))
+                }
                 lookAt(eye, pos, face)
         }
         const asdw = (axis = 0, delta = 0) => {
@@ -213,7 +215,7 @@ const createCamera = () => {
         }
         faceDir(face, yaw, pitch)
         lookAt(eye, pos, face)
-        return { pos, MVP, tick, perspective, turn, jump, asdw, mode: (x = 0) => (mode = x), speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, pos, eye) }
+        return { pos, MVP, tick, perspective, turn, jump, asdw, tab, mode: (x = 0) => (mode = x), speed: (x = 0) => (speed = x), update: perspective.bind(null, MVP, pos, eye) }
 }
 const createMesh = () => {
         let count = 1
@@ -361,11 +363,11 @@ const createNode = (mesh: Mesh) => {
         const scl = instance<'vec3'>(mesh.scl, 'scl')
         const pos = instance<'vec3'>(mesh.pos, 'pos')
         const aid = instance<'float'>(mesh.aid, 'aid')
-        const fs = Fn(([local, p, n, id]: [Vec3, Vec3, Vec3, Float]) => {
+        const fs = Fn(([local, p, n, i]: [Vec3, Vec3, Vec3, Float]) => {
                 const L = vec3(LIGHT).normalize()
                 const diffuse = n.normalize().dot(L).mul(0.5).add(0.5)
                 const uv = atlasUV(local, p, n).toVar('uv')
-                const texel = pick(id, uv).toVar('t')
+                const texel = pick(i, uv).toVar('t')
                 const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
@@ -481,7 +483,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 for (const [id, r] of regions) if (!keep.has(r)) regions.delete(id)
                 return keep
         }
-        const probe = (wx = 0, wy = 0, wz = 0) => {
+        const pick = (wx = 0, wy = 0, wz = 0) => {
                 const rxi = RX0 + Math.floor(wx / REGION)
                 const ryj = RY1 - Math.floor(wz / REGION)
                 if (rxi < RX0 || rxi > RX1) return 0
@@ -510,7 +512,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 const idx = vx + (vy + vz * CHUNK) * CHUNK
                 return c.vox()[idx]
         }
-        return { vis, probe }
+        return { vis, pick }
 }
 const createViewer = () => {
         let isLoading = false
@@ -532,7 +534,7 @@ const createViewer = () => {
                 ts = performance.now()
                 if (isLoading) return
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
-                cam.tick(dt, regions.probe)
+                cam.tick(dt, regions.pick)
                 cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
                 if (ts - pt2 < 16) return
@@ -573,13 +575,18 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                                 if (e.key === 's') viewer.cam.asdw(1, isPress ? -1 : 0)
                                 if (e.key === 'a') viewer.cam.asdw(2, isPress ? -1 : 0)
                                 if (e.key === 'd') viewer.cam.asdw(2, isPress ? 1 : 0)
-                                if (isPress && e.code === 'Space') viewer.cam.jump()
-                                if (e.key === 'Meta') viewer.cam.speed(isPress ? DASH : 1)
-                                if (e.key === 'Shift') viewer.cam.speed(isPress ? DASH : 1)
-                                if (e.key === 'Control') viewer.cam.speed(isPress ? DASH : 1)
+                                if (e.key === 'ArrowUp') viewer.cam.asdw(1, isPress ? 1 : 0)
+                                if (e.key === 'ArrowDown') viewer.cam.asdw(1, isPress ? -1 : 0)
+                                if (e.key === 'ArrowLeft') viewer.cam.asdw(2, isPress ? -1 : 0)
+                                if (e.key === 'ArrowRight') viewer.cam.asdw(2, isPress ? 1 : 0)
+                                if (isPress && e.code === 'Space') viewer.cam.jump(JUMP_SPEED)
+                                if (e.key === 'Meta') viewer.cam.speed(isPress ? DASH_SPEED : 1)
+                                if (e.key === 'Shift') viewer.cam.speed(isPress ? DASH_SPEED : 1)
+                                if (e.key === 'Control') viewer.cam.speed(isPress ? DASH_SPEED : 1)
+                                if (e.key === 'Tab') viewer.cam.tab()
                         }
                         const onMove = (e: MouseEvent) => {
-                                viewer.cam.turn([-e.movementX, -e.movementY])
+                                viewer.cam.turn([-e.movementX * TURN_SPEED, -e.movementY * TURN_SPEED])
                         }
                         const onLock = () => {
                                 const locked = document.pointerLockElement === el
