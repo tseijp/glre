@@ -9,11 +9,12 @@ const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
 const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel
 const SLOT = 16
 const CHUNK = 16
+const CACHE = 32
 const REGION = 256
 const LIGHT_DIR = [-0.33, 0.77, 0.55] // normalized afternoon sun
 const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
 const clampScope = (i = 0, j = 0) => SCOPE.x0 <= i && i <= SCOPE.x1 && SCOPE.y0 <= j && j <= SCOPE.y1
-const offOf = (i = SCOPE.x0, j = SCOPE.y0) => [REGION * (i - SCOPE.x0), 0, REGION * (SCOPE.y1 - j)]
+const offOf = (i = SCOPE.x0, j = SCOPE.y0) => ({ x: REGION * (i - SCOPE.x0), y: 0, z: REGION * (SCOPE.y1 - j) })
 const camOf = (pos = m.vec3.create()) => ({ i: SCOPE.x0 + Math.floor(pos[0] / REGION), j: SCOPE.y1 - Math.floor(pos[1] / REGION) })
 const range = (n = 0) => [...Array(n).keys()]
 const chunkId = (i = 0, j = 0, k = 0) => i + j * CHUNK + k * CHUNK * CHUNK
@@ -21,6 +22,10 @@ const regionId = (i = 0, j = 0) => i + 160 * j // DO NOT CHANGE
 const cullRegion = (VP = m.mat4.create(), rx = 0, ry = 0, rz = 0) => visSphere(VP, rx + 128, ry + 128, rz + 128, Math.sqrt(256 * 256 * 3) * 0.5)
 const solid = (f: (i: number, j: number, k: number) => void, n = CHUNK) => {
         for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) f(i, j, k)
+}
+const withBudget = (budget = 6) => {
+        const start = performance.now()
+        return () => performance.now() - start < Math.max(0, budget)
 }
 const createImage = async (src = '') => {
         const img = new Image()
@@ -336,13 +341,13 @@ const createNode = () => {
 const createChunk = (i = 0, j = 0, k = 0) => {
         let isMeshed = false
         let count = 0
+        let vox: Uint8Array
         const id = chunkId(i, j, k)
         const x = i * 16
         const y = j * 16
         const z = k * 16
         const pos = [] as number[]
         const scl = [] as number[]
-        let vox: Uint8Array
         const load = (ctx: CanvasRenderingContext2D) => {
                 if (isMeshed) return
                 const ox = (k & 3) * 1024 + i * 64
@@ -371,95 +376,96 @@ const createChunk = (i = 0, j = 0, k = 0) => {
         }
         return { id, x, y, z, pos, scl, load, count: () => count, vox: () => vox, dispose }
 }
-const withBudget = (budget = 6) => {
-        const start = performance.now()
-        return () => performance.now() - start < Math.max(0, budget)
+const createQueue = () => {
+        const items: Task[] = []
+        const sort = () => void items.sort((a, b) => b.priority - a.priority)
+        const add = (task: Task) => items.push(task)
+        const shift = () => items.shift()
+        const remove = (task: Task) => {
+                const index = items.indexOf(task)
+                if (index >= 0) items.splice(index, 1)
+        }
+        return { add, shift, sort, remove, size: () => items.length }
 }
-type FetchTask = {
-        start: () => Promise<HTMLImageElement>
-        resolve: (img: HTMLImageElement) => void
-        priority: number
-        started: boolean
-        high: boolean
-}
-const createFetchQueue = (limit = 4, lowLimit = 1) => {
-        const high = [] as FetchTask[]
-        const low = [] as FetchTask[]
-        let activeHigh = 0
-        let activeLow = 0
-        const sort = (list: FetchTask[]) => list.sort((a, b) => b.priority - a.priority)
-        const launch = (task: FetchTask, isHigh = false) => {
+const createQueues = (limit = 4, lowLimit = 1) => {
+        let _high = 0
+        let _low = 0
+        const high = createQueue()
+        const low = createQueue()
+        const _finally = (isHigh = true) => {
+                if (isHigh) _high--
+                else _low--
+                _pump()
+        }
+        const _launch = (task: Task, isHigh = false) => {
                 task.started = true
-                task.high = isHigh
-                isHigh ? activeHigh++ : activeLow++
+                task.isHigh = isHigh
+                if (isHigh) _high++
+                else _low++
                 task.start()
-                        .then((img) => task.resolve(img))
-                        .finally(() => {
-                                isHigh ? activeHigh-- : activeLow--
-                                pump()
-                        })
+                        .then((x) => task.resolve(x))
+                        .finally(() => _finally(isHigh))
         }
-        const pump = () => {
-                sort(high)
-                sort(low)
-                while (activeHigh + activeLow < limit) {
-                        if (high.length) {
-                                launch(high.shift()!, true)
-                                continue
+        const _pump = () => {
+                const tick = () => {
+                        high.sort()
+                        low.sort()
+                        if (_high + _low >= limit) return
+                        if (high.size() > 0) {
+                                const task = high.shift()!
+                                _launch(task, true)
+                                return tick()
                         }
-                        if (!low.length || activeLow >= lowLimit) return
-                        launch(low.shift()!, false)
+                        if (low.size() <= 0 || _low >= lowLimit) return
+                        _launch(low.shift()!, false)
+                        return tick()
                 }
+                tick()
         }
-        const enqueue = (start = () => createImage(''), priority = 0) => {
+        const _bucket = (task: Task, target: Queue) => {
+                ;(task.isHigh ? high : low).remove(task)
+                target.add(task)
+        }
+        const schedule = (start = () => createImage(''), priority = 0) => {
                 let resolve = (_img: HTMLImageElement) => {}
                 const promise = new Promise<HTMLImageElement>((r) => (resolve = r))
-                const task: FetchTask = { start, resolve, priority, started: false, high: priority > 0 }
-                const bucket = task.high ? high : low
-                bucket.push(task)
-                pump()
+                const task = { start, resolve, priority, started: false, isHigh: priority > 0 }
+                ;(task.isHigh ? high : low).add(task)
+                _pump()
                 return { promise, task }
         }
-        const rebucket = (task: FetchTask, target: FetchTask[]) => {
-                const src = task.high ? high : low
-                const idx = src.indexOf(task)
-                if (idx >= 0) src.splice(idx, 1)
-                target.push(task)
-        }
-        const bump = (task: FetchTask | null, priority = 0) => {
+        const bump = (task?: Task, priority = 0) => {
                 if (!task || task.priority >= priority) return
+                const isHigh = priority > 0
                 task.priority = priority
-                const shouldBeHigh = priority > 0
                 if (task.started) {
-                        if (!task.high && shouldBeHigh) {
-                                task.high = true
-                                activeLow = Math.max(0, activeLow - 1)
-                                activeHigh++
-                                pump()
+                        if (!task.isHigh && isHigh) {
+                                task.isHigh = true
+                                _low = Math.max(0, _low - 1)
+                                _high++
+                                _pump()
                         }
                         return
                 }
-                if (task.high !== shouldBeHigh) {
-                        rebucket(task, shouldBeHigh ? high : low)
-                        task.high = shouldBeHigh
+                if (task.isHigh !== isHigh) {
+                        _bucket(task, isHigh ? high : low)
+                        task.isHigh = isHigh
                 }
-                pump()
+                _pump()
         }
-        return { schedule: enqueue, bump }
+        return { schedule, bump }
 }
-const fetchQueue = createFetchQueue()
-const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
-        let img: HTMLImageElement
-        let pending: Promise<HTMLImageElement> | null = null
-        let queued: FetchTask | null = null
-        let ctx: CanvasRenderingContext2D | null = null
+const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0, queues: Queues) => {
+        let isDisposed = false
         let cursor = 0
-        let chunks: Map<number, Chunk> | null = null
-        let queue: Chunk[] | null = null
-        let disposed = false
-        const [x, y, z] = offOf(i, j)
-        const ensureChunks = () => {
-                if (disposed || (chunks && queue)) return
+        let pending: Promise<HTMLImageElement>
+        let queued: Task
+        let chunks: Map<number, Chunk>
+        let queue: Chunk[] | null
+        let img: HTMLImageElement
+        let ctx: CanvasRenderingContext2D
+        const _ensure = () => {
+                if (isDisposed || (chunks && queue)) return
                 chunks = new Map<number, Chunk>()
                 queue = []
                 solid((ci, cj, ck) => {
@@ -469,59 +475,61 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 })
         }
         const prefetch = (priority = 0) => {
-                if (disposed) return Promise.resolve(img as HTMLImageElement)
+                if (isDisposed) return Promise.resolve(img as HTMLImageElement)
                 if (img) return Promise.resolve(img)
                 if (!pending) {
-                        const { promise, task } = fetchQueue.schedule(() => createImage(`${ATLAS_URL}/${i}_${j}.png`), priority)
+                        const { promise, task } = queues.schedule(() => createImage(`${ATLAS_URL}/${i}_${j}.png`), priority)
                         pending = promise.then((res) => {
-                                if (disposed) return res
+                                if (isDisposed) return res
                                 img = res
                                 return img
                         })
                         queued = task
                 } else {
-                        fetchQueue.bump(queued, priority)
+                        queues.bump(queued, priority)
                 }
                 return pending
         }
         const image = async (priority = 0) => img || (await prefetch(priority))
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = 6) => {
-                ensureChunks()
-                if (!queue || disposed) return true
-                const inBudget = withBudget(budget)
+                _ensure()
+                if (!queue || isDisposed) return true
+                const checker = withBudget(budget)
                 for (; cursor < queue.length; cursor++) {
-                        if (!inBudget()) return false
+                        if (!checker()) return false
                         const c = queue[cursor]
                         c.load((ctx = _ctx))
                         mesh.merge(c, i)
                 }
                 return true
         }
-        const get = (ci = 0, cj = 0, ck = 0) => (ensureChunks(), chunks?.get(chunkId(ci, cj, ck)))
+        const get = (ci = 0, cj = 0, ck = 0) => {
+                _ensure()
+                return chunks?.get(chunkId(ci, cj, ck))
+        }
         const dispose = () => {
-                disposed = true
-                pending = null
-                queued = null
-                img = undefined as unknown as HTMLImageElement
-                ctx = null
+                isDisposed = true
                 queue?.forEach((c) => c.dispose())
-                queue = null
                 chunks?.clear()
-                chunks = null
+                queue = void 0 as unknown as Chunk[]
+                chunks = void 0 as unknown as Map<number, Chunk>
+                pending = void 0 as unknown as Promise<HTMLImageElement>
+                queued = void 0 as unknown as Task
+                img = void 0 as unknown as HTMLImageElement
+                ctx = void 0 as unknown as CanvasRenderingContext2D
                 cursor = 0
                 return true
         }
-        return { id: regionId(i, j), i, j, x, y, z, image, chunk, get, dispose, prefetch, ctx: () => ctx, cursor: () => (cursor = 0), peek: () => img, fetching: () => !!pending && !img, slot: -1 }
+        return { id: regionId(i, j), ...offOf(i, j), i, j, image, chunk, get, dispose, prefetch, ctx: () => ctx, cursor: () => (cursor = 0), peek: () => img, fetching: () => !!pending && !img, slot: -1 }
 }
-const REGION_CACHE_LIMIT = 32
-const createRegions = (mesh: Mesh, cam: Camera) => {
+const createRegions = (mesh: Mesh, cam: Camera, queues: Queues) => {
         const regions = new Map<number, Region>()
         const _ensure = (rx = 0, ry = 0) => {
                 const id = regionId(rx, ry)
                 const got = regions.get(id)
                 if (got) return got
-                const r = createRegion(mesh, rx, ry)
-                regions.set(id, r)
+                const r = createRegion(mesh, rx, ry, queues)
+                regions.set(r.id, r)
                 return r
         }
         const _coord = () => {
@@ -535,7 +543,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                         const d = Math.hypot(i, j)
                         i += start.i
                         j += start.j
-                        const [x, y, z] = offOf(i, j)
+                        const { x, y, z } = offOf(i, j)
                         if (!cullRegion(cam.MVP, x, y, z) && d > SLOT) return
                         if (!clampScope(i, j)) return
                         const region = _ensure(i, j)
@@ -549,8 +557,8 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 keep.forEach((e) => prefetch.delete(e.region))
                 return { keep, prefetch }
         }
-        const prune = (active: Set<Region>, origin: { i: number; j: number }) => {
-                if (regions.size <= REGION_CACHE_LIMIT) return
+        const _prune = (active: Set<Region>, origin: { i: number; j: number }) => {
+                if (regions.size <= CACHE) return
                 const inactive = Array.from(regions.values()).filter((r) => !active.has(r))
                 inactive.sort((a, b) => {
                         const da = Math.hypot(a.i - origin.i, a.j - origin.j)
@@ -558,7 +566,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                         return db - da
                 })
                 for (const r of inactive) {
-                        if (regions.size <= REGION_CACHE_LIMIT) break
+                        if (regions.size <= CACHE) break
                         regions.delete(r.id)
                         r.dispose()
                 }
@@ -573,7 +581,7 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                         if (r.fetching()) return
                         r.prefetch(0)
                 })
-                prune(active, keep[0] ?? { i: SCOPE.x0, j: SCOPE.y0 })
+                if (keep[0]) _prune(active, keep[0]) // keep[0] is the closest region
                 return keepSet
         }
         const pick = (wx = 0, wy = 0, wz = 0) => {
@@ -614,9 +622,9 @@ const createSlot = (index = 0) => {
         let offset: WebGLUniformLocation
         let region: Region
         let isReady = false
-        let pending: HTMLImageElement | null = null
+        let pending: HTMLImageElement
         const reset = () => {
-                pending = null
+                pending = void 0 as unknown as HTMLImageElement
                 isReady = false
         }
         const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
@@ -644,10 +652,10 @@ const createSlot = (index = 0) => {
         }
         const upload = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
                 if (!pending) return false
-                const inBudget = withBudget(budget)
+                const checker = withBudget(budget)
                 const ok = assign(c, pg, pending)
-                pending = null
-                if (!ok || !inBudget()) return false
+                pending = void 0 as unknown as HTMLImageElement
+                if (!ok || !checker()) return false
                 return true
         }
         const ready = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
@@ -704,13 +712,13 @@ const createSlots = () => {
                 pending = Array.from(keep)
                 pending.forEach((r) => r.cursor())
         }
-        const step = async (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
+        const step = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
                 const start = performance.now()
                 const inBudget = withBudget(budget)
                 for (; cursor < pending.length; cursor++) {
                         if (!inBudget()) break
                         const dt = Math.max(0, budget - (performance.now() - start))
-                        if (!(await _assign(c, pg, pending[cursor], dt))) return false
+                        if (!_assign(c, pg, pending[cursor], dt)) return false
                 }
                 return cursor >= pending.length
         }
@@ -742,12 +750,13 @@ const createViewer = () => {
         const mode = createMode()
         const node = createNode()
         const slots = createSlots()
-        const regions = createRegions(mesh, cam)
+        const queues = createQueues()
+        const regions = createRegions(mesh, cam, queues)
         const resize = (gl: GL) => {
                 cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
         }
-        const render = async (gl: GL) => {
+        const render = (gl: GL) => {
                 pt = ts
                 ts = performance.now()
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
@@ -764,7 +773,7 @@ const createViewer = () => {
                                 isLoading = true
                         }
                 if (isLoading)
-                        if (await slots.step(c, pg, 6)) {
+                        if (slots.step(c, pg, 6)) {
                                 mesh.commit()
                                 isLoading = false
                         }
@@ -845,9 +854,17 @@ export default function Home() {
         useEffect(() => void set(createViewer()), [])
         return <Layout noFooter>{viewer ? <Canvas viewer={viewer} /> : null}</Layout>
 }
+type Task = {
+        start: () => Promise<HTMLImageElement>
+        resolve: (img: HTMLImageElement) => void
+        priority: number
+        started: boolean
+        isHigh: boolean
+}
 type Camera = ReturnType<typeof createCamera>
 type Chunk = ReturnType<typeof createChunk>
 type Mesh = ReturnType<typeof createMesh>
-type Slot = ReturnType<typeof createSlot>
+type Queue = ReturnType<typeof createQueue>
+type Queues = ReturnType<typeof createQueues>
 type Region = ReturnType<typeof createRegion>
 type Viewer = ReturnType<typeof createViewer>
