@@ -372,34 +372,59 @@ const withBudget = (budget = 6) => {
         const start = performance.now()
         return () => performance.now() - start < Math.max(0, budget)
 }
-type FetchTask = { start: () => Promise<HTMLImageElement>; resolve: (img: HTMLImageElement) => void; priority: number; started: boolean }
-const createFetchQueue = (limit = 4) => {
+type FetchTask = {
+        start: () => Promise<HTMLImageElement>
+        resolve: (img: HTMLImageElement) => void
+        priority: number
+        started: boolean
+        high: boolean
+}
+const createFetchQueue = (limit = 4, lowLimit = 1) => {
         const queue = [] as FetchTask[]
-        let active = 0
-        const pump = () => {
-                if (active >= limit || !queue.length) return
-                queue.sort((a, b) => b.priority - a.priority)
-                const task = queue.shift()!
-                active++
+        let activeHigh = 0
+        let activeLow = 0
+        const sort = () => queue.sort((a, b) => b.priority - a.priority)
+        const begin = (task: FetchTask) => {
                 task.started = true
+                task.high ? activeHigh++ : activeLow++
                 task.start()
                         .then((img) => task.resolve(img))
                         .finally(() => {
-                                active--
+                                task.high ? activeHigh-- : activeLow--
                                 pump()
                         })
+        }
+        const pump = () => {
+                sort()
+                while (activeHigh + activeLow < limit && queue.length) {
+                        const hi = queue.findIndex((t) => t.high && !t.started)
+                        if (hi >= 0) {
+                                begin(queue.splice(hi, 1)[0]!)
+                                continue
+                        }
+                        if (activeLow >= lowLimit) return
+                        const lo = queue.findIndex((t) => !t.started)
+                        if (lo < 0) return
+                        begin(queue.splice(lo, 1)[0]!)
+                }
         }
         const schedule = (start = () => createImage(''), priority = 0) => {
                 let resolve = (_img: HTMLImageElement) => {}
                 const promise = new Promise<HTMLImageElement>((r) => (resolve = r))
-                const task: FetchTask = { start, resolve, priority, started: false }
+                const task: FetchTask = { start, resolve, priority, started: false, high: priority > 0 }
                 queue.push(task)
                 pump()
                 return { promise, task }
         }
         const bump = (task: FetchTask | null, priority = 0) => {
-                if (!task || task.started || task.priority >= priority) return
+                if (!task || task.priority >= priority) return
+                const wasHigh = task.high
                 task.priority = priority
+                task.high = priority > 0
+                if (task.started && !wasHigh && task.high) {
+                        activeLow = Math.max(0, activeLow - 1)
+                        activeHigh++
+                }
                 pump()
         }
         return { schedule, bump }
