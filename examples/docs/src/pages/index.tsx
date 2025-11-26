@@ -218,8 +218,7 @@ const createCamera = ({ yaw = Math.PI * 0.5, pitch = -Math.PI * 0.45, mode = -1,
         }
         faceDir(face, yaw, pitch)
         lookAt(eye, pos, face)
-        const HEAD = SIZE[1] * 0.5
-        return { pos, MVP, tick, turn, shift, space, asdw, mode: (x = 0) => (mode = x), update: (aspect = 1) => perspective(MVP, pos, eye, aspect, HEAD) }
+        return { pos, MVP, tick, turn, shift, space, asdw, mode: (x = 0) => (mode = x), update: (aspect = 1) => perspective(MVP, pos, eye, aspect, SIZE[1] * 0.5) }
 }
 const createMesh = () => {
         let count = 1
@@ -469,7 +468,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                         queue!.push(c)
                 })
         }
-        const startImage = (priority = 0) => {
+        const prefetch = (priority = 0) => {
                 if (disposed) return Promise.resolve(img as HTMLImageElement)
                 if (img) return Promise.resolve(img)
                 if (!pending) {
@@ -485,7 +484,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 }
                 return pending
         }
-        const image = async (priority = 0) => img || (await startImage(priority))
+        const image = async (priority = 0) => img || (await prefetch(priority))
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = 6) => {
                 ensureChunks()
                 if (!queue || disposed) return true
@@ -512,24 +511,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 cursor = 0
                 return true
         }
-        return {
-                id: regionId(i, j),
-                i,
-                j,
-                x,
-                y,
-                z,
-                image,
-                chunk,
-                get,
-                dispose,
-                prefetch: (priority = 0) => void startImage(priority),
-                ctx: () => ctx,
-                cursor: () => (cursor = 0),
-                peek: () => img,
-                fetching: () => !!pending && !img,
-                slot: -1,
-        }
+        return { id: regionId(i, j), i, j, x, y, z, image, chunk, get, dispose, prefetch, ctx: () => ctx, cursor: () => (cursor = 0), peek: () => img, fetching: () => !!pending && !img, slot: -1 }
 }
 const REGION_CACHE_LIMIT = 32
 const createRegions = (mesh: Mesh, cam: Camera) => {
@@ -630,7 +612,7 @@ const createSlot = (index = 0) => {
         let tex: WebGLTexture
         let atlas: WebGLUniformLocation
         let offset: WebGLUniformLocation
-        let region: Region | null = null
+        let region: Region
         let isReady = false
         let pending: HTMLImageElement | null = null
         const reset = () => {
@@ -687,7 +669,7 @@ const createSlot = (index = 0) => {
         const release = () => {
                 if (!region) return
                 region.slot = -1
-                region = null
+                region = void 0 as unknown as Region
                 reset()
         }
         return { ready, release, set, ctx: () => ctx, isReady: () => isReady, region: () => region }
