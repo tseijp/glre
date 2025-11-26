@@ -372,9 +372,43 @@ const withBudget = (budget = 6) => {
         const start = performance.now()
         return () => performance.now() - start < Math.max(0, budget)
 }
+type FetchTask = { start: () => Promise<HTMLImageElement>; resolve: (img: HTMLImageElement) => void; priority: number; started: boolean }
+const createFetchQueue = (limit = 4) => {
+        const queue = [] as FetchTask[]
+        let active = 0
+        const pump = () => {
+                if (active >= limit || !queue.length) return
+                queue.sort((a, b) => b.priority - a.priority)
+                const task = queue.shift()!
+                active++
+                task.started = true
+                task.start()
+                        .then((img) => task.resolve(img))
+                        .finally(() => {
+                                active--
+                                pump()
+                        })
+        }
+        const schedule = (start = () => createImage(''), priority = 0) => {
+                let resolve = (_img: HTMLImageElement) => {}
+                const promise = new Promise<HTMLImageElement>((r) => (resolve = r))
+                const task: FetchTask = { start, resolve, priority, started: false }
+                queue.push(task)
+                pump()
+                return { promise, task }
+        }
+        const bump = (task: FetchTask | null, priority = 0) => {
+                if (!task || task.started || task.priority >= priority) return
+                task.priority = priority
+                pump()
+        }
+        return { schedule, bump }
+}
+const fetchQueue = createFetchQueue()
 const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
         let img: HTMLImageElement
         let pending: Promise<HTMLImageElement> | null = null
+        let queued: FetchTask | null = null
         let ctx: CanvasRenderingContext2D | null = null
         let cursor = 0
         const chunks = new Map<number, Chunk>()
@@ -385,8 +419,18 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 chunks.set(c.id, c)
                 queue.push(c)
         })
-        const startImage = () => pending || (pending = createImage(`${ATLAS_URL}/${i}_${j}.png`).then((res) => (img = res)))
-        const image = async () => img || (await startImage())
+        const startImage = (priority = 0) => {
+                if (img) return Promise.resolve(img)
+                if (!pending) {
+                        const { promise, task } = fetchQueue.schedule(() => createImage(`${ATLAS_URL}/${i}_${j}.png`), priority)
+                        pending = promise.then((res) => (img = res))
+                        queued = task
+                } else {
+                        fetchQueue.bump(queued, priority)
+                }
+                return pending
+        }
+        const image = async (priority = 0) => img || (await startImage(priority))
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = 6) => {
                 const inBudget = withBudget(budget)
                 for (; cursor < queue.length; cursor++) {
@@ -405,7 +449,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 image,
                 chunk,
                 get,
-                prefetch: () => void startImage(),
+                prefetch: (priority = 0) => void startImage(priority),
                 ctx: () => ctx,
                 cursor: () => (cursor = 0),
                 peek: () => img,
@@ -450,10 +494,10 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
         const vis = () => {
                 const { keep, prefetch } = _coord()
                 const keepSet = new Set(keep.map((c) => c.region))
-                keepSet.forEach((r) => r.prefetch())
+                keepSet.forEach((r) => r.prefetch(2))
                 prefetch.forEach((r) => {
                         if (r.fetching()) return
-                        r.prefetch()
+                        r.prefetch(0)
                 })
                 for (const [id, r] of regions) if (!keepSet.has(r)) regions.delete(id)
                 return keepSet
@@ -537,7 +581,7 @@ const createSlot = (index = 0) => {
                 if (isReady) return true
                 const img = pending || region.peek()
                 if (!img) {
-                        region.prefetch()
+                        region.prefetch(2)
                         return false
                 }
                 pending = img
