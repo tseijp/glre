@@ -487,7 +487,6 @@ const createRegion = (mesh: Mesh, cam: Camera, i = SCOPE.x0, j = SCOPE.y0, slot 
                 for (; cursor < queue.length; cursor++) {
                         if (performance.now() - start >= budget) return false
                         const c = queue[cursor]
-                        if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) continue
                         c.load(ctx)
                         mesh.merge(c, i)
                 }
