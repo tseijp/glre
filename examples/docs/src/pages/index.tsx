@@ -465,6 +465,19 @@ const createSlot = (index = 0) => {
         let offset: WebGLUniformLocation
         let region: Region
         let isReady = false
+        let pending: HTMLImageElement | null = null
+        let isLoading = false
+        const request = (r: Region) => {
+                if (isLoading || pending || !r) return
+                isLoading = true
+                r.image()
+                        .then((img) => {
+                                if (region === r) pending = img
+                        })
+                        .finally(() => {
+                                isLoading = false
+                        })
+        }
         const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
                 ctx.clearRect(0, 0, 4096, 4096)
                 ctx.drawImage(img, 0, 0, 4096, 4096)
@@ -488,41 +501,56 @@ const createSlot = (index = 0) => {
                 c.uniform3fv(offset, new Float32Array([region.x, region.y, region.z]))
                 return (isReady = true)
         }
+        const upload = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
+                if (!pending) return false
+                const start = performance.now()
+                const ok = assign(c, pg, pending)
+                const elapsed = performance.now() - start
+                pending = null
+                if (!ok) return false
+                if (elapsed > budget) return false
+                return true
+        }
+        const ready = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
+                if (!region) return true
+                if (isReady) return true
+                if (!pending && !isLoading) request(region)
+                if (!pending) return false
+                return upload(c, pg, budget)
+        }
         const set = (r: Region, index = 0) => {
                 region = r
                 region.slot = index
+                pending = null
+                isLoading = false
                 isReady = false
         }
         const release = () => {
                 if (!region) return
                 region.slot = -1
                 region = void 0 as unknown as Region
+                pending = null
+                isLoading = false
                 isReady = false
         }
-        return { assign, release, set, ctx: () => ctx, isReady: () => isReady, region: () => region }
+        return { ready, release, set, ctx: () => ctx, isReady: () => isReady, region: () => region }
 }
 const createSlots = () => {
         const owner = range(SLOT).map(createSlot)
         let pending = [] as Region[]
         let cursor = 0
         let keep = new Set<Region>()
-        const _new = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, slot: Slot, index = 0) => {
-                const img = await r.image()
-                if (r.slot !== index || (slot.region() !== r || owner[index].region()) !== r) return false
-                if (!slot.assign(c, pg, img)) return false
-        }
-        const _assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, budget = 6) => {
+        const _assign = (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, budget = 6) => {
                 let index = r.slot
                 if (index < 0) {
                         index = owner.findIndex((slot) => !slot.region())
                         if (index < 0) return false
                         const slot = owner[index]
                         slot.set(r, index)
-                        return await _new(c, pg, r, slot, index)
                 }
                 const slot = owner[index]
                 if (slot.region() !== r) return false
-                if (!slot.isReady()) return await _new(c, pg, r, slot, index)
+                if (!slot.ready(c, pg, budget)) return false
                 return r.chunk(slot.ctx(), index, budget)
         }
         const _release = (keep: Set<Region>) => {
