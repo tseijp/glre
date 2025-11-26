@@ -378,7 +378,7 @@ const createChunk = (i = 0, j = 0, k = 0) => {
         return { id, x, y, z, pos, scl, load, dispose, count: () => count, vox: () => vox }
 }
 const createQueue = () => {
-        const items: Task[] = []
+        const items = [] as Task[]
         const sort = () => void items.sort((a, b) => b.priority - a.priority)
         const add = (task: Task) => items.push(task)
         const shift = () => items.shift()
@@ -787,6 +787,7 @@ const createViewer = () => {
 }
 const Canvas = ({ viewer }: { viewer: Viewer }) => {
         const gl = useGL({
+                // el: canvas,
                 // wireframe: true,
                 isWebGL: true,
                 isDepth: true,
