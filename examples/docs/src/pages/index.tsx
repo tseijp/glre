@@ -368,8 +368,13 @@ const createChunk = (i = 0, j = 0, k = 0) => {
         }
         return { id, x, y, z, pos, scl, load, count: () => count, vox: () => vox }
 }
+const withBudget = (budget = 6) => {
+        const start = performance.now()
+        return () => performance.now() - start < Math.max(0, budget)
+}
 const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
         let img: HTMLImageElement
+        let pending: Promise<HTMLImageElement> | null = null
         let ctx: CanvasRenderingContext2D | null = null
         let cursor = 0
         const chunks = new Map<number, Chunk>()
@@ -380,11 +385,12 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 chunks.set(c.id, c)
                 queue.push(c)
         })
-        const image = async () => img || (img = await createImage(`${ATLAS_URL}/${i}_${j}.png`))
+        const startImage = () => pending || (pending = createImage(`${ATLAS_URL}/${i}_${j}.png`).then((res) => (img = res)))
+        const image = async () => img || (await startImage())
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = 6) => {
-                const start = performance.now()
+                const inBudget = withBudget(budget)
                 for (; cursor < queue.length; cursor++) {
-                        if (performance.now() - start >= Math.max(0, budget)) return false
+                        if (!inBudget()) return false
                         const c = queue[cursor]
                         c.load((ctx = _ctx))
                         mesh.merge(c, i)
@@ -392,7 +398,20 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 return true
         }
         const get = (ci = 0, cj = 0, ck = 0) => chunks.get(chunkId(ci, cj, ck))
-        return { x, y, z, image, chunk, get, ctx: () => ctx, cursor: () => (cursor = 0), slot: -1 }
+        return {
+                x,
+                y,
+                z,
+                image,
+                chunk,
+                get,
+                prefetch: () => void startImage(),
+                ctx: () => ctx,
+                cursor: () => (cursor = 0),
+                peek: () => img,
+                fetching: () => !!pending && !img,
+                slot: -1,
+        }
 }
 const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
@@ -406,7 +425,8 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
         }
         const _coord = () => {
                 const start = camOf(cam.pos)
-                const list = [{ ...start, d: -1 }]
+                const list = [{ ...start, d: -1, region: _ensure(start.i, start.j) }]
+                const prefetch = new Set<Region>()
                 const _tick = (i = 0, j = 0) => {
                         if (i === 0 && j === 0) return
                         i -= SLOT
@@ -414,18 +434,29 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                         const d = Math.hypot(i, j)
                         i += start.i
                         j += start.j
+                        if (!clampScope(i, j)) return
+                        const region = _ensure(i, j)
+                        if (d <= SLOT) prefetch.add(region)
                         const [x, y, z] = offOf(i, j)
                         if (!cullRegion(cam.MVP, x, y, z)) return
-                        list.push({ i, j, d })
+                        list.push({ i, j, d, region })
                 }
                 for (let i = 0; i < SLOT * 2; i++) for (let j = 0; j < SLOT * 2; j++) _tick(i, j)
                 list.sort((a, b) => a.d - b.d)
-                return list.filter((e) => clampScope(e.i, e.j)).slice(0, SLOT)
+                const keep = list.filter((e) => clampScope(e.i, e.j)).slice(0, SLOT)
+                keep.forEach((e) => prefetch.delete(e.region))
+                return { keep, prefetch }
         }
         const vis = () => {
-                const keep = new Set(_coord().map((c) => _ensure(c.i, c.j)))
-                for (const [id, r] of regions) if (!keep.has(r)) regions.delete(id)
-                return keep
+                const { keep, prefetch } = _coord()
+                const keepSet = new Set(keep.map((c) => c.region))
+                keepSet.forEach((r) => r.prefetch())
+                prefetch.forEach((r) => {
+                        if (r.fetching()) return
+                        r.prefetch()
+                })
+                for (const [id, r] of regions) if (!keepSet.has(r)) regions.delete(id)
+                return keepSet
         }
         const pick = (wx = 0, wy = 0, wz = 0) => {
                 const rxi = SCOPE.x0 + Math.floor(wx / REGION)
@@ -463,27 +494,19 @@ const createSlot = (index = 0) => {
         let tex: WebGLTexture
         let atlas: WebGLUniformLocation
         let offset: WebGLUniformLocation
-        let region: Region
+        let region: Region | null = null
         let isReady = false
         let pending: HTMLImageElement | null = null
-        let isLoading = false
-        const request = (r: Region) => {
-                if (isLoading || pending || !r) return
-                isLoading = true
-                r.image()
-                        .then((img) => {
-                                if (region === r) pending = img
-                        })
-                        .finally(() => {
-                                isLoading = false
-                        })
+        const reset = () => {
+                pending = null
+                isReady = false
         }
         const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
                 ctx.clearRect(0, 0, 4096, 4096)
                 ctx.drawImage(img, 0, 0, 4096, 4096)
                 if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)!
                 if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)!
-                if (!atlas || !offset) return false
+                if (!atlas || !offset || !region) return false
                 if (!tex) {
                         tex = c.createTexture()
                         c.activeTexture(c.TEXTURE0 + index)
@@ -503,35 +526,33 @@ const createSlot = (index = 0) => {
         }
         const upload = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
                 if (!pending) return false
-                const start = performance.now()
+                const inBudget = withBudget(budget)
                 const ok = assign(c, pg, pending)
-                const elapsed = performance.now() - start
                 pending = null
-                if (!ok) return false
-                if (elapsed > budget) return false
+                if (!ok || !inBudget()) return false
                 return true
         }
         const ready = (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
                 if (!region) return true
                 if (isReady) return true
-                if (!pending && !isLoading) request(region)
-                if (!pending) return false
+                const img = pending || region.peek()
+                if (!img) {
+                        region.prefetch()
+                        return false
+                }
+                pending = img
                 return upload(c, pg, budget)
         }
         const set = (r: Region, index = 0) => {
                 region = r
                 region.slot = index
-                pending = null
-                isLoading = false
-                isReady = false
+                reset()
         }
         const release = () => {
                 if (!region) return
                 region.slot = -1
-                region = void 0 as unknown as Region
-                pending = null
-                isLoading = false
-                isReady = false
+                region = null
+                reset()
         }
         return { ready, release, set, ctx: () => ctx, isReady: () => isReady, region: () => region }
 }
@@ -567,10 +588,11 @@ const createSlots = () => {
         }
         const step = async (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
                 const start = performance.now()
+                const inBudget = withBudget(budget)
                 for (; cursor < pending.length; cursor++) {
-                        const dt = performance.now() - start
-                        if (dt >= budget) break
-                        if (!(await _assign(c, pg, pending[cursor], budget - dt))) return false
+                        if (!inBudget()) break
+                        const dt = Math.max(0, budget - (performance.now() - start))
+                        if (!(await _assign(c, pg, pending[cursor], dt))) return false
                 }
                 return cursor >= pending.length
         }
