@@ -506,6 +506,11 @@ const createSlots = () => {
         let pending = [] as Region[]
         let cursor = 0
         let keep = new Set<Region>()
+        const _new = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, slot: Slot, index = 0) => {
+                const img = await r.image()
+                if (r.slot !== index || (slot.region() !== r || owner[index].region()) !== r) return false
+                if (!slot.assign(c, pg, img)) return false
+        }
         const _assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, budget = 6) => {
                 let index = r.slot
                 if (index < 0) {
@@ -513,17 +518,11 @@ const createSlots = () => {
                         if (index < 0) return false
                         const slot = owner[index]
                         slot.set(r, index)
-                        const img = await r.image()
-                        if (r.slot !== index || owner[index].region() !== r) return false // may no longer needed
-                        if (!slot.assign(c, pg, img)) return false
+                        return await _new(c, pg, r, slot, index)
                 }
                 const slot = owner[index]
                 if (slot.region() !== r) return false
-                if (!slot.isReady()) {
-                        const img = await r.image()
-                        if (r.slot !== index || slot.region() !== r) return false // may no longer needed
-                        if (!slot.assign(c, pg, img)) return false
-                }
+                if (!slot.isReady()) return await _new(c, pg, r, slot, index)
                 return r.chunk(slot.ctx(), index, budget)
         }
         const _release = (keep: Set<Region>) => {
@@ -681,5 +680,6 @@ export default function Home() {
 type Camera = ReturnType<typeof createCamera>
 type Chunk = ReturnType<typeof createChunk>
 type Mesh = ReturnType<typeof createMesh>
+type Slot = ReturnType<typeof createSlot>
 type Region = ReturnType<typeof createRegion>
 type Viewer = ReturnType<typeof createViewer>
