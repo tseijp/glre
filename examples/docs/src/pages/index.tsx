@@ -224,10 +224,14 @@ const createCamera = ({ yaw = Math.PI * 0.5, pitch = -Math.PI * 0.45, mode = -1,
         return { pos, MVP, tick, turn, dash, jump, asdw, mode: (x = 0) => (mode = x), update: (aspect = 1) => perspective(MVP, pos, eye, aspect, HEAD) }
 }
 const createMesh = () => {
-        let count = 1
-        const pos = [0, 0, 0]
-        const scl = [1, 1, 1]
-        const aid = [0]
+        let activeCount = 1
+        let activePos = [0, 0, 0]
+        let activeScl = [1, 1, 1]
+        let activeAid = [0]
+        let stagingCount = 0
+        let stagingPos: number[] = []
+        let stagingScl: number[] = []
+        let stagingAid: number[] = []
         const buf = {} as Record<string, WebGLBuffer>
         const attr = (c: WebGL2RenderingContext, pg: WebGLProgram, data: number[], key = 'pos', size = 3) => {
                 const loc = c.getAttribLocation(pg, key)
@@ -251,27 +255,39 @@ const createMesh = () => {
                 c.bufferSubData(c.ARRAY_BUFFER, 0, array)
         }
         const reset = () => {
-                pos.length = scl.length = aid.length = count = 0
+                stagingPos.length = 0
+                stagingScl.length = 0
+                stagingAid.length = 0
+                stagingCount = 0
         }
         const merge = (c: Chunk, index = 0) => {
-                count += c.count()
-                pos.push(...c.pos)
-                scl.push(...c.scl)
-                for (let i = 0; i < c.count(); i++) aid.push(index)
+                stagingCount += c.count()
+                stagingPos.push(...c.pos)
+                stagingScl.push(...c.scl)
+                for (let i = 0; i < c.count(); i++) stagingAid.push(index)
+        }
+        const commit = () => {
+                if (!stagingCount) return false
+                ;[activePos, stagingPos] = [stagingPos, activePos]
+                ;[activeScl, stagingScl] = [stagingScl, activeScl]
+                ;[activeAid, stagingAid] = [stagingAid, activeAid]
+                activeCount = stagingCount
+                reset()
+                return true
         }
         const draw = (c: WebGL2RenderingContext, pg: WebGLProgram) => {
-                if (!count) {
-                        pos.push(0, 0, 0)
-                        scl.push(1, 1, 1)
-                        aid.push(0)
-                        count = 1
+                if (!activeCount) {
+                        activePos.push(0, 0, 0)
+                        activeScl.push(1, 1, 1)
+                        activeAid.push(0)
+                        activeCount = 1
                 }
-                attr(c, pg, scl, 'scl', 3)
-                attr(c, pg, pos, 'pos', 3)
-                attr(c, pg, aid, 'aid', 1)
-                return count
+                attr(c, pg, activeScl, 'scl', 3)
+                attr(c, pg, activePos, 'pos', 3)
+                attr(c, pg, activeAid, 'aid', 1)
+                return activeCount
         }
-        return { pos, scl, aid, reset, merge, draw, count: () => count }
+        return { reset, merge, draw, commit, count: () => activeCount }
 }
 const createSlot = (index = 0) => {
         const ctx = createContext()!
@@ -315,6 +331,7 @@ const createSlot = (index = 0) => {
 const createSlots = () => {
         const owner = range(SLOT).map(createSlot)
         let pending: Region[] = []
+        let cursor = 0
         let keep = new Set<Region>()
         const _assign = async (c: WebGL2RenderingContext, pg: WebGLProgram, r: Region, budget = Infinity) => {
                 let index = r.slot
@@ -342,17 +359,19 @@ const createSlots = () => {
                 keep = next
                 _release(keep)
                 pending = Array.from(keep)
+                cursor = 0
                 pending.forEach((r) => r.reset())
         }
         const step = async (c: WebGL2RenderingContext, pg: WebGLProgram, budget = 6) => {
                 const start = performance.now()
-                while (pending.length && performance.now() - start < budget) {
-                        const remaining = Math.max(0, budget - (performance.now() - start))
-                        const done = await _assign(c, pg, pending[0], remaining)
+                for (; cursor < pending.length; cursor++) {
+                        const elapsed = performance.now() - start
+                        if (elapsed >= budget) break
+                        const remaining = Math.max(0, budget - elapsed)
+                        const done = await _assign(c, pg, pending[cursor], remaining)
                         if (!done) return false
-                        pending.shift()
                 }
-                return pending.length === 0
+                return cursor >= pending.length
         }
         return { begin, step }
 }
@@ -465,9 +484,9 @@ const createRegion = (mesh: Mesh, cam: Camera, i = SCOPE.x0, j = SCOPE.y0, slot 
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = Infinity) => {
                 ctx = _ctx
                 const start = performance.now()
-                while (cursor < queue.length) {
+                for (; cursor < queue.length; cursor++) {
                         if (performance.now() - start >= budget) return false
-                        const c = queue[cursor++]
+                        const c = queue[cursor]
                         if (!cullChunk(cam.MVP, x, y, z, c.x, c.y, c.z)) continue
                         c.load(ctx)
                         mesh.merge(c, i)
@@ -589,7 +608,10 @@ const createViewer = () => {
                 }
                 if (isLoading) {
                         const done = await slots.step(c, pg, 6)
-                        if (done) isLoading = false
+                        if (done) {
+                                mesh.commit()
+                                isLoading = false
+                        }
                 }
                 gl.instanceCount = mesh.draw(c, pg)
         }
