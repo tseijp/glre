@@ -380,54 +380,69 @@ type FetchTask = {
         high: boolean
 }
 const createFetchQueue = (limit = 4, lowLimit = 1) => {
-        const queue = [] as FetchTask[]
+        const high = [] as FetchTask[]
+        const low = [] as FetchTask[]
         let activeHigh = 0
         let activeLow = 0
-        const sort = () => queue.sort((a, b) => b.priority - a.priority)
-        const begin = (task: FetchTask) => {
+        const sort = (list: FetchTask[]) => list.sort((a, b) => b.priority - a.priority)
+        const launch = (task: FetchTask, isHigh = false) => {
                 task.started = true
-                task.high ? activeHigh++ : activeLow++
+                task.high = isHigh
+                isHigh ? activeHigh++ : activeLow++
                 task.start()
                         .then((img) => task.resolve(img))
                         .finally(() => {
-                                task.high ? activeHigh-- : activeLow--
+                                isHigh ? activeHigh-- : activeLow--
                                 pump()
                         })
         }
         const pump = () => {
-                sort()
-                while (activeHigh + activeLow < limit && queue.length) {
-                        const hi = queue.findIndex((t) => t.high && !t.started)
-                        if (hi >= 0) {
-                                begin(queue.splice(hi, 1)[0]!)
+                sort(high)
+                sort(low)
+                while (activeHigh + activeLow < limit) {
+                        if (high.length) {
+                                launch(high.shift()!, true)
                                 continue
                         }
-                        if (activeLow >= lowLimit) return
-                        const lo = queue.findIndex((t) => !t.started)
-                        if (lo < 0) return
-                        begin(queue.splice(lo, 1)[0]!)
+                        if (!low.length || activeLow >= lowLimit) return
+                        launch(low.shift()!, false)
                 }
         }
-        const schedule = (start = () => createImage(''), priority = 0) => {
+        const enqueue = (start = () => createImage(''), priority = 0) => {
                 let resolve = (_img: HTMLImageElement) => {}
                 const promise = new Promise<HTMLImageElement>((r) => (resolve = r))
                 const task: FetchTask = { start, resolve, priority, started: false, high: priority > 0 }
-                queue.push(task)
+                const bucket = task.high ? high : low
+                bucket.push(task)
                 pump()
                 return { promise, task }
         }
+        const rebucket = (task: FetchTask, target: FetchTask[]) => {
+                const src = task.high ? high : low
+                const idx = src.indexOf(task)
+                if (idx >= 0) src.splice(idx, 1)
+                target.push(task)
+        }
         const bump = (task: FetchTask | null, priority = 0) => {
                 if (!task || task.priority >= priority) return
-                const wasHigh = task.high
                 task.priority = priority
-                task.high = priority > 0
-                if (task.started && !wasHigh && task.high) {
-                        activeLow = Math.max(0, activeLow - 1)
-                        activeHigh++
+                const shouldBeHigh = priority > 0
+                if (task.started) {
+                        if (!task.high && shouldBeHigh) {
+                                task.high = true
+                                activeLow = Math.max(0, activeLow - 1)
+                                activeHigh++
+                                pump()
+                        }
+                        return
+                }
+                if (task.high !== shouldBeHigh) {
+                        rebucket(task, shouldBeHigh ? high : low)
+                        task.high = shouldBeHigh
                 }
                 pump()
         }
-        return { schedule, bump }
+        return { schedule: enqueue, bump }
 }
 const fetchQueue = createFetchQueue()
 const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
