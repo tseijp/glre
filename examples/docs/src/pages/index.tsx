@@ -451,14 +451,19 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
         let queued: FetchTask | null = null
         let ctx: CanvasRenderingContext2D | null = null
         let cursor = 0
-        const chunks = new Map<number, Chunk>()
+        let chunks: Map<number, Chunk> | null = null
+        let queue: Chunk[] | null = null
         const [x, y, z] = offOf(i, j)
-        const queue = [] as Chunk[]
-        solid((ci, cj, ck) => {
-                const c = createChunk(ci, cj, ck)
-                chunks.set(c.id, c)
-                queue.push(c)
-        })
+        const ensureChunks = () => {
+                if (chunks && queue) return
+                chunks = new Map<number, Chunk>()
+                queue = []
+                solid((ci, cj, ck) => {
+                        const c = createChunk(ci, cj, ck)
+                        chunks!.set(c.id, c)
+                        queue!.push(c)
+                })
+        }
         const startImage = (priority = 0) => {
                 if (img) return Promise.resolve(img)
                 if (!pending) {
@@ -472,6 +477,8 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
         }
         const image = async (priority = 0) => img || (await startImage(priority))
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = 6) => {
+                ensureChunks()
+                if (!queue) return true
                 const inBudget = withBudget(budget)
                 for (; cursor < queue.length; cursor++) {
                         if (!inBudget()) return false
@@ -481,7 +488,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 }
                 return true
         }
-        const get = (ci = 0, cj = 0, ck = 0) => chunks.get(chunkId(ci, cj, ck))
+        const get = (ci = 0, cj = 0, ck = 0) => (ensureChunks(), chunks?.get(chunkId(ci, cj, ck)))
         return {
                 x,
                 y,
@@ -518,10 +525,11 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                         const d = Math.hypot(i, j)
                         i += start.i
                         j += start.j
+                        const [x, y, z] = offOf(i, j)
+                        if (!cullRegion(cam.MVP, x, y, z) && d > SLOT) return
                         if (!clampScope(i, j)) return
                         const region = _ensure(i, j)
                         if (d <= SLOT) prefetch.add(region)
-                        const [x, y, z] = offOf(i, j)
                         if (!cullRegion(cam.MVP, x, y, z)) return
                         list.push({ i, j, d, region })
                 }
@@ -539,7 +547,6 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                         if (r.fetching()) return
                         r.prefetch(0)
                 })
-                for (const [id, r] of regions) if (!keepSet.has(r)) regions.delete(id)
                 return keepSet
         }
         const pick = (wx = 0, wy = 0, wz = 0) => {
