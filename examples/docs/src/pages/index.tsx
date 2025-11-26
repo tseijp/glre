@@ -391,12 +391,14 @@ const createQueue = () => {
 const createQueues = (limit = 4, lowLimit = 1) => {
         let _high = 0
         let _low = 0
+        let isInit = false
         const high = createQueue()
         const low = createQueue()
         const _finally = (isHigh = true) => {
                 if (isHigh) _high--
                 else _low--
                 _pump()
+                isInit = true
         }
         const _launch = (task: Task, isHigh = false) => {
                 task.started = true
@@ -454,7 +456,7 @@ const createQueues = (limit = 4, lowLimit = 1) => {
                 }
                 _pump()
         }
-        return { schedule, bump }
+        return { schedule, bump, isInit: () => isInit }
 }
 const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0, queues: Queues) => {
         let isDisposed = false
@@ -749,11 +751,16 @@ const createViewer = () => {
         const slots = createSlots()
         const queues = createQueues()
         const regions = createRegions(mesh, cam, queues)
+        try {
+                cam.update(1280 / 800) // Ensure MVP is valid for culling before first render.
+                regions.vis()
+        } catch {}
         const resize = (gl: GL) => {
                 cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
         }
         const render = (gl: GL) => {
+                if (!queues.isInit()) return
                 pt = ts
                 ts = performance.now()
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
