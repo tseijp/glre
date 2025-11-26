@@ -295,12 +295,13 @@ const createSlot = (index = 0) => {
         let atlas: WebGLUniformLocation
         let offset: WebGLUniformLocation
         let region: Region
+        let isReady = false
         const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
                 ctx.clearRect(0, 0, 4096, 4096)
                 ctx.drawImage(img, 0, 0, 4096, 4096)
                 if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)!
                 if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)!
-                if (!atlas || !offset) return
+                if (!atlas || !offset) return false
                 if (!tex) {
                         tex = c.createTexture()
                         c.activeTexture(c.TEXTURE0 + index)
@@ -316,17 +317,21 @@ const createSlot = (index = 0) => {
                 c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, img) // Do not use ctx.canvas, as some img data will be lost
                 c.uniform1i(atlas, index)
                 c.uniform3fv(offset, new Float32Array([region.x, region.y, region.z]))
+                isReady = true
+                return true
         }
         const set = (r: Region, index = 0) => {
                 region = r
                 region.slot = index
+                isReady = false
         }
         const release = () => {
                 if (!region) return
                 region.slot = -1
                 region = void 0 as unknown as Region
+                isReady = false
         }
-        return { assign, release, set, ctx: () => ctx, region: () => region }
+        return { assign, release, set, ctx: () => ctx, ready: () => isReady, region: () => region }
 }
 const createSlots = () => {
         const owner = range(SLOT).map(createSlot)
@@ -337,15 +342,22 @@ const createSlots = () => {
                 let index = r.slot
                 if (index < 0) {
                         index = owner.findIndex((slot) => !slot?.region())
-                        if (index < 0) return true
+                        if (index < 0) return false
                         const slot = owner[index]
                         slot.set(r, index)
                         const img = await r.image()
-                        if (owner[index].region() !== r || r.slot !== index) return true
-                        slot.assign(c, pg, img)
+                        if (owner[index].region() !== r || r.slot !== index) return false
+                        const ok = slot.assign(c, pg, img)
+                        if (!ok) return false
                 }
                 const slot = owner[index]
-                if (!slot) return true
+                if (!slot || slot.region() !== r) return false
+                if (!slot.ready()) {
+                        const img = await r.image()
+                        if (slot.region() !== r || r.slot !== index) return false
+                        const ok = slot.assign(c, pg, img)
+                        if (!ok) return false
+                }
                 const ctx = slot.ctx()
                 return r.chunk(ctx, index, budget)
         }
