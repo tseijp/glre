@@ -366,7 +366,11 @@ const createChunk = (i = 0, j = 0, k = 0) => {
                 }
                 isMeshed = true
         }
-        return { id, x, y, z, pos, scl, load, count: () => count, vox: () => vox }
+        const dispose = () => {
+                vox = undefined as unknown as Uint8Array
+                pos.length = scl.length = count = 0
+        }
+        return { id, x, y, z, pos, scl, load, count: () => count, vox: () => vox, dispose }
 }
 const withBudget = (budget = 6) => {
         const start = performance.now()
@@ -453,9 +457,10 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
         let cursor = 0
         let chunks: Map<number, Chunk> | null = null
         let queue: Chunk[] | null = null
+        let disposed = false
         const [x, y, z] = offOf(i, j)
         const ensureChunks = () => {
-                if (chunks && queue) return
+                if (disposed || (chunks && queue)) return
                 chunks = new Map<number, Chunk>()
                 queue = []
                 solid((ci, cj, ck) => {
@@ -465,10 +470,15 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 })
         }
         const startImage = (priority = 0) => {
+                if (disposed) return Promise.resolve(img as HTMLImageElement)
                 if (img) return Promise.resolve(img)
                 if (!pending) {
                         const { promise, task } = fetchQueue.schedule(() => createImage(`${ATLAS_URL}/${i}_${j}.png`), priority)
-                        pending = promise.then((res) => (img = res))
+                        pending = promise.then((res) => {
+                                if (disposed) return res
+                                img = res
+                                return img
+                        })
                         queued = task
                 } else {
                         fetchQueue.bump(queued, priority)
@@ -478,7 +488,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
         const image = async (priority = 0) => img || (await startImage(priority))
         const chunk = (_ctx: CanvasRenderingContext2D, i = 0, budget = 6) => {
                 ensureChunks()
-                if (!queue) return true
+                if (!queue || disposed) return true
                 const inBudget = withBudget(budget)
                 for (; cursor < queue.length; cursor++) {
                         if (!inBudget()) return false
@@ -489,13 +499,30 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 return true
         }
         const get = (ci = 0, cj = 0, ck = 0) => (ensureChunks(), chunks?.get(chunkId(ci, cj, ck)))
+        const dispose = () => {
+                disposed = true
+                pending = null
+                queued = null
+                img = undefined as unknown as HTMLImageElement
+                ctx = null
+                queue?.forEach((c) => c.dispose())
+                queue = null
+                chunks?.clear()
+                chunks = null
+                cursor = 0
+                return true
+        }
         return {
+                id: regionId(i, j),
+                i,
+                j,
                 x,
                 y,
                 z,
                 image,
                 chunk,
                 get,
+                dispose,
                 prefetch: (priority = 0) => void startImage(priority),
                 ctx: () => ctx,
                 cursor: () => (cursor = 0),
@@ -504,6 +531,7 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0) => {
                 slot: -1,
         }
 }
+const REGION_CACHE_LIMIT = 32
 const createRegions = (mesh: Mesh, cam: Camera) => {
         const regions = new Map<number, Region>()
         const _ensure = (rx = 0, ry = 0) => {
@@ -539,14 +567,31 @@ const createRegions = (mesh: Mesh, cam: Camera) => {
                 keep.forEach((e) => prefetch.delete(e.region))
                 return { keep, prefetch }
         }
+        const prune = (active: Set<Region>, origin: { i: number; j: number }) => {
+                if (regions.size <= REGION_CACHE_LIMIT) return
+                const inactive = Array.from(regions.values()).filter((r) => !active.has(r))
+                inactive.sort((a, b) => {
+                        const da = Math.hypot(a.i - origin.i, a.j - origin.j)
+                        const db = Math.hypot(b.i - origin.i, b.j - origin.j)
+                        return db - da
+                })
+                for (const r of inactive) {
+                        if (regions.size <= REGION_CACHE_LIMIT) break
+                        regions.delete(r.id)
+                        r.dispose()
+                }
+        }
         const vis = () => {
                 const { keep, prefetch } = _coord()
                 const keepSet = new Set(keep.map((c) => c.region))
+                const active = new Set<Region>(keepSet)
                 keepSet.forEach((r) => r.prefetch(2))
                 prefetch.forEach((r) => {
+                        active.add(r)
                         if (r.fetching()) return
                         r.prefetch(0)
                 })
+                prune(active, keep[0] ?? { i: SCOPE.x0, j: SCOPE.y0 })
                 return keepSet
         }
         const pick = (wx = 0, wy = 0, wz = 0) => {
