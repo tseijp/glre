@@ -1,4 +1,4 @@
-import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4, mix, step } from '../../node'
+import { Fn, Vec2, Vec3, Vec4, Float, vec2, vec3, vec4 } from '../../node'
 import { mod289Vec3, mod289Vec4 } from '../math/mod289'
 import { permuteVec4 } from '../math/permute'
 import { taylorInvSqrt } from '../math/taylorInvSqrt'
@@ -181,30 +181,22 @@ export const cnoiseVec4 = Fn(([P]: [Vec4]): Float => {
         const g1011 = vec4(gx11.y, gy11.y, gz11.y, gw11.y).toVar('g1011')
         const g0111 = vec4(gx11.z, gy11.z, gz11.z, gw11.z).toVar('g0111')
         const g1111 = vec4(gx11.w, gy11.w, gz11.w, gw11.w).toVar('g1111')
-        const norm00 = taylorInvSqrt(
-                vec4(g0000.dot(g0000), g0100.dot(g0100), g1000.dot(g1000), g1100.dot(g1100))
-        ).toVar('norm00')
+        const norm00 = taylorInvSqrt(vec4(g0000.dot(g0000), g0100.dot(g0100), g1000.dot(g1000), g1100.dot(g1100))).toVar('norm00')
         g0000.mulAssign(norm00.x)
         g0100.mulAssign(norm00.y)
         g1000.mulAssign(norm00.z)
         g1100.mulAssign(norm00.w)
-        const norm01 = taylorInvSqrt(
-                vec4(g0001.dot(g0001), g0101.dot(g0101), g1001.dot(g1001), g1101.dot(g1101))
-        ).toVar('norm01')
+        const norm01 = taylorInvSqrt(vec4(g0001.dot(g0001), g0101.dot(g0101), g1001.dot(g1001), g1101.dot(g1101))).toVar('norm01')
         g0001.mulAssign(norm01.x)
         g0101.mulAssign(norm01.y)
         g1001.mulAssign(norm01.z)
         g1101.mulAssign(norm01.w)
-        const norm10 = taylorInvSqrt(
-                vec4(g0010.dot(g0010), g0110.dot(g0110), g1010.dot(g1010), g1110.dot(g1110))
-        ).toVar('norm10')
+        const norm10 = taylorInvSqrt(vec4(g0010.dot(g0010), g0110.dot(g0110), g1010.dot(g1010), g1110.dot(g1110))).toVar('norm10')
         g0010.mulAssign(norm10.x)
         g0110.mulAssign(norm10.y)
         g1010.mulAssign(norm10.z)
         g1110.mulAssign(norm10.w)
-        const norm11 = taylorInvSqrt(
-                vec4(g0011.dot(g0011), g0111.dot(g0111), g1011.dot(g1011), g1111.dot(g1111))
-        ).toVar('norm11')
+        const norm11 = taylorInvSqrt(vec4(g0011.dot(g0011), g0111.dot(g0111), g1011.dot(g1011), g1111.dot(g1111))).toVar('norm11')
         g0011.mulAssign(norm11.x)
         g0111.mulAssign(norm11.y)
         g1011.mulAssign(norm11.z)

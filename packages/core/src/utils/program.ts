@@ -32,12 +32,7 @@ export const createArrayBuffer = (c: WebGL2RenderingContext, data: number[]) => 
         return { array, buffer }
 }
 
-export const setArrayBuffer = (
-        c: WebGL2RenderingContext,
-        array: Float32Array,
-        buffer: WebGLBuffer,
-        value: number[]
-) => {
+export const setArrayBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
         array.set(value)
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
@@ -65,13 +60,7 @@ export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocati
         c[`uniformMatrix${l as 2}fv`](loc, false, value)
 }
 
-export const createTexture = (
-        c: WebGL2RenderingContext,
-        el: HTMLImageElement | HTMLVideoElement,
-        loc: WebGLUniformLocation,
-        unit: number,
-        isVideo = false
-) => {
+export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | HTMLVideoElement, loc: WebGLUniformLocation, unit: number, isVideo = false) => {
         const texture = c.createTexture()
         c.bindTexture(c.TEXTURE_2D, texture)
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
@@ -100,16 +89,7 @@ interface TextureBuffer {
         buffer: WebGLFramebuffer
 }
 
-export const createStorage = (
-        c: WebGL2RenderingContext,
-        value: number[],
-        width: number,
-        height: number,
-        ping: TextureBuffer,
-        pong: TextureBuffer,
-        unit: number,
-        array: Float32Array
-) => {
+export const createStorage = (c: WebGL2RenderingContext, value: number[], width: number, height: number, ping: TextureBuffer, pong: TextureBuffer, unit: number, array: Float32Array) => {
         const particleCount = width * height
         const vectorSize = value.length / particleCount
         for (let i = 0; i < particleCount; i++) {
@@ -132,10 +112,7 @@ export const createStorage = (
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
 }
 
-export const cleanStorage = (
-        c: WebGL2RenderingContext,
-        map: Iterable<{ ping: TextureBuffer; pong: TextureBuffer }>
-) => {
+export const cleanStorage = (c: WebGL2RenderingContext, map: Iterable<{ ping: TextureBuffer; pong: TextureBuffer }>) => {
         for (const { ping, pong } of map) {
                 c.deleteTexture(ping.texture)
                 c.deleteTexture(pong.texture)
@@ -144,14 +121,7 @@ export const cleanStorage = (
         }
 }
 
-export const createAttachment = (
-        c: WebGL2RenderingContext,
-        i: TextureBuffer,
-        o: TextureBuffer,
-        loc: WebGLUniformLocation,
-        unit: number,
-        index: number
-) => {
+export const createAttachment = (c: WebGL2RenderingContext, i: TextureBuffer, o: TextureBuffer, loc: WebGLUniformLocation, unit: number, index: number) => {
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, i.texture)
         c.uniform1i(loc, unit)
@@ -168,19 +138,13 @@ export const storageSize = (particleCount: number | number[] = 1024) => {
         if (is.num(particleCount)) {
                 const sqrt = Math.sqrt(particleCount)
                 const size = Math.ceil(sqrt)
-                if (!Number.isInteger(sqrt)) {
-                        console.warn(
-                                `GLRE Storage Warning: particleCount (${particleCount}) is not a square. Using ${size}x${size} texture may waste GPU memory. Consider using [width, height] format for optimal storage.`
-                        )
-                }
+                if (!Number.isInteger(sqrt)) console.warn(`GLRE Storage Warning: particleCount (${particleCount}) is not a square. Using ${size}x${size} texture may waste GPU memory. Consider using [width, height] format for optimal storage.`)
                 return { x: size, y: size }
         }
         const [x, y, z] = particleCount
         if (z !== undefined) {
                 const yz = y * z
-                console.warn(
-                        `GLRE Storage Warning: 3D particleCount [${x}, ${y}, ${z}] specified but WebGL storage textures only support 2D. Flattening to 2D by multiplying height=${y} * depth=${z} = ${yz}.`
-                )
+                console.warn(`GLRE Storage Warning: 3D particleCount [${x}, ${y}, ${z}] specified but WebGL storage textures only support 2D. Flattening to 2D by multiplying height=${y} * depth=${z} = ${yz}.`)
                 return { x, y: yz }
         }
         return { x, y }

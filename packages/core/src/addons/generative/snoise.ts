@@ -78,7 +78,6 @@ export const snoiseVec3 = Fn(([v]: [Vec3]): Float => {
         const p2 = vec3(a1.xy, h.z).toVar('p2')
         const p3 = vec3(a1.zw, h.w).toVar('p3')
         const norm = taylorInvSqrt(vec4(p0.dot(p0), p1.dot(p1), p2.dot(p2), p3.dot(p3))).toVar('norm')
-        p0.mulAssign(norm.x)
         p1.mulAssign(norm.y)
         p2.mulAssign(norm.z)
         p3.mulAssign(norm.w)

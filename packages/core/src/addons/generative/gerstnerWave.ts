@@ -1,4 +1,4 @@
-import { Fn, Vec2, Float, vec3, dot, sqrt, float } from '../../node'
+import { Fn, Vec2, Float, vec3, float } from '../../node'
 import { PI } from '../math/const'
 
 export const gerstnerWave = Fn(([_uv, _dir, _steepness, _wavelength, _time]: [Vec2, Vec2, Float, Float, Float]) => {
