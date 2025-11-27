@@ -100,14 +100,6 @@ export interface NodeContext {
 /**
  * infer
  */
-// Optimized swizzle length using fixed-depth checks instead of recursion
-// prettier-ignore
-type _SwizzleLength<S extends string> =
-        S extends `${string}${string}${string}${string}${string}` ? never :
-        S extends `${string}${string}${string}${string}` ? 4 :
-        S extends `${string}${string}${string}` ? 3 :
-        S extends `${string}${string}` ? 2 : 1
-
 // Unified logic with infer.ts inferOperator function
 // prettier-ignore
 type InferOperator<L extends C, R extends C> =
@@ -137,10 +129,7 @@ type OperatorTypeRules = ExtractPairs<(typeof OPERATOR_TYPE_RULES)[number]>
 type IsInRules<L extends C, R extends C> = [L, R] extends OperatorTypeRules ? 1 : 0
 type ValidateOperator<L extends C, R extends C> = L extends R ? 1 : IsInRules<L, R>
 
-// prettier-ignore
-type _SwizzleBase<T extends C> = T extends keyof SwizzleBaseMap ? SwizzleBaseMap[T] : 'float'
-
-type SwizzleBaseMap = {
+type _SwizzleBaseMap = {
         float: 'float'
         vec2: 'float'
         vec3: 'float'
@@ -159,32 +148,31 @@ type SwizzleBaseMap = {
         bvec4: 'bool'
 }
 
-type SwizzleResultMap = {
+type _SwizzleResultMap = {
         float: { 1: 'float'; 2: 'vec2'; 3: 'vec3'; 4: 'vec4' }
         int: { 1: 'int'; 2: 'ivec2'; 3: 'ivec3'; 4: 'ivec4' }
         uint: { 1: 'uint'; 2: 'uvec2'; 3: 'uvec3'; 4: 'uvec4' }
         bool: { 1: 'bool'; 2: 'bvec2'; 3: 'bvec3'; 4: 'bvec4' }
 }
 
+// Optimized string length using direct pattern matching
 // prettier-ignore
-type _SwizzleResult<Base extends C, L extends 1 | 2 | 3 | 4> = SwizzleResultMap[_SwizzleBase<Base>][L]
+type _SwizzleLength<A extends string> =
+        A extends `${infer _}${infer A}` ? A extends '' ? 1 :
+        A extends `${infer _}${infer B}` ? B extends '' ? 2 :
+        B extends `${infer _}${infer C}` ? C extends '' ? 3 :
+        4 : never : never : never
 
-// prettier-ignore
-type InferSwizzleType<T extends C, S extends string> =
-        _SwizzleLength<S> extends infer L extends 1 | 2 | 3 | 4
-                ? _SwizzleResult<_SwizzleBase<T>, L>
-                : 'float'
+type _SwizzleBase<T extends C> = T extends keyof _SwizzleBaseMap ? _SwizzleBaseMap[T] : never
+type _SwizzleResult<T extends C, L extends 1 | 2 | 3 | 4> = _SwizzleResultMap[_SwizzleBase<T>][L]
+type InferSwizzleType<T extends C, S extends string> = _SwizzleLength<S> extends infer L extends 1 | 2 | 3 | 4 ? _SwizzleResult<_SwizzleBase<T>, L> : never
 
 /**
  * Swizzles
  */
 type _Swizzles<T extends string> = T | `${T}${T}` | `${T}${T}${T}` | `${T}${T}${T}${T}`
 
-export type Swizzles =
-        | _Swizzles<'x' | 'y' | 'z' | 'w'>
-        | _Swizzles<'r' | 'g' | 'b' | 'a'>
-        | _Swizzles<'p' | 'q'>
-        | _Swizzles<'s' | 't'>
+export type Swizzles = _Swizzles<'x' | 'y' | 'z' | 'w'> | _Swizzles<'r' | 'g' | 'b' | 'a'> | _Swizzles<'p' | 'q'> | _Swizzles<'s' | 't'>
 
 export type Void = XImpl<'void'>
 export type Bool = XImpl<'bool'>
@@ -364,16 +352,8 @@ interface _X<T extends C> {
 
         // 2. WGSL-compliant return types with individual function constraints
         determinant(): T extends 'mat2' | 'mat3' | 'mat4' ? Float : never
-        distance<U extends C>(
-                y: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
-        ): Float
-        dot<U extends C>(
-                y: T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4'
-                        ? U extends T
-                                ? number | X<U>
-                                : never
-                        : never
-        ): T extends `ivec${string}` ? Int : Float
+        distance<U extends C>(y: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never): Float
+        dot<U extends C>(y: T extends 'vec2' | 'vec3' | 'vec4' | 'ivec2' | 'ivec3' | 'ivec4' ? (U extends T ? number | X<U> : never) : never): T extends `ivec${string}` ? Int : Float
         length(): T extends 'vec2' | 'vec3' | 'vec4' ? Float : never
         lengthSq(): Float
         luminance(): Float
@@ -436,13 +416,8 @@ interface _X<T extends C> {
         min<U extends C>(y: number | X<U>): X<InferOperator<T, U>>
         mix<U extends C>(y: number | X<U>, a: number | Float | X<U>): X<InferOperator<T, U>>
         pow<U extends C>(y: number | X<U>): X<T>
-        reflect<U extends C>(
-                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never
-        ): X<T>
-        refract<U extends C>(
-                N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never,
-                eta: number | Float
-        ): T extends 'vec2' | 'vec3' | 'vec4' ? X<T> : never
+        reflect<U extends C>(N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never): X<T>
+        refract<U extends C>(N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never, eta: number | Float): T extends 'vec2' | 'vec3' | 'vec4' ? X<T> : never
 
         // 2. Functions where not first argument determines return type with unified parameter types
         smoothstep<U extends C>(edge0: number | X<U>, edge1: number | X<U>): X<InferOperator<T, U>>
