@@ -316,10 +316,10 @@ const createNode = () => {
                         .toVar('wp') // world pos
                 const ci = wp.div(int(16)).toIVec3().toVar('c') // chunk index in the workd
                 const lp = wp.sub(ci.mul(int(16))).clamp(int(0), int(15)).toIVec3().toVar('l') // local pos in the chunk
-                const zDiv4 = ci.z.div(int(4)).toVar('zDiv4')
-                const zMod4 = ci.z.sub(zDiv4.mul(int(4))).toVar('zMod4')
-                const ltZDiv4 = lp.z.div(int(4)).toVar('ltZDiv4')
-                const ltZMod4 = lp.z.sub(ltZDiv4.mul(int(4))).toVar('ltZMod4')
+                const zDiv4 = int(ci.z.div(int(4))).toVar('zDiv4')
+                const zMod4 = int(ci.z.sub(zDiv4.mul(int(4)))).toVar('zMod4')
+                const ltZDiv4 = int(lp.z.div(int(4))).toVar('ltZDiv4')
+                const ltZMod4 = int(lp.z.sub(ltZDiv4.mul(int(4)))).toVar('ltZMod4')
                 const zt = ivec2(zMod4.mul(int(1024)), zDiv4.mul(int(1024)))
                 const ct = ivec2(ci.x.mul(int(64)), ci.y.mul(int(64)))
                 const lt = ivec2(ltZMod4.mul(int(16)).add(lp.x), ltZDiv4.mul(int(16)).add(lp.y))
