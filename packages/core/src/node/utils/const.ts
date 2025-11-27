@@ -66,12 +66,14 @@ export const OPERATORS = {
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-export const SWIZZLE_RESULT_MAP = {
-        float: { 1: 'float', 2: 'vec2', 3: 'vec3', 4: 'vec4' },
-        int: { 1: 'int', 2: 'ivec2', 3: 'ivec3', 4: 'ivec4' },
-        uint: { 1: 'uint', 2: 'uvec2', 3: 'uvec3', 4: 'uvec4' },
-        bool: { 1: 'bool', 2: 'bvec2', 3: 'bvec3', 4: 'bvec4' },
-}
+export const COMPONENT_COUNT_TO_TYPE = {
+        1: 'float',
+        2: 'vec2',
+        3: 'vec3',
+        4: 'vec4',
+        9: 'mat3',
+        16: 'mat4',
+} as const
 
 export const BUILTIN_TYPES = {
         // WGSL builtin variables
