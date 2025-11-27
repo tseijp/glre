@@ -66,34 +66,6 @@ export const OPERATORS = {
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
 
-export const COMPONENT_COUNT_TO_TYPE = {
-        1: 'float',
-        2: 'vec2',
-        3: 'vec3',
-        4: 'vec4',
-        9: 'mat3',
-        16: 'mat4',
-} as const
-
-export const SWIZZLE_BASE_MAP = {
-        float: 'float' as const,
-        vec2: 'float' as const,
-        vec3: 'float' as const,
-        vec4: 'float' as const,
-        int: 'int' as const,
-        ivec2: 'int' as const,
-        ivec3: 'int' as const,
-        ivec4: 'int' as const,
-        uint: 'uint' as const,
-        uvec2: 'uint' as const,
-        uvec3: 'uint' as const,
-        uvec4: 'uint' as const,
-        bool: 'bool' as const,
-        bvec2: 'bool' as const,
-        bvec3: 'bool' as const,
-        bvec4: 'bool' as const,
-}
-
 export const SWIZZLE_RESULT_MAP = {
         float: { 1: 'float', 2: 'vec2', 3: 'vec3', 4: 'vec4' },
         int: { 1: 'int', 2: 'ivec2', 3: 'ivec3', 4: 'ivec4' },
