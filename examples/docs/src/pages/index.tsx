@@ -11,6 +11,7 @@ import {
         int,
         ivec2,
         mat4,
+        texelFetch,
         texture,
         texture2D,
         uniform,
@@ -22,7 +23,7 @@ import {
 import { vec3 as V, mat4 as M } from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import type { GL } from 'glre/src'
-import type { Float, Vec2, Vec3 } from 'glre/src/node'
+import type { Float, IVec2, Vec3 } from 'glre/src/node'
 const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
 const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel [m]
 const SLOT = 16
@@ -314,7 +315,7 @@ const createNode = () => {
                         .floor()
                         .toIVec3()
                         .toVar('wp') // world pos
-                const ci = wp.div(int(16)).toIVec3().toVar('c') // chunk index in the workd
+                const ci = wp.div(int(16)).toIVec3().toVar('c') // chunk index in the world
                 const lp = wp.sub(ci.mul(int(16))).clamp(int(0), int(15)).toIVec3().toVar('l') // local pos in the chunk
                 const zDiv4 = int(ci.z.div(int(4))).toVar('zDiv4')
                 const zMod4 = int(ci.z.sub(zDiv4.mul(int(4)))).toVar('zMod4')
@@ -323,15 +324,13 @@ const createNode = () => {
                 const zt = ivec2(zMod4.mul(int(1024)), zDiv4.mul(int(1024)))
                 const ct = ivec2(ci.x.mul(int(64)), ci.y.mul(int(64)))
                 const lt = ivec2(ltZMod4.mul(int(16)).add(lp.x), ltZDiv4.mul(int(16)).add(lp.y))
-                const uv = zt.add(ct).add(lt).toVec2().add(vec2(0.5)).div(4096)
-                const eps = float(0.5).div(4096)
-                return clamp(uv, vec2(eps), vec2(float(1).sub(eps)))
+                return zt.add(ct).add(lt).toIVec2()
         })
-        const pick = Fn(([id, uv]: [Float, Vec2]) => {
+        const pick = Fn(([id, uvPix]: [Float, IVec2]) => {
                 const t = vec4(0, 0, 0, 1).toVar('t')
                 range(SLOT).map((i) => {
                         If(id.equal(i), () => {
-                                t.assign(texture(iAtlas[i], uv))
+                                t.assign(texelFetch(iAtlas[i], uvPix, int(0)))
                         })
                 })
                 return t
@@ -344,8 +343,8 @@ const createNode = () => {
         const fs = Fn(([local, p, n, i]: [Vec3, Vec3, Vec3, Float]) => {
                 const L = vec3(LIGHT_DIR).normalize()
                 const diffuse = n.normalize().dot(L).mul(0.5).add(0.5)
-                const uv = atlasUV(local, p, n).toVar('uv')
-                const texel = pick(i, uv).toVar('t')
+                const uvPix = atlasUV(local, p, n).toVar('uvPix')
+                const texel = pick(i, uvPix).toVar('t')
                 const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
