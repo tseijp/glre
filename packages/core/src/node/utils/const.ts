@@ -1,28 +1,7 @@
 export const SWIZZLES = ['x', 'y', 'z', 'w', 'r', 'g', 'b', 'a', 's', 't', 'p', 'q'] as const
 
 // Unified order with TYPE_MAPPING array
-export const CONVERSIONS = [
-        'toBool',
-        'toUInt',
-        'toInt',
-        'toFloat',
-        'toBVec2',
-        'toIVec2',
-        'toUVec2',
-        'toVec2',
-        'toBVec3',
-        'toIVec3',
-        'toUVec3',
-        'toVec3',
-        'toBVec4',
-        'toIVec4',
-        'toUVec4',
-        'toVec4',
-        'toColor',
-        'toMat2',
-        'toMat3',
-        'toMat4',
-] as const
+export const CONVERSIONS = ['toBool', 'toUInt', 'toInt', 'toFloat', 'toBVec2', 'toIVec2', 'toUVec2', 'toVec2', 'toBVec3', 'toIVec3', 'toUVec3', 'toVec3', 'toBVec4', 'toIVec4', 'toUVec4', 'toVec4', 'toColor', 'toMat2', 'toMat3', 'toMat4'] as const
 
 // Unified order with CONVERSIONS array
 export const TYPE_MAPPING = {
@@ -96,6 +75,32 @@ export const COMPONENT_COUNT_TO_TYPE = {
         16: 'mat4',
 } as const
 
+export const SWIZZLE_BASE_MAP = {
+        float: 'float' as const,
+        vec2: 'float' as const,
+        vec3: 'float' as const,
+        vec4: 'float' as const,
+        int: 'int' as const,
+        ivec2: 'int' as const,
+        ivec3: 'int' as const,
+        ivec4: 'int' as const,
+        uint: 'uint' as const,
+        uvec2: 'uint' as const,
+        uvec3: 'uint' as const,
+        uvec4: 'uint' as const,
+        bool: 'bool' as const,
+        bvec2: 'bool' as const,
+        bvec3: 'bool' as const,
+        bvec4: 'bool' as const,
+}
+
+export const SWIZZLE_RESULT_MAP = {
+        float: { 1: 'float', 2: 'vec2', 3: 'vec3', 4: 'vec4' },
+        int: { 1: 'int', 2: 'ivec2', 3: 'ivec3', 4: 'ivec4' },
+        uint: { 1: 'uint', 2: 'uvec2', 3: 'uvec3', 4: 'uvec4' },
+        bool: { 1: 'bool', 2: 'bvec2', 3: 'bvec3', 4: 'bvec4' },
+}
+
 export const BUILTIN_TYPES = {
         // WGSL builtin variables
         position: 'vec4',
@@ -134,14 +139,7 @@ export const BUILTIN_TYPES = {
         color: 'vec4',
 } as const
 
-export const COMPARISON_OPERATORS = [
-        'equal',
-        'notEqual',
-        'lessThan',
-        'lessThanEqual',
-        'greaterThan',
-        'greaterThanEqual',
-] as const
+export const COMPARISON_OPERATORS = ['equal', 'notEqual', 'lessThan', 'lessThanEqual', 'greaterThan', 'greaterThanEqual'] as const
 
 export const LOGICAL_OPERATORS = ['and', 'or'] as const
 
@@ -270,9 +268,7 @@ const isSameType = (L: string, R: string): boolean => L === R
 
 // Check if combination exists in rules (handles bidirectional matching)
 const isValidCombination = (L: string, R: string): boolean => {
-        return OPERATOR_TYPE_RULES.some(
-                ([left, right, _]) => (left === L && right === R) || (left === R && right === L)
-        )
+        return OPERATOR_TYPE_RULES.some(([left, right, _]) => (left === L && right === R) || (left === R && right === L))
 }
 
 // Type constraint validation for operators ([L, R, Result] format)
@@ -287,8 +283,6 @@ export const getOperatorResultType = (L: string, R: string, op: string): string 
         if (COMPARISON_OPERATORS.includes(op as any) || LOGICAL_OPERATORS.includes(op as any)) return 'bool'
         // Same type operations return the same type
         if (isSameType(L, R)) return L
-        const rule = OPERATOR_TYPE_RULES.find(
-                ([left, right, _]) => (left === L && right === R) || (left === R && right === L)
-        )
+        const rule = OPERATOR_TYPE_RULES.find(([left, right, _]) => (left === L && right === R) || (left === R && right === L))
         return rule ? rule[2] : L
 }

@@ -1,4 +1,4 @@
-import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATOR_TYPE_RULES } from './utils/const'
+import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATOR_TYPE_RULES, SWIZZLE_BASE_MAP, SWIZZLE_RESULT_MAP } from './utils/const'
 import type { GL } from '../types'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
@@ -124,37 +124,15 @@ type InferArrayElement<T extends C> =
         T extends 'mat2' ? 'vec2' :
         'float'
 
-type ExtractPairs<T> = T extends readonly [infer L, infer R, string] ? [L, R] | [R, L] : never
-type OperatorTypeRules = ExtractPairs<(typeof OPERATOR_TYPE_RULES)[number]>
-type IsInRules<L extends C, R extends C> = [L, R] extends OperatorTypeRules ? 1 : 0
-type ValidateOperator<L extends C, R extends C> = L extends R ? 1 : IsInRules<L, R>
+type _OperatorTypeRulesMap = typeof OPERATOR_TYPE_RULES
+type _ExtractPairs<T> = T extends readonly [infer L, infer R, string] ? [L, R] | [R, L] : never
+type _OperatorTypeRules = _ExtractPairs<_OperatorTypeRulesMap[number]>
+type _IsInRules<L extends C, R extends C> = [L, R] extends _OperatorTypeRules ? 1 : 0
+type ValidateOperator<L extends C, R extends C> = L extends R ? 1 : _IsInRules<L, R>
 
-type _SwizzleBaseMap = {
-        float: 'float'
-        vec2: 'float'
-        vec3: 'float'
-        vec4: 'float'
-        int: 'int'
-        ivec2: 'int'
-        ivec3: 'int'
-        ivec4: 'int'
-        uint: 'uint'
-        uvec2: 'uint'
-        uvec3: 'uint'
-        uvec4: 'uint'
-        bool: 'bool'
-        bvec2: 'bool'
-        bvec3: 'bool'
-        bvec4: 'bool'
-}
-
-type _SwizzleResultMap = {
-        float: { 1: 'float'; 2: 'vec2'; 3: 'vec3'; 4: 'vec4' }
-        int: { 1: 'int'; 2: 'ivec2'; 3: 'ivec3'; 4: 'ivec4' }
-        uint: { 1: 'uint'; 2: 'uvec2'; 3: 'uvec3'; 4: 'uvec4' }
-        bool: { 1: 'bool'; 2: 'bvec2'; 3: 'bvec3'; 4: 'bvec4' }
-}
-
+/**
+ * swizzle
+ */
 // Optimized string length using direct pattern matching
 // prettier-ignore
 type _SwizzleLength<A extends string> =
@@ -163,6 +141,8 @@ type _SwizzleLength<A extends string> =
         B extends `${infer _}${infer C}` ? C extends '' ? 3 :
         4 : never : never : never
 
+type _SwizzleBaseMap = typeof SWIZZLE_BASE_MAP
+type _SwizzleResultMap = typeof SWIZZLE_RESULT_MAP
 type _SwizzleBase<T extends C> = T extends keyof _SwizzleBaseMap ? _SwizzleBaseMap[T] : never
 type _SwizzleResult<T extends C, L extends 1 | 2 | 3 | 4> = _SwizzleResultMap[_SwizzleBase<T>][L]
 type InferSwizzleType<T extends C, S extends string> = _SwizzleLength<S> extends infer L extends 1 | 2 | 3 | 4 ? _SwizzleResult<_SwizzleBase<T>, L> : never
