@@ -308,9 +308,14 @@ const createNode = () => {
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
         const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
-                const wp = p.add(local).sub(n.sign().mul(half)).floor().toInt().toVar('wp') // world pos
-                const ci = wp.div(int(16)).toVar('c') // chunk index in the workd
-                const lp = wp.sub(ci.mul(int(16))).clamp(int(0), int(15)).toVar('l') // local pos in the chunk
+                const wp = p
+                        .add(local)
+                        .sub(n.sign().mul(half))
+                        .floor()
+                        .toIVec3()
+                        .toVar('wp') // world pos
+                const ci = wp.div(int(16)).toIVec3().toVar('c') // chunk index in the workd
+                const lp = wp.sub(ci.mul(int(16))).clamp(int(0), int(15)).toIVec3().toVar('l') // local pos in the chunk
                 const zDiv4 = ci.z.div(int(4)).toVar('zDiv4')
                 const zMod4 = ci.z.sub(zDiv4.mul(int(4))).toVar('zMod4')
                 const ltZDiv4 = lp.z.div(int(4)).toVar('ltZDiv4')
