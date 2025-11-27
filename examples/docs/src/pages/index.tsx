@@ -1,7 +1,24 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { attribute, clamp, float, Fn, If, instance, mat4, texture, texture2D, uniform, vec2, vec3, vec4, vertexStage } from 'glre/src/node'
+import {
+        attribute,
+        clamp,
+        float,
+        Fn,
+        If,
+        instance,
+        int,
+        ivec2,
+        mat4,
+        texture,
+        texture2D,
+        uniform,
+        vec2,
+        vec3,
+        vec4,
+        vertexStage,
+} from 'glre/src/node'
 import { vec3 as V, mat4 as M } from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import type { GL } from 'glre/src'
@@ -291,13 +308,17 @@ const createNode = () => {
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
         const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
-                const wp = p.add(local).sub(n.sign().mul(half)).floor().toVar('wp') // world pos
-                const ci = wp.div(16).floor().toVar('c') // chunk index in the workd
-                const lp = wp.sub(ci.mul(16)).clamp(0, 15).ceil().toVar('l') // local pos in the chunk
-                const zt = vec2(ci.z.mod(4).mul(1024), ci.z.div(4).floor().mul(1024))
-                const ct = vec2(ci.x.mul(64), ci.y.mul(64))
-                const lt = vec2(lp.z.mod(4).mul(16).add(lp.x), lp.z.div(4).floor().mul(16).add(lp.y))
-                const uv = zt.add(ct).add(lt).add(vec2(0.5)).div(4096)
+                const wp = p.add(local).sub(n.sign().mul(half)).floor().toInt().toVar('wp') // world pos
+                const ci = wp.div(int(16)).toVar('c') // chunk index in the workd
+                const lp = wp.sub(ci.mul(int(16))).clamp(int(0), int(15)).toVar('l') // local pos in the chunk
+                const zDiv4 = ci.z.div(int(4)).toVar('zDiv4')
+                const zMod4 = ci.z.sub(zDiv4.mul(int(4))).toVar('zMod4')
+                const ltZDiv4 = lp.z.div(int(4)).toVar('ltZDiv4')
+                const ltZMod4 = lp.z.sub(ltZDiv4.mul(int(4))).toVar('ltZMod4')
+                const zt = ivec2(zMod4.mul(int(1024)), zDiv4.mul(int(1024)))
+                const ct = ivec2(ci.x.mul(int(64)), ci.y.mul(int(64)))
+                const lt = ivec2(ltZMod4.mul(int(16)).add(lp.x), ltZDiv4.mul(int(16)).add(lp.y))
+                const uv = zt.add(ct).add(lt).toVec2().add(vec2(0.5)).div(4096)
                 const eps = float(0.5).div(4096)
                 return clamp(uv, vec2(eps), vec2(float(1).sub(eps)))
         })
