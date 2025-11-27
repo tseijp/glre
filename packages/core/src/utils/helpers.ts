@@ -94,7 +94,8 @@ export const getStride = (arrayLength: number, count = 1, error = console.warn) 
 
 export const GLSL_FS = /* cpp */ `
 #version 300 es
-precision mediump float;
+precision highp float;
+precision highp int;
 out vec4 fragColor;
 uniform vec2 iResolution;
 void main() {

@@ -3,7 +3,8 @@ import type { NodeContext, X } from './types'
 
 const GLSL_FRAGMENT_HEAD = `
 #version 300 es
-precision mediump float;
+precision highp float;
+precision highp int;
 out vec4 fragColor;
 `.trim()
 
@@ -106,7 +107,8 @@ export const compute = (x: X, c: NodeContext = {}) => {
         const result = []
         if (c.isWebGL) {
                 result.push('#version 300 es')
-                result.push('precision mediump float;')
+                result.push('precision highp float;')
+                result.push('precision highp int;')
                 result.push(head)
                 result.push('void main() {')
                 result.push(`  ${lines}`)
