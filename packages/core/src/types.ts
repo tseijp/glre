@@ -21,6 +21,7 @@ export type GL = EventState<{
         count: number
         instanceCount: number
         particleCount: number | [number, number] | [number, number, number]
+        precision: 'lowp' | 'mediump' | 'highp'
         loading: number
         el: HTMLCanvasElement
         vs?: string | Vec4
@@ -123,7 +124,7 @@ export interface WebGPUState {
  * for webgl
  */
 export interface WebGLState {
-        context: WebGLRenderingContext
+        context: WebGL2RenderingContext
         program: WebGLProgram
-        storages: any
+        uniforms: Nested<WebGLUniformLocation | null>
 }

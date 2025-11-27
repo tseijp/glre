@@ -1,19 +1,7 @@
 import { nested as cached } from 'reev'
 import { is, getStride, GLSL_VS, GLSL_FS, loadingTexture } from './helpers'
-import {
-        createArrayBuffer,
-        cleanStorage,
-        createAttachment,
-        createProgram,
-        createStorage,
-        createTexture,
-        setArrayBuffer,
-        storageSize,
-        updateAttrib,
-        updateInstance,
-        updateUniform,
-} from './program'
-import type { GL, WebGLState } from '../types'
+import { createArrayBuffer, cleanStorage, createAttachment, createProgram, createStorage, createTexture, setArrayBuffer, storageSize, updateAttrib, updateInstance, updateUniform } from './program'
+import type { GL } from '../types'
 
 const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         if (!gl.cs) return null // ignore if no compute shader
@@ -67,17 +55,17 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
 
 export const webgl = async (gl: GL) => {
         const config = { isWebGL: true, gl }
-        const c = gl.el!.getContext('webgl2')!
+        const c = (gl.webgl.context = gl.el!.getContext('webgl2')!)
         const cp = computeProgram(gl, c)
         const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs!.fragment(config)) : GLSL_FS
         const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs!.vertex(config)) : GLSL_VS
-        const pg = createProgram(c, fs, vs, gl)!
+        const pg = (gl.webgl.program = createProgram(c, fs, vs, gl)!)
         c.useProgram(pg)
 
         let activeUnit = 0 // for texture units
 
         const units = cached(() => activeUnit++)
-        const uniforms = cached((key) => c.getUniformLocation(pg, key))
+        const uniforms = (gl.webgl.uniforms = cached((key) => c.getUniformLocation(pg, key)))
 
         const attribs = cached((key, value: number[], isInstance = false) => {
                 const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error)
@@ -143,7 +131,5 @@ export const webgl = async (gl: GL) => {
                 ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
         }
 
-        const webgl: WebGLState = { context: c, program: pg, storages: cp?.storages }
-
-        return { webgl, render, clean, _attribute, _instance, _uniform, _texture, _storage: cp?._storage }
+        return { render, clean, _attribute, _instance, _uniform, _texture, _storage: cp?._storage }
 }

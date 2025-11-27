@@ -39,6 +39,7 @@ export const createGL = (props?: Partial<GL>) => {
                 count: 6,
                 instanceCount: 1,
                 particleCount: 1024,
+                precision: 'highp',
                 webgl: {},
                 webgpu: {},
                 loading: 0,

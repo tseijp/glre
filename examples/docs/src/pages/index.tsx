@@ -1,25 +1,7 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import {
-        attribute,
-        clamp,
-        float,
-        Fn,
-        If,
-        instance,
-        int,
-        ivec2,
-        mat4,
-        texelFetch,
-        texture,
-        texture2D,
-        uniform,
-        vec2,
-        vec3,
-        vec4,
-        vertexStage,
-} from 'glre/src/node'
+import { attribute, clamp, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture, texture2D, uniform, vec2, vec3, vec4, vertexStage } from 'glre/src/node'
 import { vec3 as V, mat4 as M } from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import type { GL } from 'glre/src'
@@ -30,6 +12,7 @@ const SLOT = 16
 const CHUNK = 16
 const CACHE = 32
 const REGION = 256
+const PREFETCH = 16
 const LIGHT_DIR = [-0.33, 0.77, 0.55] // normalized afternoon sun
 const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
 const scoped = (i = 0, j = 0) => SCOPE.x0 <= i && i <= SCOPE.x1 && SCOPE.y0 <= j && j <= SCOPE.y1
@@ -252,6 +235,7 @@ const createMesh = () => {
         let _pos = [] as number[]
         let _scl = [] as number[]
         let _aid = [] as number[]
+        let isReady = false
         const buf = {} as Record<string, WebGLBuffer>
         const attr = (c: WebGL2RenderingContext, pg: WebGLProgram, data: number[], key = 'pos', size = 3) => {
                 const loc = c.getAttribLocation(pg, key)
@@ -299,9 +283,10 @@ const createMesh = () => {
                 if (!_count) return false
                 ;[pos, _pos, scl, _scl, aid, _aid, count] = [_pos, pos, _scl, scl, _aid, aid, _count]
                 reset()
+                isReady = true
                 return true
         }
-        return { merge, draw, reset, commit, count: () => count }
+        return { merge, draw, reset, commit, count: () => count, isReady: () => isReady }
 }
 const createNode = () => {
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
@@ -309,14 +294,13 @@ const createNode = () => {
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
         const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
                 const half = float(0.5)
-                const wp = p
-                        .add(local)
-                        .sub(n.sign().mul(half))
-                        .floor()
-                        .toIVec3()
-                        .toVar('wp') // world pos
+                const wp = p.add(local).sub(n.sign().mul(half)).floor().toIVec3().toVar('wp') // world pos
                 const ci = wp.div(int(16)).toIVec3().toVar('c') // chunk index in the world
-                const lp = wp.sub(ci.mul(int(16))).clamp(int(0), int(15)).toIVec3().toVar('l') // local pos in the chunk
+                const lp = wp
+                        .sub(ci.mul(int(16)))
+                        .clamp(int(0), int(15))
+                        .toIVec3()
+                        .toVar('l') // local pos in the chunk
                 const zDiv4 = int(ci.z.div(int(4))).toVar('zDiv4')
                 const zMod4 = int(ci.z.sub(zDiv4.mul(int(4)))).toVar('zMod4')
                 const ltZDiv4 = int(lp.z.div(int(4))).toVar('ltZDiv4')
@@ -416,14 +400,12 @@ const createQueue = () => {
 const createQueues = (limit = 4, lowLimit = 1) => {
         let _high = 0
         let _low = 0
-        let isInit = false
         const high = createQueue()
         const low = createQueue()
         const _finally = (isHigh = true) => {
                 if (isHigh) _high--
                 else _low--
                 _pump()
-                isInit = true
         }
         const _launch = (task: Task, isHigh = false) => {
                 task.started = true
@@ -481,7 +463,7 @@ const createQueues = (limit = 4, lowLimit = 1) => {
                 }
                 _pump()
         }
-        return { schedule, bump, isInit: () => isInit }
+        return { schedule, bump }
 }
 const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0, queues: Queues) => {
         let isDisposed = false
@@ -562,8 +544,8 @@ const createRegions = (mesh: Mesh, cam: Camera, queues: Queues) => {
                 const prefetch = new Set<Region>()
                 const _tick = (i = 0, j = 0) => {
                         if (i === 0 && j === 0) return
-                        i -= SLOT
-                        j -= SLOT
+                        i -= PREFETCH
+                        j -= PREFETCH
                         const d = Math.hypot(i, j)
                         i += start.i
                         j += start.j
@@ -571,11 +553,11 @@ const createRegions = (mesh: Mesh, cam: Camera, queues: Queues) => {
                         if (!culling(cam.MVP, x, y, z) && d > SLOT) return
                         if (!scoped(i, j)) return
                         const region = _ensure(i, j)
-                        if (d <= SLOT) prefetch.add(region)
+                        if (d <= SLOT) if (mesh.isReady()) prefetch.add(region)
                         if (!culling(cam.MVP, x, y, z)) return
                         list.push({ i, j, d, region })
                 }
-                for (let i = 0; i < SLOT * 2; i++) for (let j = 0; j < SLOT * 2; j++) _tick(i, j)
+                for (let i = 0; i < PREFETCH * 2; i++) for (let j = 0; j < PREFETCH * 2; j++) _tick(i, j)
                 list.sort((a, b) => a.d - b.d)
                 const keep = list.filter((e) => scoped(e.i, e.j)).slice(0, SLOT)
                 keep.forEach((e) => prefetch.delete(e.region))
@@ -785,13 +767,14 @@ const createViewer = () => {
                 node.iMVP.value = [...cam.MVP]
         }
         const render = (gl: GL) => {
-                if (!queues.isInit()) return
                 pt = ts
                 ts = performance.now()
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
-                cam.tick(dt, regions.pick)
-                cam.update(gl.size[0] / gl.size[1])
-                node.iMVP.value = [...cam.MVP]
+                if (mesh.isReady()) {
+                        cam.tick(dt, regions.pick)
+                        cam.update(gl.size[0] / gl.size[1])
+                        node.iMVP.value = [...cam.MVP]
+                }
                 const c = gl.webgl.context as WebGL2RenderingContext
                 const pg = gl.webgl.program as WebGLProgram
                 if (!isLoading)
@@ -812,11 +795,12 @@ const createViewer = () => {
 }
 const Canvas = ({ viewer }: { viewer: Viewer }) => {
         const gl = useGL({
+                precision: 'highp',
                 // el: canvas,
                 // wireframe: true,
                 isWebGL: true,
                 isDepth: true,
-                // isDebug: true,
+                isDebug: true,
                 count: 36, // Total number of cube triangles vertices
                 instanceCount: 1, // count of instanced mesh in initial state
                 vert: viewer.node.vert,
@@ -829,6 +813,8 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 },
                 mount() {
                         const el = gl.el
+                        if (!el) return
+                        const isSP = window.innerWidth <= 768
                         const press = (isPress: boolean, e: KeyboardEvent) => {
                                 const k = e.code
                                 if (k === 'KeyW') viewer.cam.asdw(1, isPress ? 1 : 0)
@@ -854,27 +840,43 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         const onMove = (e: MouseEvent) => {
                                 viewer.cam.turn([-e.movementX, -e.movementY])
                         }
+                        let px = 0
+                        let py = 0
+                        let mx = 0
+                        let my = 0
+                        const onTouch = (e: TouchEvent) => {
+                                if (e.touches.length !== 1) return
+                                e.preventDefault()
+                                const touch = e.touches[0]
+                                const x = touch.clientX
+                                const y = touch.clientY
+                                const dx = x - px
+                                const dy = y - py
+                                viewer.cam.turn([-dx * 0.2, -dy * 0.2])
+                        }
                         const onLock = () => {
                                 viewer.pt = performance.now()
                                 viewer.cam.mode(viewer.mode.esc())
                         }
-                        const onDown = () => {
+                        const onDown = (trial = 0) => {
                                 if (!el) return
-                                const ts = performance.now()
-                                if (ts - viewer.pt < 2000) return
-                                viewer.pt = ts
-                                setTimeout(() => {
-                                        try {
-                                                el.requestPointerLock()
-                                        } finally {
-                                        }
-                                }, 1000)
+                                if (trial > 20) return
+                                if (performance.now() - viewer.pt < 1300) return setTimeout(() => onDown(trial + 1), 100) // if the user requests within 1250 ms of escaping, the following error occurs: `ERROR: The user has exited the lock before this request was completed.`
+                                try {
+                                        document.body.requestPointerLock()
+                                } finally {
+                                }
                         }
-                        el.addEventListener('mousedown', onDown)
-                        window.addEventListener('keyup', press.bind(null, false))
-                        window.addEventListener('keydown', press.bind(null, true))
-                        document.addEventListener('mousemove', onMove)
-                        document.addEventListener('pointerlockchange', onLock)
+                        if (isSP) {
+                                document.addEventListener('touchmove', onTouch, { passive: false })
+                                document.addEventListener('mousemove', onMove, { passive: false })
+                        } else {
+                                if (el) el.addEventListener('mousedown', onDown.bind(null, 0))
+                                document.addEventListener('mousemove', onMove)
+                                window.addEventListener('keyup', press.bind(null, false))
+                                window.addEventListener('keydown', press.bind(null, true))
+                                document.addEventListener('pointerlockchange', onLock)
+                        }
                 },
         })
         return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', background: '#212121', width: '100%', height: '100%' }} />
