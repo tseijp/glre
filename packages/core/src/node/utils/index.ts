@@ -110,7 +110,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 const field = parseVaryingHead(c, id, infer(target, c))
                 c.code?.fragInputs.set(id, field)
                 c.code?.vertOutputs.set(id, field)
-                c.code?.vertVaryings.set(id, code(x, c))
+                c.code?.vertVaryings.set(id, { node: x })
                 return c.isWebGL ? `${id}` : `out.${id}`
         }
         if (type === 'builtin') {

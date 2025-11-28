@@ -19,6 +19,14 @@ const topological = (headers: Map<string, string>, dependencies: Map<string, Set
         return sorted
 }
 
+const resolveVertVaryings = (c: NodeContext) => {
+        if (!c.code) return
+        for (const [id, varying] of c.code.vertVaryings.entries()) {
+                const codeStr = varying.code ?? code(varying.node, c)
+                c.code.vertVaryings.set(id, { ...varying, code: codeStr })
+        }
+}
+
 const build = (x: X, c: NodeContext) => {
         const body = code(x, c)
         let head = ''
@@ -104,6 +112,7 @@ export const fragment = (x: X, c: NodeContext = {}) => {
 export const vertex = (x: X, c: NodeContext = {}) => {
         c.code?.headers?.clear()
         c.label = 'vert' // for varying inputs or outputs
+        resolveVertVaryings(c)
         const [head, lines, ret] = build(x, c)
         const result = []
         if (c.isWebGL) {
@@ -114,7 +123,10 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 result.push('void main() {')
                 result.push(`  ${lines}`)
                 result.push(`  gl_Position = ${ret};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  ${id} = ${code};`)
+                for (const [id, varying] of c.code?.vertVaryings?.entries() || []) {
+                        const varyingCode = varying.code ?? code(varying.node, c)
+                        result.push(`  ${id} = ${varyingCode};`)
+                }
         } else {
                 if (c.code?.vertInputs?.size) result.push(generateStruct('In', c.code.vertInputs))
                 if (c.code?.vertOutputs?.size) result.push(generateStruct('Out', c.code.vertOutputs))
@@ -124,7 +136,10 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 result.push('  var out: Out;')
                 result.push(`  ${lines}`)
                 result.push(`  out.position = ${ret};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  out.${id} = ${code};`)
+                for (const [id, varying] of c.code?.vertVaryings?.entries() || []) {
+                        const varyingCode = varying.code ?? code(varying.node, c)
+                        result.push(`  out.${id} = ${varyingCode};`)
+                }
                 result.push('  return out;')
         }
         result.push('}')

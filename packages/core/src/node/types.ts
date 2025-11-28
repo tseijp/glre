@@ -90,11 +90,16 @@ export interface NodeContext {
                 fragInputs: Map<string, string>
                 vertInputs: Map<string, string>
                 vertOutputs: Map<string, string>
-                vertVaryings: Map<string, string>
+                vertVaryings: Map<string, VaryingInfo>
                 computeInputs: Map<string, string>
                 dependencies: Map<string, Set<string>>
                 structStructFields: Map<string, StructFields>
         }
+}
+
+export interface VaryingInfo {
+        node: Y
+        code?: string
 }
 
 /**
