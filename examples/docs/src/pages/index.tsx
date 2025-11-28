@@ -1,7 +1,7 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { attribute, clamp, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture, texture2D, uniform, vec2, vec3, vec4, vertexStage } from 'glre/src/node'
+import { attribute, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture2D, uniform, vec3, vec4, vertexStage } from 'glre/src/node'
 import { vec3 as V, mat4 as M } from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import type { GL } from 'glre/src'
@@ -13,7 +13,7 @@ const CHUNK = 16
 const CACHE = 32
 const REGION = 256
 const PREFETCH = 16
-const LIGHT_DIR = [-0.33, 0.77, 0.55] // normalized afternoon sun
+const LIGHT_DIR = [-0.33, 0.77, 0.55]
 const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
 const scoped = (i = 0, j = 0) => SCOPE.x0 <= i && i <= SCOPE.x1 && SCOPE.y0 <= j && j <= SCOPE.y1
 const offOf = (i = SCOPE.x0, j = SCOPE.y0) => ({ x: REGION * (i - SCOPE.x0), y: 0, z: REGION * (SCOPE.y1 - j) })
@@ -292,23 +292,22 @@ const createNode = () => {
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
         const iAtlas = range(SLOT).map((i) => uniform(texture2D(), `iAtlas${i}`))
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
-        const atlasUV = Fn(([local, p, n]: [Vec3, Vec3, Vec3]) => {
-                const half = float(0.5)
-                const wp = p.add(local).sub(n.sign().mul(half)).floor().toIVec3().toVar('wp') // world pos
-                const ci = wp.div(int(16)).toIVec3().toVar('c') // chunk index in the world
-                const lp = wp
-                        .sub(ci.mul(int(16)))
-                        .clamp(int(0), int(15))
-                        .toIVec3()
-                        .toVar('l') // local pos in the chunk
-                const zDiv4 = int(ci.z.div(int(4))).toVar('zDiv4')
-                const zMod4 = int(ci.z.sub(zDiv4.mul(int(4)))).toVar('zMod4')
-                const ltZDiv4 = int(lp.z.div(int(4))).toVar('ltZDiv4')
-                const ltZMod4 = int(lp.z.sub(ltZDiv4.mul(int(4)))).toVar('ltZMod4')
-                const zt = ivec2(zMod4.mul(int(1024)), zDiv4.mul(int(1024)))
-                const ct = ivec2(ci.x.mul(int(64)), ci.y.mul(int(64)))
-                const lt = ivec2(ltZMod4.mul(int(16)).add(lp.x), ltZDiv4.mul(int(16)).add(lp.y))
-                return zt.add(ct).add(lt).toVec2()
+        const vertex = attribute<'vec3'>([-0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5], 'vertex')
+        const normal = attribute<'vec3'>([-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], 'normal')
+        const scl = instance<'vec3'>(vec3(), 'scl')
+        const pos = instance<'vec3'>(vec3(), 'pos')
+        const aid = instance<'float'>(float(), 'aid')
+        const atlas = Fn(([p, n]: [Vec3, Vec3]) => {
+                const wp = p.sub(n.sign().mul(0.5)).floor().toIVec3().toVar('wp') // world pos
+                const ci = wp.div(int(16)).toIVec3().mul(int(16)).toVar('ci') // left shift like k & 3
+                const lp = wp.sub(ci).toIVec3().toVar('lp') // ................ right shift like k >> 2
+                const a = int(ci.z.div(int(64))).toVar('a')
+                const b = int(ci.z.div(int(16)).sub(a.mul(int(4)))).toVar('b')
+                const c = int(lp.z.div(int(4))).toVar('c')
+                const d = int(lp.z.sub(c.mul(int(4)))).toVar('d')
+                const zt = ivec2(b, a).mul(int(1024))
+                const lt = ivec2(d, c).mul(int(16)).add(lp.xy)
+                return int(4).mul(ci.xy).add(zt).add(lt).toVec2()
         })
         const pick = Fn(([id, uvPix]: [Float, IVec2]) => {
                 const t = vec4(0, 0, 0, 1).toVar('t')
@@ -319,13 +318,11 @@ const createNode = () => {
                 })
                 return t
         })
-        const vertex = attribute<'vec3'>([-0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5], 'vertex')
-        const normal = attribute<'vec3'>([-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], 'normal')
-        const scl = instance<'vec3'>(vec3(), 'scl')
-        const pos = instance<'vec3'>(vec3(), 'pos')
-        const aid = instance<'float'>(float(), 'aid')
-        const fs = Fn(([local, p, n, diffuse, i]: [Vec3, Vec3, Vec3, Float, Float]) => {
-                const uv = atlasUV(local, p, n).floor().toIVec2().toVar('uv')
+        const shade = Fn(([normal]: [Vec3]) => {
+                return normal.normalize().dot(vec3(LIGHT_DIR).normalize()).mul(0.5).add(0.5)
+        })
+        const fs = Fn(([p, n, diffuse, i]: [Vec3, Vec3, Float, Float]) => {
+                const uv = atlas(p, n).floor().toIVec2().toVar('uv')
                 const texel = pick(i, uv).toVar('t')
                 const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
@@ -341,13 +338,7 @@ const createNode = () => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(
-                vertexStage(vertex.mul(scl)),
-                vertexStage(pos),
-                vertexStage(normal),
-                vertexStage(normal.normalize().dot(vec3(LIGHT_DIR).normalize()).mul(0.5).add(0.5)),
-                vertexStage(aid)
-        )
+        const frag = fs(vertexStage(vertex.mul(scl).add(pos)), vertexStage(normal), vertexStage(shade(normal)), vertexStage(aid))
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
@@ -846,8 +837,6 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         }
                         let px = 0
                         let py = 0
-                        let mx = 0
-                        let my = 0
                         const onTouch = (e: TouchEvent) => {
                                 if (e.touches.length !== 1) return
                                 e.preventDefault()
