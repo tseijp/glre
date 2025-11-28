@@ -17,10 +17,10 @@ const LIGHT_DIR = [-0.33, 0.77, 0.55]
 const ATLAS_URL = `https://pub-a3916cfad25545dc917e91549e7296bc.r2.dev/v1` // `http://localhost:5173/logs`
 const scoped = (i = 0, j = 0) => SCOPE.x0 <= i && i <= SCOPE.x1 && SCOPE.y0 <= j && j <= SCOPE.y1
 const offOf = (i = SCOPE.x0, j = SCOPE.y0) => ({ x: REGION * (i - SCOPE.x0), y: 0, z: REGION * (SCOPE.y1 - j) })
-const posOf = (pos = V.create()) => ({ i: SCOPE.x0 + Math.floor(pos[0] / REGION), j: SCOPE.y1 - Math.floor(pos[1] / REGION) })
+const posOf = (pos = V.create()) => ({ i: SCOPE.x0 + Math.floor(pos[0] / REGION), j: SCOPE.y1 - Math.floor(pos[2] / REGION) })
 const range = (n = 0) => [...Array(n).keys()]
 const chunkId = (i = 0, j = 0, k = 0) => i + j * CHUNK + k * CHUNK * CHUNK
-const regionId = (i = 0, j = 0) => i + 160 * j // DO NOT CHANGE
+const regionId = (i = 0, j = 0) => i + ROW * j
 const culling = (VP = M.create(), rx = 0, ry = 0, rz = 0) => visSphere(VP, rx + 128, ry + 128, rz + 128, Math.sqrt(256 * 256 * 3) * 0.5)
 const solid = (f: (i: number, j: number, k: number) => void, n = CHUNK) => {
         for (let k = 0; k < n; k++) for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) f(i, j, k)
@@ -794,9 +794,9 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 precision: 'highp',
                 // el: canvas,
                 // wireframe: true,
+                // isDebug: true,
                 isWebGL: true,
                 isDepth: true,
-                isDebug: true,
                 count: 36, // Total number of cube triangles vertices
                 instanceCount: 1, // count of instanced mesh in initial state
                 vert: viewer.node.vert,
@@ -873,12 +873,30 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         }
                 },
         })
-        return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', background: '#212121', width: '100%', height: '100%' }} />
+        return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', width: '100%', height: '100%' }} />
 }
 export default function Home() {
         const [viewer, set] = useState<Viewer>()
         useEffect(() => void set(createViewer()), [])
-        return <Layout noFooter>{viewer ? <Canvas viewer={viewer} /> : null}</Layout>
+        return (
+                <Layout noFooter>
+                        <div id="loading" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>
+                                <span style={{ marginRight: '0.5rem' }}>Loading</span>
+                                <svg width="24" height="8" viewBox="0 0 24 8">
+                                        <circle cx="4" cy="4" r="1" fill="currentColor">
+                                                <animate attributeName="opacity" values="0;1;0" dur="0.9s" repeatCount="indefinite" />
+                                        </circle>
+                                        <circle cx="12" cy="4" r="1" fill="currentColor">
+                                                <animate attributeName="opacity" values="0;1;0" dur="0.9s" begin="0.2s" repeatCount="indefinite" />
+                                        </circle>
+                                        <circle cx="20" cy="4" r="1" fill="currentColor">
+                                                <animate attributeName="opacity" values="0;1;0" dur="0.9s" begin="0.4s" repeatCount="indefinite" />
+                                        </circle>
+                                </svg>
+                        </div>
+                        {viewer ? <Canvas viewer={viewer} /> : null}
+                </Layout>
+        )
 }
 type Task = {
         start: () => Promise<HTMLImageElement>
