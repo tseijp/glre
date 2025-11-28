@@ -308,7 +308,7 @@ const createNode = () => {
                 const zt = ivec2(zMod4.mul(int(1024)), zDiv4.mul(int(1024)))
                 const ct = ivec2(ci.x.mul(int(64)), ci.y.mul(int(64)))
                 const lt = ivec2(ltZMod4.mul(int(16)).add(lp.x), ltZDiv4.mul(int(16)).add(lp.y))
-                return zt.add(ct).add(lt).toIVec2()
+                return zt.add(ct).add(lt).toVec2()
         })
         const pick = Fn(([id, uvPix]: [Float, IVec2]) => {
                 const t = vec4(0, 0, 0, 1).toVar('t')
@@ -324,11 +324,9 @@ const createNode = () => {
         const scl = instance<'vec3'>(vec3(), 'scl')
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
-        const fs = Fn(([local, p, n, i]: [Vec3, Vec3, Vec3, Float]) => {
-                const L = vec3(LIGHT_DIR).normalize()
-                const diffuse = n.normalize().dot(L).mul(0.5).add(0.5)
-                const uvPix = atlasUV(local, p, n).toVar('uvPix')
-                const texel = pick(i, uvPix).toVar('t')
+        const fs = Fn(([local, p, n, diffuse, i]: [Vec3, Vec3, Vec3, Float, Float]) => {
+                const uv = atlasUV(local, p, n).floor().toIVec2().toVar('uv')
+                const texel = pick(i, uv).toVar('t')
                 const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
@@ -343,7 +341,13 @@ const createNode = () => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(vertexStage(vertex.mul(scl)), vertexStage(pos), vertexStage(normal), vertexStage(aid))
+        const frag = fs(
+                vertexStage(vertex.mul(scl)),
+                vertexStage(pos),
+                vertexStage(normal),
+                vertexStage(normal.normalize().dot(vec3(LIGHT_DIR).normalize()).mul(0.5).add(0.5)),
+                vertexStage(aid)
+        )
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
