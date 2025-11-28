@@ -318,13 +318,15 @@ const createNode = () => {
                 })
                 return t
         })
+        const world = Fn(([vertex, scl, pos]: [Vec3, Vec3, Vec3]) => {
+                return vertex.mul(scl).add(pos)
+        })
         const shade = Fn(([normal]: [Vec3]) => {
                 return normal.normalize().dot(vec3(LIGHT_DIR).normalize()).mul(0.5).add(0.5)
         })
         const fs = Fn(([p, n, diffuse, i]: [Vec3, Vec3, Float, Float]) => {
                 const uv = atlas(p, n).floor().toIVec2().toVar('uv')
-                const texel = pick(i, uv).toVar('t')
-                const rgb = texel.rgb.mul(diffuse).toVar('rgb')
+                const rgb = pick(i, uv).rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
         const vs = Fn(([pos, scl, aid]: [Vec3, Vec3, Float]) => {
@@ -338,7 +340,7 @@ const createNode = () => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(vertexStage(vertex.mul(scl).add(pos)), vertexStage(normal), vertexStage(shade(normal)), vertexStage(aid))
+        const frag = fs(vertexStage(world(vertex, scl, pos)), vertexStage(normal), vertexStage(shade(normal)), vertexStage(aid))
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
