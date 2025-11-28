@@ -104,6 +104,7 @@ export const fragment = (x: X, c: NodeContext = {}) => {
 export const vertex = (x: X, c: NodeContext = {}) => {
         c.code?.headers?.clear()
         c.label = 'vert' // for varying inputs or outputs
+        if (c.code) for (const [id, { node }] of c.code.vertVaryings.entries()) c.code.vertVaryings.set(id, { node, code: code(node, c) }) // ① prebuild varying.code because the scope (e.g. output function definitions) is fixed to vertex.
         const [head, lines, ret] = build(x, c)
         const result = []
         if (c.isWebGL) {
@@ -114,7 +115,7 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 result.push('void main() {')
                 result.push(`  ${lines}`)
                 result.push(`  gl_Position = ${ret};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  ${id} = ${code};`)
+                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) result.push(`  ${id} = ${varying.code!};`) // ② varying.code is already prebuilt
         } else {
                 if (c.code?.vertInputs?.size) result.push(generateStruct('In', c.code.vertInputs))
                 if (c.code?.vertOutputs?.size) result.push(generateStruct('Out', c.code.vertOutputs))
@@ -124,7 +125,7 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 result.push('  var out: Out;')
                 result.push(`  ${lines}`)
                 result.push(`  out.position = ${ret};`)
-                for (const [id, code] of c.code?.vertVaryings?.entries() || []) result.push(`  out.${id} = ${code};`)
+                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) result.push(`  out.${id} = ${varying.code!};`)
                 result.push('  return out;')
         }
         result.push('}')
