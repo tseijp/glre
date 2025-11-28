@@ -418,12 +418,12 @@ const createQueues = (limit = 4, lowLimit = 1) => {
                         low.sort()
                         if (_high + _low >= limit) return
                         if (high.size() > 0) {
-                                const task = high.shift()!
+                                const task = high.shift() as Task
                                 _launch(task, true)
                                 return tick()
                         }
                         if (low.size() <= 0 || _low >= lowLimit) return
-                        _launch(low.shift()!, false)
+                        _launch(low.shift() as Task, false)
                         return tick()
                 }
                 tick()
@@ -513,12 +513,12 @@ const createRegion = (mesh: Mesh, i = SCOPE.x0, j = SCOPE.y0, queues: Queues) =>
                 isDisposed = true
                 queue?.forEach((c) => c.dispose())
                 chunks?.clear()
-                queue = void 0 as unknown as Chunk[]
-                chunks = void 0 as unknown as Map<number, Chunk>
-                pending = void 0 as unknown as Promise<HTMLImageElement>
-                queued = void 0 as unknown as Task
-                img = void 0 as unknown as HTMLImageElement
-                ctx = void 0 as unknown as CanvasRenderingContext2D
+                queue = undefined as unknown as Chunk[]
+                chunks = undefined as unknown as Map<number, Chunk>
+                pending = undefined as unknown as Promise<HTMLImageElement>
+                queued = undefined as unknown as Task
+                img = undefined as unknown as HTMLImageElement
+                ctx = undefined as unknown as CanvasRenderingContext2D
                 cursor = 0
                 return true
         }
@@ -618,7 +618,7 @@ const createRegions = (mesh: Mesh, cam: Camera, queues: Queues) => {
         return { vis, pick }
 }
 const createSlot = (index = 0) => {
-        const ctx = createContext()!
+        const ctx = createContext() as CanvasRenderingContext2D
         let tex: WebGLTexture
         let atlas: WebGLUniformLocation
         let offset: WebGLUniformLocation
@@ -626,14 +626,14 @@ const createSlot = (index = 0) => {
         let isReady = false
         let pending: HTMLImageElement
         const reset = () => {
-                pending = void 0 as unknown as HTMLImageElement
+                pending = undefined as unknown as HTMLImageElement
                 isReady = false
         }
         const assign = (c: WebGL2RenderingContext, pg: WebGLProgram, img: HTMLImageElement) => {
                 ctx.clearRect(0, 0, 4096, 4096)
                 ctx.drawImage(img, 0, 0, 4096, 4096)
-                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`)!
-                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`)!
+                if (!atlas) atlas = c.getUniformLocation(pg, `iAtlas${index}`) as WebGLUniformLocation
+                if (!offset) offset = c.getUniformLocation(pg, `iOffset${index}`) as WebGLUniformLocation
                 if (!atlas || !offset || !region) return false
                 if (!tex) {
                         tex = c.createTexture()
@@ -656,7 +656,7 @@ const createSlot = (index = 0) => {
                 if (!pending) return false
                 const checker = timer(budget)
                 const ok = assign(c, pg, pending)
-                pending = void 0 as unknown as HTMLImageElement
+                pending = undefined as unknown as HTMLImageElement
                 if (!ok || !checker()) return false
                 return true
         }
@@ -679,7 +679,7 @@ const createSlot = (index = 0) => {
         const release = () => {
                 if (!region) return
                 region.slot = -1
-                region = void 0 as unknown as Region
+                region = undefined as unknown as Region
                 reset()
         }
         return { ready, release, set, ctx: () => ctx, isReady: () => isReady, region: () => region }
@@ -841,15 +841,22 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         }
                         let px = 0
                         let py = 0
-                        const onTouch = (e: TouchEvent) => {
+                        const touchXY = (e: TouchEvent) => {
                                 if (e.touches.length !== 1) return
                                 e.preventDefault()
                                 const touch = e.touches[0]
-                                const x = touch.clientX
-                                const y = touch.clientY
+                                return [touch.clientX, touch.clientY]
+                        }
+                        const onTouchStart = (e: TouchEvent) => {
+                                ;[px, py] = touchXY(e)
+                        }
+                        const onTouch = (e: TouchEvent) => {
+                                const [x, y] = touchXY(e)
                                 const dx = x - px
                                 const dy = y - py
-                                viewer.cam.turn([-dx * 0.2, -dy * 0.2])
+                                px = x
+                                py = y
+                                viewer.cam.turn([dx * 8, dy * 3])
                         }
                         const onLock = () => {
                                 viewer.pt = performance.now()
@@ -865,6 +872,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                                 }
                         }
                         if (isSP) {
+                                document.addEventListener('touchstart', onTouchStart, { passive: false })
                                 document.addEventListener('touchmove', onTouch, { passive: false })
                                 document.addEventListener('mousemove', onMove, { passive: false })
                         } else {
