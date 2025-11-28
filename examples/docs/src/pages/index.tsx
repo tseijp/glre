@@ -5,7 +5,7 @@ import { attribute, float, Fn, If, instance, int, ivec2, mat4, texelFetch, textu
 import { vec3 as V, mat4 as M } from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import type { GL } from 'glre/src'
-import type { Float, IVec2, Vec3 } from 'glre/src/node'
+import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
 const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
 const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel [m]
 const SLOT = 16
@@ -297,8 +297,7 @@ const createNode = () => {
         const scl = instance<'vec3'>(vec3(), 'scl')
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
-        const atlas = Fn(([p, n]: [Vec3, Vec3]) => {
-                const wp = p.sub(n.sign().mul(0.5)).floor().toIVec3().toVar('wp') // world pos
+        const atlas = Fn(([wp]: [IVec3]) => {
                 const ci = wp.div(int(16)).toIVec3().mul(int(16)).toVar('ci') // left shift like k & 3
                 const lp = wp.sub(ci).toIVec3().toVar('lp') // ................ right shift like k >> 2
                 const a = int(ci.z.div(int(64))).toVar('a')
@@ -307,7 +306,7 @@ const createNode = () => {
                 const d = int(lp.z.sub(c.mul(int(4)))).toVar('d')
                 const zt = ivec2(b, a).mul(int(1024))
                 const lt = ivec2(d, c).mul(int(16)).add(lp.xy)
-                return int(4).mul(ci.xy).add(zt).add(lt).toVec2()
+                return int(4).mul(ci.xy).add(zt).add(lt)
         })
         const pick = Fn(([id, uvPix]: [Float, IVec2]) => {
                 const t = vec4(0, 0, 0, 1).toVar('t')
@@ -318,19 +317,19 @@ const createNode = () => {
                 })
                 return t
         })
-        const world = Fn(([vertex, scl, pos]: [Vec3, Vec3, Vec3]) => {
-                return vertex.mul(scl).add(pos)
+        const center = Fn(([vertex, scl, pos, n]: [Vec3, Vec3, Vec3, Vec3]) => {
+                return vertex.mul(scl).add(pos).sub(n.sign().mul(0.5)).floor()
         })
-        const shade = Fn(([normal]: [Vec3]) => {
-                return normal.normalize().dot(vec3(LIGHT_DIR).normalize()).mul(0.5).add(0.5)
+        const shade = Fn(([n]: [Vec3]) => {
+                return vec3(LIGHT_DIR).normalize().dot(n).mul(0.5).add(0.5)
         })
-        const fs = Fn(([p, n, diffuse, i]: [Vec3, Vec3, Float, Float]) => {
-                const uv = atlas(p, n).floor().toIVec2().toVar('uv')
+        const fs = Fn(([local, diffuse, i]: [Vec3, Float, Float]) => {
+                const uv = atlas(local.toIVec3()).toVar('uv')
                 const rgb = pick(i, uv).rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
         const vs = Fn(([pos, scl, aid]: [Vec3, Vec3, Float]) => {
-                const off = vec3(0, 0, 0).toVar('roff')
+                const off = vec3(0, 0, 0).toVar('off')
                 range(SLOT).forEach((i) => {
                         If(aid.equal(i), () => {
                                 off.assign(iOffset[i])
@@ -340,7 +339,7 @@ const createNode = () => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(vertexStage(world(vertex, scl, pos)), vertexStage(normal), vertexStage(shade(normal)), vertexStage(aid))
+        const frag = fs(vertexStage(center(vertex, scl, pos, normal)), vertexStage(shade(normal)), vertexStage(aid))
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
