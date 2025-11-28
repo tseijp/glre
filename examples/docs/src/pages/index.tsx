@@ -297,9 +297,9 @@ const createNode = () => {
         const scl = instance<'vec3'>(vec3(), 'scl')
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
-        const atlas = Fn(([wp]: [IVec3]) => {
-                const ci = wp.div(int(16)).toIVec3().mul(int(16)).toVar('ci') // left shift like k & 3
-                const lp = wp.sub(ci).toIVec3().toVar('lp') // ................ right shift like k >> 2
+        const atlas = Fn(([p]: [IVec3]) => {
+                const ci = p.div(int(16)).mul(int(16)).toVar('ci') // left shift like k & 3
+                const lp = p.sub(ci).toVar('lp') // ................ right shift like k >> 2
                 const a = int(ci.z.div(int(64))).toVar('a')
                 const b = int(ci.z.div(int(16)).sub(a.mul(int(4)))).toVar('b')
                 const c = int(lp.z.div(int(4))).toVar('c')
@@ -320,12 +320,12 @@ const createNode = () => {
         const center = Fn(([vertex, scl, pos, n]: [Vec3, Vec3, Vec3, Vec3]) => {
                 return vertex.mul(scl).add(pos).sub(n.sign().mul(0.5)).floor()
         })
-        const shade = Fn(([n]: [Vec3]) => {
+        const diffuse = Fn(([n]: [Vec3]) => {
                 return vec3(LIGHT_DIR).normalize().dot(n).mul(0.5).add(0.5)
         })
-        const fs = Fn(([local, diffuse, i]: [Vec3, Float, Float]) => {
-                const uv = atlas(local.toIVec3()).toVar('uv')
-                const rgb = pick(i, uv).rgb.mul(diffuse).toVar('rgb')
+        const fs = Fn(([p, d, i]: [IVec3, Float, Float]) => {
+                const uv = atlas(p).toVar('uv')
+                const rgb = pick(i, uv).rgb.mul(d).toVar('rgb')
                 return vec4(rgb, 1)
         })
         const vs = Fn(([pos, scl, aid]: [Vec3, Vec3, Float]) => {
@@ -339,7 +339,7 @@ const createNode = () => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(vertexStage(center(vertex, scl, pos, normal)), vertexStage(shade(normal)), vertexStage(aid))
+        const frag = fs(vertexStage(center(vertex, scl, pos, normal)).toIVec3(), vertexStage(diffuse(normal)), vertexStage(aid))
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }
