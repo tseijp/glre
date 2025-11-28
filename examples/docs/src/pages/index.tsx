@@ -742,6 +742,7 @@ const createMode = () => {
         return { tab, esc, current: () => mode }
 }
 const createViewer = () => {
+        let isReady = false
         let isLoading = false
         let ts = performance.now()
         let pt = ts
@@ -767,6 +768,8 @@ const createViewer = () => {
                 ts = performance.now()
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
                 if (mesh.isReady()) {
+                        if (!isReady) document.getElementById('loading').remove()
+                        isReady = true
                         cam.tick(dt, regions.pick)
                         cam.update(gl.size[0] / gl.size[1])
                         node.iMVP.value = [...cam.MVP]
