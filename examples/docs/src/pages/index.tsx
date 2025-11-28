@@ -5,7 +5,7 @@ import { attribute, clamp, float, Fn, If, instance, int, ivec2, mat4, texelFetch
 import { vec3 as V, mat4 as M } from 'gl-matrix'
 import { useEffect, useState } from 'react'
 import type { GL } from 'glre/src'
-import type { Float, IVec2, Vec3 } from 'glre/src/node'
+import type { Float, IVec2, Vec2, Vec3 } from 'glre/src/node'
 const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
 const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel [m]
 const SLOT = 16
@@ -308,7 +308,7 @@ const createNode = () => {
                 const zt = ivec2(zMod4.mul(int(1024)), zDiv4.mul(int(1024)))
                 const ct = ivec2(ci.x.mul(int(64)), ci.y.mul(int(64)))
                 const lt = ivec2(ltZMod4.mul(int(16)).add(lp.x), ltZDiv4.mul(int(16)).add(lp.y))
-                return zt.add(ct).add(lt).toIVec2()
+                return zt.add(ct).add(lt).toVec2()
         })
         const pick = Fn(([id, uvPix]: [Float, IVec2]) => {
                 const t = vec4(0, 0, 0, 1).toVar('t')
@@ -324,8 +324,9 @@ const createNode = () => {
         const scl = instance<'vec3'>(vec3(), 'scl')
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
-        const fs = Fn(([uvPix, diffuse, i]: [IVec2, Float, Float]) => {
-                const texel = pick(i, uvPix).toVar('t')
+        const fs = Fn(([uvPix, diffuse, i]: [Vec2, Float, Float]) => {
+                const uv = uvPix.floor().toIVec2().toVar('uv')
+                const texel = pick(i, uv).toVar('t')
                 const rgb = texel.rgb.mul(diffuse).toVar('rgb')
                 return vec4(rgb, 1)
         })
