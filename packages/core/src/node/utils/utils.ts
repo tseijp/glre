@@ -1,14 +1,6 @@
-import {
-        CONSTANTS,
-        CONVERSIONS,
-        FUNCTIONS,
-        OPERATOR_KEYS,
-        OPERATORS,
-        TYPE_MAPPING,
-        WGSL_TO_GLSL_BUILTIN,
-} from './const'
+import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING, WGSL_TO_GLSL_BUILTIN } from './const'
 import { is } from '../../utils/helpers'
-import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, X, Y } from '../types'
+import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, VaryingInfo, X, Y } from '../types'
 import { storageSize } from '../../utils/program'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
