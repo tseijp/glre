@@ -1,23 +1,6 @@
 import { infer } from './infer'
-import {
-        parseArray,
-        parseAttribHead,
-        parseConstantHead,
-        parseDeclare,
-        parseDefine,
-        parseGather,
-        parseIf,
-        parseLoop,
-        parseScatter,
-        parseStorageHead,
-        parseStruct,
-        parseStructHead,
-        parseSwitch,
-        parseTexture,
-        parseUniformHead,
-        parseVaryingHead,
-} from './parse'
-import { getBluiltin, getConversions, getOperator, initNodeContext, isElement, isX, setupEvent } from './utils'
+import { parseArray, parseAttribHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseUniformHead, parseVaryingHead } from './parse'
+import { getBluiltin, getConversions, getOperator, initNodeContext, isX, setupEvent } from './utils'
 import { is } from '../../utils/helpers'
 import { mod } from '..'
 import type { Constants as C, NodeContext, Y } from '../types'
@@ -58,10 +41,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                         ? parseScatter(c, storageNode, y) // indexNode is not using
                         : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
         }
-        if (type === 'ternary')
-                return c.isWebGL
-                        ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})`
-                        : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
+        if (type === 'ternary') return c.isWebGL ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})` : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
         if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`

@@ -97,11 +97,6 @@ export interface NodeContext {
         }
 }
 
-export interface VaryingInfo {
-        node: Y
-        code?: string
-}
-
 /**
  * infer
  */
@@ -207,6 +202,12 @@ export type Mat4 = XImpl<'mat4'>
 export type Texture = XImpl<'texture'>
 export type Sampler2D = XImpl<'sampler2D'>
 export type StructBase = XImpl<'struct'>
+
+export interface VaryingInfo {
+        node: Y
+        code?: string
+}
+
 export type Struct<T extends StructFields = any> = Omit<StructBase, keyof T> & {
         [K in keyof T]: T[K] extends X<infer U> ? X<U> : never
 } & {
