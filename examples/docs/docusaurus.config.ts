@@ -2,6 +2,7 @@ import 'dotenv/config'
 import { themes } from 'prism-react-renderer'
 import remarkMath from 'remark-math'
 import rehypeKatex from 'rehype-katex'
+import wasmDebugPluginLoader from './src/plugin/webpack-wasm-loader'
 import type { Config } from '@docusaurus/types'
 import type * as Preset from '@docusaurus/preset-classic'
 
@@ -50,6 +51,7 @@ const config: Config = {
                                 rehypePlugins: [rehypeKatex],
                         },
                 ],
+                wasmDebugPluginLoader,
         ],
         themeConfig: {
                 navbar: {
@@ -85,9 +87,9 @@ const config: Config = {
                 },
                 // https://docusaurus.io/docs/search
                 algolia: {
-                        appId: process.env.ALGOLIA_APP_ID,
-                        apiKey: process.env.ALGOLIA_API_KEY,
-                        indexName: process.env.ALGOLIA_INDEX_NAME,
+                        appId: process.env.ALGOLIA_APP_ID!,
+                        apiKey: process.env.ALGOLIA_API_KEY!,
+                        indexName: process.env.ALGOLIA_INDEX_NAME!,
                         contextualSearch: true,
                         externalUrlRegex: 'external\\.com|domain\\.com',
                         replaceSearchResultPathname: {

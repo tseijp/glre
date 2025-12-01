@@ -34,8 +34,8 @@
                 "node": ">=14"
         },
         "workspaces": [
-                "examples/*",
-                "packages/*"
+                "examples/**/*",
+                "packages/**/*"
         ],
         "dependencies": {
                 "rege": "^0.2.0"
