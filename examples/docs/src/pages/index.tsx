@@ -190,7 +190,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         let py = 0
                         const touchXY = (e: TouchEvent) => {
                                 if (e.touches.length !== 1) return [0, 0]
-                                e.preventDefault()
+                                // e.preventDefault()
                                 const touch = e.touches[0]
                                 return [touch.clientX, touch.clientY]
                         }
@@ -231,7 +231,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         }
                 },
         })
-        return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', width: '100%', height: '100%' }} />
+        return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', width: '100%', height: '100%', zIndex: -100 }} />
 }
 
 export default function Home() {
