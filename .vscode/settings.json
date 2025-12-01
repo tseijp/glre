@@ -5,5 +5,8 @@
         "prettier.singleQuote": true,
         "prettier.tabWidth": 8,
         "prettier.printWidth": 9999,
-        "prettier.semi": false
+        "prettier.semi": false,
+        "[rust]": {
+                "editor.defaultFormatter": "jinxdash.prettier-rust"
+        }
 }
