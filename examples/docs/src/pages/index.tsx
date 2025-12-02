@@ -231,7 +231,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         }
                 },
         })
-        return <canvas ref={gl.ref} style={{ top: 0, left: 0, position: 'absolute', width: '100%', height: '100%', zIndex: -100 }} />
+        return <canvas ref={gl.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />
 }
 
 export default function Home() {
