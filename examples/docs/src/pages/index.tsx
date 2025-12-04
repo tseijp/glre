@@ -82,7 +82,7 @@ const createMode = () => {
                 ;[_mode, mode] = [mode, _mode]
                 return mode
         }
-        return { tab, esc, current: () => mode }
+        return { tab, esc }
 }
 
 const createViewer = async () => {
