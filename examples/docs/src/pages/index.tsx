@@ -72,14 +72,15 @@ const createMode = () => {
         let mode = -1 // 0 is creative
         let _mode = 1 // last non-pause mode
         const tab = () => {
+                if (mode === 2) return mode // paused: keep mode on tab
                 if (mode === 0) return (mode = _mode = 1)
                 if (mode === 1) return (mode = _mode = 0)
-                return mode
+                return (_mode = mode)
         }
         const esc = () => {
                 if (mode === -1) return (mode = _mode = 1)
                 if (mode === 2) return (mode = _mode)
-                ;[_mode, mode] = [mode, _mode]
+                ;[_mode, mode] = [mode, 2]
                 return mode
         }
         return { tab, esc }
