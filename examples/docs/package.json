@@ -17,7 +17,7 @@
         },
         "dependencies": {
                 "glre": "*",
-                "voxelized-js": "0.3.0",
+                "voxelized-js": "0.4.0",
                 "clsx": "*",
                 "leva": "0.10.0",
                 "stats.js": "0.17.0",
