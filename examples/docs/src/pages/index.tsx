@@ -1,16 +1,40 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { useEffect, useState } from 'react'
-import { attribute, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture2D, uniform, vec3, vec4, vertexStage } from 'glre/src/node'
+import { useEffect, useRef, useState } from 'react'
+import { attribute, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture2D, texture, iResolution, position, uniform, vec2, vec3, vec4, vertexStage } from 'glre/src/node'
 import { type GL } from 'glre/src'
-import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
+import type { Float, IVec2, IVec3, Vec3, Vec4 } from 'glre/src/node'
 
 const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
 const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel [m]
 const SLOT = 16
 const REGION = 256
 const range = (n = 0) => [...Array(n).keys()]
+
+const iMVP_BG = uniform<'mat4'>(mat4(), 'iVP')
+const env = uniform(texture2D(), 'env')
+const exposure = float(1).constant('exposure')
+const gamma = float(2.2).constant('gamma')
+const xyz2equirect = Fn(([d]: [Vec3]) => {
+        const u = d.z.atan2(d.x).mul(0.15915494309189535).add(0.5).toVar('u')
+        const v = d.y.clamp(-1, 1).asin().mul(0.3183098861837907).add(0.5).toVar('v')
+        return vec2(u, v)
+})
+const envFragment = Fn(([p]: [Vec4]) => {
+        const q = p.xy.div(iResolution).mul(2).sub(1).toVar('q')
+        const invVP = iMVP_BG.inverse().toVar('invVP')
+        const a = invVP.mul(vec4(q, -1, 1)).toVar('a')
+        const b = invVP.mul(vec4(q, 1, 1)).toVar('b')
+        const pa = a.xyz.div(a.w).toVar('pa')
+        const pb = b.xyz.div(b.w).toVar('pb')
+        const dir = pb.sub(pa).normalize().toVar('dir')
+        const uv = xyz2equirect(dir)
+        const w = vec2(uv.x.fract(), uv.y.clamp(0, 1)).toVar('w')
+        const hdr = texture(env, w).rgb.mul(exposure).toVar('hdr')
+        const col = hdr.div(hdr.add(1)).pow(vec3(float(1).div(gamma)))
+        return vec4(col, 1)
+})
 
 const createNode = () => {
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
@@ -87,7 +111,8 @@ const createMode = () => {
 }
 
 const createViewer = async () => {
-        const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('voxelized-js')
+        // const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('voxelized-js')
+        const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('../../../../voxelizer/packages/voxelized-js/src/index')
         let isReady = false
         let isLoading = false
         let ts = performance.now()
@@ -122,6 +147,7 @@ const createViewer = async () => {
                 }
                 const c = gl.webgl.context as WebGL2RenderingContext
                 const pg = gl.webgl.program as WebGLProgram
+                c.useProgram(pg)
                 if (!isLoading)
                         if (ts - pt2 >= 100) {
                                 pt2 = ts
@@ -134,6 +160,8 @@ const createViewer = async () => {
                                 mesh.commit()
                                 isLoading = false
                         }
+                slots.bind(c)
+                ;(gl as any)._rebindTextures?.()
                 gl.instanceCount = mesh.draw(c, pg)
         }
         return { mode, node, cam, render, resize, pt: 0 }
@@ -142,10 +170,15 @@ const createViewer = async () => {
 type Viewer = Awaited<ReturnType<typeof createViewer>>
 
 const Canvas = ({ viewer }: { viewer: Viewer }) => {
+        const bg = useGL({ isWebGL: true, isLoop: false, isNative: true, frag: envFragment(position) })
+        ;(bg as any)({ unitBase: 16 })
+        bg.texture('env', 'https://r.tsei.jp/texture/hdr.jpg')
+        bg.uniform({ exposure: 1, gamma: 2.2 })
         const gl = useGL({
                 precision: 'highp',
                 // wireframe: true,
                 // isDebug: true,
+                // isLoop: false,
                 isWebGL: true,
                 isDepth: true,
                 count: 36, // Total number of cube triangles vertices
@@ -153,9 +186,19 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 vert: viewer.node.vert,
                 frag: viewer.node.frag,
                 render() {
+                        bg.uniform('iVP', [...viewer.cam.MVP])
+                        bg.queue.flush()
+                        const c = gl.webgl.context as WebGL2RenderingContext
+                        c.disable(c.DEPTH_TEST)
+                        c.depthMask(false)
+                        bg.render()
+                        c.depthMask(true)
+                        c.clear(c.DEPTH_BUFFER_BIT)
+                        c.enable(c.DEPTH_TEST)
                         viewer.render(gl)
                 },
                 resize() {
+                        bg.resize()
                         viewer.resize(gl)
                 },
                 mount() {
@@ -232,7 +275,11 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         }
                 },
         })
-        return <canvas ref={gl.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />
+        const ref = useRef((el: HTMLCanvasElement) => {
+                bg.ref(el)
+                gl.ref(el)
+        }).current
+        return <canvas ref={ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />
 }
 
 export default function Home() {

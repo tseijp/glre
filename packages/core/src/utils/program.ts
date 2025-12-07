@@ -74,11 +74,15 @@ export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | 
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(c.TEXTURE_2D, texture)
         if (isVideo)
-                return () => {
-                        c.activeTexture(c.TEXTURE0 + unit)
-                        c.bindTexture(c.TEXTURE_2D, texture)
-                        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                return {
+                        texture,
+                        loop: () => {
+                                c.activeTexture(c.TEXTURE0 + unit)
+                                c.bindTexture(c.TEXTURE_2D, texture)
+                                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                        },
                 }
+        return { texture }
 }
 
 /**

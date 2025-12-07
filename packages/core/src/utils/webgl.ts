@@ -7,7 +7,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         if (!gl.cs) return null // ignore if no compute shader
         c.getExtension('EXT_color_buffer_float')
 
-        let activeUnit = 0 // for texture units
+        let activeUnit = (gl as any).unitBase || 0 // for texture units, allow per-GL offset
         let currentNum = 0 // for storage buffers
 
         const units = cached(() => activeUnit++)
@@ -66,6 +66,7 @@ export const webgl = async (gl: GL) => {
 
         const units = cached(() => activeUnit++)
         const uniforms = (gl.webgl.uniforms = cached((key) => c.getUniformLocation(pg, key)))
+        const textures = cached((key: string) => ({ unit: units(key), texture: null as WebGLTexture | null, loop: null as null | (() => void) }))
 
         const attribs = cached((key, value: number[], isInstance = false) => {
                 const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error)
@@ -82,6 +83,7 @@ export const webgl = async (gl: GL) => {
 
         const _instance = (key: string, value: number[]) => {
                 const { array, buffer, location, stride } = attribs(key, value, true)
+                c.useProgram(pg)
                 setArrayBuffer(c, array, buffer, value)
                 updateInstance(c, location, stride, buffer)
         }
@@ -94,11 +96,13 @@ export const webgl = async (gl: GL) => {
 
         const _texture = (key: string, src: string) => {
                 gl.loading++
-                c.useProgram(pg)
                 loadingTexture(src, (source, isVideo) => {
-                        const unit = units(key)
-                        const loop = createTexture(c, source, uniforms(key)!, unit, isVideo)
-                        if (loop) gl({ loop })
+                        c.useProgram(pg)
+                        const t = textures(key)
+                        const ret: any = createTexture(c, source, uniforms(key)!, t.unit, isVideo)
+                        t.texture = ret?.texture || null
+                        t.loop = ret?.loop || null
+                        if (t.loop) gl({ loop: t.loop })
                         gl.loading--
                 })
         }
@@ -109,9 +113,19 @@ export const webgl = async (gl: GL) => {
                 c.getExtension('WEBGL_lose_context')?.loseContext()
         }
 
+        const rebindTextures = () => {
+                textures.map.forEach(({ unit, texture, loop }) => {
+                        if (!texture) return
+                        c.activeTexture(c.TEXTURE0 + unit)
+                        c.bindTexture(c.TEXTURE_2D, texture)
+                        if (loop) loop()
+                })
+        }
+
         const render = () => {
                 cp?.render()
                 c.useProgram(pg)
+                rebindTextures()
                 c.viewport(0, 0, ...gl.size)
                 if (gl.instanceCount > 1) {
                         c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
@@ -131,5 +145,5 @@ export const webgl = async (gl: GL) => {
                 ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
         }
 
-        return { render, clean, _attribute, _instance, _uniform, _texture, _storage: cp?._storage }
+        return { render, clean, _attribute, _instance, _uniform, _texture, _storage: cp?._storage, _rebindTextures: rebindTextures }
 }
