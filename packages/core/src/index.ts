@@ -96,18 +96,18 @@ export const createGL = (props?: Partial<GL>) => {
         })
 
         gl('resize', () => {
-                const w = gl.width || window.innerWidth
-                const h = gl.height || window.innerHeight
-                gl.size[0] = gl.el.width = w
-                gl.size[1] = gl.el.height = h
+                const rect = gl.el.parentElement?.getBoundingClientRect()
+                gl.size[0] = gl.el.width = gl.width ?? rect?.width ?? window.innerWidth
+                gl.size[1] = gl.el.height = gl.height ?? rect?.height ?? window.innerWidth
                 gl.uniform('iResolution', gl.size)
         })
 
         gl('mousemove', (_e: any, x = _e.clientX, y = _e.clientY) => {
-                const [w, h] = gl.size
-                const { top, left } = gl.el.getBoundingClientRect()
-                gl.mouse[0] = (x - top - w / 2) / (w / 2)
-                gl.mouse[1] = -(y - left - h / 2) / (h / 2)
+                const rect = gl.el.getBoundingClientRect()
+                console.log(x - rect.top)
+                gl.mouse[0] = (x - rect.left) / rect.width
+                gl.mouse[1] = -(y - rect.top) / rect.height + 1
+                console.log(gl.mouse)
                 gl.uniform('iMouse', gl.mouse)
         })
 
