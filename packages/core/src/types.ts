@@ -52,7 +52,6 @@ export type GL = EventState<{
         render(): void
         resize(e?: Event): void
         mousemove(e: MouseEvent): void
-        loop(): void
 
         /**
          * setter

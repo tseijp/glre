@@ -53,7 +53,7 @@ const computeProgram = (gl: GL, c: WebGL2RenderingContext) => {
         return { render, clean, _uniform, _storage, storages }
 }
 
-export const webgl = async (gl: GL) => {
+export const webgl = (gl: GL) => {
         const config = { isWebGL: true, gl }
         const c = (gl.webgl.context = gl.el!.getContext('webgl2')!)
         const cp = computeProgram(gl, c)
@@ -97,8 +97,8 @@ export const webgl = async (gl: GL) => {
                 c.useProgram(pg)
                 loadingTexture(src, (source, isVideo) => {
                         const unit = units(key)
-                        const loop = createTexture(c, source, uniforms(key)!, unit, isVideo)
-                        if (loop) gl({ loop })
+                        const fun = createTexture(c, source, uniforms(key)!, unit, isVideo)
+                        if (fun) gl({ render: fun })
                         gl.loading--
                 })
         }

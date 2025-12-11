@@ -67,13 +67,11 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.fs = gl.fs || gl.frag || gl.fragment
                 gl.cs = gl.cs || gl.comp || gl.compute
                 if (gl.isWebGL) {
-                        gl((await webgl(gl)) as GL)
+                        gl(webgl(gl) as GL)
                 } else gl((await webgpu(gl)) as GL)
                 if (gl.isError) return // stop if error
                 gl.resize()
                 gl.frame(() => {
-                        gl.loop()
-                        gl.queue.flush()
                         if (gl.loading) return true // wait for textures @TODO FIX
                         gl.render()
                         return gl.isLoop
@@ -88,6 +86,13 @@ export const createGL = (props?: Partial<GL>) => {
                 if (gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
                 gl.el.removeEventListener('mousemove', gl.mousemove)
+        })
+
+        gl('ref', (el: HTMLCanvasElement | null) => {
+                if (el) {
+                        gl.el = el
+                        gl.mount()
+                } else gl.clean()
         })
 
         gl('resize', () => {
@@ -106,9 +111,10 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.uniform('iMouse', gl.mouse)
         })
 
-        gl('loop', () => {
+        gl('render', () => {
                 iTime = performance.now() / 1000
                 gl.uniform('iTime', iTime)
+                gl.queue.flush()
         })
 
         return gl(props)

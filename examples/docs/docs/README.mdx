@@ -333,6 +333,36 @@ function Canvas() {
 </TabItem>
 </Tabs>
 
+### Multiples
+
+<Tabs>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const a_position = attribute([0, 0.37, -0.5, -0.5, 0.5, -0.5])
+        const gl = useGL(
+                {
+                        count: 3,
+                        width: 256,
+                        height: 256,
+                        vert: vec4(vec2(-0.5, 0).add(a_position), 0, 1),
+                },
+                {
+                        count: 3,
+                        width: 256,
+                        height: 256,
+                        isLoop: false,
+                        vert: vec4(vec2(0.5, 0).add(a_position), 0, 1),
+                }
+        )
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
+</Tabs>
+
 ## Textures
 
 <Tabs>
