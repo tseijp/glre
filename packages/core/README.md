@@ -173,12 +173,10 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 </summary>
 
 ```html
-<canvas id="canvas"></canvas>
 <script type="module">
         import { createGL } from 'https://esm.sh/glre'
-        import { vec4, uv } from 'https://esm.sh/node'
-        const el = document.getElementById('canvas')
-        createGL({ el, fs: vec4(uv, 0, 1) }).mount()
+        import { vec4, uv } from 'https://esm.sh/glre/node'
+        createGL({ fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
 

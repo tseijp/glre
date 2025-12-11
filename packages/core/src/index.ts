@@ -63,6 +63,7 @@ export const createGL = (props?: Partial<GL>) => {
 
         gl('mount', async () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
+                gl.el = gl.el || gl.elem || gl.element || document.createElement('canvas')
                 gl.vs = gl.vs || gl.vert || gl.vertex
                 gl.fs = gl.fs || gl.frag || gl.fragment
                 gl.cs = gl.cs || gl.comp || gl.compute
@@ -77,6 +78,7 @@ export const createGL = (props?: Partial<GL>) => {
                         return gl.isLoop
                 })
                 if (gl.isNative) return
+                if (!gl.el.parentNode) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
                 gl.el.addEventListener('mousemove', gl.mousemove)
         })
@@ -104,10 +106,8 @@ export const createGL = (props?: Partial<GL>) => {
 
         gl('mousemove', (_e: any, x = _e.clientX, y = _e.clientY) => {
                 const rect = gl.el.getBoundingClientRect()
-                console.log(x - rect.top)
                 gl.mouse[0] = (x - rect.left) / rect.width
                 gl.mouse[1] = -(y - rect.top) / rect.height + 1
-                console.log(gl.mouse)
                 gl.uniform('iMouse', gl.mouse)
         })
 

@@ -23,6 +23,8 @@ export type GL = EventState<{
         particleCount: number | [number, number] | [number, number, number]
         precision: 'lowp' | 'mediump' | 'highp'
         loading: number
+        element?: HTMLCanvasElement
+        elem?: HTMLCanvasElement
         el: HTMLCanvasElement
         vs?: string | Vec4
         cs?: string | Void
