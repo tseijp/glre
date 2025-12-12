@@ -40,8 +40,9 @@ const computeProgram = (gl: GL, device: GPUDevice, bindings: any) => {
 }
 
 export const webgpu = async (gl: GL) => {
-        const context = gl.el!.getContext('webgpu') as GPUCanvasContext
-        const { device, format } = await createDevice(context, gl.error)
+        const abort = new AbortController()
+        const context = gl.el.getContext('webgpu') as GPUCanvasContext
+        const { device, format } = await createDevice(context, gl.error, abort.signal)
         const bindings = createBindings()
         const cp = computeProgram(gl, device, bindings)
         let frag: string
@@ -137,12 +138,12 @@ export const webgpu = async (gl: GL) => {
         }
 
         const resize = () => {
-                const canvas = gl.el as HTMLCanvasElement
                 depthTexture?.destroy()
-                depthTexture = createDepthTexture(device, canvas.width, canvas.height)
+                depthTexture = createDepthTexture(device, gl.el.width, gl.el.height)
         }
 
         const clean = () => {
+                abort.abort()
                 device.destroy()
                 depthTexture?.destroy()
                 for (const { texture } of textures.map.values()) texture.destroy()

@@ -283,26 +283,6 @@ const worldPosition = positions.transform(modelMatrix)
 const viewNormal = normals.transform(normalMatrix)
 ```
 
-### Cross-Platform Transparency
-
-The system dissolves platform-specific shader languages into unified abstractions.
-WebGL2 GLSL and WebGPU WGSL become implementation details, hidden beneath consistent node operations.
-
-```ts
-// Same code generates different targets
-const shader = {
-        vertex: worldPosition.transform(projectionMatrix),
-        fragment: lighting(worldNormal, worldPosition),
-}
-
-// Backend selection becomes transparent
-// WebGL2: Generates GLSL ES 3.0
-// WebGPU: Generates WGSL
-```
-
-This architectural dissolution enables shader code to exist as pure mathematical relationships,
-freed from the constraints of traditional GPU programming models.
-
 ## PRs
 
 ###### welcome✨

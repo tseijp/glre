@@ -10,6 +10,7 @@ date: 2023-01-01
 
 import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
 # Introduction
 
@@ -95,7 +96,9 @@ render(() => <Canvas />, document.getElementById('root'))
 <Tabs>
 <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const a_position = attribute([0, 0.73, -1, -1, 1, -1])
         const a_color = attribute([1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
@@ -109,19 +112,22 @@ function Canvas() {
         })
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgl" label="WebGL">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 count: 3,
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                vertex: `
+                vertex: \`
                 #version 300 es
                 in vec4 a_position;
                 in vec4 a_color;
@@ -130,8 +136,8 @@ function Canvas() {
                         gl_Position = a_position;
                         v_color = a_color;
                 }
-                `,
-                fragment: `
+                \`,
+                fragment: \`
                 #version 300 es
                 precision mediump float;
                 in vec4 v_color;
@@ -139,25 +145,28 @@ function Canvas() {
                 void main() {
                         fragColor = v_color;
                 }
-                `,
+                \`,
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgpu" label="WebGPU">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 count: 3,
                 width: 256,
                 height: 256,
                 isWebGL: false,
-                vertex: `
+                vertex: \`
                 struct In {
                         @location(0) a_position: vec2f,
                         @location(1) a_color: vec4f,
@@ -173,8 +182,8 @@ function Canvas() {
                         out.v_color = in.a_color;
                         return out;
                 }
-                `,
-                fragment: `
+                \`,
+                fragment: \`
                 struct Out {
                         @builtin(position) position: vec4f,
                         @location(0) v_color: vec4f,
@@ -183,13 +192,14 @@ function Canvas() {
                 fn main(out: Out) -> @location(0) vec4f {
                         return out.v_color;
                 }
-                `,
+                \`,
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         gl.attribute('a_color', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 </Tabs>
@@ -199,7 +209,9 @@ function Canvas() {
 <Tabs>
 <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 width: 256,
@@ -209,18 +221,21 @@ function Canvas() {
         })
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgl" label="WebGL">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                fragment: `
+                fragment: \`
                 #version 300 es
                 precision mediump float;
                 uniform vec2 iResolution;
@@ -231,22 +246,25 @@ function Canvas() {
                         vec2 uv = fract(gl_FragCoord.xy / iResolution.xy - iMouse);
                         fragColor = vec4(uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
-                `,
+                \`,
         })
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgpu" label="WebGPU">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: false,
-                fragment: `
+                fragment: \`
                 @group(0) @binding(0) var<uniform> iResolution: vec2f;
                 @group(0) @binding(1) var<uniform> iMouse: vec2f;
                 @group(0) @binding(2) var<uniform> iTime: f32;
@@ -255,11 +273,12 @@ function Canvas() {
                         let uv = fract(position.xy / iResolution - iMouse);
                         return vec4f(uv, sin(iTime) * 0.5 + 0.5, 1.0);
                 }
-                `,
+                \`,
         })
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 </Tabs>
@@ -269,7 +288,9 @@ function Canvas() {
 <Tabs>
 <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const a_position = attribute([0, 0.73, -1, -1, 1, -1])
         const gl = useGL({
@@ -281,52 +302,59 @@ function Canvas() {
         })
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgl" label="WebGL">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 count: 3,
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                vertex: `
+                vertex: \`
                 #version 300 es
                 in vec4 a_position;
                 void main() {
                         gl_Position = a_position;
                 }
-                `,
+                \`,
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgpu" label="WebGPU">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 count: 3,
                 width: 256,
                 height: 256,
                 isWebGL: false,
-                vertex: `
+                vertex: \`
                 @vertex
                 fn main(@location(0) position: vec2f) -> @builtin(position) vec4f {
                         return vec4f(position, 0.0, 1.0);
                 }
-                `,
+                \`,
         })
         gl.attribute('a_position', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 </Tabs>
@@ -336,7 +364,9 @@ function Canvas() {
 <Tabs>
 <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const a_position = attribute([0, 0.37, -0.5, -0.5, 0.5, -0.5])
         const gl = useGL(
@@ -356,7 +386,8 @@ function Canvas() {
         )
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 </Tabs>
@@ -366,7 +397,9 @@ function Canvas() {
 <Tabs>
 <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const gl = useGL({
@@ -377,18 +410,21 @@ function Canvas() {
         })
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgl" label="WebGL">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: true,
-                fragment: `
+                fragment: \`
                 #version 300 es
                 precision mediump float;
                 uniform vec2 iResolution;
@@ -398,23 +434,26 @@ function Canvas() {
                         vec2 uv = gl_FragCoord.xy / iResolution.xy;
                         fragColor = texture(iTexture, uv);
                 }
-                `,
+                \`,
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 <TabItem value="webgpu" label="WebGPU">
 
-```jsx live
+<FragmentEditor
+        isApp
+        code={`
 function Canvas() {
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isWebGL: false,
-                fragment: `
+                fragment: \`
                 @group(0) @binding(0) var<uniform> iResolution: vec2f;
                 @group(1) @binding(0) var iSampler: sampler;
                 @group(1) @binding(1) var iTexture: texture_2d<f32>;
@@ -423,12 +462,13 @@ function Canvas() {
                         let uv = position.xy / iResolution;
                         return textureSample(iTexture, iSampler, uv);
                 }
-                `,
+                \`,
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
 }
-```
+`}
+/>
 
 </TabItem>
 </Tabs>

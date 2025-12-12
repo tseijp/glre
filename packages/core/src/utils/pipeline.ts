@@ -4,11 +4,16 @@ import type { AttribData, TextureData, UniformData, StorageData } from '../types
 /**
  * initialize
  */
-export const createDevice = async (c: GPUCanvasContext, log = console.log) => {
+export const createDevice = async (c: GPUCanvasContext, log = console.log, signal?: AbortSignal) => {
         const gpu = navigator.gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
+        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
         const device = await adapter!.requestDevice()
+        if (signal?.aborted) {
+                device.destroy()
+                if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
+        }
         device.onuncapturederror = (e) => log(e.error.message)
         c.configure({ device, format, alphaMode: 'opaque' })
         return { device, format }
@@ -80,12 +85,7 @@ export const createVertexBuffers = (attribs: Iterable<AttribData & { isInstance?
         return { vertexBuffers, bufferLayouts }
 }
 
-export const createBindGroup = (
-        device: GPUDevice,
-        uniforms: Iterable<UniformData>,
-        textures: Iterable<TextureData>,
-        storages: Iterable<StorageData> = []
-) => {
+export const createBindGroup = (device: GPUDevice, uniforms: Iterable<UniformData>, textures: Iterable<TextureData>, storages: Iterable<StorageData> = []) => {
         const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
         const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
         const add = (i: number, layout: GPUBindGroupLayoutEntry, binding: GPUBindGroupEntry) => {
@@ -111,14 +111,7 @@ export const createBindGroup = (
         return ret
 }
 
-export const createPipeline = (
-        device: GPUDevice,
-        format: GPUTextureFormat,
-        bufferLayouts: GPUVertexBufferLayout[],
-        bindGroupLayouts: GPUBindGroupLayout[],
-        vs: string,
-        fs: string
-) => {
+export const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayouts: GPUVertexBufferLayout[], bindGroupLayouts: GPUBindGroupLayout[], vs: string, fs: string) => {
         return device.createRenderPipeline({
                 vertex: {
                         module: device.createShaderModule({ label: 'vert', code: vs.trim() }),
@@ -159,11 +152,7 @@ const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
         return 140 // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
 }
 
-export const createArrayBuffer = (
-        device: GPUDevice,
-        array: number[] | Float32Array,
-        type: 'uniform' | 'storage' | 'attrib'
-) => {
+export const createArrayBuffer = (device: GPUDevice, array: number[] | Float32Array, type: 'uniform' | 'storage' | 'attrib') => {
         if (!isFloat32(array)) array = new Float32Array(array)
         const usage = bufferUsage(type)
         const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength

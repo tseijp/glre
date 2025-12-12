@@ -36,8 +36,9 @@ function Canvas() {
 }`
 }
 
-const transformCode = (isFun: boolean, isLoop: boolean, code: string) => {
+const transformCode = (isFun = true, isApp = false, isLoop = true, code: string) => {
         code = code.trim()
+        if (isApp) return code
         let ret: string
         if (isFun) ret = createCanvasTemplate(isLoop, 'fragment()', code)
         else ret = createCanvasTemplate(isLoop, code)
@@ -51,12 +52,7 @@ interface Props {
         isLoop?: boolean
 }
 
-export const FragmentEditor = ({
-        code = 'vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)',
-        isFun = true,
-        isLoop = false,
-        ...props
-}: Props) => {
+export const FragmentEditor = ({ code = 'vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)', isFun = true, isApp = false, isLoop = false, ...props }: Props) => {
         code = code.trim()
         const [ref, isInView] = useInView({ threshold: 0.1 })
         const height = 256 + 87 // canvas + padding
@@ -64,12 +60,7 @@ export const FragmentEditor = ({
         return (
                 <div ref={ref}>
                         <PlaygroundContainer>
-                                <PlaygroundProvider
-                                        code={code}
-                                        transformCode={transformCode.bind(null, isFun, isLoop)}
-                                        scope={ReactLiveScope}
-                                        {...props}
-                                >
+                                <PlaygroundProvider code={code} transformCode={transformCode.bind(null, isFun, isApp, isLoop)} scope={ReactLiveScope} {...props}>
                                         <PlaygroundEditor />
                                         {isInView ? (
                                                 <PlaygroundPreview />
