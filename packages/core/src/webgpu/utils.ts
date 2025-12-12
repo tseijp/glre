@@ -1,4 +1,4 @@
-import { is, isFloat32 } from './helpers'
+import { is, isFloat32 } from '../helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 /**

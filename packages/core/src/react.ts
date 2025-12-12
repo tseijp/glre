@@ -6,10 +6,7 @@ export * from './index'
 export const useGL = (props: Partial<GL> = {}, ...other: Partial<GL>[]) => {
         return useState(() => {
                 const gl = isGL(props) ? props : createGL(props)
-                other.forEach((p) => {
-                        const { ref, render } = isGL(p) ? p : createGL(p)
-                        gl({ ref, render })
-                })
+                if (other.length) gl({ programs: other as any })
                 return gl
         })[0]
 }

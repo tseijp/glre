@@ -35,6 +35,7 @@ export type GL = EventState<{
         vertex?: string | Vec4
         compute?: string | Void
         fragment?: string | Vec4
+        programs?: any[]
 
         /**
          * core state
