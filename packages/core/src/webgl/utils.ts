@@ -1,4 +1,4 @@
-import { is } from './helpers'
+import { is } from '../helpers'
 import type { GL } from '../types'
 
 const createShader = (c: WebGL2RenderingContext, source: string, type: number, onError = console.warn) => {

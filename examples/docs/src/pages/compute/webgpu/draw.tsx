@@ -82,7 +82,7 @@ export default function GPGPUDrawApp() {
         gl.storage('data', new Float32Array(w * h).fill(1))
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed' }}>
+                <div ref={drag.ref} style={{ position: 'fixed', width: '100%', height: '100%' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )

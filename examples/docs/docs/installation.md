@@ -27,8 +27,6 @@ yarn add glre
         import createGL from 'https://esm.sh/glre'
         import { vec4, fract, position, iResolution } from 'https://esm.sh/glre/node'
         const fs = vec4(fract(position.xy.div(iResolution)), 0, 1)
-        const el = document.createElement('canvas')
-        createGL({ el, fs }).mount()
-        document.body.append(el)
+        createGL({ fs }).mount()
 </script>
 ```

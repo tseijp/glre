@@ -1,8 +1,8 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
-import { is } from './utils/helpers'
-import { webgl } from './utils/webgl'
-import { webgpu } from './utils/webgpu'
+import { is } from './helpers'
+import { webgl } from './webgl'
+import { webgpu } from './webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './types'
@@ -63,24 +63,26 @@ export const createGL = (props?: Partial<GL>) => {
 
         gl('mount', async () => {
                 if (!isWebGPUSupported()) gl.isWebGL = true
+                gl.el = gl.el || gl.elem || gl.element
                 gl.vs = gl.vs || gl.vert || gl.vertex
                 gl.fs = gl.fs || gl.frag || gl.fragment
                 gl.cs = gl.cs || gl.comp || gl.compute
+                const isCreated = !gl.el // Check first: canvas may unmount during WebGPU async processing
+                if (isCreated && !gl.isNative) gl.el = document.createElement('canvas')
                 if (gl.isWebGL) {
-                        gl((await webgl(gl)) as GL)
+                        gl(webgl(gl) as GL)
                 } else gl((await webgpu(gl)) as GL)
-                if (gl.isError) return // stop if error
+                if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
                 gl.resize()
                 gl.frame(() => {
-                        gl.loop()
-                        gl.queue.flush()
-                        if (gl.loading) return true // wait for textures @TODO FIX
+                        if (gl.loading) return true // wait for textures loading @TODO FIX
                         gl.render()
                         return gl.isLoop
                 })
                 if (gl.isNative) return
+                if (isCreated) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
-                gl.el.addEventListener('mousemove', gl.mousemove)
+                gl.el?.addEventListener('mousemove', gl.mousemove)
         })
 
         gl('clean', () => {
@@ -90,25 +92,31 @@ export const createGL = (props?: Partial<GL>) => {
                 gl.el.removeEventListener('mousemove', gl.mousemove)
         })
 
+        gl('ref', (el: HTMLCanvasElement | null) => {
+                if (el) {
+                        gl.el = el
+                        gl.mount()
+                } else gl.clean()
+        })
+
         gl('resize', () => {
-                const w = gl.width || window.innerWidth
-                const h = gl.height || window.innerHeight
-                gl.size[0] = gl.el.width = w
-                gl.size[1] = gl.el.height = h
+                const rect = gl.el.parentElement?.getBoundingClientRect()
+                gl.size[0] = gl.el.width = gl.width ?? rect?.width ?? window.innerWidth
+                gl.size[1] = gl.el.height = gl.height ?? rect?.height ?? window.innerWidth
                 gl.uniform('iResolution', gl.size)
         })
 
         gl('mousemove', (_e: any, x = _e.clientX, y = _e.clientY) => {
-                const [w, h] = gl.size
-                const { top, left } = gl.el.getBoundingClientRect()
-                gl.mouse[0] = (x - top - w / 2) / (w / 2)
-                gl.mouse[1] = -(y - left - h / 2) / (h / 2)
+                const rect = gl.el.getBoundingClientRect()
+                gl.mouse[0] = (x - rect.left) / rect.width
+                gl.mouse[1] = -(y - rect.top) / rect.height + 1
                 gl.uniform('iMouse', gl.mouse)
         })
 
-        gl('loop', () => {
+        gl('render', () => {
                 iTime = performance.now() / 1000
                 gl.uniform('iTime', iTime)
+                gl.queue.flush()
         })
 
         return gl(props)

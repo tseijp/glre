@@ -25,11 +25,11 @@ const fragment = () => {
 UV coordinates are a coordinate system that represents positions on an image:
 
 ```
-(0,1) -------- (1,1)
+(0,0) -------- (1,0)
   |              |
   |     Image    |
   |              |
-(0,0) -------- (1,0)
+(0,1) -------- (1,1)
 ```
 
 <FragmentEditor
@@ -228,11 +228,10 @@ const fragment = () => {
         // ref: https://www.shadertoy.com/view/33yXzd
         const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
         const circleRadius = iTime.sin().add(1).div(8).add(0.2)
-        const center = iMouse.div(4).add(0.5)
-        const distance = uv.distance(center)
+        const distance = uv.distance(iMouse)
         // Calculate refraction effect
         const refraction = distance.div(circleRadius).pow(6).mul(0.1)
-        const offset = center.sub(uv).normalize().mul(refraction)
+        const offset = iMouse.sub(uv).normalize().mul(refraction)
         const dispersion = offset.mul(0.1)
         // Sample texture with chromatic aberration
         const r = iTexture.texture(uv.add(offset).sub(dispersion)).r

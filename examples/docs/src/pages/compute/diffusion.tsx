@@ -109,12 +109,7 @@ export default function ReactionDiffusionApp() {
                 const kill = vec2(0, 0.055 + 0.062)
                 const AB2 = current.y.pow(2).mul(current.x)
                 const reaction = vec2(AB2.negate(), AB2)
-                let result = L.mul(diffusion)
-                        .add(reaction)
-                        .add(kill.oneMinus().mul(current))
-                        .add(current.oneMinus().mul(feed))
-                        .clamp(vec2(0, 0), vec2(1, 1))
-                        .toVar()
+                let result = L.mul(diffusion).add(reaction).add(kill.oneMinus().mul(current)).add(current.oneMinus().mul(feed)).clamp(vec2(0, 0), vec2(1, 1)).toVar()
 
                 data.element(id.x).assign(result)
         })
@@ -151,7 +146,7 @@ export default function ReactionDiffusionApp() {
         })
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', cursor: 'crosshair' }}>
+                <div ref={drag.ref} style={{ position: 'fixed', width: '100%', height: '100%', cursor: 'crosshair' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )

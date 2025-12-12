@@ -173,12 +173,10 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 </summary>
 
 ```html
-<canvas id="canvas"></canvas>
 <script type="module">
         import { createGL } from 'https://esm.sh/glre'
-        import { vec4, uv } from 'https://esm.sh/node'
-        const el = document.getElementById('canvas')
-        createGL({ el, fs: vec4(uv, 0, 1) }).mount()
+        import { vec4, uv } from 'https://esm.sh/glre/node'
+        createGL({ fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
 
@@ -284,26 +282,6 @@ const uvs = attribute(textureCoords) // Coordinate mapping
 const worldPosition = positions.transform(modelMatrix)
 const viewNormal = normals.transform(normalMatrix)
 ```
-
-### Cross-Platform Transparency
-
-The system dissolves platform-specific shader languages into unified abstractions.
-WebGL2 GLSL and WebGPU WGSL become implementation details, hidden beneath consistent node operations.
-
-```ts
-// Same code generates different targets
-const shader = {
-        vertex: worldPosition.transform(projectionMatrix),
-        fragment: lighting(worldNormal, worldPosition),
-}
-
-// Backend selection becomes transparent
-// WebGL2: Generates GLSL ES 3.0
-// WebGPU: Generates WGSL
-```
-
-This architectural dissolution enables shader code to exist as pure mathematical relationships,
-freed from the constraints of traditional GPU programming models.
 
 ## PRs
 

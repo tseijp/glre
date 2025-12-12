@@ -49,12 +49,12 @@ JavaScript/TypeScript Code
 ### Basic Setup
 
 ```javascript
-import { createGL, vec4 } from 'glre'
+import { createGL, vec4, Scope } from 'glre'
 
 const gl = createGL({
-        fragment: () => {
+        fragment: Scope(() => {
                 return vec4(1.0, 0.5, 0.2, 1.0) // Orange color
-        },
+        }),
 })
 ```
 
@@ -62,14 +62,10 @@ const gl = createGL({
 
 ```javascript
 const gl = createGL({
-        fragment: () => {
-                const color = sin(iTime).mul(0.5).add(0.5)
+        fragment: Scope(() => {
+                const color = iTime.sin().mul(0.5).add(0.5)
                 return vec4(color, color, color, 1.0)
-        },
-})
-
-gl('loop', () => {
-        gl.uniform('iTime', performance.now() / 1000)
+        }),
 })
 ```
 

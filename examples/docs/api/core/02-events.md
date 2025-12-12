@@ -49,7 +49,7 @@ gl('resize', () => {
 ### Frame Events
 
 ```javascript
-gl('loop', () => {
+gl('render', () => {
         const time = performance.now() / 1000
         gl.uniform('iTime', time)
 
@@ -65,7 +65,7 @@ gl('loop', () => {
 const createConditionalUpdate = () => {
         let needsUpdate = true
 
-        gl('loop', () => {
+        gl('render', () => {
                 if (!needsUpdate) return
 
                 // Expensive calculations only when needed
@@ -271,7 +271,7 @@ const createPerformanceMonitor = () => {
         let frameCount = 0
         let lastTime = performance.now()
 
-        gl('loop', () => {
+        gl('render', () => {
                 frameCount++
                 const currentTime = performance.now()
 

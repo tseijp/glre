@@ -14,6 +14,72 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 
 <Tabs>
+<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+
+```jsx live
+function Canvas() {
+        const ellipseRadius = uniform(float(), 'ellipseRadius')
+        const ellipseXCoord = uniform(float(), 'ellipseXCoord')
+        const ellipseYCoord = uniform(float(), 'ellipseYCoord')
+        const ellipseStroke = uniform(float(), 'ellipseStroke')
+
+        const PI = float(3.141592)
+
+        const rotate = Fn(([x, y, angle]) => {
+                const scale = mat2(float(1).div(x), float(0), float(0), float(1).div(y)).toVar('scale')
+                const rotation = mat2(cos(angle), sin(angle).negate(), sin(angle), cos(angle)).toVar('rotation')
+                return scale.mul(rotation)
+        })
+
+        const circle = Fn(([p]) => {
+                return length(p).sub(ellipseRadius)
+        })
+
+        const ellipse = Fn(([p, angle]) => {
+                const transform = rotate(ellipseXCoord, ellipseYCoord, angle).toVar('transform')
+                return circle(transform.mul(p))
+        })
+
+        const onion = Fn(([d, p, angle]) => {
+                return min(d, abs(ellipse(p, angle)).sub(ellipseStroke))
+        })
+
+        const frag = Fn(([position]) => {
+                const uv = fract(position.xy.div(iResolution)).toVar('uv')
+                const p = uv.mul(2.4).sub(1.2).toVar('p')
+                p.x = p.x.mul(iResolution.x.div(iResolution.y))
+                const d = circle(p).toVar('d')
+                d.assign(onion(d, p, PI.div(2).add(iTime)))
+                d.assign(onion(d, p, PI.div(6).add(iTime)))
+                d.assign(onion(d, p, PI.div(6).negate().add(iTime)))
+                const color = vec4(0, 0, 0, 0).toVar('color')
+                If(d.lessThan(float(0)), () => {
+                        color.assign(vec4(float(96).div(255), float(219).div(255), float(251).div(255), 0.8))
+                })
+                return color
+        })
+
+        const gl = useGL({
+                frag: frag(position),
+                width: 512,
+                height: 512,
+                isWebGL: true,
+        })
+
+        gl.uniform(
+                useControls({
+                        ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
+                        ellipseXCoord: { min: 0, value: 2.2, max: 4.4 },
+                        ellipseYCoord: { min: 0, value: 5.4, max: 10.8 },
+                        ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
+                })
+        )
+
+        return <canvas ref={gl.ref} />
+}
+```
+
+</TabItem>
 <TabItem value="webgl" label="WebGL">
 
 ```jsx live
@@ -129,107 +195,6 @@ function Canvas() {
                         ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
                 })
         )
-        return <canvas ref={gl.ref} />
-}
-```
-
-</TabItem>
-<TabItem value="tsl" label="TSL (TypeScript Shading Language)">
-
-```jsx live
-function Canvas() {
-        const ellipseRadius = uniform(float(), 'ellipseRadius')
-        const ellipseXCoord = uniform(float(), 'ellipseXCoord')
-        const ellipseYCoord = uniform(float(), 'ellipseYCoord')
-        const ellipseStroke = uniform(float(), 'ellipseStroke')
-
-        const PI = float(3.141592)
-
-        const rotate = Fn(([x, y, angle]) => {
-                const scale = mat2(float(1).div(x), float(0), float(0), float(1).div(y)).toVar('scale')
-                const rotation = mat2(cos(angle), sin(angle).negate(), sin(angle), cos(angle)).toVar('rotation')
-                return scale.mul(rotation)
-        })
-
-        rotate.setLayout({
-                name: 'rotate',
-                type: 'mat2',
-                inputs: [
-                        { name: 'x', type: 'float' },
-                        { name: 'y', type: 'float' },
-                        { name: 'angle', type: 'float' },
-                ],
-        })
-
-        const circle = Fn(([p]) => {
-                return length(p).sub(ellipseRadius)
-        })
-
-        circle.setLayout({
-                name: 'circle',
-                type: 'float',
-                inputs: [{ name: 'p', type: 'vec2' }],
-        })
-
-        const ellipse = Fn(([p, angle]) => {
-                const transform = rotate(ellipseXCoord, ellipseYCoord, angle).toVar('transform')
-                return circle(transform.mul(p))
-        })
-
-        ellipse.setLayout({
-                name: 'ellipse',
-                type: 'float',
-                inputs: [
-                        { name: 'p', type: 'vec2' },
-                        { name: 'angle', type: 'float' },
-                ],
-        })
-
-        const onion = Fn(([d, p, angle]) => {
-                return min(d, abs(ellipse(p, angle)).sub(ellipseStroke))
-        })
-
-        onion.setLayout({
-                name: 'onion',
-                type: 'float',
-                inputs: [
-                        { name: 'd', type: 'float' },
-                        { name: 'p', type: 'vec2' },
-                        { name: 'angle', type: 'float' },
-                ],
-        })
-
-        const frag = Fn(([position]) => {
-                const uv = fract(position.xy.div(iResolution)).toVar('uv')
-                const p = uv.mul(2.4).sub(1.2).toVar('p')
-                p.x = p.x.mul(iResolution.x.div(iResolution.y))
-                const d = circle(p).toVar('d')
-                d.assign(onion(d, p, PI.div(2).add(iTime)))
-                d.assign(onion(d, p, PI.div(6).add(iTime)))
-                d.assign(onion(d, p, PI.div(6).negate().add(iTime)))
-                const color = vec4(0, 0, 0, 0).toVar('color')
-                If(d.lessThan(float(0)), () => {
-                        color.assign(vec4(float(96).div(255), float(219).div(255), float(251).div(255), 0.8))
-                })
-                return color
-        })(position)
-
-        const gl = useGL({
-                frag,
-                width: 512,
-                height: 512,
-                isWebGL: true,
-        })
-
-        gl.uniform(
-                useControls({
-                        ellipseRadius: { min: 0, value: 0.2, max: 0.4 },
-                        ellipseXCoord: { min: 0, value: 2.2, max: 4.4 },
-                        ellipseYCoord: { min: 0, value: 5.4, max: 10.8 },
-                        ellipseStroke: { min: 0, value: 0.01, max: 0.02 },
-                })
-        )
-
         return <canvas ref={gl.ref} />
 }
 ```

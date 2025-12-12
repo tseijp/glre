@@ -36,8 +36,7 @@ The engine automatically selects the best available graphics API:
 
 ```javascript
 const createOptimalGL = () => {
-        // Automatic platform detection
-        if (navigator.gpu && !forceLegacy) {
+        if (forceLegacy) {
                 return createGL({ isWebGL: false }) // WebGPU
         }
         return createGL({ isWebGL: true }) // WebGL2
@@ -67,46 +66,6 @@ const gl = createGL({
 })
 ```
 
-### Memory Management
-
-The engine uses closure-based patterns for resource management:
-
-```javascript
-const createRenderer = (config) => {
-        let context = null
-        let program = null
-        let buffers = {}
-
-        const initialize = () => {
-                context = initializeContext(config)
-                program = createShaderProgram(context, config.shaders)
-                buffers = createBuffers(context)
-        }
-
-        const render = () => {
-                if (!context || !program) return
-
-                context.useProgram(program)
-                bindBuffers(context, buffers)
-                context.drawArrays(context.TRIANGLES, 0, config.count)
-        }
-
-        const cleanup = () => {
-                if (program) context.deleteProgram(program)
-                Object.values(buffers).forEach((buffer) => {
-                        if (buffer) context.deleteBuffer(buffer)
-                })
-                context = null
-                program = null
-                buffers = {}
-        }
-
-        initialize()
-
-        return { render, cleanup }
-}
-```
-
 ## Shader Compilation
 
 ### Automatic Generation
@@ -115,11 +74,11 @@ TSL converts TypeScript to shader code:
 
 ```javascript
 // TypeScript Node System
-const nodeShader = () => {
+const nodeShader = Scope(() => {
         const uv = position.xy.mul(0.5).add(0.5)
         const pattern = sin(uv.x.mul(10)).mul(sin(uv.y.mul(10)))
         return vec4(pattern, pattern, pattern, 1.0)
-}
+})
 
 // Compiles to GLSL/WGSL automatically
 const gl = createGL({
@@ -149,59 +108,6 @@ const gl = createGL({
         }
     `,
 })
-```
-
-## Context Management
-
-### WebGL2 Context
-
-```javascript
-const createWebGLContext = (canvas, options) => {
-        const contextOptions = {
-                antialias: options.antialias ?? true,
-                alpha: options.alpha ?? false,
-                depth: options.depth ?? true,
-                stencil: options.stencil ?? false,
-                premultipliedAlpha: false,
-                preserveDrawingBuffer: false,
-        }
-
-        const gl = canvas.getContext('webgl2', contextOptions)
-        if (!gl) {
-                throw new Error('WebGL2 not supported')
-        }
-
-        return gl
-}
-```
-
-### WebGPU Context
-
-```javascript
-const createWebGPUContext = async (canvas, options) => {
-        if (!navigator.gpu) {
-                throw new Error('WebGPU not supported')
-        }
-
-        const adapter = await navigator.gpu.requestAdapter({
-                powerPreference: options.powerPreference ?? 'default',
-        })
-
-        if (!adapter) {
-                throw new Error('No WebGPU adapter found')
-        }
-
-        const device = await adapter.requestDevice()
-        const context = canvas.getContext('webgpu')
-
-        context.configure({
-                device,
-                format: 'bgra8unorm',
-                alphaMode: 'premultiplied',
-        })
-
-        return { device, context, adapter }
-}
 ```
 
 ## Uniform System
@@ -258,14 +164,7 @@ const createAttributeManager = (gl) => {
                 const location = gl.getAttribLocation(program, name)
                 if (location !== -1) {
                         gl.enableVertexAttribArray(location)
-                        gl.vertexAttribPointer(
-                                location,
-                                options.size ?? 3,
-                                gl.FLOAT,
-                                false,
-                                options.stride ?? 0,
-                                options.offset ?? 0
-                        )
+                        gl.vertexAttribPointer(location, options.size ?? 3, gl.FLOAT, false, options.stride ?? 0, options.offset ?? 0)
 
                         if (options.divisor !== undefined) {
                                 gl.vertexAttribDivisor(location, options.divisor)
@@ -299,17 +198,7 @@ const createTextureManager = (gl) => {
                 gl.bindTexture(gl.TEXTURE_2D, texture)
 
                 // Placeholder 1x1 pixel
-                gl.texImage2D(
-                        gl.TEXTURE_2D,
-                        0,
-                        gl.RGBA,
-                        1,
-                        1,
-                        0,
-                        gl.RGBA,
-                        gl.UNSIGNED_BYTE,
-                        new Uint8Array([255, 0, 255, 255])
-                )
+                gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 0, 255, 255]))
 
                 if (typeof source === 'string') {
                         const image = new Image()

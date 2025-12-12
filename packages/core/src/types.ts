@@ -23,6 +23,8 @@ export type GL = EventState<{
         particleCount: number | [number, number] | [number, number, number]
         precision: 'lowp' | 'mediump' | 'highp'
         loading: number
+        element?: HTMLCanvasElement
+        elem?: HTMLCanvasElement
         el: HTMLCanvasElement
         vs?: string | Vec4
         cs?: string | Void
@@ -33,6 +35,7 @@ export type GL = EventState<{
         vertex?: string | Vec4
         compute?: string | Void
         fragment?: string | Vec4
+        programs?: any[]
 
         /**
          * core state
@@ -52,7 +55,6 @@ export type GL = EventState<{
         render(): void
         resize(e?: Event): void
         mousemove(e: MouseEvent): void
-        loop(): void
 
         /**
          * setter
