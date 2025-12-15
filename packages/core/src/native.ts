@@ -1,12 +1,11 @@
-import { useState } from 'react' // @ts-ignore
-// import { Dimensions } from 'react-native'
-import { createGL, isGL } from './index'
+import { useState } from 'react'
+import { createGL } from './index'
 import type { GL } from './types'
 export * from './index'
 
-export const useGL = (props: Partial<GL> = {}) => {
+export const useGL = (...args: Partial<GL>[]) => {
         return useState(() => {
-                const gl = isGL(props) ? props : createGL(props)
+                const gl = createGL(...args)
                 gl.ref = (ctx: any) => {
                         gl({
                                 render() {

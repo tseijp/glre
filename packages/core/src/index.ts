@@ -1,17 +1,10 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
-import { is } from './helpers'
 import { webgl } from './webgl'
 import { webgpu } from './webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './types'
-
-export const isGL = (a: unknown): a is EventState<GL> => {
-        if (!is.obj(a)) return false
-        if ('isGL' in a) return true
-        return false
-}
 
 export const isServer = () => {
         return typeof window === 'undefined'
@@ -24,8 +17,9 @@ export const isWebGPUSupported = () => {
 
 let iTime = performance.now()
 
-export const createGL = (props?: Partial<GL>) => {
+export const createGL = (props: Partial<GL> = {}, ...programs: Partial<GL>[]) => {
         const gl = event({
+                programs,
                 isNative: false,
                 isWebGL: true,
                 isError: false,
@@ -33,7 +27,6 @@ export const createGL = (props?: Partial<GL>) => {
                 isDebug: false,
                 isDepth: false,
                 wireframe: false,
-                isGL: true,
                 size: [0, 0],
                 mouse: [0, 0],
                 count: 6,
