@@ -1,9 +1,9 @@
 import { code } from '.'
 import { infer } from './infer'
 import { getConversions, addDependency } from './utils'
-import { is } from '../../utils/helpers'
+import { is } from '../../helpers'
 import type { Constants, NodeContext, NodeProps, StructFields, Y } from '../types'
-import { storageSize } from '../../utils/program'
+import { storageSize } from '../../webgl/utils'
 
 export const parseArray = (children: Y[], c: NodeContext) => {
         return children
@@ -60,9 +60,7 @@ export const parseIf = (c: NodeContext, x: Y, y: Y, children: Y[]) => {
         let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
         for (let i = 2; i < children.length; i += 2) {
                 const isElse = i >= children.length - 1
-                ret += !isElse
-                        ? ` else if (${code(children[i], c)}) {\n${code(children[i + 1], c)}\n}`
-                        : ` else {\n${code(children[i], c)}\n}`
+                ret += !isElse ? ` else if (${code(children[i], c)}) {\n${code(children[i + 1], c)}\n}` : ` else {\n${code(children[i], c)}\n}`
         }
         return ret
 }
@@ -73,8 +71,7 @@ export const parseSwitch = (c: NodeContext, x: Y, children: Y[]) => {
                 const isDefault = i >= children.length - 1
                 if (isDefault && children.length % 2 === 0) {
                         ret += `default:\n${code(children[i], c)}\nbreak;\n`
-                } else if (i + 1 < children.length)
-                        ret += `case ${code(children[i], c)}:\n${code(children[i + 1], c)}\nbreak;\n`
+                } else if (i + 1 < children.length) ret += `case ${code(children[i], c)}:\n${code(children[i + 1], c)}\nbreak;\n`
         }
         ret += '}'
         return ret
@@ -157,9 +154,7 @@ export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
  * headers
  */
 export const parseVaryingHead = (c: NodeContext, id: string, type: Constants) => {
-        return c.isWebGL
-                ? `${type} ${id};`
-                : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
+        return c.isWebGL ? `${type} ${id};` : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
 }
 
 export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
@@ -177,10 +172,7 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
                         : `uniform ${type} ${id};`
         if (isTexture) {
                 const { group = 1, binding = 0 } = c.gl?.webgpu?.textures.map.get(id) || {}
-                return (
-                        `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n` +
-                        `@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d<f32>;`
-                )
+                return `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n` + `@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d<f32>;`
         }
         const { group = 0, binding = 0 } = c.gl?.webgpu?.uniforms.map.get(id) || {}
         const wgslType = getConversions(type, c)
@@ -204,24 +196,16 @@ export const parseLoop = (c: NodeContext, x: Y, y: Y, id: string) => {
         const bodyCode = code(y, c)
         const conditionCode = code(x, c)
         if (c.isWebGL) {
-                if (conditionType === 'int')
-                        return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
-                if (conditionType === 'float')
-                        return `for (float ${id} = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
-                if (conditionType === 'vec2')
-                        return `for (vec2 ${id} = vec2(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2(1.0)) {\n${bodyCode}\n}`
-                if (conditionType === 'vec3')
-                        return `for (vec3 ${id} = vec3(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3(1.0)) {\n${bodyCode}\n}`
+                if (conditionType === 'int') return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
+                if (conditionType === 'float') return `for (float ${id} = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
+                if (conditionType === 'vec2') return `for (vec2 ${id} = vec2(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2(1.0)) {\n${bodyCode}\n}`
+                if (conditionType === 'vec3') return `for (vec3 ${id} = vec3(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3(1.0)) {\n${bodyCode}\n}`
                 return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
         }
-        if (conditionType === 'int')
-                return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
-        if (conditionType === 'float')
-                return `for (var ${id}: f32 = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
-        if (conditionType === 'vec2')
-                return `for (var ${id}: vec2f = vec2f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2f(1.0)) {\n${bodyCode}\n}`
-        if (conditionType === 'vec3')
-                return `for (var ${id}: vec3f = vec3f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3f(1.0)) {\n${bodyCode}\n}`
+        if (conditionType === 'int') return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
+        if (conditionType === 'float') return `for (var ${id}: f32 = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
+        if (conditionType === 'vec2') return `for (var ${id}: vec2f = vec2f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2f(1.0)) {\n${bodyCode}\n}`
+        if (conditionType === 'vec3') return `for (var ${id}: vec3f = vec3f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3f(1.0)) {\n${bodyCode}\n}`
         return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
 }
 
