@@ -6,6 +6,7 @@ export * from './index'
 export const useGL = (...args: Partial<GL>[]) => {
         return useState(() => {
                 const gl = createGL(...args)
+                gl.isNative = true
                 gl.ref = (ctx: any) => {
                         gl({
                                 render() {
@@ -22,6 +23,6 @@ export const useGL = (...args: Partial<GL>[]) => {
                         resize()
                         // Dimensions.addEventListener('change', resize)
                 }
-                return gl({ isNative: true })
+                return gl()
         })[0]
 }

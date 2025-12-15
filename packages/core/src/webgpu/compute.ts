@@ -37,3 +37,5 @@ export const compute = (gl: GL, device: GPUDevice, bindings: any) => {
 
         return { storages, _storage, update, render, clean }
 }
+
+export type WebGPUCompute = ReturnType<typeof compute>

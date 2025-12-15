@@ -18,6 +18,7 @@ export type GL = EventState<{
         size: [number, number]
         mouse: [number, number]
         count: number
+        triangleCount: number
         instanceCount: number
         particleCount: number | [number, number] | [number, number, number]
         precision: 'lowp' | 'mediump' | 'highp'
@@ -34,13 +35,14 @@ export type GL = EventState<{
         vertex?: string | Vec4
         compute?: string | Void
         fragment?: string | Vec4
-        programs?: any[]
+        program?: WebGLProgram
+        context?: WebGL2RenderingContext
 
         /**
          * core state
          */
-        webgpu: WebGPUState
-        webgl: WebGLState
+        // webgpu: WebGPUState
+        // webgl: WebGLState
         queue: Queue
         frame: Frame
 
@@ -113,19 +115,19 @@ export interface StorageData {
         group: number
 }
 
-export interface WebGPUState {
-        device: GPUDevice
-        uniforms: Nested<UniformData>
-        textures: Nested<TextureData>
-        attribs: Nested<AttribData>
-        storages: Nested<StorageData>
-}
-
-/**
- * for webgl
- */
-export interface WebGLState {
-        context: WebGL2RenderingContext
-        program: WebGLProgram
-        uniforms: Nested<WebGLUniformLocation | null>
-}
+// export interface WebGPUState {
+//         device: GPUDevice
+//         uniforms: Nested<UniformData>
+//         textures: Nested<TextureData>
+//         attribs: Nested<AttribData>
+//         storages: Nested<StorageData>
+// }
+//
+// /**
+//  * for webgl
+//  */
+// export interface WebGLState {
+//         context: WebGL2RenderingContext
+//         program: WebGLProgram
+//         uniforms: Nested<WebGLUniformLocation | null>
+// }

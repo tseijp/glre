@@ -92,3 +92,5 @@ export const graphic = (gl: GL, props: Partial<GL>, device: GPUDevice, format: G
         }
         return { render, clean, _attribute, _instance, _uniform, _texture, uniforms, textures, attribs }
 }
+
+export type WebGPUGraphic = ReturnType<typeof graphic>

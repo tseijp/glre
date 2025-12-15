@@ -3,9 +3,9 @@ import { cleanStorage, createAttachment, createProgram, createStorage, storageSi
 import { GLSL_VS, is } from '../helpers'
 import type { GL } from '../types'
 
-export const compute = (gl: GL, c: WebGL2RenderingContext) => {
-        if (!gl.cs) return null // ignore if no compute shader
-        c.getExtension('EXT_color_buffer_float')
+export const compute = (c: WebGL2RenderingContext, gl: GL) => {
+        if (!gl.cs) return
+        c.getExtension('EXT_color_buffer_float') // ??
 
         let activeUnit = 0 // for texture units
         let currentNum = 0 // for storage buffers
@@ -23,23 +23,24 @@ export const compute = (gl: GL, c: WebGL2RenderingContext) => {
                 return { ping, pong, array, loc: uniforms(key), unit: units(key) }
         })
 
-        const _uniform = (key: string, value: number | number[]) => {
-                c.useProgram(pg)
+        gl('_uniform', (key: string, value: number | number[]) => {
+                c.useProgram((gl.program = pg))
                 updateUniform(c, uniforms(key), value)
-        }
+        })
 
-        const _storage = (key: string, value: number[]) => {
+        gl('_storage', (key: string, value: number[]) => {
+                c.useProgram((gl.program = pg))
                 const { ping, pong, unit, array } = storages(key)
                 createStorage(c, value, size.x, size.y, ping, pong, unit, array)
-        }
+        })
 
-        const clean = () => {
+        gl('clean', () => {
                 c.deleteProgram(pg)
                 cleanStorage(c, storages.map.values())
-        }
+        })
 
-        const render = () => {
-                c.useProgram(pg)
+        gl('render', () => {
+                c.useProgram((gl.program = pg))
                 const attachments = storages.map.values().map(({ ping, pong, loc, unit }, index) => {
                         const [i, o] = currentNum % 2 ? [ping, pong] : [pong, ping]
                         return createAttachment(c, i, o, loc, unit, index)
@@ -48,7 +49,7 @@ export const compute = (gl: GL, c: WebGL2RenderingContext) => {
                 c.drawArrays(c.TRIANGLES, 0, 3)
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
                 currentNum++
-        }
-
-        return { render, clean, _uniform, _storage, storages }
+        })
 }
+
+export type WebGLCompute = ReturnType<typeof compute>

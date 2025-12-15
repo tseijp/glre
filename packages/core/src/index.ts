@@ -1,7 +1,6 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
 import { webgl } from './webgl'
-import { webgpu } from './webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './types'
@@ -17,9 +16,9 @@ export const isWebGPUSupported = () => {
 
 let iTime = performance.now()
 
-export const createGL = (props: Partial<GL> = {}, ...programs: Partial<GL>[]) => {
+// TO BE
+export const createGL = (...args: Partial<GL>[]) => {
         const gl = event({
-                programs,
                 isNative: false,
                 isWebGL: true,
                 isError: false,
@@ -29,12 +28,7 @@ export const createGL = (props: Partial<GL> = {}, ...programs: Partial<GL>[]) =>
                 wireframe: false,
                 size: [0, 0],
                 mouse: [0, 0],
-                count: 6,
-                instanceCount: 1,
-                particleCount: 1024,
                 precision: 'highp',
-                webgl: {},
-                webgpu: {},
                 loading: 0,
                 error() {
                         gl.isError = true
@@ -54,17 +48,14 @@ export const createGL = (props: Partial<GL> = {}, ...programs: Partial<GL>[]) =>
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
-        gl('mount', async () => {
+        gl('mount', async (el: HTMLCanvasElement) => {
+                if (!args[0].isWebGL) gl.isWebGL = false
                 if (!isWebGPUSupported()) gl.isWebGL = true
-                gl.el = gl.el || gl.elem || gl.element
-                gl.vs = gl.vs || gl.vert || gl.vertex
-                gl.fs = gl.fs || gl.frag || gl.fragment
-                gl.cs = gl.cs || gl.comp || gl.compute
+                if (el) gl.el = el
                 const isCreated = !gl.el // Check first: canvas may unmount during WebGPU async processing
                 if (isCreated && !gl.isNative) gl.el = document.createElement('canvas')
-                if (gl.isWebGL) {
-                        gl(webgl(gl) as GL)
-                } else gl((await webgpu(gl)) as GL)
+                if (gl.isWebGL) webgl(gl, ...args)
+                // else await webgpu(gl, ...args) // @TODO FIX
                 if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
                 gl.resize()
                 gl.frame(() => {
@@ -112,7 +103,7 @@ export const createGL = (props: Partial<GL> = {}, ...programs: Partial<GL>[]) =>
                 gl.queue.flush()
         })
 
-        return gl(props)
+        return gl
 }
 
 export default createGL
