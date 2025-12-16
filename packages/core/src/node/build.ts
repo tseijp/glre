@@ -81,7 +81,7 @@ export const fragment = (x: X, c: NodeContext = {}) => {
         const result = []
         if (c.isWebGL) {
                 result.push('#version 300 es')
-                precisionHead(result, getMaxPrecision(c.gl?.webgl?.context, c.gl?.precision))
+                precisionHead(result, getMaxPrecision(c.gl?.context as unknown as WebGL2RenderingContext, c.gl?.precision))
                 result.push('out vec4 fragColor;')
                 for (const code of c.code?.fragInputs?.values() || []) result.push(`in ${code}`)
                 result.push(head)

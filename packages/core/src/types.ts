@@ -1,6 +1,7 @@
 import type { EventState } from 'reev'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
+import { Binding } from './webgpu/binding'
 
 export type GL = EventState<{
         /**
@@ -36,7 +37,12 @@ export type GL = EventState<{
         compute?: string | Void
         fragment?: string | Vec4
         program: WebGLProgram
-        context: WebGL2RenderingContext
+        // context: WebGL2RenderingContext
+        context: GPUCanvasContext
+        device: GPUDevice
+        format: GPUTextureFormat
+        encoder: GPUCommandEncoder
+        binding: Binding
 
         /**
          * core state

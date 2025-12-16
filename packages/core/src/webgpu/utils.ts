@@ -1,5 +1,49 @@
 import { is, isFloat32 } from '../helpers'
+import { nested } from 'reev'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
+
+type IAttribs = Iterable<AttribData & { isInstance?: boolean }>
+type IUniforms = Iterable<UniformData>
+type ITextures = Iterable<TextureData>
+type IStorages = Iterable<StorageData>
+
+/**
+ * binding
+ */
+export const createBinding = () => {
+        let _uniform = 0
+        let _texture = 0
+        let _storage = 0
+        let _attrib = 0
+        const uniform = nested(() => {
+                const group = Math.floor(_uniform / 12)
+                const binding = _uniform % 12
+                _uniform++
+                return { group, binding }
+        })
+        const texture = nested(() => {
+                const baseGroup = Math.floor(_uniform / 12) + 1
+                const group = baseGroup + Math.floor(_texture / 6)
+                const binding = (_texture % 6) * 2
+                _texture++
+                return { group, binding }
+        })
+        const storage = nested(() => {
+                const baseGroup = Math.floor(_uniform / 12) + Math.floor(_texture / 6) + 2
+                const group = baseGroup + Math.floor(_storage / 12)
+                const binding = _storage % 12
+                _storage++
+                return { group, binding }
+        })
+        const attrib = nested(() => {
+                const location = _attrib
+                _attrib++
+                return { location }
+        })
+        return { uniform, texture, storage, attrib }
+}
+
+export type Binding = ReturnType<typeof createBinding>
 
 /**
  * initialize
@@ -19,40 +63,6 @@ export const createDevice = async (c: GPUCanvasContext, log = console.log, signa
         return { device, format }
 }
 
-export const createBindings = () => {
-        let uniform = 0
-        let texture = 0
-        let storage = 0
-        let attrib = 0
-        return {
-                uniform: () => {
-                        const group = Math.floor(uniform / 12)
-                        const binding = uniform % 12
-                        uniform++
-                        return { group, binding }
-                },
-                texture: () => {
-                        const baseGroup = Math.floor(uniform / 12) + 1
-                        const group = baseGroup + Math.floor(texture / 6)
-                        const binding = (texture % 6) * 2
-                        texture++
-                        return { group, binding }
-                },
-                storage: () => {
-                        const baseGroup = Math.floor(uniform / 12) + Math.floor(texture / 6) + 2
-                        const group = baseGroup + Math.floor(storage / 12)
-                        const binding = storage % 12
-                        storage++
-                        return { group, binding }
-                },
-                attrib: () => {
-                        const location = attrib
-                        attrib++
-                        return { location }
-                },
-        }
-}
-
 /**
  * pipeline update
  */
@@ -63,7 +73,7 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-export const createVertexBuffers = (attribs: Iterable<AttribData & { isInstance?: boolean }>) => {
+const createVertexBuffers = (attribs: IAttribs) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
         for (const { buffer, location, stride, isInstance } of attribs) {
@@ -85,7 +95,7 @@ export const createVertexBuffers = (attribs: Iterable<AttribData & { isInstance?
         return { vertexBuffers, bufferLayouts }
 }
 
-export const createBindGroup = (device: GPUDevice, uniforms: Iterable<UniformData>, textures: Iterable<TextureData>, storages: Iterable<StorageData> = []) => {
+const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: ITextures, storages: IStorages = []) => {
         const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
         const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
         const add = (i: number, layout: GPUBindGroupLayoutEntry, binding: GPUBindGroupEntry) => {
@@ -111,7 +121,7 @@ export const createBindGroup = (device: GPUDevice, uniforms: Iterable<UniformDat
         return ret
 }
 
-export const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayouts: GPUVertexBufferLayout[], bindGroupLayouts: GPUBindGroupLayout[], vs: string, fs: string) => {
+const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayouts: GPUVertexBufferLayout[], bindGroupLayouts: GPUBindGroupLayout[], vs: string, fs: string) => {
         return device.createRenderPipeline({
                 vertex: {
                         module: device.createShaderModule({ label: 'vert', code: vs.trim() }),
@@ -133,7 +143,8 @@ export const createPipeline = (device: GPUDevice, format: GPUTextureFormat, buff
         })
 }
 
-export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
+const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
+        if (!cs) return
         return device.createComputePipeline({
                 compute: {
                         module: device.createShaderModule({ label: 'compute', code: cs.trim() }),
@@ -141,6 +152,14 @@ export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBi
                 },
                 layout: device.createPipelineLayout({ bindGroupLayouts }),
         })
+}
+
+export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string) => {
+        const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
+        const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
+        const computePipeline = createComputePipeline(device, bindGroupLayouts, cs)
+        const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)
+        return { computePipeline, graphicPipeline, bindGroups, vertexBuffers }
 }
 
 /**

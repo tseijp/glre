@@ -1,5 +1,6 @@
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATOR_TYPE_RULES } from './utils/const'
 import type { GL } from '../types'
+import { Binding } from '../webgpu/binding'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
 export type Conversions = (typeof CONVERSIONS)[number]
@@ -80,6 +81,7 @@ export interface NodeProps {
 
 export interface NodeContext {
         gl?: Partial<GL>
+        binding?: Binding
         label?: 'vert' | 'frag' | 'compute'
         isWebGL?: boolean
         units?: any // @TODO FIX

@@ -2,6 +2,7 @@ import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
 import { is } from './helpers'
 import { webgl } from './webgl'
+import { webgpu } from './webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
 export * from './types'
@@ -58,16 +59,16 @@ export const createGL = (...args: Partial<GL>[]) => {
                 const isCreated = !gl.el // Check first: canvas may unmount during WebGPU async processing
                 if (isCreated && !gl.isNative) gl.el = document.createElement('canvas')
                 for (const arg of args) {
+                        gl.fs = arg.fs || arg.frag || arg.fragment || void 0
                         gl.cs = arg.cs || arg.comp || arg.compute || void 0
                         gl.vs = arg.vs || arg.vert || arg.vertex || void 0
-                        gl.fs = arg.fs || arg.frag || arg.fragment || void 0
                         gl.triangleCount = arg.triangleCount || arg.count || 6
                         gl.instanceCount = arg.instanceCount || 1
                         gl.particleCount = arg.particleCount || 1024
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
                         if (gl.isWebGL) webgl(gl)
-                        // else await webgpu(gl)
+                        else await webgpu(gl)
                         if (arg.mount) arg.mount() // events added in mount phase need explicit call to execute
                 }
                 if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async

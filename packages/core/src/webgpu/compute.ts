@@ -1,41 +1,41 @@
-import { nested } from 'reev'
-import { createArrayBuffer, createComputePipeline, workgroupCount } from './utils'
+import { nested as cached } from 'reev'
+import { createArrayBuffer, workgroupCount } from './utils'
+import type { Binding } from './utils'
 import type { GL } from '../types'
 
-export const compute = (gl: GL, device: GPUDevice, bindings: any) => {
-        let flush = (_pass: GPUComputePassEncoder) => {}
+export const compute = (gl: GL, bindings: Binding) => {
+        let pipeline: GPUComputePipeline | undefined
+        let bindGroups: GPUBindGroup[] | undefined
 
-        const storages = nested((_key, value: number[] | Float32Array) => {
-                const { array, buffer } = createArrayBuffer(device, value, 'storage')
-                const { binding, group } = bindings.storage()
+        const storages = cached((key, value: number[] | Float32Array) => {
+                const { array, buffer } = createArrayBuffer(gl.device, value, 'storage')
+                const { binding, group } = bindings.storage(key)
                 return { array, buffer, binding, group }
         })
 
-        const _storage = (key: string, value: number[] | Float32Array) => {
+        gl('_storage', (key: string, value: number[] | Float32Array) => {
                 const { array, buffer } = storages(key, value)
-                device.queue.writeBuffer(buffer, 0, array as any)
-        }
+                gl.device.queue.writeBuffer(buffer, 0, array as any)
+        })
 
-        const update = (bindGroups: GPUBindGroup[], bindGroupLayouts: GPUBindGroupLayout[], comp: string) => {
-                const pipeline = createComputePipeline(device, bindGroupLayouts, comp!)
-                flush = (pass) => {
-                        pass.setPipeline(pipeline)
-                        bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                        const { x, y, z } = workgroupCount(gl.particleCount)
-                        pass.dispatchWorkgroups(x, y, z)
-                        pass.end()
-                }
-        }
+        gl('render', () => {
+                if (!pipeline || !bindGroups) return
+                const pass = gl.encoder.beginComputePass()
+                pass.setPipeline(pipeline)
+                bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
+                const { x, y, z } = workgroupCount(gl.particleCount)
+                pass.dispatchWorkgroups(x, y, z)
+                pass.end()
+        })
 
-        const render = (pass: GPUComputePassEncoder) => {
-                flush(pass)
-        }
-
-        const clean = () => {
+        gl('clean', () => {
                 for (const { buffer } of storages.map.values()) buffer.destroy()
+        })
+
+        const set = (_pipeline?: GPUComputePipeline, _bindGroups?: GPUBindGroup[]) => {
+                pipeline = _pipeline
+                bindGroups = _bindGroups
         }
 
-        return { storages, _storage, update, render, clean }
+        return { storages, set }
 }
-
-export type WebGPUCompute = ReturnType<typeof compute>
