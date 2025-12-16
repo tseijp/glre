@@ -1,21 +1,7 @@
-import {
-        Fn,
-        id,
-        storage,
-        uv,
-        UVec3,
-        Vec2,
-        vec4,
-        vec2,
-        uniform,
-        vec3,
-        If,
-        float,
-        Loop,
-        uint,
-        Break,
-} from 'glre/src/node'
+import { Fn, id, storage, uv, UVec3, Vec2, vec4, vec2, uniform, vec3, If, float, Loop, uint, Break } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
+
+const isWebGL = true
 
 export default function PathtracingApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]
@@ -117,60 +103,30 @@ export default function PathtracingApp() {
                         const hitId = float(-1).toVar()
 
                         // Check all spheres
-                        If(
-                                result1.x
-                                        .greaterThan(0)
-                                        .and(result1.y.greaterThan(0.001))
-                                        .and(result1.y.lessThan(minT)),
-                                () => {
-                                        minT.assign(result1.y)
-                                        hitId.assign(0)
-                                }
-                        )
+                        If(result1.x.greaterThan(0).and(result1.y.greaterThan(0.001)).and(result1.y.lessThan(minT)), () => {
+                                minT.assign(result1.y)
+                                hitId.assign(0)
+                        })
 
-                        If(
-                                result2.x
-                                        .greaterThan(0)
-                                        .and(result2.y.greaterThan(0.001))
-                                        .and(result2.y.lessThan(minT)),
-                                () => {
-                                        minT.assign(result2.y)
-                                        hitId.assign(1)
-                                }
-                        )
+                        If(result2.x.greaterThan(0).and(result2.y.greaterThan(0.001)).and(result2.y.lessThan(minT)), () => {
+                                minT.assign(result2.y)
+                                hitId.assign(1)
+                        })
 
-                        If(
-                                result3.x
-                                        .greaterThan(0)
-                                        .and(result3.y.greaterThan(0.001))
-                                        .and(result3.y.lessThan(minT)),
-                                () => {
-                                        minT.assign(result3.y)
-                                        hitId.assign(2)
-                                }
-                        )
+                        If(result3.x.greaterThan(0).and(result3.y.greaterThan(0.001)).and(result3.y.lessThan(minT)), () => {
+                                minT.assign(result3.y)
+                                hitId.assign(2)
+                        })
 
-                        If(
-                                result4.x
-                                        .greaterThan(0)
-                                        .and(result4.y.greaterThan(0.001))
-                                        .and(result4.y.lessThan(minT)),
-                                () => {
-                                        minT.assign(result4.y)
-                                        hitId.assign(3)
-                                }
-                        )
+                        If(result4.x.greaterThan(0).and(result4.y.greaterThan(0.001)).and(result4.y.lessThan(minT)), () => {
+                                minT.assign(result4.y)
+                                hitId.assign(3)
+                        })
 
-                        If(
-                                resultLight.x
-                                        .greaterThan(0)
-                                        .and(resultLight.y.greaterThan(0.001))
-                                        .and(resultLight.y.lessThan(minT)),
-                                () => {
-                                        minT.assign(resultLight.y)
-                                        hitId.assign(4)
-                                }
-                        )
+                        If(resultLight.x.greaterThan(0).and(resultLight.y.greaterThan(0.001)).and(resultLight.y.lessThan(minT)), () => {
+                                minT.assign(resultLight.y)
+                                hitId.assign(4)
+                        })
 
                         return vec3(minT, hitId, 0)
                 }
@@ -239,11 +195,7 @@ export default function PathtracingApp() {
                                 const bitangent = normal.cross(tangent).normalize()
                                 tangent.assign(bitangent.cross(normal))
 
-                                const newDir = tangent
-                                        .mul(localX)
-                                        .add(bitangent.mul(localY))
-                                        .add(normal.mul(localZ))
-                                        .normalize()
+                                const newDir = tangent.mul(localX).add(bitangent.mul(localY)).add(normal.mul(localZ)).normalize()
 
                                 // Update throughput with BRDF and PDF
                                 // For Lambertian BRDF: material/PI
@@ -281,6 +233,7 @@ export default function PathtracingApp() {
 
         // Fragment shader for visualization
         const fs = Fn(([uv]: [Vec2]) => {
+                if (isWebGL) uv.y = uv.y.oneMinus()
                 const x = uv.x.mul(w).toUInt()
                 const y = uv.y.mul(h).toUInt()
                 const idx = y.mul(uint(w)).add(x)
@@ -294,7 +247,7 @@ export default function PathtracingApp() {
 
         const gl = useGL({
                 particleCount: [w, h],
-                isWebGL: false,
+                isWebGL,
                 cs: cs(id),
                 fs: fs(uv),
                 mount() {
@@ -303,7 +256,7 @@ export default function PathtracingApp() {
                         for (let i = 0; i < pixels * 4; i++) initData[i] = 0
                         gl.storage(pixelData.props.id!, initData)
                 },
-                loop() {
+                render() {
                         frameCount.value = i++
                 },
         })

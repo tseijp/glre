@@ -2,6 +2,8 @@ import { Fn, iResolution, mat3, uniform, uv, vec2, vec3, vec4 } from 'glre/src/n
 import { createGL } from 'glre/src'
 import { useEffect, useRef } from 'react'
 
+const isWebGL = true
+
 const createVideo = async () => {
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false })
         const video = document.createElement('video')
@@ -20,17 +22,7 @@ const fragment = (video: HTMLVideoElement) => {
         const matDot = Fn(([a, b]) => {
                 return a[0].dot(b[0]).add(a[1].dot(b[1])).add(a[2].dot(b[2]))
         })
-        const sample = mat3(
-                s(uv, -1, -1),
-                s(uv, 0, -1),
-                s(uv, 1, -1),
-                s(uv, -1, 0),
-                s(uv, 0, 0),
-                s(uv, 1, 0),
-                s(uv, -1, 1),
-                s(uv, 0, 1),
-                s(uv, 1, 1)
-        )
+        const sample = mat3(s(uv, -1, -1), s(uv, 0, -1), s(uv, 1, -1), s(uv, -1, 0), s(uv, 0, 0), s(uv, 1, 0), s(uv, -1, 1), s(uv, 0, 1), s(uv, 1, 1))
         const sobelX = mat3(-1, 0, 1, -2, 0, 2, -1, 0, 1).constant()
         const sobelY = mat3(-1, -2, -1, 0, 0, 0, 1, 2, 1).constant()
         const gx = matDot(sample, sobelX)
@@ -40,14 +32,14 @@ const fragment = (video: HTMLVideoElement) => {
 }
 
 export default function Canvas() {
-        const canvasRef = useRef<HTMLCanvasElement>(null!)
+        const ref = useRef<HTMLCanvasElement>(null!)
 
         const startCamera = async () => {
-                if (!canvasRef.current) return
+                if (!ref.current) return
                 const video = await createVideo()
                 const frag = fragment(video)
-                const el = canvasRef.current
-                const gl = createGL({ el, frag, isWebGL: false })
+                const el = ref.current
+                const gl = createGL({ el, frag, isWebGL })
                 gl.uniform('videoSize', [video.videoWidth, video.videoHeight])
                 gl.mount()
         }
@@ -56,5 +48,5 @@ export default function Canvas() {
                 startCamera()
         }, [])
 
-        return <canvas ref={canvasRef} style={{ top: 0, left: 0, position: 'fixed' }} />
+        return <canvas ref={ref} style={{ top: 0, left: 0, position: 'fixed' }} />
 }

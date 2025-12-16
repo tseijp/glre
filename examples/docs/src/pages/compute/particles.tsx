@@ -39,7 +39,7 @@ export default function GPGPUParticlesApp() {
 
         const gl = useGL({
                 particleCount,
-                isWebGL: false,
+                isWebGL: true,
                 cs: compute(id),
                 fs: fragment(uv),
                 mount() {

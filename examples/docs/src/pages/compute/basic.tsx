@@ -77,7 +77,7 @@ export default function GPGPUBasicApp() {
 
         const gl = useGL({
                 particleCount: [w, h],
-                isWebGL: false,
+                isWebGL: true,
                 cs: cs(id),
                 fs: fs(uv),
         })

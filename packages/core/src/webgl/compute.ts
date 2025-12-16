@@ -1,22 +1,23 @@
-import { nested as cached } from 'reev'
-import { cleanStorage, createAttachment, createProgram, createStorage, storageSize, updateUniform } from './utils'
+import { nested } from 'reev'
+import { cleanStorage, createAttachment, createProgram, storageSize, createStorage, updateUniform } from './utils'
 import { GLSL_VS, is } from '../helpers'
 import type { GL } from '../types'
 
-export const compute = (c: WebGL2RenderingContext, gl: GL) => {
+export const compute = (gl: GL) => {
         if (!gl.cs) return
+        const c = gl.context
         c.getExtension('EXT_color_buffer_float') // ??
 
         let activeUnit = 0 // for texture units
         let currentNum = 0 // for storage buffers
 
-        const units = cached(() => activeUnit++)
+        const units = nested(() => activeUnit++)
         const cs = is.str(gl.cs) ? gl.cs : gl.cs!.compute({ isWebGL: true, gl, units })
         const pg = createProgram(c, cs, GLSL_VS, gl)!
         const size = storageSize(gl.particleCount)
 
-        const uniforms = cached((key) => c.getUniformLocation(pg, key)!)
-        const storages = cached((key) => {
+        const uniforms = nested((key) => c.getUniformLocation(pg, key)!)
+        const storages = nested((key) => {
                 const array = new Float32Array(size.x * size.y * 4) // RGBA texture data
                 const ping = { texture: c.createTexture(), buffer: c.createFramebuffer() }
                 const pong = { texture: c.createTexture(), buffer: c.createFramebuffer() }

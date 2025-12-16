@@ -1,4 +1,4 @@
-import { nested as cached } from 'reev'
+import { nested } from 'reev'
 import { createArrayBuffer, createBindGroup, createBindings, createPipeline, createTextureSampler, createVertexBuffers } from './utils'
 import { getStride, is, loadingTexture, WGSL_FS, WGSL_VS } from '../helpers'
 import type { GL } from '../types'
@@ -11,20 +11,20 @@ export const graphic = (gl: GL, props: Partial<GL>, device: GPUDevice, format: G
         let draw = (_pass: GPURenderPassEncoder) => {}
         const b = createBindings()
 
-        const attribs = cached((_key, value: number[], isInstance = false) => {
+        const attribs = nested((_key, value: number[], isInstance = false) => {
                 needsUpdate = true
                 const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)
                 const { location } = b.attrib()
                 const { array, buffer } = createArrayBuffer(device, value, 'attrib')
                 return { array, buffer, location, stride, isInstance }
         })
-        const uniforms = cached((_key, value: number[]) => {
+        const uniforms = nested((_key, value: number[]) => {
                 needsUpdate = true
                 const { binding, group } = b.uniform()
                 const { array, buffer } = createArrayBuffer(device, value, 'uniform')
                 return { array, buffer, binding, group }
         })
-        const textures = cached((_key, width = 0, height = 0) => {
+        const textures = nested((_key, width = 0, height = 0) => {
                 needsUpdate = true
                 const { binding, group } = b.texture()
                 const { texture, sampler } = createTextureSampler(device, width, height)

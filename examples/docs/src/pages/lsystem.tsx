@@ -230,7 +230,9 @@ export default function App() {
         )
         return (
                 <Layout noFooter>
-                        <canvas ref={gl.ref} />
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
+                                <canvas ref={gl.ref} />
+                        </div>
                 </Layout>
         )
 }

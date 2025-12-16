@@ -1,3 +1,5 @@
+// @ts-ignore
+import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { attribute, instance, uniform, vec4, If, Fn, vertexStage } from 'glre/src/node'
 
@@ -94,7 +96,7 @@ export default function ParticleSystem() {
                 //                 canvas.removeEventListener('mouseup', handleMouseUp)
                 //         }
                 // },
-                loop() {
+                render() {
                         updateParticles()
                         pos.value = particlePositions
                         mouseUniform.value = mousePos
@@ -111,5 +113,11 @@ export default function ParticleSystem() {
                 })(),
         })
 
-        return <canvas ref={gl.ref} width={800} height={600} />
+        return (
+                <Layout noFooter>
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
+                                <canvas ref={gl.ref} />
+                        </div>
+                </Layout>
+        )
 }

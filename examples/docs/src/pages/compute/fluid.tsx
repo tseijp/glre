@@ -2,6 +2,8 @@ import { Fn, float, Float, id, If, storage, uniform, uv, UVec3, vec2, vec3, vec4
 import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
+const isWebGL = true
+
 export default function FluidSimulationApp() {
         const [w, h] = isServer() ? [256, 256] : [window.innerWidth, window.innerHeight]
         const particleCount = w * h
@@ -63,6 +65,7 @@ export default function FluidSimulationApp() {
         })
 
         const fs = Fn(([uv]: [Vec2]) => {
+                if (isWebGL) uv.y = uv.y.oneMinus()
                 const pre = getPressure(uv)
                 const vel = getVelocity(uv)
                 const speed = vel.length()
@@ -73,7 +76,7 @@ export default function FluidSimulationApp() {
 
         const gl = useGL({
                 particleCount,
-                isWebGL: false,
+                isWebGL,
                 cs: cs(id),
                 fs: fs(uv),
                 mount() {
@@ -89,7 +92,7 @@ export default function FluidSimulationApp() {
         })
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', cursor: 'crosshair' }}>
+                <div ref={drag.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', cursor: 'crosshair' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )

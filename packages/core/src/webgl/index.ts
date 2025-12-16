@@ -1,42 +1,19 @@
 import { compute } from './compute'
 import { graphic } from './graphic'
+import { enableDepth, enableWireframe, loseContext } from './utils'
 import type { GL } from '../types'
 
-export const webgl = (gl: GL, ...args: Partial<GL>[]) => {
-        const c = (gl.context = gl.el!.getContext('webgl2')!)
-
-        gl('clean', () => {
-                const ext = c.getExtension('WEBGL_lose_context')
-                if (ext) ext.loseContext()
-        })
-
-        gl('render', () => {
-                c.bindFramebuffer(c.FRAMEBUFFER, null) // ??
-                c.viewport(0, 0, ...gl.size!)
-        })
-
-        args.forEach((arg) => {
-                gl.cs = arg.cs || arg.comp || arg.compute || void 0
-                gl.vs = arg.vs || arg.vert || arg.vertex || void 0
-                gl.fs = arg.fs || arg.frag || arg.fragment || void 0
-                gl.triangleCount = arg.triangleCount || arg.count || 6
-                gl.instanceCount = arg.instanceCount || 1
-                gl.particleCount = arg.particleCount || 1024
-                compute(c, gl(arg))
-                graphic(c, gl(arg))
-        })
-
-        if (gl.isDepth) {
-                c.enable(c.DEPTH_TEST)
-                c.depthFunc(c.LEQUAL)
-                c.enable(c.CULL_FACE)
-                c.cullFace(c.BACK)
+export const webgl = (gl: GL) => {
+        const isInit = !gl.context
+        if (isInit) {
+                gl.context = gl.el.getContext('webgl2')!
+                gl('render', () => void gl.context.viewport(0, 0, ...gl.size!)) // Run before other renderers' events to prevent flickering
         }
-
-        if (gl.wireframe) {
-                const ext = c.getExtension('WEBGL_polygon_mode')
-                if (ext) ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
+        compute(gl)
+        graphic(gl)
+        if (isInit) {
+                gl('clean', () => void loseContext(gl.context))
+                if (gl.isDepth) enableDepth(gl.context)
+                if (gl.wireframe) enableWireframe(gl.context)
         }
 }
-
-export type WebGLRenderer = ReturnType<typeof webgl>

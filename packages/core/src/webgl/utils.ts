@@ -149,3 +149,20 @@ export const storageSize = (particleCount: number | number[] = 1024) => {
         }
         return { x, y }
 }
+
+export const loseContext = (c: WebGL2RenderingContext) => {
+        const ext = c.getExtension('WEBGL_lose_context')
+        if (ext) ext.loseContext()
+}
+
+export const enableDepth = (c: WebGL2RenderingContext) => {
+        c.enable(c.DEPTH_TEST)
+        c.depthFunc(c.LEQUAL)
+        c.enable(c.CULL_FACE)
+        c.cullFace(c.BACK)
+}
+
+export const enableWireframe = (c: WebGL2RenderingContext) => {
+        const ext = c.getExtension('WEBGL_polygon_mode')
+        if (ext) ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
+}

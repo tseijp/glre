@@ -3,7 +3,7 @@ import { Fn, float, id, If, iResolution, storage, uniform, uv, UVec3, vec2, vec3
 import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
-const isWebGL = false
+const isWebGL = true
 
 const asp = (value: Vec2) => aspect(value, iResolution).div(iResolution)
 

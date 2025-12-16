@@ -1,21 +1,7 @@
-import {
-        Fn,
-        id,
-        storage,
-        uv,
-        UVec3,
-        Vec2,
-        vec4,
-        vec2,
-        uniform,
-        vec3,
-        If,
-        float,
-        Float,
-        Vec3,
-        uint,
-} from 'glre/src/node'
+import { Fn, id, storage, uv, UVec3, Vec2, vec4, vec2, uniform, vec3, If, float, Float, Vec3, uint } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
+
+const isWebGL = true
 
 export default function RaytracingApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]
@@ -133,42 +119,18 @@ export default function RaytracingApp() {
                         const lightDistance = lightPos.sub(hitPoint).length()
                         const inShadow = float(0).toVar()
 
-                        If(
-                                shadowResult1.x
-                                        .greaterThan(0)
-                                        .and(shadowResult1.y.greaterThan(0))
-                                        .and(shadowResult1.y.lessThan(lightDistance)),
-                                () => {
-                                        inShadow.assign(1)
-                                }
-                        )
-                        If(
-                                shadowResult2.x
-                                        .greaterThan(0)
-                                        .and(shadowResult2.y.greaterThan(0))
-                                        .and(shadowResult2.y.lessThan(lightDistance)),
-                                () => {
-                                        inShadow.assign(1)
-                                }
-                        )
-                        If(
-                                shadowResult3.x
-                                        .greaterThan(0)
-                                        .and(shadowResult3.y.greaterThan(0))
-                                        .and(shadowResult3.y.lessThan(lightDistance)),
-                                () => {
-                                        inShadow.assign(1)
-                                }
-                        )
-                        If(
-                                shadowResult4.x
-                                        .greaterThan(0)
-                                        .and(shadowResult4.y.greaterThan(0))
-                                        .and(shadowResult4.y.lessThan(lightDistance)),
-                                () => {
-                                        inShadow.assign(1)
-                                }
-                        )
+                        If(shadowResult1.x.greaterThan(0).and(shadowResult1.y.greaterThan(0)).and(shadowResult1.y.lessThan(lightDistance)), () => {
+                                inShadow.assign(1)
+                        })
+                        If(shadowResult2.x.greaterThan(0).and(shadowResult2.y.greaterThan(0)).and(shadowResult2.y.lessThan(lightDistance)), () => {
+                                inShadow.assign(1)
+                        })
+                        If(shadowResult3.x.greaterThan(0).and(shadowResult3.y.greaterThan(0)).and(shadowResult3.y.lessThan(lightDistance)), () => {
+                                inShadow.assign(1)
+                        })
+                        If(shadowResult4.x.greaterThan(0).and(shadowResult4.y.greaterThan(0)).and(shadowResult4.y.lessThan(lightDistance)), () => {
+                                inShadow.assign(1)
+                        })
 
                         const diffuse = hitNormal.dot(lightDir).max(0).mul(inShadow.oneMinus()).toVar('diffuse')
 
@@ -185,46 +147,22 @@ export default function RaytracingApp() {
                         const reflMinT = float(1000).toVar()
                         const reflColor = vec3(0.1, 0.1, 0.2).toVar() // Sky color
 
-                        If(
-                                reflResult1.x
-                                        .greaterThan(0)
-                                        .and(reflResult1.y.greaterThan(0))
-                                        .and(reflResult1.y.lessThan(reflMinT)),
-                                () => {
-                                        reflMinT.assign(reflResult1.y)
-                                        reflColor.assign(vec3(1.0, 0.2, 0.2))
-                                }
-                        )
-                        If(
-                                reflResult2.x
-                                        .greaterThan(0)
-                                        .and(reflResult2.y.greaterThan(0))
-                                        .and(reflResult2.y.lessThan(reflMinT)),
-                                () => {
-                                        reflMinT.assign(reflResult2.y)
-                                        reflColor.assign(vec3(0.2, 1.0, 0.2))
-                                }
-                        )
-                        If(
-                                reflResult3.x
-                                        .greaterThan(0)
-                                        .and(reflResult3.y.greaterThan(0))
-                                        .and(reflResult3.y.lessThan(reflMinT)),
-                                () => {
-                                        reflMinT.assign(reflResult3.y)
-                                        reflColor.assign(vec3(0.2, 0.2, 1.0))
-                                }
-                        )
-                        If(
-                                reflResult4.x
-                                        .greaterThan(0)
-                                        .and(reflResult4.y.greaterThan(0))
-                                        .and(reflResult4.y.lessThan(reflMinT)),
-                                () => {
-                                        reflMinT.assign(reflResult4.y)
-                                        reflColor.assign(vec3(0.8, 0.8, 0.8))
-                                }
-                        )
+                        If(reflResult1.x.greaterThan(0).and(reflResult1.y.greaterThan(0)).and(reflResult1.y.lessThan(reflMinT)), () => {
+                                reflMinT.assign(reflResult1.y)
+                                reflColor.assign(vec3(1.0, 0.2, 0.2))
+                        })
+                        If(reflResult2.x.greaterThan(0).and(reflResult2.y.greaterThan(0)).and(reflResult2.y.lessThan(reflMinT)), () => {
+                                reflMinT.assign(reflResult2.y)
+                                reflColor.assign(vec3(0.2, 1.0, 0.2))
+                        })
+                        If(reflResult3.x.greaterThan(0).and(reflResult3.y.greaterThan(0)).and(reflResult3.y.lessThan(reflMinT)), () => {
+                                reflMinT.assign(reflResult3.y)
+                                reflColor.assign(vec3(0.2, 0.2, 1.0))
+                        })
+                        If(reflResult4.x.greaterThan(0).and(reflResult4.y.greaterThan(0)).and(reflResult4.y.lessThan(reflMinT)), () => {
+                                reflMinT.assign(reflResult4.y)
+                                reflColor.assign(vec3(0.8, 0.8, 0.8))
+                        })
 
                         const ambient = float(0.1).toVar('ambient')
                         const reflection = float(0.1).toVar('reflection') // Reflection strength
@@ -238,6 +176,7 @@ export default function RaytracingApp() {
 
         // Fragment shader for visualization
         const fs = Fn(([uv]: [Vec2]) => {
+                if (isWebGL) uv.y = uv.y.oneMinus()
                 const x = uv.x.mul(w).toUInt()
                 const y = uv.y.mul(h).toUInt()
                 const idx = y.mul(uint(w)).add(x)
@@ -247,7 +186,7 @@ export default function RaytracingApp() {
 
         const gl = useGL({
                 particleCount: [w, h],
-                isWebGL: false,
+                isWebGL,
                 isDebug: true,
                 cs: cs(id),
                 fs: fs(uv),

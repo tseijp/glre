@@ -1,5 +1,6 @@
 import { durable, event } from 'reev'
 import { createFrame, createQueue } from 'refr'
+import { is } from './helpers'
 import { webgl } from './webgl'
 import type { EventState } from 'reev'
 import type { GL } from './types'
@@ -14,9 +15,10 @@ export const isWebGPUSupported = () => {
         return 'gpu' in navigator
 }
 
-let iTime = performance.now()
+const findElement = (arg: Partial<GL>) => {
+        return arg.el || arg.elem || arg.element
+}
 
-// TO BE
 export const createGL = (...args: Partial<GL>[]) => {
         const gl = event({
                 isNative: false,
@@ -38,24 +40,36 @@ export const createGL = (...args: Partial<GL>[]) => {
                 },
         }) as EventState<GL>
 
+        let iTime = performance.now()
         gl.queue = createQueue()
         gl.frame = createFrame()
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
         gl.instance = durable((k, v, at) => gl.queue(() => gl._instance?.(k, v, at)), gl)
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
-        gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
+        gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async (el: HTMLCanvasElement) => {
-                if (!args[0].isWebGL) gl.isWebGL = false
+                if (is.bol(args[0].isWebGL)) gl.isWebGL = args[0].isWebGL
                 if (!isWebGPUSupported()) gl.isWebGL = true
-                if (el) gl.el = el
+                gl.el = findElement(gl) || el || args.map(findElement)[0]
                 const isCreated = !gl.el // Check first: canvas may unmount during WebGPU async processing
                 if (isCreated && !gl.isNative) gl.el = document.createElement('canvas')
-                if (gl.isWebGL) webgl(gl, ...args)
-                // else await webgpu(gl, ...args) // @TODO FIX
+                for (const arg of args) {
+                        gl.cs = arg.cs || arg.comp || arg.compute || void 0
+                        gl.vs = arg.vs || arg.vert || arg.vertex || void 0
+                        gl.fs = arg.fs || arg.frag || arg.fragment || void 0
+                        gl.triangleCount = arg.triangleCount || arg.count || 6
+                        gl.instanceCount = arg.instanceCount || 1
+                        gl.particleCount = arg.particleCount || 1024
+                        gl(arg)
+                        if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
+                        if (gl.isWebGL) webgl(gl)
+                        // else await webgpu(gl)
+                        if (arg.mount) arg.mount() // events added in mount phase need explicit call to execute
+                }
                 if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
                 gl.resize()
                 gl.frame(() => {
@@ -66,12 +80,12 @@ export const createGL = (...args: Partial<GL>[]) => {
                 if (gl.isNative) return
                 if (isCreated) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
-                gl.el?.addEventListener('mousemove', gl.mousemove)
+                gl.el.addEventListener('mousemove', gl.mousemove)
         })
 
         gl('clean', () => {
                 gl.frame.stop()
-                if (gl.isNative) return
+                if (!gl.el || gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
                 gl.el.removeEventListener('mousemove', gl.mousemove)
         })

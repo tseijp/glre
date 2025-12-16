@@ -1,11 +1,11 @@
-import { nested as cached } from 'reev'
+import { nested } from 'reev'
 import { createArrayBuffer, createComputePipeline, workgroupCount } from './utils'
 import type { GL } from '../types'
 
 export const compute = (gl: GL, device: GPUDevice, bindings: any) => {
         let flush = (_pass: GPUComputePassEncoder) => {}
 
-        const storages = cached((_key, value: number[] | Float32Array) => {
+        const storages = nested((_key, value: number[] | Float32Array) => {
                 const { array, buffer } = createArrayBuffer(device, value, 'storage')
                 const { binding, group } = bindings.storage()
                 return { array, buffer, binding, group }

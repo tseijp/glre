@@ -1,4 +1,4 @@
-import type { EventState, Nested } from 'reev'
+import type { EventState } from 'reev'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
 
@@ -35,8 +35,8 @@ export type GL = EventState<{
         vertex?: string | Vec4
         compute?: string | Void
         fragment?: string | Vec4
-        program?: WebGLProgram
-        context?: WebGL2RenderingContext
+        program: WebGLProgram
+        context: WebGL2RenderingContext
 
         /**
          * core state

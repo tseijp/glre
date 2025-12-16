@@ -190,7 +190,6 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         let py = 0
                         const touchXY = (e: TouchEvent) => {
                                 if (e.touches.length !== 1) return [0, 0]
-                                // e.preventDefault()
                                 const touch = e.touches[0]
                                 return [touch.clientX, touch.clientY]
                         }

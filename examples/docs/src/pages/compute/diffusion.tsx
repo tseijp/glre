@@ -65,6 +65,8 @@ import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, uniform, flo
 import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
+const isWebGL = true
+
 export default function ReactionDiffusionApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]
         const particleCount = w * h
@@ -103,7 +105,7 @@ export default function ReactionDiffusionApp() {
                 const L = conv(-1, -1,  0.05).add(conv(-1, 0, 0.2)).add(conv(-1, 1, 0.05))
                      .add(conv( 0, -1,  0.2)).add(conv( 0, 0,  -1)).add(conv( 0, 1, 0.2))
                      .add(conv( 1, -1, 0.05)).add(conv( 1, 0, 0.2)).add(conv( 1, 1, 0.05))
-                const current = idx2cell(id.x).toVar()
+                const current = idx2cell(id.x as Float).toVar()
                 const diffusion = vec2(1, 0.5)
                 const feed = vec2(0.055, 0)
                 const kill = vec2(0, 0.055 + 0.062)
@@ -115,6 +117,7 @@ export default function ReactionDiffusionApp() {
         })
 
         const fs = Fn(([uv]: [Vec2]) => {
+                if (isWebGL) uv.y = uv.y.oneMinus()
                 const t = uv2cell(uv)
                 const dx = t.x.dFdx()
                 const dy = t.x.dFdy()
@@ -126,7 +129,7 @@ export default function ReactionDiffusionApp() {
 
         const gl = useGL({
                 particleCount: [w, h],
-                isWebGL: false,
+                isWebGL,
                 isDebug: true,
                 cs: cs(id),
                 fs: fs(uv),
