@@ -1,5 +1,5 @@
-import { is, isFloat32 } from '../helpers'
 import { nested } from 'reev'
+import { is, isFloat32 } from '../helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 type IAttribs = Iterable<AttribData & { isInstance?: boolean }>
@@ -157,9 +157,7 @@ const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroup
 export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string) => {
         const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
         const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
-        const computePipeline = createComputePipeline(device, bindGroupLayouts, cs)
-        const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)
-        return { computePipeline, graphicPipeline, bindGroups, vertexBuffers }
+        return [createComputePipeline(device, bindGroupLayouts, cs), createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs), bindGroups, vertexBuffers] as const
 }
 
 /**
@@ -179,22 +177,15 @@ export const createArrayBuffer = (device: GPUDevice, array: number[] | Float32Ar
         return { array, buffer }
 }
 
+export const updateArrayBuffer = (device: GPUDevice, value: number[] | Float32Array, array: Float32Array, buffer: GPUBuffer) => {
+        array.set(value)
+        device.queue.writeBuffer(buffer, 0, array as GPUAllowSharedBufferSource)
+}
+
 export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) => {
         return {
-                colorAttachments: [
-                        {
-                                view: c.getCurrentTexture().createView(),
-                                clearValue: { r: 0, g: 0, b: 0, a: 1 },
-                                loadOp: 'clear' as GPULoadOp,
-                                storeOp: 'store' as GPUStoreOp,
-                        },
-                ],
-                depthStencilAttachment: {
-                        view: depthTexture.createView(),
-                        depthClearValue: 1.0,
-                        depthLoadOp: 'clear' as GPULoadOp,
-                        depthStoreOp: 'store' as GPUStoreOp,
-                },
+                colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0, g: 0, b: 0, a: 1 }, loadOp: 'clear', storeOp: 'store' }],
+                depthStencilAttachment: { view: depthTexture.createView(), depthClearValue: 1.0, depthLoadOp: 'clear', depthStoreOp: 'store' },
         } as GPURenderPassDescriptor
 }
 
@@ -208,11 +199,7 @@ export const createTextureSampler = (device: GPUDevice, width = 1280, height = 8
 }
 
 export const createDepthTexture = (device: GPUDevice, width: number, height: number) => {
-        return device.createTexture({
-                size: [width, height],
-                format: 'depth24plus',
-                usage: GPUTextureUsage.RENDER_ATTACHMENT,
-        })
+        return device.createTexture({ size: [width, height], format: 'depth24plus', usage: 16 }) // 16 is GPUTextureUsage.RENDER_ATTACHMENT
 }
 
 /**

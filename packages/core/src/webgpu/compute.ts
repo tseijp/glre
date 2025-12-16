@@ -1,5 +1,5 @@
-import { nested as cached } from 'reev'
-import { createArrayBuffer, workgroupCount } from './utils'
+import { nested } from 'reev'
+import { createArrayBuffer, updateArrayBuffer, workgroupCount } from './utils'
 import type { Binding } from './utils'
 import type { GL } from '../types'
 
@@ -7,15 +7,13 @@ export const compute = (gl: GL, bindings: Binding) => {
         let pipeline: GPUComputePipeline | undefined
         let bindGroups: GPUBindGroup[] | undefined
 
-        const storages = cached((key, value: number[] | Float32Array) => {
-                const { array, buffer } = createArrayBuffer(gl.device, value, 'storage')
-                const { binding, group } = bindings.storage(key)
-                return { array, buffer, binding, group }
+        const storages = nested((key, value: number[] | Float32Array) => {
+                return { ...bindings.storage(key), ...createArrayBuffer(gl.device, value, 'storage') }
         })
 
         gl('_storage', (key: string, value: number[] | Float32Array) => {
                 const { array, buffer } = storages(key, value)
-                gl.device.queue.writeBuffer(buffer, 0, array as any)
+                updateArrayBuffer(gl.device, value, array, buffer)
         })
 
         gl('render', () => {

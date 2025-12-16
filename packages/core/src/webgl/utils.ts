@@ -32,7 +32,7 @@ export const createArrayBuffer = (c: WebGL2RenderingContext, data: number[]) => 
         return { array, buffer }
 }
 
-export const setArrayBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
+export const updateArrayBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
         array.set(value)
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)

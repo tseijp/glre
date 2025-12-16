@@ -1,49 +1,45 @@
-import { nested as cached } from 'reev'
+import { nested } from 'reev'
 import { is, getStride, loadingTexture } from '../helpers'
-import { createArrayBuffer, createDepthTexture, createDescriptor, createTextureSampler } from './utils'
+import { createArrayBuffer, createDepthTexture, createDescriptor, createTextureSampler, updateArrayBuffer } from './utils'
 import type { Binding } from './utils'
 import type { GL } from '../types'
 
-export const graphic = (gl: GL, bindings: Binding, setUpdate = () => {}) => {
+export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
         let depthTexture: GPUTexture
 
-        const attribs = cached((key, value: number[], isInstance = false) => {
-                setUpdate()
-                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)
-                return { stride, ...bindings.attrib(key), ...createArrayBuffer(gl.device, value, 'attrib'), isInstance }
+        const attribs = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)) => {
+                update()
+                return { isInstance, stride, ...bindings.attrib(key), ...createArrayBuffer(gl.device, value, 'attrib') }
         })
 
-        const uniforms = cached((key, value: number[]) => {
-                setUpdate()
+        const uniforms = nested((key, value: number[] | Float32Array) => {
+                update()
                 return { ...bindings.uniform(key), ...createArrayBuffer(gl.device, value, 'uniform') }
         })
 
-        const textures = cached((key, width = 0, height = 0) => {
-                setUpdate()
+        const textures = nested((key, width = 0, height = 0) => {
+                update()
                 const { texture, sampler } = createTextureSampler(gl.device, width, height)
                 return { texture, sampler, ...bindings.texture(key), view: texture.createView() }
         })
 
-        gl('_attribute', (key = '', value: number[]) => {
+        gl('_attribute', (key = '', value: number[] | Float32Array) => {
                 const { array, buffer } = attribs(key, value)
-                array.set(value)
-                gl.device.queue.writeBuffer(buffer, 0, array as any)
+                updateArrayBuffer(gl.device, value, array, buffer)
         })
 
-        gl('_instance', (key: string, value: number[]) => {
+        gl('_instance', (key: string, value: number[] | Float32Array) => {
                 const { array, buffer } = attribs(key, value, true)
-                array.set(value)
-                gl.device.queue.writeBuffer(buffer, 0, array as any)
+                updateArrayBuffer(gl.device, value, array, buffer)
         })
 
-        gl('_uniform', (key: string, value: number | number[]) => {
+        gl('_uniform', (key: string, value: number | number[] | Float32Array) => {
                 if (is.num(value)) value = [value]
                 const { array, buffer } = uniforms(key, value)
-                array.set(value)
-                gl.device.queue.writeBuffer(buffer, 0, array as any)
+                updateArrayBuffer(gl.device, value, array, buffer)
         })
 
         gl('_texture', (key: string, src: string) => {

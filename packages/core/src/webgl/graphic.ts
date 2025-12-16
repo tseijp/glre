@@ -1,6 +1,6 @@
 import { nested } from 'reev'
 import { getStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
-import { createArrayBuffer, createProgram, createTexture, setArrayBuffer, updateAttrib, updateInstance, updateUniform } from './utils'
+import { createArrayBuffer, createProgram, createTexture, updateArrayBuffer, updateAttrib, updateInstance, updateUniform } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL) => {
@@ -24,7 +24,7 @@ export const graphic = (gl: GL) => {
                 c.useProgram((gl.program = pg))
                 const { array, buffer, location, stride } = attributes(key, value)
                 if (location < 0) return // ??
-                setArrayBuffer(c, array, buffer, value)
+                updateArrayBuffer(c, array, buffer, value)
                 updateAttrib(c, location, stride, buffer)
         })
 
@@ -32,7 +32,7 @@ export const graphic = (gl: GL) => {
                 c.useProgram((gl.program = pg))
                 const { array, buffer, location, stride } = attributes(key, value, true)
                 if (location < 0) return // ??
-                setArrayBuffer(c, array, buffer, value)
+                updateArrayBuffer(c, array, buffer, value)
                 updateInstance(c, location, stride, buffer)
         })
 
