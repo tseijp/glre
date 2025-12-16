@@ -5,18 +5,6 @@ import type { GL } from '../types'
 export const webgl = (gl: GL, ...args: Partial<GL>[]) => {
         const c = (gl.context = gl.el!.getContext('webgl2')!)
 
-        if (gl.isDepth) {
-                c.enable(c.DEPTH_TEST)
-                c.depthFunc(c.LEQUAL)
-                c.enable(c.CULL_FACE)
-                c.cullFace(c.BACK)
-        }
-
-        if (gl.wireframe) {
-                const ext = c.getExtension('WEBGL_polygon_mode')
-                if (ext) ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
-        }
-
         gl('clean', () => {
                 const ext = c.getExtension('WEBGL_lose_context')
                 if (ext) ext.loseContext()
@@ -37,6 +25,18 @@ export const webgl = (gl: GL, ...args: Partial<GL>[]) => {
                 compute(c, gl(arg))
                 graphic(c, gl(arg))
         })
+
+        if (gl.isDepth) {
+                c.enable(c.DEPTH_TEST)
+                c.depthFunc(c.LEQUAL)
+                c.enable(c.CULL_FACE)
+                c.cullFace(c.BACK)
+        }
+
+        if (gl.wireframe) {
+                const ext = c.getExtension('WEBGL_polygon_mode')
+                if (ext) ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
+        }
 }
 
 export type WebGLRenderer = ReturnType<typeof webgl>
