@@ -20,6 +20,8 @@ canvas {
         }
         .playgroundPreview > div:nth-child(2) {
                 padding: 0;
+                height: 100%;
+                display: flex;
         }
         .playgroundEditor {
                 flex: 1;
