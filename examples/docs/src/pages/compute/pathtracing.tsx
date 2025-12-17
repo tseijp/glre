@@ -1,7 +1,7 @@
 import { Fn, id, storage, uv, UVec3, Vec2, vec4, vec2, uniform, vec3, If, float, Loop, uint, Break } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
 
-const isWebGL = true
+const isWebGL = false
 
 export default function PathtracingApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]

@@ -8,6 +8,8 @@ import PlaygroundEditor from '@theme/Playground/Editor'
 import { useInView } from './useInView'
 import './index.css'
 
+const isWebGL = false
+
 const createCanvasTemplate = (isLoop: boolean, fragmentExpression: string, functionDefinition?: string) => {
         if (!isLoop)
                 if (
@@ -24,7 +26,7 @@ function Canvas() {
                 width: 256,
                 height: 256,
                 isLoop: ${isLoop},
-                isWebGL: true,
+                isWebGL: ${isWebGL ? 'true' : 'false'},
                 frag: ${fragmentExpression},
                 error(error = "") {
                         set(() => {

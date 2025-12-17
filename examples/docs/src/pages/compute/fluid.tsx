@@ -2,7 +2,7 @@ import { Fn, float, Float, id, If, storage, uniform, uv, UVec3, vec2, vec3, vec4
 import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
-const isWebGL = true
+const isWebGL = false
 
 export default function FluidSimulationApp() {
         const [w, h] = isServer() ? [256, 256] : [window.innerWidth, window.innerHeight]

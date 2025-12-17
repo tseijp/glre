@@ -65,7 +65,7 @@ import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, uniform, flo
 import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
-const isWebGL = true
+const isWebGL = false
 
 export default function ReactionDiffusionApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]

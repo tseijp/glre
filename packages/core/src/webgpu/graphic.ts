@@ -10,7 +10,7 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
         let vertexBuffers: GPUBuffer[]
         let depthTexture: GPUTexture
 
-        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)) => {
+        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.triangleCount)) => {
                 update()
                 return { isInstance, stride, ...bindings.attrib(key), ...createBuffer(gl.device, value, 'attrib') }
         })
@@ -60,7 +60,7 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
                 pass.setPipeline(pipeline)
                 bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                 vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                pass.draw(gl.count, gl.instanceCount, 0, 0)
+                pass.draw(gl.triangleCount, gl.instanceCount, 0, 0)
                 pass.end()
         })
 
