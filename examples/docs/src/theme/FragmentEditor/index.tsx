@@ -1,4 +1,3 @@
-import React from 'react'
 import ReactLiveScope from '../ReactLiveScope'
 // @ts-ignore
 import PlaygroundProvider from '@theme/Playground/Provider' // @ts-ignore
@@ -13,32 +12,32 @@ const isWebGL = false
 const createCanvasTemplate = (isLoop: boolean, fragmentExpression: string, functionDefinition?: string) => {
         if (!isLoop)
                 if (
-                        functionDefinition.includes('iTime') ||
-                        functionDefinition.includes('iMouse') ||
-                        functionDefinition.includes('texture') // @TODO FIX: stop rendering if no loop and using texture for webgpu
+                        functionDefinition?.includes('iTime') ||
+                        functionDefinition?.includes('iMouse') ||
+                        functionDefinition?.includes('texture') // @TODO FIX: stop rendering if no loop and using texture for webgpu
                 )
                         isLoop = true
         return `
 function Canvas() {
         ${functionDefinition || ''}
-        const [, set] = useState()
         const gl = useGL({
                 width: 256,
                 height: 256,
                 isLoop: ${isLoop},
                 isWebGL: ${isWebGL ? 'true' : 'false'},
                 frag: ${fragmentExpression},
-                error(error = "") {
-                        set(() => {
-                                throw new Error(error)
-                        })
-                }
         })
         return <canvas ref={gl.ref} />
 }`
 }
 
-const transformCode = (isFun = true, isApp = false, isLoop = true, code: string) => {
+const dummy = `
+function Canvas() {
+        return <canvas />
+}
+`
+const transformCode = (isInView = true, isFun = true, isApp = false, isLoop = true, code: string) => {
+        if (!isInView) return dummy
         code = code.trim()
         if (isApp) return code
         let ret: string
@@ -51,31 +50,18 @@ const transformCode = (isFun = true, isApp = false, isLoop = true, code: string)
 interface Props {
         code?: string
         isFun?: boolean
+        isApp?: boolean
         isLoop?: boolean
 }
 
 export const FragmentEditor = ({ code = 'vec4(fract(fragCoord.xy.div(iResolution)), 0, 1)', isFun = true, isApp = false, isLoop = false, ...props }: Props) => {
-        code = code.trim()
         const [ref, isInView] = useInView({ threshold: 0.1 })
-        const height = 256 + 87 // canvas + padding
-
         return (
                 <div ref={ref}>
                         <PlaygroundContainer>
-                                <PlaygroundProvider code={code} transformCode={transformCode.bind(null, isFun, isApp, isLoop)} scope={ReactLiveScope} {...props}>
+                                <PlaygroundProvider code={code} transformCode={transformCode.bind(null, isInView, isFun, isApp, isLoop)} scope={ReactLiveScope} {...props}>
                                         <PlaygroundEditor />
-                                        {isInView ? (
-                                                <PlaygroundPreview />
-                                        ) : (
-                                                <div
-                                                        style={{
-                                                                height: `${height}px`,
-                                                                borderRadius: '0 0 6.4px',
-                                                                backgroundColor: 'rgba(255, 255, 255, 0.1)', // Dark background like canvas
-                                                                transition: 'opacity 0.3s ease-in-out',
-                                                        }}
-                                                />
-                                        )}
+                                        <PlaygroundPreview />
                                 </PlaygroundProvider>
                         </PlaygroundContainer>
                 </div>
