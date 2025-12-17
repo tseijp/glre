@@ -1,7 +1,7 @@
 import type { EventState } from 'reev'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
-import { Binding } from './webgpu/binding'
+import type { Binding } from './webgpu/utils'
 
 export type GL = EventState<{
         /**
@@ -23,7 +23,6 @@ export type GL = EventState<{
         instanceCount: number
         particleCount: number | [number, number] | [number, number, number]
         precision: 'lowp' | 'mediump' | 'highp'
-        loading: number
         element?: HTMLCanvasElement
         elem?: HTMLCanvasElement
         el: HTMLCanvasElement

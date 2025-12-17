@@ -20,10 +20,9 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
                 return { ...bindings.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
         })
 
-        const textures = nested((key, width = 0, height = 0) => {
+        const textures = nested((key, width = 1, height = 1) => {
                 update()
-                const { texture, sampler } = createTextureSampler(gl.device, width, height)
-                return { texture, sampler, ...bindings.texture(key), view: texture.createView() }
+                return { ...bindings.texture(key), ...createTextureSampler(gl.device, width, height) }
         })
 
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
@@ -43,14 +42,17 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
         })
 
         gl('_texture', (key: string, src: string) => {
-                gl.loading++
+                const t = textures(key)
                 loadingTexture(src, (source, isVideo) => {
                         const [width, height] = isVideo ? [source.videoWidth, source.videoHeight] : [source.width, source.height]
-                        const { texture } = textures(key, width, height)
-                        const render = () => void gl.device.queue.copyExternalImageToTexture({ source }, { texture }, { width, height })
-                        render()
+                        if (t.texture.width !== width || t.texture.height !== height) {
+                                t.texture.destroy()
+                                Object.assign(t, createTextureSampler(gl.device, width, height))
+                                update() // Rebuilding BindGroups because the texture size has changed
+                        }
+                        const render = () => void gl.device.queue.copyExternalImageToTexture({ source }, { texture: t.texture }, { width, height })
                         if (isVideo) gl({ render })
-                        gl.loading--
+                        else render()
                 })
         })
 

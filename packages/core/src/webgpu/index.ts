@@ -5,7 +5,7 @@ import { is, WGSL_FS, WGSL_VS } from '../helpers'
 import type { GL } from '../types'
 
 export const webgpu = async (gl: GL) => {
-        let isUpdate = true
+        let isUpdate = false
         const isInit = !gl.gl
         if (isInit) {
                 const gpu = gl.el!.getContext('webgpu') as GPUCanvasContext
@@ -22,7 +22,6 @@ export const webgpu = async (gl: GL) => {
         const c = compute(gl, binding)
         const g = graphic(gl, binding, () => (isUpdate = true))
         const update = () => {
-                if (gl.loading) return // MEMO: loading after build node
                 isUpdate = false
                 const config = { isWebGL: false, gl, binding }
                 const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : WGSL_FS

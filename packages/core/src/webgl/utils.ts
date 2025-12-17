@@ -61,11 +61,15 @@ export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocati
         c[`uniformMatrix${l as 2}fv`](loc, false, value)
 }
 
-export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | HTMLVideoElement, loc: WebGLUniformLocation, unit: number, isVideo = false) => {
+export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | HTMLVideoElement | null, loc: WebGLUniformLocation | null, unit: number, isVideo = false) => {
         const texture = c.createTexture()
         c.bindTexture(c.TEXTURE_2D, texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
-        if (!isVideo) c.generateMipmap(c.TEXTURE_2D)
+        if (el) {
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                if (!isVideo) c.generateMipmap(c.TEXTURE_2D)
+        } else {
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, 1, 1, 0, c.RGBA, c.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]))
+        }
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
@@ -78,7 +82,7 @@ export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | 
                 return () => {
                         c.activeTexture(c.TEXTURE0 + unit)
                         c.bindTexture(c.TEXTURE_2D, texture)
-                        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el!)
                 }
 }
 

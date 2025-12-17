@@ -38,15 +38,14 @@ export const graphic = (gl: GL) => {
         })
 
         gl('_texture', (key: string, src: string) => {
-                gl.loading++
+                c.useProgram((gl.program = pg))
+                const location = uniforms(key)
+                const unit = units(key)
+                createTexture(c, null, location, unit, false)
                 loadingTexture(src, (source, isVideo) => {
                         c.useProgram((gl.program = pg))
-                        const location = uniforms(key)
-                        if (!location) return gl.loading--
-                        const unit = units(key)
                         const render = createTexture(c, source, location, unit, isVideo)
                         if (render) gl({ render })
-                        gl.loading--
                 })
         })
 

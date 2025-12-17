@@ -32,7 +32,6 @@ export const createGL = (...args: Partial<GL>[]) => {
                 size: [0, 0],
                 mouse: [0, 0],
                 precision: 'highp',
-                loading: 0,
                 error() {
                         gl.isError = true
                         gl.isLoop = false
@@ -72,7 +71,6 @@ export const createGL = (...args: Partial<GL>[]) => {
                 if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
                 gl.resize()
                 gl.frame(() => {
-                        if (gl.loading) return true // wait for textures loading @TODO FIX
                         gl.render()
                         return gl.isLoop
                 })

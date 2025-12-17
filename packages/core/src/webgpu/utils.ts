@@ -195,7 +195,7 @@ export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) 
 export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
         const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
-        return { texture, sampler }
+        return { texture, sampler, view: texture.createView() }
 }
 
 export const createDepthTexture = (device: GPUDevice, width: number, height: number) => {
