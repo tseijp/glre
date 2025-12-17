@@ -8,28 +8,3 @@ canvas {
         width: 256px;
         height: 256px;
 }
-
-.playgroundFlex {
-        display: flex;
-        flex-direction: column; /* SP: 縦 */
-}
-
-@media (min-width: 1280px) {
-        .playgroundFlex {
-                flex-direction: row;
-        }
-        .playgroundPreview > div:nth-child(2) {
-                padding: 0;
-                height: 100%;
-                display: flex;
-        }
-        .playgroundEditor {
-                flex: 1;
-        }
-        .playgroundEditor > div:nth-child(2) {
-                height: 100%;
-        }
-        .playgroundEditor > div:nth-child(2) > pre {
-                height: 100%;
-        }
-}

@@ -60,14 +60,8 @@ export const FragmentEditor = ({ code = 'vec4(fract(fragCoord.xy.div(iResolution
                 <div ref={ref}>
                         <PlaygroundContainer>
                                 <PlaygroundProvider code={code} transformCode={transformCode.bind(null, isInView, isFun, isApp, isLoop)} scope={ReactLiveScope} {...props}>
-                                        <div className="playgroundFlex">
-                                                <div className="playgroundPreview">
-                                                        <PlaygroundPreview />
-                                                </div>
-                                                <div className="playgroundEditor">
-                                                        <PlaygroundEditor />
-                                                </div>
-                                        </div>
+                                        <PlaygroundEditor />
+                                        <PlaygroundPreview />
                                 </PlaygroundProvider>
                         </PlaygroundContainer>
                 </div>
