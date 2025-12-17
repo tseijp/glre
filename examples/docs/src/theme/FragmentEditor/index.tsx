@@ -7,7 +7,7 @@ import PlaygroundEditor from '@theme/Playground/Editor'
 import { useInView } from './useInView'
 import './index.css'
 
-const isWebGL = false
+const isWebGL = true
 
 const createCanvasTemplate = (isLoop: boolean, fragmentExpression: string, functionDefinition?: string) => {
         if (!isLoop)
@@ -60,8 +60,14 @@ export const FragmentEditor = ({ code = 'vec4(fract(fragCoord.xy.div(iResolution
                 <div ref={ref}>
                         <PlaygroundContainer>
                                 <PlaygroundProvider code={code} transformCode={transformCode.bind(null, isInView, isFun, isApp, isLoop)} scope={ReactLiveScope} {...props}>
-                                        <PlaygroundEditor />
-                                        <PlaygroundPreview />
+                                        <div className="playgroundFlex">
+                                                <div className="playgroundPreview">
+                                                        <PlaygroundPreview />
+                                                </div>
+                                                <div className="playgroundEditor">
+                                                        <PlaygroundEditor />
+                                                </div>
+                                        </div>
                                 </PlaygroundProvider>
                         </PlaygroundContainer>
                 </div>
