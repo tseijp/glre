@@ -157,7 +157,9 @@ const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroup
 export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string) => {
         const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
         const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
-        return [bindGroups, vertexBuffers, createComputePipeline(device, bindGroupLayouts, cs), createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)] as const
+        const computePipeline = createComputePipeline(device, bindGroupLayouts, cs)
+        const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)
+        return { bindGroups, vertexBuffers, computePipeline, graphicPipeline }
 }
 
 /**

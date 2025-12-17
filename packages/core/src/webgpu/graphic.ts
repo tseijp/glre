@@ -12,7 +12,7 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
 
         const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.triangleCount)) => {
                 update()
-                return { isInstance, stride, ...bindings.attrib(key), ...createBuffer(gl.device, value, 'attrib') }
+                return { ...bindings.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
         const uniforms = nested((key, value: number[] | Float32Array) => {

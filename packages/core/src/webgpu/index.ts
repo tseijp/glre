@@ -27,9 +27,9 @@ export const webgpu = async (gl: GL) => {
                 const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : WGSL_FS
                 const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : WGSL_VS
                 const cs = gl.cs ? (is.str(gl.cs) ? gl.cs : gl.cs.compute(config)) : ''
-                const [bindGroups, vertexBuffers, cp, gp] = updatePipeline(gl.device, gl.format, g.attributes.map.values(), g.uniforms.map.values(), g.textures.map.values(), c.storages.map.values(), fs, cs, vs)
-                c.set(cp, bindGroups)
-                g.set(gp, bindGroups, vertexBuffers)
+                const p = updatePipeline(gl.device, gl.format, g.attributes.map.values(), g.uniforms.map.values(), g.textures.map.values(), c.storages.map.values(), fs, cs, vs)
+                c.set(p.computePipeline, p.bindGroups)
+                g.set(p.graphicPipeline, p.bindGroups, p.vertexBuffers)
         }
 
         gl('render', () => {
