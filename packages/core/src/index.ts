@@ -53,15 +53,13 @@ export const createGL = (...args: Partial<GL>[]) => {
         gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
 
         gl('mount', async (el: HTMLCanvasElement) => {
-                if (is.bol(args[0].isWebGL)) gl.isWebGL = args[0].isWebGL
-                if (!isWebGPUSupported()) gl.isWebGL = true
-                gl.el = findElement(gl) || el || args.map(findElement)[0]
-                const isCreated = !gl.el // Check first: canvas may unmount during WebGPU async processing
-                if (isCreated && !gl.isNative) gl.el = document.createElement('canvas')
+                gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)
+                const isAppend = !gl.el // Check first: canvas may unmount during WebGPU async processing
+                if (isAppend && !gl.isNative) gl.el = document.createElement('canvas')
                 for (const arg of args) {
-                        gl.fs = arg.fs || arg.frag || arg.fragment || void 0
-                        gl.cs = arg.cs || arg.comp || arg.compute || void 0
-                        gl.vs = arg.vs || arg.vert || arg.vertex || void 0
+                        gl.fs = arg.fs || arg.frag || arg.fragment || undefined
+                        gl.cs = arg.cs || arg.comp || arg.compute || undefined
+                        gl.vs = arg.vs || arg.vert || arg.vertex || undefined
                         gl.triangleCount = arg.triangleCount || arg.count || 6
                         gl.instanceCount = arg.instanceCount || 1
                         gl.particleCount = arg.particleCount || 1024
@@ -79,7 +77,7 @@ export const createGL = (...args: Partial<GL>[]) => {
                         return gl.isLoop
                 })
                 if (gl.isNative) return
-                if (isCreated) document.body.appendChild(gl.el)
+                if (isAppend) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
                 gl.el.addEventListener('mousemove', gl.mousemove)
         })

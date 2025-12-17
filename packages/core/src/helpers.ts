@@ -27,41 +27,22 @@ export const flush = <Value extends Function, Key, This>(obj: Eachable<Value, Ke
         each(obj, (f) => f(...args))
 }
 
-/**
- * other
- */
-export const replace = (x = '', from = '_', to = '/') => x.split(from).join(to)
-export const ext = (src = '.pdf') => src.split('.').pop()?.toLowerCase() ?? ''
-export const fig = (x = 0) => `${x}`.split('.')[1]?.length ?? 0
-export const dig = (x = 0) => `${x}`.split('.')[0]?.length - (x < 0 ? 1 : 0)
-export const sig = (value = 0, digit = -2) => {
-        digit *= -1
-        digit = Math.pow(10, digit)
-        value *= digit
-        value = Math.round(value)
-        value /= digit
-        return value
-}
-
 export const isFloat32 = (value: unknown): value is Float32Array => {
         return value instanceof Float32Array
 }
 
-const loadingImage = (src: string, fun: (source: HTMLImageElement) => void) => {
-        const source = new Image()
-        Object.assign(source, { src, crossOrigin: 'anonymous' })
-        source.decode().then(() => fun(source))
+const loadingImage = (src: string, fun: (el: HTMLImageElement) => void) => {
+        const el = new Image()
+        Object.assign(el, { src, crossOrigin: 'anonymous' })
+        el.decode().then(() => fun(el))
 }
 
 const loadingVideo = (src: string, fun: (source: HTMLVideoElement) => void) => {
-        const source = document.createElement('video')
-        source.crossOrigin = 'anonymous'
-        source.muted = true
-        source.loop = true
-        source.src = src
-        source.load()
-        source.play()
-        source.addEventListener('canplay', fun.bind(null, source), { once: true })
+        const el = document.createElement('video')
+        Object.assign(el, { src, loop: true, muted: true, crossOrigin: 'anonymous' })
+        el.load()
+        el.play()
+        el.addEventListener('canplay', fun.bind(null, el), { once: true })
 }
 
 export function loadingTexture(src: string, fun: (source: HTMLVideoElement, isVideo: true) => void): void

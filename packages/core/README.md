@@ -101,7 +101,7 @@ npm install glre
   <tbody>
     <tr>
       <td width="7500px" align="center" valign="center">
-        glre simplifies WebGl2 / WebGPU programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
+        glre simplifies WebGL2 / WebGPU programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
       </td>
       <td width="2500px" valign="top">
         <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">

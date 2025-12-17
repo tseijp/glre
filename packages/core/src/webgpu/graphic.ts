@@ -1,6 +1,6 @@
 import { nested } from 'reev'
 import { is, getStride, loadingTexture } from '../helpers'
-import { createArrayBuffer, createDepthTexture, createDescriptor, createTextureSampler, updateArrayBuffer } from './utils'
+import { createBuffer, createDepthTexture, createDescriptor, createTextureSampler, updateBuffer } from './utils'
 import type { Binding } from './utils'
 import type { GL } from '../types'
 
@@ -10,14 +10,14 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
         let vertexBuffers: GPUBuffer[]
         let depthTexture: GPUTexture
 
-        const attribs = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)) => {
+        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count)) => {
                 update()
-                return { isInstance, stride, ...bindings.attrib(key), ...createArrayBuffer(gl.device, value, 'attrib') }
+                return { isInstance, stride, ...bindings.attrib(key), ...createBuffer(gl.device, value, 'attrib') }
         })
 
         const uniforms = nested((key, value: number[] | Float32Array) => {
                 update()
-                return { ...bindings.uniform(key), ...createArrayBuffer(gl.device, value, 'uniform') }
+                return { ...bindings.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
         })
 
         const textures = nested((key, width = 0, height = 0) => {
@@ -26,20 +26,20 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
                 return { texture, sampler, ...bindings.texture(key), view: texture.createView() }
         })
 
-        gl('_attribute', (key = '', value: number[] | Float32Array) => {
-                const { array, buffer } = attribs(key, value)
-                updateArrayBuffer(gl.device, value, array, buffer)
+        gl('_attribute', (key: string, value: number[] | Float32Array) => {
+                const a = attributes(key, value)
+                updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
         gl('_instance', (key: string, value: number[] | Float32Array) => {
-                const { array, buffer } = attribs(key, value, true)
-                updateArrayBuffer(gl.device, value, array, buffer)
+                const a = attributes(key, value, true)
+                updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
         gl('_uniform', (key: string, value: number | number[] | Float32Array) => {
                 if (is.num(value)) value = [value]
-                const { array, buffer } = uniforms(key, value)
-                updateArrayBuffer(gl.device, value, array, buffer)
+                const u = uniforms(key, value)
+                updateBuffer(gl.device, value, u.array, u.buffer)
         })
 
         gl('_texture', (key: string, src: string) => {
@@ -56,7 +56,7 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
 
         gl('render', () => {
                 if (!pipeline || !bindGroups || !vertexBuffers) return
-                const pass = gl.encoder.beginRenderPass(createDescriptor(gl.context, depthTexture))
+                const pass = gl.encoder.beginRenderPass(createDescriptor(gl.gpu, depthTexture))
                 pass.setPipeline(pipeline)
                 bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                 vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
@@ -72,9 +72,9 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
 
         gl('clean', () => {
                 depthTexture?.destroy()
+                for (const { buffer } of attributes.map.values()) buffer.destroy()
                 for (const { texture } of textures.map.values()) texture.destroy()
                 for (const { buffer } of uniforms.map.values()) buffer.destroy()
-                for (const { buffer } of attribs.map.values()) buffer.destroy()
         })
 
         const set = (_pipeline: GPURenderPipeline, _bindGroups: GPUBindGroup[], _vertexBuffers: GPUBuffer[]) => {
@@ -83,5 +83,5 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
                 vertexBuffers = _vertexBuffers
         }
 
-        return { uniforms, textures, attribs, set }
+        return { uniforms, textures, attributes, set }
 }

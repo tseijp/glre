@@ -157,7 +157,7 @@ const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroup
 export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string) => {
         const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
         const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
-        return [createComputePipeline(device, bindGroupLayouts, cs), createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs), bindGroups, vertexBuffers] as const
+        return [bindGroups, vertexBuffers, createComputePipeline(device, bindGroupLayouts, cs), createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)] as const
 }
 
 /**
@@ -169,7 +169,7 @@ const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
         return 140 // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
 }
 
-export const createArrayBuffer = (device: GPUDevice, array: number[] | Float32Array, type: 'uniform' | 'storage' | 'attrib') => {
+export const createBuffer = (device: GPUDevice, array: number[] | Float32Array, type: 'uniform' | 'storage' | 'attrib') => {
         if (!isFloat32(array)) array = new Float32Array(array)
         const usage = bufferUsage(type)
         const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength
@@ -177,7 +177,7 @@ export const createArrayBuffer = (device: GPUDevice, array: number[] | Float32Ar
         return { array, buffer }
 }
 
-export const updateArrayBuffer = (device: GPUDevice, value: number[] | Float32Array, array: Float32Array, buffer: GPUBuffer) => {
+export const updateBuffer = (device: GPUDevice, value: number[] | Float32Array, array: Float32Array, buffer: GPUBuffer) => {
         array.set(value)
         device.queue.writeBuffer(buffer, 0, array as GPUAllowSharedBufferSource)
 }

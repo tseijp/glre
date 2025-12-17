@@ -1,17 +1,17 @@
 import { nested } from 'reev'
-import { cleanStorage, createAttachment, createProgram, storageSize, createStorage, updateUniform } from './utils'
+import { cleanStorage, createAttachment, createProgram, createStorage, storageSize, updateUniform } from './utils'
 import { GLSL_VS, is } from '../helpers'
 import type { GL } from '../types'
 
 export const compute = (gl: GL) => {
         if (!gl.cs) return
-        const c = gl.context
-        c.getExtension('EXT_color_buffer_float') // ??
+        const c = gl.gl
+        c.getExtension('EXT_color_buffer_float') // Enable high precision GPGPU by writing to float textures
 
-        let activeUnit = 0 // for texture units
-        let currentNum = 0 // for storage buffers
+        let _texture = 0 // for texture active units
+        let _storage = 0 // for storage current num
 
-        const units = nested(() => activeUnit++)
+        const units = nested(() => _texture++)
         const cs = is.str(gl.cs) ? gl.cs : gl.cs!.compute({ isWebGL: true, gl, units })
         const pg = createProgram(c, cs, GLSL_VS, gl)!
         const size = storageSize(gl.particleCount)
@@ -43,13 +43,13 @@ export const compute = (gl: GL) => {
         gl('render', () => {
                 c.useProgram((gl.program = pg))
                 const attachments = storages.map.values().map(({ ping, pong, loc, unit }, index) => {
-                        const [i, o] = currentNum % 2 ? [ping, pong] : [pong, ping]
+                        const [i, o] = _storage % 2 ? [ping, pong] : [pong, ping]
                         return createAttachment(c, i, o, loc, unit, index)
                 })
                 c.drawBuffers(attachments)
                 c.drawArrays(c.TRIANGLES, 0, 3)
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
-                currentNum++
+                _storage++
         })
 }
 

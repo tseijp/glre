@@ -1,11 +1,11 @@
 import { nested } from 'reev'
 import { getStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
-import { createArrayBuffer, createProgram, createTexture, updateArrayBuffer, updateAttrib, updateInstance, updateUniform } from './utils'
+import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer, updateInstance, updateUniform } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL) => {
         const config = { isWebGL: true, gl }
-        const c = gl.context
+        const c = gl.gl
         const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : GLSL_FS
         const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : GLSL_VS
         const pg = createProgram(c, fs, vs, gl)!
@@ -15,43 +15,37 @@ export const graphic = (gl: GL) => {
         const uniforms = nested((key) => c.getUniformLocation(pg, key))
         const attributes = nested((key, value: number[], isInstance = false) => {
                 const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.triangleCount, gl.error)
-                const location = c.getAttribLocation(pg, key)
-                const { array, buffer } = createArrayBuffer(c, value)
-                return { array, buffer, location, stride }
+                return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
 
-        gl('_attribute', (key = '', value: number[]) => {
+        gl('_attribute', (key: string, value: number[]) => {
                 c.useProgram((gl.program = pg))
-                const { array, buffer, location, stride } = attributes(key, value)
-                if (location < 0) return // ??
-                updateArrayBuffer(c, array, buffer, value)
-                updateAttrib(c, location, stride, buffer)
+                const a = attributes(key, value)
+                updateBuffer(c, a.array, a.buffer, value)
+                updateAttrib(c, a.location, a.stride, a.buffer)
         })
 
         gl('_instance', (key: string, value: number[]) => {
                 c.useProgram((gl.program = pg))
-                const { array, buffer, location, stride } = attributes(key, value, true)
-                if (location < 0) return // ??
-                updateArrayBuffer(c, array, buffer, value)
-                updateInstance(c, location, stride, buffer)
+                const a = attributes(key, value, true)
+                updateBuffer(c, a.array, a.buffer, value)
+                updateInstance(c, a.location, a.stride, a.buffer)
         })
 
         gl('_uniform', (key: string, value: number | number[]) => {
                 c.useProgram((gl.program = pg))
-                const loc = uniforms(key)
-                if (!loc) return // ??
-                updateUniform(c, loc, value)
+                updateUniform(c, uniforms(key), value)
         })
 
         gl('_texture', (key: string, src: string) => {
                 gl.loading++
                 loadingTexture(src, (source, isVideo) => {
                         c.useProgram((gl.program = pg))
-                        const loc = uniforms(key)
-                        if (!loc) return gl.loading-- // ??
+                        const location = uniforms(key)
+                        if (!location) return gl.loading--
                         const unit = units(key)
-                        const fun = createTexture(c, source, loc, unit, isVideo)
-                        if (fun) gl({ render: fun })
+                        const render = createTexture(c, source, location, unit, isVideo)
+                        if (render) gl({ render })
                         gl.loading--
                 })
         })

@@ -120,7 +120,6 @@ const createViewer = async () => {
                         cam.update(gl.size[0] / gl.size[1])
                         node.iMVP.value = [...cam.MVP]
                 }
-                const { program, context } = gl
                 if (!isLoading)
                         if (ts - pt2 >= 100) {
                                 pt2 = ts
@@ -129,11 +128,11 @@ const createViewer = async () => {
                                 isLoading = true
                         }
                 if (isLoading)
-                        if (slots.step(context, program, 6)) {
+                        if (slots.step(gl.gl, gl.program, 6)) {
                                 mesh.commit()
                                 isLoading = false
                         }
-                gl.instanceCount = mesh.draw(context, program)
+                gl.instanceCount = mesh.draw(gl.gl, gl.program)
         }
         return { mode, node, cam, render, resize, pt: 0 }
 }

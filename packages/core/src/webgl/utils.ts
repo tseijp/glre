@@ -26,13 +26,13 @@ export const createProgram = (c: WebGL2RenderingContext, frag: string, vert: str
         gl.error(`Could not link program: ${error}`)
 }
 
-export const createArrayBuffer = (c: WebGL2RenderingContext, data: number[]) => {
+export const createBuffer = (c: WebGL2RenderingContext, data: number[]) => {
         const array = new Float32Array(data)
         const buffer = c.createBuffer()
         return { array, buffer }
 }
 
-export const updateArrayBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
+export const updateBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
         array.set(value)
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
@@ -52,7 +52,8 @@ export const updateInstance = (c: WebGL2RenderingContext, loc: number, stride: n
         c.vertexAttribDivisor(loc, 1) // divisor is 1
 }
 
-export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation, value: number | number[]) => {
+export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, value: number | number[]) => {
+        if (is.nul(loc)) return
         if (is.num(value)) return c.uniform1f(loc, value)
         let l = value.length
         if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)

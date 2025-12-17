@@ -37,8 +37,8 @@ export type GL = EventState<{
         compute?: string | Void
         fragment?: string | Vec4
         program: WebGLProgram
-        // context: WebGL2RenderingContext
-        context: GPUCanvasContext
+        gl: WebGL2RenderingContext
+        gpu: GPUCanvasContext
         device: GPUDevice
         format: GPUTextureFormat
         encoder: GPUCommandEncoder
