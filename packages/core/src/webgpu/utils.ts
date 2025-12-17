@@ -59,7 +59,7 @@ export const createDevice = async (c: GPUCanvasContext, log = console.log, signa
                 if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
         }
         device.onuncapturederror = (e) => log(e.error.message)
-        c.configure({ device, format, alphaMode: 'opaque' })
+        c.configure({ device, format, alphaMode: 'premultiplied' })
         return { device, format }
 }
 
@@ -184,7 +184,7 @@ export const updateBuffer = (device: GPUDevice, value: number[] | Float32Array, 
 
 export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) => {
         return {
-                colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0, g: 0, b: 0, a: 1 }, loadOp: 'clear', storeOp: 'store' }],
+                colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: 'clear', storeOp: 'store' }],
                 depthStencilAttachment: { view: depthTexture.createView(), depthClearValue: 1.0, depthLoadOp: 'clear', depthStoreOp: 'store' },
         } as GPURenderPassDescriptor
 }
