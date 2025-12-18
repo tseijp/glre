@@ -1,7 +1,7 @@
 import { compute, fragment, vertex } from './build'
 import { addToScope, assign, toVar } from './scope'
 import { code, getConstant, isConversion, isFunction, isOperator, getId, isArrayAccess } from './utils'
-import { is } from '../utils/helpers'
+import { is } from '../helpers'
 import type { Bool, Constants as C, Functions, NodeProps, NodeTypes, Operators, X, Y } from './types'
 
 const toPrimitive = (x: Y, hint: string) => {
@@ -35,9 +35,7 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
                 if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
                 if (key === 'select') return select.bind(null, x)
                 if (isOperator(key)) {
-                        return key.endsWith('Assign')
-                                ? (...args: Y[]) => addToScope(operator(key, x, ...args))
-                                : (...args: Y[]) => operator(key, x, ...args)
+                        return key.endsWith('Assign') ? (...args: Y[]) => addToScope(operator(key, x, ...args)) : (...args: Y[]) => operator(key, x, ...args)
                 }
                 if (isFunction(key)) return (...args: Y[]) => function_(key, x, ...args)
                 if (isConversion(key)) return () => conversion(getConstant(key), x)

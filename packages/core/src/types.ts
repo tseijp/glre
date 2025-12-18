@@ -1,6 +1,7 @@
-import type { EventState, Nested } from 'reev'
+import type { EventState } from 'reev'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
+import type { Binding } from './webgpu/utils'
 
 export type GL = EventState<{
         /**
@@ -13,16 +14,17 @@ export type GL = EventState<{
         isDebug: boolean
         isDepth: boolean
         wireframe: boolean
-        isGL: true
         width?: number
         height?: number
         size: [number, number]
         mouse: [number, number]
         count: number
+        triangleCount: number
         instanceCount: number
         particleCount: number | [number, number] | [number, number, number]
         precision: 'lowp' | 'mediump' | 'highp'
-        loading: number
+        element?: HTMLCanvasElement
+        elem?: HTMLCanvasElement
         el: HTMLCanvasElement
         vs?: string | Vec4
         cs?: string | Void
@@ -33,12 +35,19 @@ export type GL = EventState<{
         vertex?: string | Vec4
         compute?: string | Void
         fragment?: string | Vec4
+        program: WebGLProgram
+        gl: WebGL2RenderingContext
+        gpu: GPUCanvasContext
+        device: GPUDevice
+        format: GPUTextureFormat
+        encoder: GPUCommandEncoder
+        binding: Binding
 
         /**
          * core state
          */
-        webgpu: WebGPUState
-        webgl: WebGLState
+        // webgpu: WebGPUState
+        // webgl: WebGLState
         queue: Queue
         frame: Frame
 
@@ -52,7 +61,6 @@ export type GL = EventState<{
         render(): void
         resize(e?: Event): void
         mousemove(e: MouseEvent): void
-        loop(): void
 
         /**
          * setter
@@ -112,19 +120,19 @@ export interface StorageData {
         group: number
 }
 
-export interface WebGPUState {
-        device: GPUDevice
-        uniforms: Nested<UniformData>
-        textures: Nested<TextureData>
-        attribs: Nested<AttribData>
-        storages: Nested<StorageData>
-}
-
-/**
- * for webgl
- */
-export interface WebGLState {
-        context: WebGL2RenderingContext
-        program: WebGLProgram
-        uniforms: Nested<WebGLUniformLocation | null>
-}
+// export interface WebGPUState {
+//         device: GPUDevice
+//         uniforms: Nested<UniformData>
+//         textures: Nested<TextureData>
+//         attribs: Nested<AttribData>
+//         storages: Nested<StorageData>
+// }
+//
+// /**
+//  * for webgl
+//  */
+// export interface WebGLState {
+//         context: WebGL2RenderingContext
+//         program: WebGLProgram
+//         uniforms: Nested<WebGLUniformLocation | null>
+// }

@@ -1,51 +1,66 @@
-import { is, isFloat32 } from './helpers'
+import { nested } from 'reev'
+import { is, isFloat32 } from '../helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
+
+type IAttribs = Iterable<AttribData & { isInstance?: boolean }>
+type IUniforms = Iterable<UniformData>
+type ITextures = Iterable<TextureData>
+type IStorages = Iterable<StorageData>
+
+/**
+ * binding
+ */
+export const createBinding = () => {
+        let _uniform = 0
+        let _texture = 0
+        let _storage = 0
+        let _attrib = 0
+        const uniform = nested(() => {
+                const group = Math.floor(_uniform / 12)
+                const binding = _uniform % 12
+                _uniform++
+                return { group, binding }
+        })
+        const texture = nested(() => {
+                const baseGroup = Math.floor(_uniform / 12) + 1
+                const group = baseGroup + Math.floor(_texture / 6)
+                const binding = (_texture % 6) * 2
+                _texture++
+                return { group, binding }
+        })
+        const storage = nested(() => {
+                const baseGroup = Math.floor(_uniform / 12) + Math.floor(_texture / 6) + 2
+                const group = baseGroup + Math.floor(_storage / 12)
+                const binding = _storage % 12
+                _storage++
+                return { group, binding }
+        })
+        const attrib = nested(() => {
+                const location = _attrib
+                _attrib++
+                return { location }
+        })
+        return { uniform, texture, storage, attrib }
+}
+
+export type Binding = ReturnType<typeof createBinding>
 
 /**
  * initialize
  */
-export const createDevice = async (c: GPUCanvasContext, log = console.log) => {
+export const createDevice = async (c: GPUCanvasContext, log = console.log, signal?: AbortSignal) => {
         const gpu = navigator.gpu
         const format = gpu.getPreferredCanvasFormat()
         const adapter = await gpu.requestAdapter()
+        if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
         const device = await adapter!.requestDevice()
-        device.onuncapturederror = (e) => log(e.error.message)
-        c.configure({ device, format, alphaMode: 'opaque' })
-        return { device, format }
-}
-
-export const createBindings = () => {
-        let uniform = 0
-        let texture = 0
-        let storage = 0
-        let attrib = 0
-        return {
-                uniform: () => {
-                        const group = Math.floor(uniform / 12)
-                        const binding = uniform % 12
-                        uniform++
-                        return { group, binding }
-                },
-                texture: () => {
-                        const baseGroup = Math.floor(uniform / 12) + 1
-                        const group = baseGroup + Math.floor(texture / 6)
-                        const binding = (texture % 6) * 2
-                        texture++
-                        return { group, binding }
-                },
-                storage: () => {
-                        const baseGroup = Math.floor(uniform / 12) + Math.floor(texture / 6) + 2
-                        const group = baseGroup + Math.floor(storage / 12)
-                        const binding = storage % 12
-                        storage++
-                        return { group, binding }
-                },
-                attrib: () => {
-                        const location = attrib
-                        attrib++
-                        return { location }
-                },
+        if (signal?.aborted) {
+                device.destroy()
+                if (signal?.aborted) throw new DOMException('Aborted', 'AbortError')
         }
+        device.onuncapturederror = (e) => log(e.error.message)
+        c.configure({ device, format, alphaMode: 'premultiplied' })
+        return { device, format }
 }
 
 /**
@@ -58,7 +73,7 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-export const createVertexBuffers = (attribs: Iterable<AttribData & { isInstance?: boolean }>) => {
+const createVertexBuffers = (attribs: IAttribs) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
         for (const { buffer, location, stride, isInstance } of attribs) {
@@ -80,12 +95,7 @@ export const createVertexBuffers = (attribs: Iterable<AttribData & { isInstance?
         return { vertexBuffers, bufferLayouts }
 }
 
-export const createBindGroup = (
-        device: GPUDevice,
-        uniforms: Iterable<UniformData>,
-        textures: Iterable<TextureData>,
-        storages: Iterable<StorageData> = []
-) => {
+const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: ITextures, storages: IStorages = []) => {
         const groups = new Map<number, { layouts: GPUBindGroupLayoutEntry[]; bindings: GPUBindGroupEntry[] }>()
         const ret = { bindGroups: [] as GPUBindGroup[], bindGroupLayouts: [] as GPUBindGroupLayout[] }
         const add = (i: number, layout: GPUBindGroupLayoutEntry, binding: GPUBindGroupEntry) => {
@@ -111,14 +121,7 @@ export const createBindGroup = (
         return ret
 }
 
-export const createPipeline = (
-        device: GPUDevice,
-        format: GPUTextureFormat,
-        bufferLayouts: GPUVertexBufferLayout[],
-        bindGroupLayouts: GPUBindGroupLayout[],
-        vs: string,
-        fs: string
-) => {
+const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayouts: GPUVertexBufferLayout[], bindGroupLayouts: GPUBindGroupLayout[], vs: string, fs: string) => {
         return device.createRenderPipeline({
                 vertex: {
                         module: device.createShaderModule({ label: 'vert', code: vs.trim() }),
@@ -140,7 +143,8 @@ export const createPipeline = (
         })
 }
 
-export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
+const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
+        if (!cs) return
         return device.createComputePipeline({
                 compute: {
                         module: device.createShaderModule({ label: 'compute', code: cs.trim() }),
@@ -148,6 +152,14 @@ export const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBi
                 },
                 layout: device.createPipelineLayout({ bindGroupLayouts }),
         })
+}
+
+export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string) => {
+        const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
+        const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
+        const computePipeline = createComputePipeline(device, bindGroupLayouts, cs)
+        const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)
+        return { bindGroups, vertexBuffers, computePipeline, graphicPipeline }
 }
 
 /**
@@ -159,11 +171,7 @@ const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
         return 140 // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
 }
 
-export const createArrayBuffer = (
-        device: GPUDevice,
-        array: number[] | Float32Array,
-        type: 'uniform' | 'storage' | 'attrib'
-) => {
+export const createBuffer = (device: GPUDevice, array: number[] | Float32Array, type: 'uniform' | 'storage' | 'attrib') => {
         if (!isFloat32(array)) array = new Float32Array(array)
         const usage = bufferUsage(type)
         const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength
@@ -171,22 +179,15 @@ export const createArrayBuffer = (
         return { array, buffer }
 }
 
+export const updateBuffer = (device: GPUDevice, value: number[] | Float32Array, array: Float32Array, buffer: GPUBuffer) => {
+        array.set(value)
+        device.queue.writeBuffer(buffer, 0, array as GPUAllowSharedBufferSource)
+}
+
 export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) => {
         return {
-                colorAttachments: [
-                        {
-                                view: c.getCurrentTexture().createView(),
-                                clearValue: { r: 0, g: 0, b: 0, a: 1 },
-                                loadOp: 'clear' as GPULoadOp,
-                                storeOp: 'store' as GPUStoreOp,
-                        },
-                ],
-                depthStencilAttachment: {
-                        view: depthTexture.createView(),
-                        depthClearValue: 1.0,
-                        depthLoadOp: 'clear' as GPULoadOp,
-                        depthStoreOp: 'store' as GPUStoreOp,
-                },
+                colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: 'clear', storeOp: 'store' }],
+                depthStencilAttachment: { view: depthTexture.createView(), depthClearValue: 1.0, depthLoadOp: 'clear', depthStoreOp: 'store' },
         } as GPURenderPassDescriptor
 }
 
@@ -196,15 +197,11 @@ export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) 
 export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
         const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
         const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
-        return { texture, sampler }
+        return { texture, sampler, view: texture.createView() }
 }
 
 export const createDepthTexture = (device: GPUDevice, width: number, height: number) => {
-        return device.createTexture({
-                size: [width, height],
-                format: 'depth24plus',
-                usage: GPUTextureUsage.RENDER_ATTACHMENT,
-        })
+        return device.createTexture({ size: [width, height], format: 'depth24plus', usage: 16 }) // 16 is GPUTextureUsage.RENDER_ATTACHMENT
 }
 
 /**

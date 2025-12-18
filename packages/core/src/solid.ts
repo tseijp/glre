@@ -1,14 +1,7 @@
-import { createGL, isGL } from './index'
+import { createGL } from './index'
 import type { GL } from './types'
 export * from './index'
 
-export const onGL = (props?: Partial<GL>) => {
-        const gl = isGL(props) ? props : createGL(props)
-        gl.ref = (el: HTMLCanvasElement | null) => {
-                if (el) {
-                        gl.el = el
-                        gl.mount()
-                } else gl.clean()
-        }
-        return gl
+export const onGL = (...args: Partial<GL>[]) => {
+        return createGL(...args)
 }

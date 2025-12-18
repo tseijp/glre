@@ -120,8 +120,6 @@ const createViewer = async () => {
                         cam.update(gl.size[0] / gl.size[1])
                         node.iMVP.value = [...cam.MVP]
                 }
-                const c = gl.webgl.context as WebGL2RenderingContext
-                const pg = gl.webgl.program as WebGLProgram
                 if (!isLoading)
                         if (ts - pt2 >= 100) {
                                 pt2 = ts
@@ -130,11 +128,11 @@ const createViewer = async () => {
                                 isLoading = true
                         }
                 if (isLoading)
-                        if (slots.step(c, pg, 6)) {
+                        if (slots.step(gl.gl, gl.program, 6)) {
                                 mesh.commit()
                                 isLoading = false
                         }
-                gl.instanceCount = mesh.draw(c, pg)
+                gl.instanceCount = mesh.draw(gl.gl, gl.program)
         }
         return { mode, node, cam, render, resize, pt: 0 }
 }
@@ -191,7 +189,6 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         let py = 0
                         const touchXY = (e: TouchEvent) => {
                                 if (e.touches.length !== 1) return [0, 0]
-                                // e.preventDefault()
                                 const touch = e.touches[0]
                                 return [touch.clientX, touch.clientY]
                         }

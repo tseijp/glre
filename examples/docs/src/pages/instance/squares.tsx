@@ -1,3 +1,5 @@
+// @ts-ignore
+import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { attribute, instance, vec4, vertexStage } from 'glre/src/node'
 
@@ -34,5 +36,11 @@ export default function WebGLInstancing() {
                 frag: vertexStage(col),
         })
 
-        return <canvas ref={gl.ref} width={800} height={600} />
+        return (
+                <Layout noFooter>
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', touchAction: 'none' }}>
+                                <canvas ref={gl.ref} />
+                        </div>
+                </Layout>
+        )
 }

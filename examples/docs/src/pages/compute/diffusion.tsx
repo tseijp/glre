@@ -65,6 +65,8 @@ import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, uniform, flo
 import { useGL, isServer } from 'glre/src/react'
 import { useDrag } from 'rege/react'
 
+const isWebGL = false
+
 export default function ReactionDiffusionApp() {
         const [w, h] = isServer() ? [0, 0] : [window.innerWidth, window.innerHeight]
         const particleCount = w * h
@@ -103,23 +105,19 @@ export default function ReactionDiffusionApp() {
                 const L = conv(-1, -1,  0.05).add(conv(-1, 0, 0.2)).add(conv(-1, 1, 0.05))
                      .add(conv( 0, -1,  0.2)).add(conv( 0, 0,  -1)).add(conv( 0, 1, 0.2))
                      .add(conv( 1, -1, 0.05)).add(conv( 1, 0, 0.2)).add(conv( 1, 1, 0.05))
-                const current = idx2cell(id.x).toVar()
+                const current = idx2cell(id.x as Float).toVar()
                 const diffusion = vec2(1, 0.5)
                 const feed = vec2(0.055, 0)
                 const kill = vec2(0, 0.055 + 0.062)
                 const AB2 = current.y.pow(2).mul(current.x)
                 const reaction = vec2(AB2.negate(), AB2)
-                let result = L.mul(diffusion)
-                        .add(reaction)
-                        .add(kill.oneMinus().mul(current))
-                        .add(current.oneMinus().mul(feed))
-                        .clamp(vec2(0, 0), vec2(1, 1))
-                        .toVar()
+                let result = L.mul(diffusion).add(reaction).add(kill.oneMinus().mul(current)).add(current.oneMinus().mul(feed)).clamp(vec2(0, 0), vec2(1, 1)).toVar()
 
                 data.element(id.x).assign(result)
         })
 
         const fs = Fn(([uv]: [Vec2]) => {
+                if (isWebGL) uv.y = uv.y.oneMinus()
                 const t = uv2cell(uv)
                 const dx = t.x.dFdx()
                 const dy = t.x.dFdy()
@@ -131,7 +129,7 @@ export default function ReactionDiffusionApp() {
 
         const gl = useGL({
                 particleCount: [w, h],
-                isWebGL: false,
+                isWebGL,
                 isDebug: true,
                 cs: cs(id),
                 fs: fs(uv),
@@ -151,7 +149,7 @@ export default function ReactionDiffusionApp() {
         })
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', cursor: 'crosshair' }}>
+                <div ref={drag.ref} style={{ position: 'fixed', width: '100%', height: '100%', cursor: 'crosshair' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )

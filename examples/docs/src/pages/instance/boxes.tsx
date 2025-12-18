@@ -1,3 +1,5 @@
+// @ts-ignore
+import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { attribute, instance, uniform, mat4, Scope, vertexStage } from 'glre/src/node'
 
@@ -73,7 +75,7 @@ export default function InstancedBoxes() {
                 isWebGL: true,
                 isDepth: true,
                 count: 36,
-                loop() {
+                render() {
                         for (let i = 0; i < instanceCount; i++) rotation[i] += 0.01 + i * 0.005
                         rot.value = rotation
                 },
@@ -104,5 +106,11 @@ export default function InstancedBoxes() {
                 }),
         })
 
-        return <canvas ref={gl.ref} width={800} height={600} />
+        return (
+                <Layout noFooter>
+                        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
+                                <canvas ref={gl.ref} />
+                        </div>
+                </Layout>
+        )
 }

@@ -37,7 +37,7 @@ function Canvas() {
                 height: 256,
                 isWebGL: true,
                 frag: fragment(),
-                mount: () => ge.ref(gl.el),
+                ref: ge.ref,
         })
         return <canvas ref={gl.ref} />
 }
@@ -73,7 +73,7 @@ function Canvas() {
                 height: 256,
                 isWebGL: true,
                 frag: fragment(),
-                mount: () => ge.ref(gl.el),
+                ref: ge.ref,
         })
         return <canvas ref={gl.ref} />
 }
@@ -109,7 +109,7 @@ function Canvas() {
                 height: 256,
                 isWebGL: true,
                 frag: fragment(),
-                mount: () => ge.ref(gl.el),
+                ref: ge.ref,
         })
         return <canvas ref={gl.ref} />
 }

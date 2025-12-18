@@ -1,4 +1,6 @@
+// @ts-ignore
 import Layout from '@theme/Layout'
+// @ts-ignore
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import { useGL } from 'glre/src/react'
 import { range, makePriority } from '../../helpers'
@@ -17,7 +19,7 @@ function Canvas() {
         const gl = useGL({
                 isWebGL: true,
                 frag,
-                loop() {
+                render() {
                         {
                                 range(8).forEach((i) => gl.uniform(`windowLightWeight${i}`, 1))
                                 const memo = [1, 1, 1, 1, 1, 1, 1]

@@ -36,24 +36,9 @@ const generateStruct = (id: string, map: Map<string, string>) => {
         return `struct ${id} {\n  ${Array.from(map.values()).join(',\n  ')}\n}`
 }
 
+const PRECISION = ['float', 'int', 'sampler2D', 'samplerCube', 'sampler3D', 'sampler2DArray', 'sampler2DShadow', 'samplerCubeShadow', 'sampler2DArrayShadow', 'isampler2D', 'isampler3D', 'isamplerCube', 'isampler2DArray', 'usampler2D', 'usampler3D', 'usamplerCube', 'usampler2DArray']
 const precisionHead = (result: string[], precision = 'highp') => {
-        result.push(`precision ${precision} float;`)
-        result.push(`precision ${precision} int;`)
-        result.push(`precision ${precision} sampler2D;`)
-        result.push(`precision ${precision} samplerCube;`)
-        result.push(`precision ${precision} sampler3D;`)
-        result.push(`precision ${precision} sampler2DArray;`)
-        result.push(`precision ${precision} sampler2DShadow;`)
-        result.push(`precision ${precision} samplerCubeShadow;`)
-        result.push(`precision ${precision} sampler2DArrayShadow;`)
-        result.push(`precision ${precision} isampler2D;`)
-        result.push(`precision ${precision} isampler3D;`)
-        result.push(`precision ${precision} isamplerCube;`)
-        result.push(`precision ${precision} isampler2DArray;`)
-        result.push(`precision ${precision} usampler2D;`)
-        result.push(`precision ${precision} usampler3D;`)
-        result.push(`precision ${precision} usamplerCube;`)
-        result.push(`precision ${precision} usampler2DArray;`)
+        for (const key of PRECISION) result.push(`precision ${precision} ${key};`)
 }
 
 // ref: https://github.com/mrdoob/three.js/blob/master/src/renderers/webgl/WebGLCapabilities.js
@@ -69,7 +54,6 @@ const getMaxPrecision = (c?: WebGL2RenderingContext, precision = 'highp') => {
                 const p0 = c.getShaderPrecisionFormat(c.VERTEX_SHADER, c.MEDIUM_FLOAT)
                 const p1 = c.getShaderPrecisionFormat(c.FRAGMENT_SHADER, c.MEDIUM_FLOAT)
                 if (p0 && p0.precision > 0 && p1 && p1.precision > 0) return 'mediump'
-                precision = 'lowp'
         }
         return 'lowp'
 }
@@ -81,7 +65,7 @@ export const fragment = (x: X, c: NodeContext = {}) => {
         const result = []
         if (c.isWebGL) {
                 result.push('#version 300 es')
-                precisionHead(result, getMaxPrecision(c.gl?.webgl?.context, c.gl?.precision))
+                precisionHead(result, getMaxPrecision(c.gl?.gl, c.gl?.precision))
                 result.push('out vec4 fragColor;')
                 for (const code of c.code?.fragInputs?.values() || []) result.push(`in ${code}`)
                 result.push(head)

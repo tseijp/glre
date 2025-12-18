@@ -8,7 +8,7 @@
 [![ npm version ](https://img.shields.io/npm/v/glre?style=flat&colorA=000&colorB=000)](https://www.npmjs.com/package/glre)
 [![ downloads ](https://img.shields.io/npm/dm/glre.svg?style=flat&colorA=000&colorB=000)](https://www.npmtrends.com/glre)
 [![ license MIT ](https://img.shields.io/npm/l/glre?style=flat&colorA=000&colorB=000)](https://github.com/tseijp/glre)
-[![ docs available ](https://img.shields.io/badge/docs-available-000.svg?style=flat&colorA=000)](https://glre.tsei.jp/>)
+[![ docs available ](https://img.shields.io/badge/docs-available-000.svg?style=flat&colorA=000)](https://glre.dev)
 [![ bundle size ](https://img.shields.io/bundlephobia/minzip/glre?style=flat&colorA=000&colorB=000)](https://bundlephobia.com/package/glre@latest)
 
 glre is a simple glsl and wgsl Reactive Engine on the web and native via TypeScript, React, Solid and more.
@@ -101,7 +101,7 @@ npm install glre
   <tbody>
     <tr>
       <td width="7500px" align="center" valign="center">
-        glre simplifies WebGl2 / WebGPU programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
+        glre simplifies WebGL2 / WebGPU programming via TypeScript, React, Solid and more (<a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">live demo</a>).
       </td>
       <td width="2500px" valign="top">
         <a href="https://codesandbox.io/s/glre-basic-demo-ppzo3d">
@@ -173,12 +173,10 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 </summary>
 
 ```html
-<canvas id="canvas"></canvas>
 <script type="module">
         import { createGL } from 'https://esm.sh/glre'
-        import { vec4, uv } from 'https://esm.sh/node'
-        const el = document.getElementById('canvas')
-        createGL({ el, fs: vec4(uv, 0, 1) }).mount()
+        import { vec4, uv } from 'https://esm.sh/glre/node'
+        createGL({ fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
 
@@ -284,26 +282,6 @@ const uvs = attribute(textureCoords) // Coordinate mapping
 const worldPosition = positions.transform(modelMatrix)
 const viewNormal = normals.transform(normalMatrix)
 ```
-
-### Cross-Platform Transparency
-
-The system dissolves platform-specific shader languages into unified abstractions.
-WebGL2 GLSL and WebGPU WGSL become implementation details, hidden beneath consistent node operations.
-
-```ts
-// Same code generates different targets
-const shader = {
-        vertex: worldPosition.transform(projectionMatrix),
-        fragment: lighting(worldNormal, worldPosition),
-}
-
-// Backend selection becomes transparent
-// WebGL2: Generates GLSL ES 3.0
-// WebGPU: Generates WGSL
-```
-
-This architectural dissolution enables shader code to exist as pure mathematical relationships,
-freed from the constraints of traditional GPU programming models.
 
 ## PRs
 

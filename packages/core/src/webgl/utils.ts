@@ -1,4 +1,4 @@
-import { is } from './helpers'
+import { is } from '../helpers'
 import type { GL } from '../types'
 
 const createShader = (c: WebGL2RenderingContext, source: string, type: number, onError = console.warn) => {
@@ -26,13 +26,13 @@ export const createProgram = (c: WebGL2RenderingContext, frag: string, vert: str
         gl.error(`Could not link program: ${error}`)
 }
 
-export const createArrayBuffer = (c: WebGL2RenderingContext, data: number[]) => {
+export const createBuffer = (c: WebGL2RenderingContext, data: number[]) => {
         const array = new Float32Array(data)
         const buffer = c.createBuffer()
         return { array, buffer }
 }
 
-export const setArrayBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
+export const updateBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
         array.set(value)
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
@@ -52,7 +52,8 @@ export const updateInstance = (c: WebGL2RenderingContext, loc: number, stride: n
         c.vertexAttribDivisor(loc, 1) // divisor is 1
 }
 
-export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation, value: number | number[]) => {
+export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, value: number | number[]) => {
+        if (is.nul(loc)) return
         if (is.num(value)) return c.uniform1f(loc, value)
         let l = value.length
         if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)
@@ -60,11 +61,15 @@ export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocati
         c[`uniformMatrix${l as 2}fv`](loc, false, value)
 }
 
-export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | HTMLVideoElement, loc: WebGLUniformLocation, unit: number, isVideo = false) => {
+export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | HTMLVideoElement | null, loc: WebGLUniformLocation | null, unit: number, isVideo = false) => {
         const texture = c.createTexture()
         c.bindTexture(c.TEXTURE_2D, texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
-        if (!isVideo) c.generateMipmap(c.TEXTURE_2D)
+        if (el) {
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                if (!isVideo) c.generateMipmap(c.TEXTURE_2D)
+        } else {
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, 1, 1, 0, c.RGBA, c.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 0]))
+        }
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
         c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
@@ -77,7 +82,7 @@ export const createTexture = (c: WebGL2RenderingContext, el: HTMLImageElement | 
                 return () => {
                         c.activeTexture(c.TEXTURE0 + unit)
                         c.bindTexture(c.TEXTURE_2D, texture)
-                        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el!)
                 }
 }
 
@@ -148,4 +153,21 @@ export const storageSize = (particleCount: number | number[] = 1024) => {
                 return { x, y: yz }
         }
         return { x, y }
+}
+
+export const loseContext = (c: WebGL2RenderingContext) => {
+        const ext = c.getExtension('WEBGL_lose_context')
+        if (ext) ext.loseContext()
+}
+
+export const enableDepth = (c: WebGL2RenderingContext) => {
+        c.enable(c.DEPTH_TEST)
+        c.depthFunc(c.LEQUAL)
+        c.enable(c.CULL_FACE)
+        c.cullFace(c.BACK)
+}
+
+export const enableWireframe = (c: WebGL2RenderingContext) => {
+        const ext = c.getExtension('WEBGL_polygon_mode')
+        if (ext) ext.polygonModeWEBGL(c.FRONT_AND_BACK, ext.LINE_WEBGL)
 }

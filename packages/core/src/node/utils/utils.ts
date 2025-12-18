@@ -1,7 +1,7 @@
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING, WGSL_TO_GLSL_BUILTIN } from './const'
-import { is } from '../../utils/helpers'
-import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, VaryingInfo, X, Y } from '../types'
-import { storageSize } from '../../utils/program'
+import { is } from '../../helpers'
+import { storageSize } from '../../webgl/utils'
+import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, X, Y } from '../types'
 
 export const isSwizzle = (key: unknown): key is Swizzles => {
         return is.str(key) && /^[xyzwrgbastpq]{1,4}$/.test(key)

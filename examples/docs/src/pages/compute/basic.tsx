@@ -33,6 +33,8 @@ fn main(@builtin(global_invocation_id) grid: vec3u) {
 import { float, Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4 } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
 
+const isWebGL = false
+
 export default function GPGPUBasicApp() {
         const [w, h] = isServer() ? [0, 0].fill(Math.pow(2, 8)) : [window.innerWidth, window.innerHeight]
         const particleCount = w * h
@@ -77,7 +79,7 @@ export default function GPGPUBasicApp() {
 
         const gl = useGL({
                 particleCount: [w, h],
-                isWebGL: false,
+                isWebGL,
                 cs: cs(id),
                 fs: fs(uv),
         })

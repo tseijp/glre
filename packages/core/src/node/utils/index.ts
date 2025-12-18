@@ -1,7 +1,7 @@
 import { infer } from './infer'
 import { parseArray, parseAttribHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseUniformHead, parseVaryingHead } from './parse'
 import { getBluiltin, getConversions, getOperator, initNodeContext, isX, setupEvent } from './utils'
-import { is } from '../../utils/helpers'
+import { is } from '../../helpers'
 import { mod } from '..'
 import type { Constants as C, NodeContext, Y } from '../types'
 

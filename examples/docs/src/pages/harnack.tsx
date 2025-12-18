@@ -1,3 +1,4 @@
+// @ts-ignore
 import Layout from '@theme/Layout'
 import { Float, Fn, If, Loop, Vec3, Vec4, bool, constant, float, iResolution, iTime, int, mat3, position, struct, uniform, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
@@ -175,7 +176,7 @@ export default function App() {
         }
         const gl = useGL({
                 fs: fragment(position),
-                loop() {
+                render() {
                         drag.offset[0] += 0.1
                         update()
                 },
@@ -196,7 +197,7 @@ export default function App() {
 
         return (
                 <Layout noFooter>
-                        <div ref={drag.ref} style={{ position: 'fixed', top: 0, left: 0, touchAction: 'none' }}>
+                        <div ref={drag.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', touchAction: 'none' }}>
                                 <canvas ref={gl.ref} />
                         </div>
                 </Layout>
