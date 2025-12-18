@@ -96,8 +96,8 @@ export const createGL = (...args: Partial<GL>[]) => {
 
         gl('resize', () => {
                 const rect = gl.el.parentElement?.getBoundingClientRect()
-                gl.size[0] = gl.el.width = gl.width ?? rect?.width ?? window.innerWidth
-                gl.size[1] = gl.el.height = gl.height ?? rect?.height ?? window.innerWidth
+                gl.size[0] = gl.el.width = gl.width || rect?.width || window.innerWidth
+                gl.size[1] = gl.el.height = gl.height || rect?.height || window.innerHeight
                 gl.uniform('iResolution', gl.size)
         })
 

@@ -4,7 +4,7 @@
         overflow-x: auto !important;
 }
 
-canvas {
+.playgroundPreview canvas {
         width: 256px;
         height: 256px;
 }

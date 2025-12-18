@@ -21,8 +21,6 @@ const createCanvasTemplate = (isLoop: boolean, fragmentExpression: string, funct
 function Canvas() {
         ${functionDefinition || ''}
         const gl = useGL({
-                width: 256,
-                height: 256,
                 isLoop: ${isLoop},
                 isWebGL: ${isWebGL ? 'true' : 'false'},
                 frag: ${fragmentExpression},
@@ -61,7 +59,9 @@ export const FragmentEditor = ({ code = 'vec4(fract(fragCoord.xy.div(iResolution
                         <PlaygroundContainer>
                                 <PlaygroundProvider code={code} transformCode={transformCode.bind(null, isInView, isFun, isApp, isLoop)} scope={ReactLiveScope} {...props}>
                                         <PlaygroundEditor />
-                                        <PlaygroundPreview />
+                                        <div className="playgroundPreview">
+                                                <PlaygroundPreview />
+                                        </div>
                                 </PlaygroundProvider>
                         </PlaygroundContainer>
                 </div>
