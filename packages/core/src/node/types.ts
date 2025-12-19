@@ -1,6 +1,6 @@
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATOR_TYPE_RULES } from './utils/const'
 import type { GL } from '../types'
-import { Binding } from '../webgpu/binding'
+import type { Binding } from '../webgpu/utils'
 
 export type Constants = (typeof CONSTANTS)[number] | 'void'
 export type Conversions = (typeof CONVERSIONS)[number]
