@@ -24,9 +24,8 @@ yarn add glre
 
 ```html
 <script type="module">
-        import createGL from 'https://esm.sh/glre'
-        import { vec4, fract, position, iResolution } from 'https://esm.sh/glre/node'
-        const fs = vec4(fract(position.xy.div(iResolution)), 0, 1)
-        createGL({ fs }).mount()
+        import { createGL } from 'https://esm.sh/glre'
+        import { vec4, uv } from 'https://esm.sh/glre/node'
+        createGL({ fs: vec4(uv, 0, 1) }).mount()
 </script>
 ```
