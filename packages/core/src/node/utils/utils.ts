@@ -1,5 +1,5 @@
 import { CONSTANTS, CONVERSIONS, FUNCTIONS, OPERATOR_KEYS, OPERATORS, TYPE_MAPPING, WGSL_TO_GLSL_BUILTIN } from './const'
-import { is } from '../../helpers'
+import { is, isFloat32 } from '../../helpers'
 import { storageSize } from '../../webgl/utils'
 import type { Constants as C, Conversions, Functions, NodeContext, Operators, Swizzles, X, Y } from '../types'
 
@@ -118,10 +118,12 @@ const getEventFun = (c: NodeContext, id: string, type: string) => {
 
 const safeEventCall = <T extends C>(x: X<T>, fun: (value: any) => void) => {
         if (is.und(x)) return
-        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1]) or storage(new Float32Array(1024))
+        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1])
         if (x.type !== 'conversion') return
         const args = x.props.children?.slice(1)
         if (is.und(args?.[0])) return // ignore if uniform(vec2())
+        if (is.arr(args[0])) return fun(args[0]) // for attribute(vec2([0, 0.73, -1, -1, 1, -1]))
+        if (isFloat32(args[0])) return fun(args[0]) // for storage(float(new Float32Array(1024)))
         fun(args.map((x) => x ?? args[0])) // for uniform(vec2(1)) or uniform(vec2(1, 1))
 }
 

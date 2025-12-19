@@ -554,7 +554,7 @@ function Canvas() {
                         fragColor = vec4(vec3(0.0, smoothstep(0.01, 0.0, abs((texelFetch(wave, ivec2(int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) % 32, int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) / 32), 0).x - (gl_FragCoord.xy / iResolution).x))), 0.0), 1.0);
                 }\`,
         })
-        gl.storage('wave', new Float32Array(1024))
+        gl.storage('wave', Array(1024))
         return <canvas ref={gl.ref} />
 }`}
                 />
@@ -592,7 +592,7 @@ function Canvas() {
                         return vec4f(vec3f(0.0, smoothstep(0.01, 0.0, abs((wave[u32(((out.position.xy / iResolution).y * 1024.0))] - (out.position.xy / iResolution).x))), 0.0), 1.0);
                 }\`,
         })
-        gl.storage('wave', new Float32Array(1024))
+        gl.storage('wave', Array(1024))
         return <canvas ref={gl.ref} />
 }`}
                 />
