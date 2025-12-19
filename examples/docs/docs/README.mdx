@@ -506,7 +506,6 @@ function Canvas() {
         const wave = storage(float(new Float32Array(1024)), 'wave')
         const gl = useGL({
                 isWebGL: true,
-                isDebug: true,
                 compute: Scope(() => {
                         If(uint(0).equal(id.x), () => {
                                 wave.element(id.x).assign(iMouse.x)
@@ -517,8 +516,83 @@ function Canvas() {
                 fragment: Scope(() => {
                         const x = wave.element(uint(uv.y.mul(1024))).sub(uv.x).abs()
                         return vec4(vec3(0, smoothstep(0.01, 0, x), 0), 1)
-                })
+                }),
         })
+        return <canvas ref={gl.ref} />
+}`}
+                />
+        </TabItem>
+        <TabItem value="webgl" label="WebGL">
+                <FragmentEditor
+                        isApp
+                        code={`
+function Canvas() {
+        const wave = storage(float(new Float32Array(1024)), 'wave')
+        const gl = useGL({
+                isWebGL: true,
+                isDebug: true,
+                compute: \`
+                #version 300 es
+                precision highp float;
+                uniform sampler2D wave;
+                uniform vec2 iMouse;
+                layout(location = 0) out vec4 _wave;
+                void main() {
+                        if ((uint(0.0) == uvec3(uint(gl_FragCoord.y) * uint(32) + uint(gl_FragCoord.x), 0u, 0u).x)) {
+                                _wave = vec4(iMouse.x, 0.0, 0.0, 1.0);
+                        } else {
+                                _wave = vec4(texelFetch(wave, ivec2(int((uvec3(uint(gl_FragCoord.y) * uint(32) + uint(gl_FragCoord.x), 0u, 0u).x - uint(1.0))) % 32, int((uvec3(uint(gl_FragCoord.y) * uint(32) + uint(gl_FragCoord.x), 0u, 0u).x - uint(1.0))) / 32), 0).x, 0.0, 0.0, 1.0);
+                        };
+                }\`,
+                fragment: \`
+                #version 300 es
+                precision highp float;
+                out vec4 fragColor;
+                uniform vec2 iResolution;
+                uniform sampler2D wave;
+                void main() {
+                        fragColor = vec4(vec3(0.0, smoothstep(0.01, 0.0, abs((texelFetch(wave, ivec2(int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) % 32, int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) / 32), 0).x - (gl_FragCoord.xy / iResolution).x))), 0.0), 1.0);
+                }\`,
+        })
+        gl.storage('wave', new Float32Array(1024))
+        return <canvas ref={gl.ref} />
+}`}
+                />
+        </TabItem>
+        <TabItem value="webgpu" label="WebGPU">
+                <FragmentEditor
+                        isApp
+                        code={`
+function Canvas() {
+        const wave = storage(float(new Float32Array(1024)), 'wave')
+        const gl = useGL({
+                isWebGL: false,
+                compute: \`
+                struct In {
+                        @builtin(global_invocation_id) global_invocation_id: vec3u
+                }
+                @group(0) @binding(1) var<uniform> iMouse: vec2f;
+                @group(2) @binding(0) var<storage, read_write> wave: array<f32>;
+                @compute @workgroup_size(32)
+                fn main(in: In) {
+                        if ((u32(0.0) == in.global_invocation_id.x)) {
+                                wave[in.global_invocation_id.x] = iMouse.x;
+                        } else {
+                                wave[in.global_invocation_id.x] = wave[in.global_invocation_id.x - u32(1.0)];
+                        };
+                }\`,
+                fragment: \`
+                struct Out {
+                        @builtin(position) position: vec4f
+                }
+                @group(2) @binding(0) var<storage, read_write> wave: array<f32>;
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @fragment
+                fn main(out: Out) -> @location(0) vec4f {
+                        return vec4f(vec3f(0.0, smoothstep(0.01, 0.0, abs((wave[u32(((out.position.xy / iResolution).y * 1024.0))] - (out.position.xy / iResolution).x))), 0.0), 1.0);
+                }\`,
+        })
+        gl.storage('wave', new Float32Array(1024))
         return <canvas ref={gl.ref} />
 }`}
                 />
