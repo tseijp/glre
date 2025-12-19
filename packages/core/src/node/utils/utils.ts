@@ -103,20 +103,22 @@ export const addDependency = (c: NodeContext, id = '', type: string) => {
  */
 const getEventFun = (c: NodeContext, id: string, type: string) => {
         if (c.isWebGL) {
-                if (type === 'attribute') return (value: any) => c.gl?.attribute?.(id, value)
-                if (type === 'instance') return (value: any) => c.gl?.instance?.(id, value)
-                if (type === 'texture') return (value: any) => c.gl?.texture?.(id, value)
+                if (type === 'attribute') return c.gl?.attribute?.bind(null, id as any)
+                if (type === 'instance') return c.gl?.instance?.bind(null, id as any)
+                if (type === 'texture') return c.gl?.texture?.bind(null, id as any)
+                if (type === 'storage') return c.gl?.storage?.bind(null, id as any)
                 return (value: any) => c.gl?.uniform?.(id, value)
         }
-        if (type === 'attribute') return (value: any) => c.gl?._attribute?.(id, value)
-        if (type === 'instance') return (value: any) => c.gl?._instance?.(id, value)
-        if (type === 'texture') return (value: any) => c.gl?._texture?.(id, value)
+        if (type === 'attribute') return c.gl?._attribute?.bind(null, id)
+        if (type === 'instance') return c.gl?._instance?.bind(null, id)
+        if (type === 'texture') return c.gl?._texture?.bind(null, id)
+        if (type === 'storage') return c.gl?._storage?.bind(null, id)
         return (value: any) => c.gl?._uniform?.(id, value)
 }
 
-const safeEventCall = <T extends C>(x: X<T>, fun: (value: unknown) => void) => {
+const safeEventCall = <T extends C>(x: X<T>, fun: (value: any) => void) => {
         if (is.und(x)) return
-        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1])
+        if (!isX(x)) return fun(x) // for uniform(0) or uniform([0, 1]) or storage(new Float32Array(1024))
         if (x.type !== 'conversion') return
         const args = x.props.children?.slice(1)
         if (is.und(args?.[0])) return // ignore if uniform(vec2())
@@ -125,6 +127,7 @@ const safeEventCall = <T extends C>(x: X<T>, fun: (value: unknown) => void) => {
 
 export const setupEvent = (c: NodeContext, id: string, type: string, target: X, child: X) => {
         const fun = getEventFun(c, id, type)
+        if (!fun) return
         safeEventCall(child, fun)
         target.listeners.add(fun)
         return fun

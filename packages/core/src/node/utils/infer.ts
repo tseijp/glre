@@ -1,6 +1,6 @@
 import { isConstants, isElement, isX, isSwizzle } from './utils'
 import { BUILTIN_TYPES, COMPONENT_COUNT_TO_TYPE, FUNCTION_RETURN_TYPES, getOperatorResultType, validateOperatorTypes } from './const'
-import { is, getStride } from '../../helpers'
+import { is, getStride, isFloat32 } from '../../helpers'
 import type { Constants as C, NodeContext, X, Y } from '../types'
 
 const inferBuiltin = <T extends C>(id: string | undefined) => {
@@ -16,7 +16,7 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
         if (is.bol(x)) return 'bool' as T
         if (is.str(x)) return 'texture' as T
         if (is.num(x)) return 'float' as T // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
-        if (is.arr(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        if (is.arr(x) || isFloat32(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
         if (isElement(x)) return 'texture' as T
         return 'void' as T
 }

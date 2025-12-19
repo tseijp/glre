@@ -114,7 +114,10 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 setupEvent(c, id, varType, target, x)
                 head = parseUniformHead(c, id, varType)
         }
-        if (type === 'storage') head = parseStorageHead(c, id, infer(target, c))
+        if (type === 'storage') {
+                setupEvent(c, id, type, target, x)
+                head = parseStorageHead(c, id, infer(target, c))
+        }
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {
                 c.code?.headers.set(id, head)

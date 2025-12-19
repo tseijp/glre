@@ -494,3 +494,33 @@ function Canvas() {
                 />
         </TabItem>
 </Tabs>
+
+### Compute
+
+<Tabs>
+        <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
+                <FragmentEditor
+                        isApp
+                        code={`
+function Canvas() {
+        const wave = storage(float(new Float32Array(1024)), 'wave')
+        const gl = useGL({
+                isWebGL: true,
+                isDebug: true,
+                compute: Scope(() => {
+                        If(uint(0).equal(id.x), () => {
+                                wave.element(id.x).assign(iMouse.x)
+                        }).Else(() => {
+                                wave.element(id.x).assign(wave.element(id.x.sub(uint(1))))
+                        })
+                }),
+                fragment: Scope(() => {
+                        const x = wave.element(uint(uv.y.mul(1024))).sub(uv.x).abs()
+                        return vec4(vec3(0, smoothstep(0.01, 0, x), 0), 1)
+                })
+        })
+        return <canvas ref={gl.ref} />
+}`}
+                />
+        </TabItem>
+</Tabs>
