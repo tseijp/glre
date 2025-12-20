@@ -2,8 +2,8 @@ import { code } from '.'
 import { infer } from './infer'
 import { getConversions, addDependency } from './utils'
 import { is } from '../../helpers'
-import type { Constants, NodeContext, NodeProps, StructFields, Y } from '../types'
 import { storageSize } from '../../webgl/utils'
+import type { Constants, NodeContext, NodeProps, StructFields, Y } from '../types'
 
 export const parseArray = (children: Y[], c: NodeContext) => {
         return children

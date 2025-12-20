@@ -280,10 +280,6 @@ const validateConfig = (config) => {
                 errors.push('Height must be positive')
         }
 
-        if (config.count <= 0 || !Number.isInteger(config.count)) {
-                errors.push('Count must be positive integer')
-        }
-
         // Warning validations
         if (config.width > 4096 || config.height > 4096) {
                 warnings.push('Large canvas size may impact performance')

@@ -14,7 +14,7 @@ export const graphic = (gl: GL) => {
         const units = nested(() => activeUnit++)
         const uniforms = nested((key) => c.getUniformLocation(pg, key))
         const attributes = nested((key, value: number[], isInstance = false) => {
-                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.triangleCount, gl.error)
+                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error, key)
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
 
@@ -56,8 +56,8 @@ export const graphic = (gl: GL) => {
         gl('render', () => {
                 c.useProgram((gl.program = pg))
                 if (gl.instanceCount > 1) {
-                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.triangleCount, gl.instanceCount)
-                } else c.drawArrays(c.TRIANGLES, 0, gl.triangleCount)
+                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
+                } else c.drawArrays(c.TRIANGLES, 0, gl.count)
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
         })
 }

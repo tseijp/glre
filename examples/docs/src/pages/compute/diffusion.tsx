@@ -105,7 +105,7 @@ export default function ReactionDiffusionApp() {
                 const L = conv(-1, -1,  0.05).add(conv(-1, 0, 0.2)).add(conv(-1, 1, 0.05))
                      .add(conv( 0, -1,  0.2)).add(conv( 0, 0,  -1)).add(conv( 0, 1, 0.2))
                      .add(conv( 1, -1, 0.05)).add(conv( 1, 0, 0.2)).add(conv( 1, 1, 0.05))
-                const current = idx2cell(id.x as Float).toVar()
+                const current = idx2cell(id.x as any).toVar()
                 const diffusion = vec2(1, 0.5)
                 const feed = vec2(0.055, 0)
                 const kill = vec2(0, 0.055 + 0.062)
@@ -130,7 +130,6 @@ export default function ReactionDiffusionApp() {
         const gl = useGL({
                 particleCount: [w, h],
                 isWebGL,
-                isDebug: true,
                 cs: cs(id),
                 fs: fs(uv),
                 mount() {

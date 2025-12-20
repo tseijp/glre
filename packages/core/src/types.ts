@@ -18,7 +18,7 @@ export type GL = EventState<{
         height?: number
         size: [number, number]
         mouse: [number, number]
-        count: number
+        count: number // triangleCount × 3
         triangleCount: number
         instanceCount: number
         particleCount: number | [number, number] | [number, number, number]

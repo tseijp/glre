@@ -1,5 +1,5 @@
 import { nested } from 'reev'
-import { is, getStride, loadingTexture } from '../helpers'
+import { getStride, is, loadingTexture } from '../helpers'
 import { createBuffer, createDepthTexture, createDescriptor, createTextureSampler, updateBuffer } from './utils'
 import type { Binding } from './utils'
 import type { GL } from '../types'
@@ -10,7 +10,7 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
         let vertexBuffers: GPUBuffer[]
         let depthTexture: GPUTexture
 
-        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.triangleCount)) => {
+        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error, key)) => {
                 update()
                 return { ...bindings.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
@@ -62,7 +62,7 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
                 pass.setPipeline(pipeline)
                 bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
                 vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                pass.draw(gl.triangleCount, gl.instanceCount, 0, 0)
+                pass.draw(gl.count, gl.instanceCount, 0, 0)
                 pass.end()
         })
 

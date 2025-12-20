@@ -46,7 +46,7 @@ export default function WebGLInstancing() {
         const gl = useGL({
                 isWebGL: true,
                 instanceCount,
-                count: 6,
+                triangleCount: 2,
                 vertex,
                 fragment,
         })

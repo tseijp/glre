@@ -72,9 +72,9 @@ export default function InstancedBoxes() {
 
         const gl = useGL({
                 instanceCount, // 16
+                triangleCount: 12, // 6 × 2
                 isWebGL: true,
                 isDepth: true,
-                count: 36,
                 render() {
                         for (let i = 0; i < instanceCount; i++) rotation[i] += 0.01 + i * 0.005
                         rot.value = rotation

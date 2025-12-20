@@ -253,7 +253,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 // isDebug: true,
                 isWebGL: true,
                 isDepth: true,
-                count: 36, // Total number of cube triangles vertices
+                triangleCount: 12, // Total number of cube triangles
                 instanceCount: 1, // count of instanced mesh in initial state
                 vert: viewer.node.vert,
                 frag: viewer.node.frag,

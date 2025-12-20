@@ -59,9 +59,10 @@ export const createGL = (...args: Partial<GL>[]) => {
                         gl.fs = arg.fs || arg.frag || arg.fragment || undefined
                         gl.cs = arg.cs || arg.comp || arg.compute || undefined
                         gl.vs = arg.vs || arg.vert || arg.vertex || undefined
-                        gl.triangleCount = arg.triangleCount || arg.count || 6
+                        gl.triangleCount = arg.triangleCount || 2
                         gl.instanceCount = arg.instanceCount || 1
                         gl.particleCount = arg.particleCount || 1024
+                        gl.count = arg.count || gl.triangleCount * 3 || 6
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
                         if (gl.isWebGL) webgl(gl)

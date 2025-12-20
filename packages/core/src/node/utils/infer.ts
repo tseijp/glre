@@ -21,9 +21,9 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
         return 'void' as T
 }
 
-const inferFromCount = <T extends C>(count: number) => {
+const inferFromCount = <T extends C>(count: number, error = console.warn, id = '') => {
         const ret = COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
-        if (!ret) throw `glre node system error: Cannot infer type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`
+        if (!ret) console.warn(`glre node system error: Cannot infer ${id ? `${id} ` : ''} type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`)
         return ret
 }
 
@@ -54,16 +54,15 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                 if (!inferFrom || inferFrom.length === 0) return 'void' as T
                 return inferFromArray(inferFrom, c)
         }
-        if (type === 'attribute' && is.arr(x)) {
-                const stride = getStride(x.length, c.gl?.count, c.gl?.error)
-                return inferFromCount(stride)
-        }
-        if (type === 'instance' && is.arr(x)) {
-                const stride = getStride(x.length, c.gl?.instanceCount, c.gl?.error)
-                return inferFromCount(stride)
-        }
+        if (type === 'attribute' || type === 'instance')
+                if (is.arr(x)) {
+                        const count = type === 'instance' ? c.gl?.instanceCount : c.gl?.count
+                        const stride = getStride(x.length, count, c.gl?.error, id)
+                        return inferFromCount(stride, c.gl?.error, id)
+                }
+
         if (type === 'member') {
-                if (isSwizzle(y)) return inferFromCount(y.length)
+                if (isSwizzle(y)) return inferFromCount(y.length, c.gl?.error, id)
                 if (isX(x)) {
                         const structType = infer(x, c)
                         const fields = c.code?.structStructFields?.get(structType)
@@ -78,7 +77,7 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
 export const infer = <T extends C>(target: Y<T>, c?: NodeContext | null): T => {
         if (!c) c = {}
         if (!isX(target)) return inferPrimitiveType(target)
-        if (is.arr(target)) return inferFromCount(target.length)
+        if (is.arr(target)) return inferFromCount(target.length, c.gl?.error, target.props.id)
         if (!c.infers) c.infers = new WeakMap<X<T>, C>()
         if (c.infers.has(target)) return c.infers.get(target) as T
         const ret = inferImpl(target, c)
