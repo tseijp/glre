@@ -91,6 +91,68 @@ render(() => <Canvas />, document.getElementById('root'))
 </TabItem>
 </Tabs>
 
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const gl = useGL(
+                {
+                        isWebGL: false,
+                        isDepth: false,
+                        triangleCount: 1,
+                        frag: \`
+                                @fragment
+                                fn main() -> @location(0) vec4<f32> {
+                                        return vec4<f32>(0., 0., 1., 1.);
+                                }
+                        \`,
+                        vert: \`
+                                struct VertexOutput {
+                                        @builtin(position) position: vec4<f32>,
+                                }
+                                @vertex
+                                fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+                                        var output: VertexOutput;
+                                        var positions = array<vec2<f32>, 3>(
+                                                vec2<f32>(-0.7, -0.5),
+                                                vec2<f32>(-0.3, -0.5),
+                                                vec2<f32>(-0.5, 0.5)
+                                        );
+                                        output.position = vec4<f32>(positions[vertexIndex], 0.0, 1.0);
+                                        return output;
+                                }
+                        \`,
+                },
+                {
+                        triangleCount: 1,
+                        frag: \`
+                                @fragment
+                                fn main() -> @location(0) vec4<f32> {
+                                        return vec4<f32>(1., 0., 0., 1.);
+                                }
+                        \`,
+                        vert: \`
+                                struct VertexOutput {
+                                        @builtin(position) position: vec4<f32>,
+                                }
+                                @vertex
+                                fn main(@builtin(vertex_index) vertexIndex: u32) -> VertexOutput {
+                                        var output: VertexOutput;
+                                        var positions = array<vec2<f32>, 3>(
+                                                vec2<f32>(0.3, -0.5),
+                                                vec2<f32>(0.7, -0.5),
+                                                vec2<f32>(0.5, 0.5)
+                                        );
+                                        output.position = vec4<f32>(positions[vertexIndex], 0.0, 1.0);
+                                        return output;
+                                }
+                        \`,
+                }
+        )
+        return <canvas ref={gl.ref} />
+}`}
+/>
+
 ## Varying
 
 <Tabs>

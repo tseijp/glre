@@ -5,7 +5,8 @@ import { is, WGSL_FS, WGSL_VS } from '../helpers'
 import type { GL } from '../types'
 
 export const webgpu = async (gl: GL, isLast = false) => {
-        let isUpdate = false
+        let { vs, fs, cs } = gl
+        let isUpdate = true
         const isInit = !gl.gl
         if (isInit) {
                 const gpu = gl.el!.getContext('webgpu') as GPUCanvasContext
@@ -14,7 +15,7 @@ export const webgpu = async (gl: GL, isLast = false) => {
                 gl({ device, format, binding, gpu })
                 gl('resize', () => {
                         gl.depthTexture?.destroy()
-                        gl.depthTexture = createDepthTexture(gl.device, ...gl.size)
+                        if (gl.isDepth) gl.depthTexture = createDepthTexture(gl.device, ...gl.size)
                 })
         }
 
@@ -39,10 +40,10 @@ export const webgpu = async (gl: GL, isLast = false) => {
         const update = () => {
                 isUpdate = false
                 const config = { isWebGL: false, gl }
-                const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : WGSL_FS
-                const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : WGSL_VS
-                const cs = gl.cs ? (is.str(gl.cs) ? gl.cs : gl.cs.compute(config)) : ''
-                const p = updatePipeline(gl.device, gl.format, g.attributes.map.values(), g.uniforms.map.values(), g.textures.map.values(), c.storages.map.values(), fs, cs, vs)
+                fs = fs ? (is.str(fs) ? fs : fs.fragment(config)) : WGSL_FS
+                vs = vs ? (is.str(vs) ? vs : vs.vertex(config)) : WGSL_VS
+                cs = cs ? (is.str(cs) ? cs : cs.compute(config)) : ''
+                const p = updatePipeline(gl.device, gl.format, g.attributes.map.values(), g.uniforms.map.values(), g.textures.map.values(), c.storages.map.values(), fs, cs, vs, gl.isDepth)
                 c.set(p.computePipeline, p.bindGroups)
                 g.set(p.graphicPipeline, p.bindGroups, p.vertexBuffers)
         }

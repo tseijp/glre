@@ -42,7 +42,7 @@ export type GL = EventState<{
         format: GPUTextureFormat
         passEncoder: GPURenderPassEncoder
         commandEncoder: GPUCommandEncoder
-        depthTexture: GPUTexture
+        depthTexture?: GPUTexture
         binding: Binding
 
         /**
@@ -93,10 +93,10 @@ type Storage = number[] | Float32Array
  * for webgpu
  */
 export interface UniformData {
-        array: Float32Array
-        buffer: GPUBuffer
         binding: number
         group: number
+        array: Float32Array
+        buffer: GPUBuffer
 }
 
 export interface TextureData {

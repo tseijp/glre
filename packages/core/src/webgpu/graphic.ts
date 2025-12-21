@@ -4,11 +4,12 @@ import { createBuffer, createTextureSampler, updateBuffer } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL, update = () => {}) => {
+        const { count, instanceCount } = gl // // Save this WebGPU item's count (overwritten per args)
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
 
-        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error, key)) => {
+        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)) => {
                 update()
                 return { ...gl.binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
@@ -57,7 +58,7 @@ export const graphic = (gl: GL, update = () => {}) => {
                 gl.passEncoder.setPipeline(pipeline)
                 bindGroups.forEach((v, i) => gl.passEncoder.setBindGroup(i, v))
                 vertexBuffers.forEach((v, i) => gl.passEncoder.setVertexBuffer(i, v))
-                gl.passEncoder.draw(gl.count, gl.instanceCount, 0, 0)
+                gl.passEncoder.draw(count, instanceCount, 0, 0)
         })
 
         gl('clean', () => {

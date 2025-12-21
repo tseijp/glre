@@ -3,6 +3,7 @@ import { createBuffer, updateBuffer, workgroupCount } from './utils'
 import type { GL } from '../types'
 
 export const compute = (gl: GL) => {
+        const { particleCount } = gl // Save this WebGPU instance's particleCount (overwritten per args)
         let pipeline: GPUComputePipeline | undefined
         let bindGroups: GPUBindGroup[] | undefined
 
@@ -20,7 +21,7 @@ export const compute = (gl: GL) => {
                 const pass = gl.commandEncoder.beginComputePass()
                 pass.setPipeline(pipeline)
                 bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                const { x, y, z } = workgroupCount(gl.particleCount)
+                const { x, y, z } = workgroupCount(particleCount)
                 pass.dispatchWorkgroups(x, y, z)
                 pass.end()
         })
