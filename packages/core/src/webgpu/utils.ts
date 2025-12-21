@@ -1,5 +1,5 @@
 import { nested } from 'reev'
-import { is, isFloat32 } from '../helpers'
+import { is, isFloat32, WGSL_FS, WGSL_VS } from '../helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 type IAttribs = Iterable<AttribData & { isInstance?: boolean }>
@@ -104,15 +104,15 @@ const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: IText
                 layouts.push(layout)
                 bindings.push(binding)
         }
-        for (const { binding, buffer, group: i } of uniforms) {
-                add(i, { binding, visibility: 7, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+        for (const { binding, buffer, group } of uniforms) {
+                add(group, { binding, visibility: 7, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
         }
-        for (const { binding, buffer, group: i } of storages) {
-                add(i, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
+        for (const { binding, buffer, group } of storages) {
+                add(group, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
         }
-        for (const { binding: b, group: i, sampler, view } of textures) {
-                add(i, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
-                add(i, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
+        for (const { binding: b, group, sampler, view } of textures) {
+                add(group, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
+                add(group, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
         }
         for (const [i, { layouts, bindings }] of groups) {
                 ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: layouts })

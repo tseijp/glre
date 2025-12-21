@@ -159,7 +159,7 @@ export const parseVaryingHead = (c: NodeContext, id: string, type: Constants) =>
 
 export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {
         if (c.isWebGL) return `${type} ${id};`
-        const { location = 0 } = c.binding?.attrib(id) || {}
+        const { location = 0 } = c.gl?.binding?.attrib(id) || {}
         const wgslType = getConversions(type, c)
         return `@location(${location}) ${id}: ${wgslType}`
 }
@@ -171,10 +171,10 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
                         ? `uniform sampler2D ${id};`
                         : `uniform ${type} ${id};`
         if (isTexture) {
-                const { group = 1, binding = 0 } = c.binding?.texture(id) || {}
+                const { group = 1, binding = 0 } = c.gl?.binding?.texture(id) || {}
                 return `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n` + `@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d<f32>;`
         }
-        const { group = 0, binding = 0 } = c.binding?.uniform(id) || {}
+        const { group = 0, binding = 0 } = c.gl?.binding?.uniform(id) || {}
         const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
@@ -186,7 +186,7 @@ export const parseStorageHead = (c: NodeContext, id: string, type: Constants) =>
                 const location = c.units?.(id)
                 return `${ret}\nlayout(location = ${location}) out vec4 _${id};` // out texture buffer
         }
-        const { group = 0, binding = 0 } = c.binding?.storage(id) || {}
+        const { group = 0, binding = 0 } = c.gl?.binding?.storage(id) || {}
         const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`
 }

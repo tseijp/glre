@@ -40,7 +40,9 @@ export type GL = EventState<{
         gpu: GPUCanvasContext
         device: GPUDevice
         format: GPUTextureFormat
-        encoder: GPUCommandEncoder
+        passEncoder: GPURenderPassEncoder
+        commandEncoder: GPUCommandEncoder
+        depthTexture: GPUTexture
         binding: Binding
 
         /**

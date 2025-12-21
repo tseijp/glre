@@ -1,28 +1,26 @@
 import { nested } from 'reev'
 import { getStride, is, loadingTexture } from '../helpers'
-import { createBuffer, createDepthTexture, createDescriptor, createTextureSampler, updateBuffer } from './utils'
-import type { Binding } from './utils'
+import { createBuffer, createTextureSampler, updateBuffer } from './utils'
 import type { GL } from '../types'
 
-export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
+export const graphic = (gl: GL, update = () => {}) => {
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
-        let depthTexture: GPUTexture
 
         const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error, key)) => {
                 update()
-                return { ...bindings.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
+                return { ...gl.binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
         const uniforms = nested((key, value: number[] | Float32Array) => {
                 update()
-                return { ...bindings.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
+                return { ...gl.binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
         })
 
         const textures = nested((key, width = 1, height = 1) => {
                 update()
-                return { ...bindings.texture(key), ...createTextureSampler(gl.device, width, height) }
+                return { ...gl.binding.texture(key), ...createTextureSampler(gl.device, width, height) }
         })
 
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
@@ -45,11 +43,9 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
                 const t = textures(key)
                 loadingTexture(src, (source, isVideo) => {
                         const [width, height] = isVideo ? [source.videoWidth, source.videoHeight] : [source.width, source.height]
-                        if (t.texture.width !== width || t.texture.height !== height) {
-                                t.texture.destroy()
-                                Object.assign(t, createTextureSampler(gl.device, width, height))
-                                update() // Rebuilding BindGroups because the texture size has changed
-                        }
+                        t.texture.destroy()
+                        Object.assign(t, createTextureSampler(gl.device, width, height))
+                        update() // Rebuilding BindGroups because the texture size has changed
                         const render = () => void gl.device.queue.copyExternalImageToTexture({ source }, { texture: t.texture }, { width, height })
                         if (isVideo) gl({ render })
                         else render()
@@ -58,22 +54,13 @@ export const graphic = (gl: GL, bindings: Binding, update = () => {}) => {
 
         gl('render', () => {
                 if (!pipeline || !bindGroups || !vertexBuffers) return
-                const pass = gl.encoder.beginRenderPass(createDescriptor(gl.gpu, depthTexture))
-                pass.setPipeline(pipeline)
-                bindGroups.forEach((v, i) => pass.setBindGroup(i, v))
-                vertexBuffers.forEach((v, i) => pass.setVertexBuffer(i, v))
-                pass.draw(gl.count, gl.instanceCount, 0, 0)
-                pass.end()
-        })
-
-        gl('resize', () => {
-                const canvas = gl.el as HTMLCanvasElement
-                depthTexture?.destroy()
-                depthTexture = createDepthTexture(gl.device, canvas.width, canvas.height)
+                gl.passEncoder.setPipeline(pipeline)
+                bindGroups.forEach((v, i) => gl.passEncoder.setBindGroup(i, v))
+                vertexBuffers.forEach((v, i) => gl.passEncoder.setVertexBuffer(i, v))
+                gl.passEncoder.draw(gl.count, gl.instanceCount, 0, 0)
         })
 
         gl('clean', () => {
-                depthTexture?.destroy()
                 for (const { buffer } of attributes.map.values()) buffer.destroy()
                 for (const { texture } of textures.map.values()) texture.destroy()
                 for (const { buffer } of uniforms.map.values()) buffer.destroy()

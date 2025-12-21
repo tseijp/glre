@@ -55,7 +55,8 @@ export const createGL = (...args: Partial<GL>[]) => {
                 gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)
                 const isAppend = !gl.el // Check first: canvas may unmount during WebGPU async processing
                 if (isAppend && !gl.isNative) gl.el = document.createElement('canvas')
-                for (const arg of args) {
+                for (let i = 0; i < args.length; i++) {
+                        const arg = args[i]
                         gl.fs = arg.fs || arg.frag || arg.fragment || undefined
                         gl.cs = arg.cs || arg.comp || arg.compute || undefined
                         gl.vs = arg.vs || arg.vert || arg.vertex || undefined
@@ -66,7 +67,7 @@ export const createGL = (...args: Partial<GL>[]) => {
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
                         if (gl.isWebGL) webgl(gl)
-                        else await webgpu(gl)
+                        else await webgpu(gl, i === args.length - 1)
                         if (arg.mount) arg.mount() // events added in mount phase need explicit call to execute
                 }
                 if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
