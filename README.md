@@ -247,15 +247,14 @@ function Canvas() {
   ])
   const col = attribute([
     1, 0, 0,
-    1, 0, 1,
     0, 1, 0,
-    0, 1, 1,
+    0, 0, 1,
   ])
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
     vert: vec4(tri, 0, 1),
-    frag: vertexStage(col),
+    frag: vec4(vertexStage(col), 1),
   })
   return <canvas ref={gl.ref} />
 }
@@ -281,8 +280,8 @@ function Canvas() {
     vertex: `
     #version 300 es
     in vec4 tri;
-    in vec4 col;
-    out vec4 v_col;
+    in vec3 col;
+    out vec3 v_col;
     void main() {
       gl_Position = tri;
       v_col = col;
@@ -290,10 +289,10 @@ function Canvas() {
     fragment: `
     #version 300 es
     precision mediump float;
-    in vec4 v_col;
+    in vec3 v_col;
     out vec4 fragColor;
     void main() {
-      fragColor = v_col;
+      fragColor = vec4(v_col, 1.0);
     }`,
   })
   gl.attribute('tri', [
@@ -303,9 +302,8 @@ function Canvas() {
   ])
   gl.attribute('col', [
     1, 0, 0,
-    1, 0, 1,
     0, 1, 0,
-    0, 1, 1,
+    0, 0, 1,
   ])
   return <canvas ref={gl.ref} />
 }
@@ -332,11 +330,11 @@ function Canvas() {
     vertex: `
     struct In {
       @location(0) tri: vec2f,
-      @location(1) col: vec4f,
+      @location(1) col: vec3f,
     }
     struct Out {
       @builtin(position) position: vec4f,
-      @location(0) v_col: vec4f,
+      @location(0) v_col: vec3f,
     }
     @vertex
     fn main(in: In) -> Out {
@@ -348,11 +346,11 @@ function Canvas() {
     fragment: `
     struct Out {
       @builtin(position) position: vec4f,
-      @location(0) v_col: vec4f,
+      @location(0) v_col: vec3f,
     }
     @fragment
     fn main(out: Out) -> @location(0) vec4f {
-      return out.v_col;
+      return vec4f(out.v_col, 1.0);
     }`,
   })
   gl.attribute('tri', [
@@ -362,9 +360,8 @@ function Canvas() {
   ])
   gl.attribute('col', [
     1, 0, 0,
-    1, 0, 1,
     0, 1, 0,
-    0, 1, 1
+    0, 0, 1
   ])
   return <canvas ref={gl.ref} />
 }
