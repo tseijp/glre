@@ -582,7 +582,6 @@ function Canvas() {
         const wave = storage(float(Array(1024)), 'wave')
         const gl = useGL({
                 isWebGL: true,
-                isDebug: true,
                 compute: \`
                 #version 300 es
                 precision highp float;
