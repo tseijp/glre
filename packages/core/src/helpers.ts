@@ -64,9 +64,9 @@ const calcStride = (arrayLength: number, count = 3) => {
         return -1
 }
 
-export const getStride = (arrayLength: number, count = 1, error = console.warn) => {
+export const getStride = (arrayLength: number, count = 1, error = console.warn, id = '') => {
         const ret = calcStride(arrayLength, count)
-        if (!isValidStride(ret)) error(`glre attribute error: Invalid attribute length ${arrayLength}. Must divide by vertex count (${count}) with valid stride (1,2,3,4,9,16)`)
+        if (!isValidStride(ret)) error(`glre attribute error: Invalid attribute length ${arrayLength}, ${id ? `${id} ` : ' '}must divide by vertex count (${count}) with valid stride (1,2,3,4,9,16)`)
         return ret
 }
 

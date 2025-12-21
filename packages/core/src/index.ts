@@ -55,17 +55,19 @@ export const createGL = (...args: Partial<GL>[]) => {
                 gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)
                 const isAppend = !gl.el // Check first: canvas may unmount during WebGPU async processing
                 if (isAppend && !gl.isNative) gl.el = document.createElement('canvas')
-                for (const arg of args) {
+                for (let i = 0; i < args.length; i++) {
+                        const arg = args[i]
                         gl.fs = arg.fs || arg.frag || arg.fragment || undefined
                         gl.cs = arg.cs || arg.comp || arg.compute || undefined
                         gl.vs = arg.vs || arg.vert || arg.vertex || undefined
-                        gl.triangleCount = arg.triangleCount || arg.count || 6
+                        gl.triangleCount = arg.triangleCount || 2
                         gl.instanceCount = arg.instanceCount || 1
                         gl.particleCount = arg.particleCount || 1024
+                        gl.count = arg.count || gl.triangleCount * 3 || 6
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
                         if (gl.isWebGL) webgl(gl)
-                        else await webgpu(gl)
+                        else await webgpu(gl, i === args.length - 1)
                         if (arg.mount) arg.mount() // events added in mount phase need explicit call to execute
                 }
                 if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
@@ -96,8 +98,8 @@ export const createGL = (...args: Partial<GL>[]) => {
 
         gl('resize', () => {
                 const rect = gl.el.parentElement?.getBoundingClientRect()
-                gl.size[0] = gl.el.width = gl.width ?? rect?.width ?? window.innerWidth
-                gl.size[1] = gl.el.height = gl.height ?? rect?.height ?? window.innerWidth
+                gl.size[0] = gl.el.width = gl.width || rect?.width || window.innerWidth
+                gl.size[1] = gl.el.height = gl.height || rect?.height || window.innerHeight
                 gl.uniform('iResolution', gl.size)
         })
 

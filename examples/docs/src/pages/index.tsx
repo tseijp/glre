@@ -87,6 +87,7 @@ const createMode = () => {
 }
 
 const createViewer = async () => {
+        // @ts-ignore
         const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('voxelized-js')
         let isReady = false
         let isLoading = false
@@ -105,10 +106,83 @@ const createViewer = async () => {
                 cam.update(1280 / 800) // Ensure MVP is valid for culling before first render.
                 regions.vis()
         } catch {}
+
+        const press = (isPress = false, e: KeyboardEvent) => {
+                const k = e.code
+                if (k === 'KeyW') cam.asdw(1, isPress ? 1 : 0)
+                if (k === 'KeyS') cam.asdw(1, isPress ? -1 : 0)
+                if (k === 'KeyA') cam.asdw(2, isPress ? 1 : 0)
+                if (k === 'KeyD') cam.asdw(2, isPress ? -1 : 0)
+                if (k === 'Space') cam.space(isPress)
+                if (k === 'ArrowUp') cam.asdw(1, isPress ? 1 : 0)
+                if (k === 'ArrowDown') cam.asdw(1, isPress ? -1 : 0)
+                if (k === 'ArrowLeft') cam.asdw(2, isPress ? 1 : 0)
+                if (k === 'ArrowRight') cam.asdw(2, isPress ? -1 : 0)
+                if (k === 'MetaLeft') cam.shift(isPress)
+                if (k === 'MetaRight') cam.shift(isPress)
+                if (k === 'ShiftLeft') cam.shift(isPress)
+                if (k === 'ShiftRight') cam.shift(isPress)
+                if (k === 'ControlLeft') cam.shift(isPress)
+                if (k === 'ControlRight') cam.shift(isPress)
+                if (k === 'Tab' && isPress) {
+                        e.preventDefault()
+                        cam.mode(mode.tab())
+                }
+        }
+
+        const onMove = (e: any) => {
+                cam.turn([-e.movementX, -e.movementY])
+        }
+
+        let px = 0
+        let py = 0
+        const touchXY = (e: TouchEvent) => {
+                if (e.touches.length !== 1) return [0, 0]
+                const touch = e.touches[0]
+                return [touch.clientX, touch.clientY]
+        }
+
+        const onTouchStart = (e: TouchEvent) => {
+                ;[px, py] = touchXY(e)
+        }
+
+        const onTouch = (e: TouchEvent) => {
+                const [x, y] = touchXY(e)
+                const dx = x - px
+                const dy = y - py
+                px = x
+                py = y
+                cam.turn([dx * 8, dy * 3])
+        }
+
+        let lastLockTime = 0
+
+        const onLock = () => {
+                lastLockTime = performance.now()
+                cam.mode(mode.esc())
+        }
+
+        const onDown = () => {
+                const tryLock = (trial = 0) => {
+                        if (trial > 20) return
+                        if (performance.now() - lastLockTime < 1300) return setTimeout(() => tryLock(trial + 1), 100)
+                        try {
+                                document.body.requestPointerLock()
+                        } catch (e) {
+                                console.error('pointer lock failed:', e)
+                        }
+                }
+                tryLock()
+        }
+
+        const onKeyUp = (e: KeyboardEvent) => press(false, e)
+        const onKeyDown = (e: KeyboardEvent) => press(true, e)
+
         const resize = (gl: GL) => {
                 cam.update(gl.size[0] / gl.size[1])
                 node.iMVP.value = [...cam.MVP]
         }
+
         const render = (gl: GL) => {
                 pt = ts
                 ts = performance.now()
@@ -134,7 +208,40 @@ const createViewer = async () => {
                         }
                 gl.instanceCount = mesh.draw(gl.gl, gl.program)
         }
-        return { mode, node, cam, render, resize, pt: 0 }
+
+        const mount = (el: HTMLCanvasElement) => {
+                if (!el) return
+                const isSP = window.innerWidth <= 768
+                if (isSP) {
+                        document.addEventListener('touchstart', onTouchStart, { passive: false })
+                        document.addEventListener('touchmove', onTouch, { passive: false })
+                        document.addEventListener('mousemove', onMove, { passive: false })
+                } else {
+                        el.addEventListener('mousedown', onDown)
+                        document.addEventListener('mousemove', onMove)
+                        window.addEventListener('keyup', onKeyUp)
+                        window.addEventListener('keydown', onKeyDown)
+                        document.addEventListener('pointerlockchange', onLock)
+                }
+        }
+
+        const unmount = (el: HTMLCanvasElement) => {
+                if (!el) return
+                const isSP = window.innerWidth <= 768
+                if (isSP) {
+                        document.removeEventListener('touchstart', onTouchStart)
+                        document.removeEventListener('touchmove', onTouch)
+                        document.removeEventListener('mousemove', onMove)
+                } else {
+                        el.removeEventListener('mousedown', onDown)
+                        document.removeEventListener('mousemove', onMove)
+                        window.removeEventListener('keyup', onKeyUp)
+                        window.removeEventListener('keydown', onKeyDown)
+                        document.removeEventListener('pointerlockchange', onLock)
+                }
+        }
+
+        return { mode, node, cam, render, resize, mount, unmount, pt: 0 }
 }
 
 type Viewer = Awaited<ReturnType<typeof createViewer>>
@@ -146,7 +253,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 // isDebug: true,
                 isWebGL: true,
                 isDepth: true,
-                count: 36, // Total number of cube triangles vertices
+                triangleCount: 12, // Total number of cube triangles
                 instanceCount: 1, // count of instanced mesh in initial state
                 vert: viewer.node.vert,
                 frag: viewer.node.frag,
@@ -157,76 +264,10 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         viewer.resize(gl)
                 },
                 mount() {
-                        const el = gl.el
-                        if (!el) return
-                        const isSP = window.innerWidth <= 768
-                        const press = (isPress = false, e: KeyboardEvent) => {
-                                const k = e.code
-                                if (k === 'KeyW') viewer.cam.asdw(1, isPress ? 1 : 0)
-                                if (k === 'KeyS') viewer.cam.asdw(1, isPress ? -1 : 0)
-                                if (k === 'KeyA') viewer.cam.asdw(2, isPress ? 1 : 0)
-                                if (k === 'KeyD') viewer.cam.asdw(2, isPress ? -1 : 0)
-                                if (k === 'Space') viewer.cam.space(isPress)
-                                if (k === 'ArrowUp') viewer.cam.asdw(1, isPress ? 1 : 0)
-                                if (k === 'ArrowDown') viewer.cam.asdw(1, isPress ? -1 : 0)
-                                if (k === 'ArrowLeft') viewer.cam.asdw(2, isPress ? 1 : 0)
-                                if (k === 'ArrowRight') viewer.cam.asdw(2, isPress ? -1 : 0)
-                                if (k === 'MetaLeft') viewer.cam.shift(isPress)
-                                if (k === 'MetaRight') viewer.cam.shift(isPress)
-                                if (k === 'ShiftLeft') viewer.cam.shift(isPress)
-                                if (k === 'ShiftRight') viewer.cam.shift(isPress)
-                                if (k === 'ControlLeft') viewer.cam.shift(isPress)
-                                if (k === 'ControlRight') viewer.cam.shift(isPress)
-                                if (k === 'Tab' && isPress) {
-                                        e.preventDefault()
-                                        viewer.cam.mode(viewer.mode.tab())
-                                }
-                        }
-                        const onMove = (e: any) => {
-                                viewer.cam.turn([-e.movementX, -e.movementY])
-                        }
-                        let px = 0
-                        let py = 0
-                        const touchXY = (e: TouchEvent) => {
-                                if (e.touches.length !== 1) return [0, 0]
-                                const touch = e.touches[0]
-                                return [touch.clientX, touch.clientY]
-                        }
-                        const onTouchStart = (e: TouchEvent) => {
-                                ;[px, py] = touchXY(e)
-                        }
-                        const onTouch = (e: TouchEvent) => {
-                                const [x, y] = touchXY(e)
-                                const dx = x - px
-                                const dy = y - py
-                                px = x
-                                py = y
-                                viewer.cam.turn([dx * 8, dy * 3])
-                        }
-                        const onLock = () => {
-                                viewer.pt = performance.now()
-                                viewer.cam.mode(viewer.mode.esc())
-                        }
-                        const onDown = (trial = 0) => {
-                                if (!el) return
-                                if (trial > 20) return
-                                if (performance.now() - viewer.pt < 1300) return setTimeout(() => onDown(trial + 1), 100) // if the user requests within 1250 ms of escaping, the following error occurs: `ERROR: The user has exited the lock before this request was completed.`
-                                try {
-                                        document.body.requestPointerLock()
-                                } finally {
-                                }
-                        }
-                        if (isSP) {
-                                document.addEventListener('touchstart', onTouchStart, { passive: false })
-                                document.addEventListener('touchmove', onTouch, { passive: false })
-                                document.addEventListener('mousemove', onMove, { passive: false })
-                        } else {
-                                if (el) el.addEventListener('mousedown', onDown.bind(null, 0))
-                                document.addEventListener('mousemove', onMove)
-                                window.addEventListener('keyup', press.bind(null, false))
-                                window.addEventListener('keydown', press.bind(null, true))
-                                document.addEventListener('pointerlockchange', onLock)
-                        }
+                        viewer.mount(gl.el)
+                },
+                clean() {
+                        viewer.unmount(gl.el)
                 },
         })
         return <canvas ref={gl.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />

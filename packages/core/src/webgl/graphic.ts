@@ -4,17 +4,17 @@ import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer,
 import type { GL } from '../types'
 
 export const graphic = (gl: GL) => {
+        let { fs, vs, gl: c } = gl // @TODO Save this WebGPU instance's count (overwritten per args) but no change now for top page
         const config = { isWebGL: true, gl }
-        const c = gl.gl
-        const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : GLSL_FS
-        const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : GLSL_VS
+        fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : GLSL_FS
+        vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : GLSL_VS
         const pg = createProgram(c, fs, vs, gl)!
         let activeUnit = 0
 
         const units = nested(() => activeUnit++)
         const uniforms = nested((key) => c.getUniformLocation(pg, key))
         const attributes = nested((key, value: number[], isInstance = false) => {
-                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.triangleCount, gl.error)
+                const stride = getStride(value.length, isInstance ? gl.instanceCount : gl.count, gl.error, key)
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
 
@@ -56,8 +56,8 @@ export const graphic = (gl: GL) => {
         gl('render', () => {
                 c.useProgram((gl.program = pg))
                 if (gl.instanceCount > 1) {
-                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.triangleCount, gl.instanceCount)
-                } else c.drawArrays(c.TRIANGLES, 0, gl.triangleCount)
+                        c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
+                } else c.drawArrays(c.TRIANGLES, 0, gl.count)
                 c.bindFramebuffer(c.FRAMEBUFFER, null)
         })
 }

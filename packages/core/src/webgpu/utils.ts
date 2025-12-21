@@ -104,15 +104,15 @@ const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: IText
                 layouts.push(layout)
                 bindings.push(binding)
         }
-        for (const { binding, buffer, group: i } of uniforms) {
-                add(i, { binding, visibility: 7, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
+        for (const { binding, buffer, group } of uniforms) {
+                add(group, { binding, visibility: 7, buffer: { type: 'uniform' } }, { binding, resource: { buffer } })
         }
-        for (const { binding, buffer, group: i } of storages) {
-                add(i, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
+        for (const { binding, buffer, group } of storages) {
+                add(group, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
         }
-        for (const { binding: b, group: i, sampler, view } of textures) {
-                add(i, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
-                add(i, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
+        for (const { binding: b, group, sampler, view } of textures) {
+                add(group, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
+                add(group, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
         }
         for (const [i, { layouts, bindings }] of groups) {
                 ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: layouts })
@@ -121,8 +121,10 @@ const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: IText
         return ret
 }
 
-const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayouts: GPUVertexBufferLayout[], bindGroupLayouts: GPUBindGroupLayout[], vs: string, fs: string) => {
-        return device.createRenderPipeline({
+const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayouts: GPUVertexBufferLayout[], bindGroupLayouts: GPUBindGroupLayout[], vs: string, fs: string, isDepth: boolean) => {
+        const config: GPURenderPipelineDescriptor = {
+                primitive: { topology: 'triangle-list' },
+                layout: device.createPipelineLayout({ bindGroupLayouts }),
                 vertex: {
                         module: device.createShaderModule({ label: 'vert', code: vs.trim() }),
                         entryPoint: 'main',
@@ -133,14 +135,9 @@ const createPipeline = (device: GPUDevice, format: GPUTextureFormat, bufferLayou
                         entryPoint: 'main',
                         targets: [{ format }],
                 },
-                layout: device.createPipelineLayout({ bindGroupLayouts }),
-                primitive: { topology: 'triangle-list' },
-                depthStencil: {
-                        depthWriteEnabled: true,
-                        depthCompare: 'less',
-                        format: 'depth24plus',
-                },
-        })
+        }
+        if (isDepth) config.depthStencil = { depthWriteEnabled: true, depthCompare: 'less', format: 'depth24plus' }
+        return device.createRenderPipeline(config)
 }
 
 const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroupLayout[], cs: string) => {
@@ -154,11 +151,11 @@ const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroup
         })
 }
 
-export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string) => {
+export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string, isDepth: boolean) => {
         const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
         const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
         const computePipeline = createComputePipeline(device, bindGroupLayouts, cs)
-        const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs)
+        const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs, isDepth)
         return { bindGroups, vertexBuffers, computePipeline, graphicPipeline }
 }
 
@@ -166,9 +163,9 @@ export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attr
  * buffers
  */
 const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
-        if (type === 'uniform') return 72 // GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
-        if (type === 'attrib') return 40 // GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
-        return 140 // GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
+        if (type === 'uniform') return 72 // 72 is GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST
+        if (type === 'attrib') return 40 // 40 is GPUBufferUsage.VERTEX | GPUBufferUsage.COPY_DST
+        return 140 // 140 is GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC | GPUBufferUsage.COPY_DST
 }
 
 export const createBuffer = (device: GPUDevice, array: number[] | Float32Array, type: 'uniform' | 'storage' | 'attrib') => {
@@ -184,11 +181,10 @@ export const updateBuffer = (device: GPUDevice, value: number[] | Float32Array, 
         device.queue.writeBuffer(buffer, 0, array as GPUAllowSharedBufferSource)
 }
 
-export const createDescriptor = (c: GPUCanvasContext, depthTexture: GPUTexture) => {
-        return {
-                colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: 'clear', storeOp: 'store' }],
-                depthStencilAttachment: { view: depthTexture.createView(), depthClearValue: 1.0, depthLoadOp: 'clear', depthStoreOp: 'store' },
-        } as GPURenderPassDescriptor
+export const createDescriptor = (c: GPUCanvasContext, depthTexture?: GPUTexture) => {
+        const ret: GPURenderPassDescriptor = { colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1 }, loadOp: 'clear', storeOp: 'store' }] }
+        if (depthTexture) ret.depthStencilAttachment = { view: depthTexture.createView(), depthClearValue: 1.0, depthLoadOp: 'clear', depthStoreOp: 'store' }
+        return ret
 }
 
 /**

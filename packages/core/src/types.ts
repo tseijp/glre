@@ -18,7 +18,7 @@ export type GL = EventState<{
         height?: number
         size: [number, number]
         mouse: [number, number]
-        count: number
+        count: number // triangleCount × 3
         triangleCount: number
         instanceCount: number
         particleCount: number | [number, number] | [number, number, number]
@@ -40,7 +40,9 @@ export type GL = EventState<{
         gpu: GPUCanvasContext
         device: GPUDevice
         format: GPUTextureFormat
-        encoder: GPUCommandEncoder
+        passEncoder: GPURenderPassEncoder
+        commandEncoder: GPUCommandEncoder
+        depthTexture?: GPUTexture
         binding: Binding
 
         /**
@@ -91,10 +93,10 @@ type Storage = number[] | Float32Array
  * for webgpu
  */
 export interface UniformData {
-        array: Float32Array
-        buffer: GPUBuffer
         binding: number
         group: number
+        array: Float32Array
+        buffer: GPUBuffer
 }
 
 export interface TextureData {

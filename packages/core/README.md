@@ -181,8 +181,584 @@ esm supported ([codesandbox demo](https://codesandbox.io/s/glre-basic-demo3-3bhr
 ```
 
 </details>
-</samp>
-</strong>
+
+---
+
+### [Varying](http://localhost:3000/docs#varying)
+
+```tsx
+function Canvas() {
+        const tri = attribute([0, 0.73, -1, -1, 1, -1])
+        const col = attribute([1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        const gl = useGL({
+                isWebGL: true,
+                triangleCount: 1,
+                vert: vec4(tri, 0, 1),
+                frag: vertexStage(col),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: true,
+                triangleCount: 1,
+                vertex: `
+                #version 300 es
+                in vec4 tri;
+                in vec4 col;
+                out vec4 v_col;
+                void main() {
+                        gl_Position = tri;
+                        v_col = col;
+                }`,
+                fragment: `
+                #version 300 es
+                precision mediump float;
+                in vec4 v_col;
+                out vec4 fragColor;
+                void main() {
+                        fragColor = v_col;
+                }`,
+        })
+        gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('col', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: false,
+                triangleCount: 1,
+                vertex: `
+                struct In {
+                        @location(0) tri: vec2f,
+                        @location(1) col: vec4f,
+                }
+                struct Out {
+                        @builtin(position) position: vec4f,
+                        @location(0) v_col: vec4f,
+                }
+                @vertex
+                fn main(in: In) -> Out {
+                        var out: Out;
+                        out.position = vec4f(in.tri, 0.0, 1.0);
+                        out.v_col = in.col;
+                        return out;
+                }`,
+                fragment: `
+                struct Out {
+                        @builtin(position) position: vec4f,
+                        @location(0) v_col: vec4f,
+                }
+                @fragment
+                fn main(out: Out) -> @location(0) vec4f {
+                        return out.v_col;
+                }`,
+        })
+        gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
+        gl.attribute('col', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
+
+### [Uniforms](http://localhost:3000/docs#uniforms)
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: true,
+                frag: vec4(uv.sub(iMouse).fract(), iTime.sin().mul(0.5).add(0.5), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: true,
+                fragment: `
+                #version 300 es
+                precision mediump float;
+                uniform vec2 iResolution;
+                uniform vec2 iMouse;
+                uniform float iTime;
+                out vec4 fragColor;
+                void main() {
+                        vec2 uv = fract(gl_FragCoord.xy / iResolution.xy - iMouse);
+                        fragColor = vec4(uv, sin(iTime) * 0.5 + 0.5, 1.0);
+                }`,
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: false,
+                fragment: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @group(0) @binding(1) var<uniform> iMouse: vec2f;
+                @group(0) @binding(2) var<uniform> iTime: f32;
+                @fragment
+                fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+                        let uv = fract(position.xy / iResolution - iMouse);
+                        return vec4f(uv, sin(iTime) * 0.5 + 0.5, 1.0);
+                }`,
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
+
+### [Attributes](http://localhost:3000/docs#attributes)
+
+```tsx
+function Canvas() {
+        const tri = attribute([0, 0.73, -1, -1, 1, -1])
+        const gl = useGL({
+                isWebGL: true,
+                triangleCount: 1,
+                vert: vec4(tri, 0, 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: true,
+                triangleCount: 1,
+                vert: `
+                #version 300 es
+                in vec4 tri;
+                void main() {
+                        gl_Position = tri;
+                }`,
+        })
+        gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: false,
+                triangleCount: 1,
+                vertex: `
+                @vertex
+                fn main(@location(0) tri: vec2f) -> @builtin(position) vec4f {
+                        return vec4f(tri, 0.0, 1.0);
+                }`,
+        })
+        gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
+
+### [Multiples](http://localhost:3000/docs#multiples)
+
+```tsx
+function Canvas() {
+        const tri = attribute([0, 0.37, -0.5, -0.5, 0.5, -0.5])
+        const gl = useGL(
+                {
+                        isWebGL: true,
+                        triangleCount: 1,
+                        vert: vec4(vec2(-0.5, 0).add(tri), 0, 1),
+                },
+                {
+                        triangleCount: 1,
+                        vert: vec4(vec2(0.5, 0).add(tri), 0, 1),
+                }
+        )
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL(
+                {
+                        isWebGL: true,
+                        triangleCount: 1,
+                        vert: `
+                        #version 300 es
+                        in vec2 tri;
+                        void main() {
+                                gl_Position = vec4((vec2(-0.5, 0.0) + tri), 0.0, 1.0);
+                        }`,
+                },
+                {
+                        triangleCount: 1,
+                        vert: `
+                        #version 300 es
+                        in vec2 tri;
+                        void main() {
+                                gl_Position = vec4((vec2(0.5, 0.0) + tri), 0.0, 1.0);
+                        }`,
+                }
+        )
+        gl.attribute('tri', [0, 0.37, -0.5, -0.5, 0.5, -0.5])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL(
+                {
+                        isWebGL: false,
+                        triangleCount: 1,
+                        vert: `
+                        struct In {
+                                @location(0) tri: vec2f
+                        }
+                        struct Out {
+                                @builtin(position) position: vec4f
+                        }
+                        @vertex
+                        fn main(in: In) -> Out {
+                                var out: Out;
+                                out.position = vec4f((vec2f(-0.5, 0.0) + in.tri), 0.0, 1.0);
+                                return out;
+                        }`,
+                },
+                {
+                        triangleCount: 1,
+                        vert: `
+                        struct In {
+                                @location(0) tri: vec2f
+                        }
+                        struct Out {
+                                @builtin(position) position: vec4f
+                        }
+                        @vertex
+                        fn main(in: In) -> Out {
+                                var out: Out;
+                                out.position = vec4f((vec2f(0.5, 0.0) + in.tri), 0.0, 1.0);
+                                return out;
+                        }`,
+                }
+        )
+        gl.attribute('tri', [0, 0.37, -0.5, -0.5, 0.5, -0.5])
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
+
+### [Textures](http://localhost:3000/docs#textures)
+
+```tsx
+function Canvas() {
+        const iTexture = uniform('https://avatars.githubusercontent.com/u/40712342')
+        const gl = useGL({
+                isWebGL: true,
+                frag: texture(iTexture, uv),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: true,
+                fragment: `
+                #version 300 es
+                precision mediump float;
+                uniform vec2 iResolution;
+                uniform sampler2D iTexture;
+                out vec4 fragColor;
+                void main() {
+                        vec2 uv = gl_FragCoord.xy / iResolution.xy;
+                        fragColor = texture(iTexture, uv);
+                }`,
+        })
+        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: false,
+                fragment: `
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @group(1) @binding(0) var iSampler: sampler;
+                @group(1) @binding(1) var iTexture: texture_2d<f32>;
+                @fragment
+                fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
+                        let uv = position.xy / iResolution;
+                        return textureSample(iTexture, iSampler, uv);
+                }`,
+        })
+        gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
+
+### [Instancing](http://localhost:3000/docs#instancing)
+
+```tsx
+function Canvas() {
+        const tri = attribute([0, 0.73, -1, -1, 1, -1])
+        const pos = instance(
+                Array(1000 * 2)
+                        .fill(0)
+                        .map(Math.random)
+        )
+        const gl = useGL({
+                isWebGL: true,
+                instanceCount: 1000,
+                triangleCount: 1,
+                vert: vec4(tri.mul(0.05).sub(1).add(pos.mul(2)), 0, 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: true,
+                instanceCount: 1000,
+                triangleCount: 1,
+                vert: `
+                #version 300 es
+                in vec2 tri;
+                in vec2 pos;
+                void main() {
+                        gl_Position = vec4((((tri * 0.05) - 1.0) + (pos * 2.0)), 0.0, 1.0);
+                }`,
+        })
+        gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
+        gl.instance(
+                'pos',
+                Array(1000 * 2)
+                        .fill(0)
+                        .map(Math.random)
+        )
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const gl = useGL({
+                isWebGL: false,
+                instanceCount: 1000,
+                triangleCount: 1,
+                vert: `
+                struct In {
+                        @location(0) tri: vec2f,
+                        @location(1) pos: vec2f
+                }
+                struct Out {
+                        @builtin(position) position: vec4f
+                }
+                @vertex
+                fn main(in: In) -> Out {
+                        var out: Out;
+                        out.position = vec4f((((in.tri * 0.05) - 1.0) + (in.pos * 2.0)), 0.0, 1.0);
+                return out;
+                }`,
+        })
+        gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
+        gl.instance(
+                'pos',
+                Array(1000 * 2)
+                        .fill(0)
+                        .map(Math.random)
+        )
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
+
+### [Computing](http://localhost:3000/docs#computing)
+
+```tsx
+function Canvas() {
+        const wave = storage(float(Array(1024)), 'wave')
+        const gl = useGL({
+                isWebGL: true,
+                compute: Scope(() => {
+                        If(uint(0).equal(id.x), () => {
+                                wave.element(id.x).assign(iMouse.x)
+                        }).Else(() => {
+                                wave.element(id.x).assign(wave.element(id.x.sub(uint(1))))
+                        })
+                }),
+                fragment: Scope(() => {
+                        const x = wave
+                                .element(uint(uv.y.mul(1024)))
+                                .sub(uv.x)
+                                .abs()
+                        return vec4(vec3(uv.step(vec2(smoothstep(0.01, 0, x))), 0), 1)
+                }),
+        })
+        return <canvas ref={gl.ref} />
+}
+```
+
+<details>
+<summary>WebGL</summary>
+
+```tsx
+function Canvas() {
+        const wave = storage(float(Array(1024)), 'wave')
+        const gl = useGL({
+                isWebGL: true,
+                compute: `
+                #version 300 es
+                precision highp float;
+                uniform sampler2D wave;
+                uniform vec2 iMouse;
+                layout(location = 0) out vec4 _wave;
+                void main() {
+                        if ((uint(0.0) == uvec3(uint(gl_FragCoord.y) * uint(32) + uint(gl_FragCoord.x), 0u, 0u).x)) {
+                                _wave = vec4(iMouse.x, 0.0, 0.0, 1.0);
+                        } else {
+                                _wave = vec4(texelFetch(wave, ivec2(int((uvec3(uint(gl_FragCoord.y) * uint(32) + uint(gl_FragCoord.x), 0u, 0u).x - uint(1.0))) % 32, int((uvec3(uint(gl_FragCoord.y) * uint(32) + uint(gl_FragCoord.x), 0u, 0u).x - uint(1.0))) / 32), 0).x, 0.0, 0.0, 1.0);
+                        };
+                }`,
+                fragment: `
+                #version 300 es
+                precision highp float;
+                out vec4 fragColor;
+                uniform vec2 iResolution;
+                uniform sampler2D wave;
+                void main() {
+                        fragColor = vec4(vec3(step((gl_FragCoord.xy / iResolution), vec2(smoothstep(0.01, 0.0, abs((texelFetch(wave, ivec2(int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) % 32, int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) / 32), 0).x - (gl_FragCoord.xy / iResolution).x))))), 0.0), 1.0);
+                }`,
+        })
+        gl.storage('wave', Array(1024))
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+<details>
+<summary>WebGPU</summary>
+
+```tsx
+function Canvas() {
+        const wave = storage(float(Array(1024)), 'wave')
+        const gl = useGL({
+                isWebGL: false,
+                compute: `
+                struct In {
+                        @builtin(global_invocation_id) global_invocation_id: vec3u
+                }
+                @group(0) @binding(1) var<uniform> iMouse: vec2f;
+                @group(2) @binding(0) var<storage, read_write> wave: array<f32>;
+                @compute @workgroup_size(32)
+                fn main(in: In) {
+                        if ((u32(0.0) == in.global_invocation_id.x)) {
+                                wave[in.global_invocation_id.x] = iMouse.x;
+                        } else {
+                                wave[in.global_invocation_id.x] = wave[in.global_invocation_id.x - u32(1.0)];
+                        };
+                }`,
+                fragment: `
+                struct Out {
+                        @builtin(position) position: vec4f
+                }
+                @group(2) @binding(0) var<storage, read_write> wave: array<f32>;
+                @group(0) @binding(0) var<uniform> iResolution: vec2f;
+                @fragment
+                fn main(out: Out) -> @location(0) vec4f {
+                        return vec4f(vec3f(step((out.position.xy / iResolution), vec2f(smoothstep(0.01, 0.0, abs((wave[u32(((out.position.xy / iResolution).y * 1024.0))] - (out.position.xy / iResolution).x))))), 0.0), 1.0);
+                }`,
+        })
+        gl.storage('wave', Array(1024))
+        return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
+---
 
 ## Node System
 
@@ -290,3 +866,6 @@ const viewNormal = normals.transform(normalMatrix)
 ## LICENSE
 
 ###### MIT⚾️
+
+</samp>
+</strong>

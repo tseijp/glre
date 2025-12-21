@@ -187,7 +187,6 @@ export default function RaytracingApp() {
         const gl = useGL({
                 particleCount: [w, h],
                 isWebGL,
-                isDebug: true,
                 cs: cs(id),
                 fs: fs(uv),
                 mount() {
