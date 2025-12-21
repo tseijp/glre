@@ -117,9 +117,29 @@ npm install glre
 <td width="1000px">
 <br />
 
-**React**
+**ESM**
 
 ---
+
+<!-- prettier-ignore -->
+```html
+<script type="module">
+  import { createGL } from 'https://esm.sh/glre'
+  import { vec4, uv } from 'https://esm.sh/glre/node'
+  createGL({ fs: vec4(uv, 0, 1) }).mount()
+</script>
+```
+
+</td>
+<td width="0px">
+<details>
+<summary>
+
+React
+
+---
+
+</summary>
 
 <!-- prettier-ignore -->
 ```ts
@@ -136,6 +156,7 @@ const root = document.getElementById('root')
 createRoot(root).render(<Canvas />)
 ```
 
+</details>
 </td>
 <td width="0px">
 <details>
@@ -195,27 +216,6 @@ render(() => <Canvas />, document.getElementById('root'))
 
 </details>
 </td>
-<td width="0px">
-<details>
-<summary>
-
-ESM
-
----
-
-</summary>
-
-<!-- prettier-ignore -->
-```html
-<script type="module">
-  import { createGL } from 'https://esm.sh/glre'
-  import { vec4, uv } from 'https://esm.sh/glre/node'
-  createGL({ fs: vec4(uv, 0, 1) }).mount()
-</script>
-```
-
-</details>
-</td>
 </tr>
 </table>
 
@@ -225,7 +225,7 @@ ESM
 <tr>
 <td width="100%" colspan="3">
 
-### [Varying](http://localhost:3000/docs#varying)
+### [Varying](https://glre.dev/docs#varying)
 
 </td>
 </tr>
@@ -385,7 +385,7 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Uniforms](http://localhost:3000/docs#uniforms)
+### [Uniforms](https://glre.dev/docs#uniforms)
 
 </td>
 </tr>
@@ -493,7 +493,7 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Attributes](http://localhost:3000/docs#attributes)
+### [Attributes](https://glre.dev/docs#attributes)
 
 </td>
 </tr>
@@ -606,7 +606,7 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Multiples](http://localhost:3000/docs#multiples)
+### [Multiples](https://glre.dev/docs#multiples)
 
 </td>
 </tr>
@@ -762,7 +762,7 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Textures](http://localhost:3000/docs#textures)
+### [Textures](https://glre.dev/docs#textures)
 
 </td>
 </tr>
@@ -868,7 +868,7 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Instancing](http://localhost:3000/docs#instancing)
+### [Instancing](https://glre.dev/docs#instancing)
 
 </td>
 </tr>
@@ -1015,7 +1015,7 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Computing](http://localhost:3000/docs#computing)
+### [Computing](https://glre.dev/docs#computing)
 
 </td>
 </tr>
