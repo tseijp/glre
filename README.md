@@ -114,7 +114,7 @@ npm install glre
 
 <table>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **React**
@@ -230,7 +230,7 @@ ESM
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -393,7 +393,7 @@ function Canvas() {
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -501,7 +501,7 @@ function Canvas() {
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -614,7 +614,7 @@ function Canvas() {
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -770,7 +770,7 @@ function Canvas() {
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -876,7 +876,7 @@ function Canvas() {
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -1023,7 +1023,7 @@ function Canvas() {
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
