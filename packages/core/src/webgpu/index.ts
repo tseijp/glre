@@ -7,7 +7,7 @@ import type { GL } from '../types'
 export const webgpu = async (gl: GL, isLast = false) => {
         let { vs, fs, cs } = gl
         let isUpdate = true
-        const isInit = !gl.gl
+        const isInit = !gl.gpu
         if (isInit) {
                 const gpu = gl.el!.getContext('webgpu') as GPUCanvasContext
                 const binding = createBinding()
