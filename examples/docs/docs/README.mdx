@@ -105,7 +105,7 @@ function Canvas() {
                 isWebGL: true,
                 triangleCount: 1,
                 vert: vec4(tri, 0, 1),
-                frag: vertexStage(col)
+                frag: vertexStage(col),
         })
         return <canvas ref={gl.ref} />
 }`}
@@ -135,7 +135,7 @@ function Canvas() {
                 out vec4 fragColor;
                 void main() {
                         fragColor = v_col;
-                }\`
+                }\`,
         })
         gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
         gl.attribute('col', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
@@ -175,7 +175,7 @@ function Canvas() {
                 @fragment
                 fn main(out: Out) -> @location(0) vec4f {
                         return out.v_col;
-                }\`
+                }\`,
         })
         gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
         gl.attribute('col', [1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1])
@@ -218,7 +218,7 @@ function Canvas() {
                 void main() {
                         vec2 uv = fract(gl_FragCoord.xy / iResolution.xy - iMouse);
                         fragColor = vec4(uv, sin(iTime) * 0.5 + 0.5, 1.0);
-                }\`
+                }\`,
         })
         return <canvas ref={gl.ref} />
 }`}
@@ -239,7 +239,7 @@ function Canvas() {
                 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
                         let uv = fract(position.xy / iResolution - iMouse);
                         return vec4f(uv, sin(iTime) * 0.5 + 0.5, 1.0);
-                }\`
+                }\`,
         })
         return <canvas ref={gl.ref} />
 }`}
@@ -259,7 +259,7 @@ function Canvas() {
         const gl = useGL({
                 isWebGL: true,
                 triangleCount: 1,
-                vert: vec4(tri, 0, 1)
+                vert: vec4(tri, 0, 1),
         })
         return <canvas ref={gl.ref} />
 }`}
@@ -278,7 +278,7 @@ function Canvas() {
                 in vec4 tri;
                 void main() {
                         gl_Position = tri;
-                }\`
+                }\`,
         })
         gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
@@ -297,7 +297,7 @@ function Canvas() {
                 @vertex
                 fn main(@location(0) tri: vec2f) -> @builtin(position) vec4f {
                         return vec4f(tri, 0.0, 1.0);
-                }\`
+                }\`,
         })
         gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
         return <canvas ref={gl.ref} />
@@ -306,7 +306,7 @@ function Canvas() {
         </TabItem>
 </Tabs>
 
-### Multiples
+## Multiples
 
 <Tabs>
         <TabItem value="tsl" label="TSL (TypeScript Shading Language)">
@@ -319,11 +319,11 @@ function Canvas() {
                 {
                         isWebGL: true,
                         triangleCount: 1,
-                        vert: vec4(vec2(-0.5, 0).add(tri), 0, 1)
+                        vert: vec4(vec2(-0.5, 0).add(tri), 0, 1),
                 },
                 {
                         triangleCount: 1,
-                        vert: vec4(vec2(0.5, 0).add(tri), 0, 1)
+                        vert: vec4(vec2(0.5, 0).add(tri), 0, 1),
                 }
         )
         return <canvas ref={gl.ref} />
@@ -344,7 +344,7 @@ function Canvas() {
                         in vec2 tri;
                         void main() {
                                 gl_Position = vec4((vec2(-0.5, 0.0) + tri), 0.0, 1.0);
-                        }\`
+                        }\`,
                 },
                 {
                         triangleCount: 1,
@@ -353,7 +353,7 @@ function Canvas() {
                         in vec2 tri;
                         void main() {
                                 gl_Position = vec4((vec2(0.5, 0.0) + tri), 0.0, 1.0);
-                        }\`
+                        }\`,
                 }
         )
         gl.attribute('tri', [0, 0.37, -0.5, -0.5, 0.5, -0.5])
@@ -382,7 +382,7 @@ function Canvas() {
                                 var out: Out;
                                 out.position = vec4f((vec2f(-0.5, 0.0) + in.tri), 0.0, 1.0);
                                 return out;
-                        }\`
+                        }\`,
                 },
                 {
                         triangleCount: 1,
@@ -398,7 +398,7 @@ function Canvas() {
                                 var out: Out;
                                 out.position = vec4f((vec2f(0.5, 0.0) + in.tri), 0.0, 1.0);
                                 return out;
-                        }\`
+                        }\`,
                 }
         )
         gl.attribute('tri', [0, 0.37, -0.5, -0.5, 0.5, -0.5])
@@ -441,7 +441,7 @@ function Canvas() {
                 void main() {
                         vec2 uv = gl_FragCoord.xy / iResolution.xy;
                         fragColor = texture(iTexture, uv);
-                }\`
+                }\`,
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
@@ -463,7 +463,7 @@ function Canvas() {
                 fn main(@builtin(position) position: vec4f) -> @location(0) vec4f {
                         let uv = position.xy / iResolution;
                         return textureSample(iTexture, iSampler, uv);
-                }\`
+                }\`,
         })
         gl.texture('iTexture', 'https://avatars.githubusercontent.com/u/40712342')
         return <canvas ref={gl.ref} />
@@ -486,7 +486,7 @@ function Canvas() {
                 isWebGL: true,
                 instanceCount: 1000,
                 triangleCount: 1,
-                vert: vec4(tri.mul(0.05).sub(1).add(pos.mul(2)), 0, 1)
+                vert: vec4(tri.mul(0.05).sub(1).add(pos.mul(2)), 0, 1),
         })
         return <canvas ref={gl.ref} />
 }`}
@@ -507,7 +507,7 @@ function Canvas() {
                 in vec2 pos;
                 void main() {
                         gl_Position = vec4((((tri * 0.05) - 1.0) + (pos * 2.0)), 0.0, 1.0);
-                }\`
+                }\`,
         })
         gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
         gl.instance('pos', Array(1000 * 2).fill(0).map(Math.random))
@@ -537,7 +537,7 @@ function Canvas() {
                         var out: Out;
                         out.position = vec4f((((in.tri * 0.05) - 1.0) + (in.pos * 2.0)), 0.0, 1.0);
                 return out;
-                }\`
+                }\`,
         })
         gl.attribute('tri', [0, 0.73, -1, -1, 1, -1])
         gl.instance('pos', Array(1000 * 2).fill(0).map(Math.random))
@@ -568,7 +568,7 @@ function Canvas() {
                 fragment: Scope(() => {
                         const x = wave.element(uint(uv.y.mul(1024))).sub(uv.x).abs()
                         return vec4(vec3(uv.step(vec2(smoothstep(0.01, 0, x))), 0), 1)
-                })
+                }),
         })
         return <canvas ref={gl.ref} />
 }`}
@@ -603,7 +603,7 @@ function Canvas() {
                 uniform sampler2D wave;
                 void main() {
                         fragColor = vec4(vec3(step((gl_FragCoord.xy / iResolution), vec2(smoothstep(0.01, 0.0, abs((texelFetch(wave, ivec2(int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) % 32, int(uint(((gl_FragCoord.xy / iResolution).y * 1024.0))) / 32), 0).x - (gl_FragCoord.xy / iResolution).x))))), 0.0), 1.0);
-                }\`
+                }\`,
         })
         gl.storage('wave', Array(1024))
         return <canvas ref={gl.ref} />
@@ -641,7 +641,7 @@ function Canvas() {
                 @fragment
                 fn main(out: Out) -> @location(0) vec4f {
                         return vec4f(vec3f(step((out.position.xy / iResolution), vec2f(smoothstep(0.01, 0.0, abs((wave[u32(((out.position.xy / iResolution).y * 1024.0))] - (out.position.xy / iResolution).x))))), 0.0), 1.0);
-                }\`
+                }\`,
         })
         gl.storage('wave', Array(1024))
         return <canvas ref={gl.ref} />

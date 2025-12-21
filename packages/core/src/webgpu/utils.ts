@@ -182,7 +182,7 @@ export const updateBuffer = (device: GPUDevice, value: number[] | Float32Array, 
 }
 
 export const createDescriptor = (c: GPUCanvasContext, depthTexture?: GPUTexture) => {
-        const ret: GPURenderPassDescriptor = { colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0, g: 0, b: 0, a: 0 }, loadOp: 'clear', storeOp: 'store' }] }
+        const ret: GPURenderPassDescriptor = { colorAttachments: [{ view: c.getCurrentTexture().createView(), clearValue: { r: 0.2, g: 0.2, b: 0.2, a: 1 }, loadOp: 'clear', storeOp: 'store' }] }
         if (depthTexture) ret.depthStencilAttachment = { view: depthTexture.createView(), depthClearValue: 1.0, depthLoadOp: 'clear', depthStoreOp: 'store' }
         return ret
 }
