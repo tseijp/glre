@@ -54,7 +54,10 @@ export const createGL = (...args: Partial<GL>[]) => {
         gl('mount', async (el: HTMLCanvasElement) => {
                 gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)
                 const isAppend = !gl.el // Check first: canvas may unmount during WebGPU async processing
-                if (isAppend && !gl.isNative) gl.el = document.createElement('canvas')
+                if (isAppend && !gl.isNative) {
+                        gl.el = document.createElement('canvas')
+                        Object.assign(gl.el.style, { top: 0, left: 0, position: 'fixed' })
+                }
                 for (let i = 0; i < args.length; i++) {
                         const arg = args[i]
                         gl.fs = arg.fs || arg.frag || arg.fragment || undefined

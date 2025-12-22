@@ -26,6 +26,7 @@
         "devDependencies": {
                 "@changesets/cli": "*",
                 "jest": "*",
+                "jest-environment-jsdom": "*",
                 "ts-jest": "*",
                 "tsup": "*",
                 "typescript": "*"

@@ -4,6 +4,7 @@ export default {
         /**
          * coverage config
          */
+        testEnvironment: 'jsdom',
         coverageDirectory: '<rootDir>/coverage/',
         coverageReporters: ['json', 'html', 'lcov', 'text', 'text-summary', 'clover'],
         coverageThreshold: { global: { statements: 80, functions: 80, branches: 80, lines: 80 } },
