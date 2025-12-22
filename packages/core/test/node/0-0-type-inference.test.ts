@@ -38,7 +38,7 @@ describe('Type Inference Engine', () => {
 
                 it('should infer void from invalid values', () => {
                         expect(inferPrimitiveType(undefined)).toBe('void')
-                        // @ts-ignore @TODO FIX #125 `Argument of type 'null' is not assignable to parameter of type 'Y<Constants>'.`
+                        // @ts-ignore @TODO FIX #127 `Argument of type 'null' is not assignable to parameter of type 'Y<Constants>'.`
                         expect(inferPrimitiveType(null)).toBe('void')
                 })
         })

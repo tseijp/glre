@@ -209,11 +209,11 @@ describe('Scope Management System', () => {
                                 const value = int(2).toVar('switchValue')
                                 const result = float(0.0).toVar('result')
                                 Switch(value)
-                                        // @ts-ignore @TODO FIX #125 `Argument of type '() => void' is not assignable to parameter of type 'X'.`
+                                        // @ts-ignore @TODO FIX #127 `Argument of type '() => void' is not assignable to parameter of type 'X'.`
                                         .Case(int(1), () => {
                                                 result.assign(float(10.0))
                                         })
-                                        // @ts-ignore @TODO FIX #125 `Property 'Case' does not exist on type '(fun: () => void) => { Case: (...values: X[]) => (fun: () => void) => ...; Default: (fun: () => void) => void; }'.`
+                                        // @ts-ignore @TODO FIX #127 `Property 'Case' does not exist on type '(fun: () => void) => { Case: (...values: X[]) => (fun: () => void) => ...; Default: (fun: () => void) => void; }'.`
                                         .Case(int(2), () => {
                                                 result.assign(float(20.0))
                                         })
@@ -234,11 +234,11 @@ describe('Scope Management System', () => {
                                 const input = int(1).toVar('input')
                                 const output = float(0.0).toVar('output')
                                 Switch(input)
-                                        // @ts-ignore @TODO FIX #125 `Argument of type '() => void' is not assignable to parameter of type 'X'.`
+                                        // @ts-ignore @TODO FIX #127 `Argument of type '() => void' is not assignable to parameter of type 'X'.`
                                         .Case(int(1), int(2), () => {
                                                 output.assign(float(1.0))
                                         })
-                                        // @ts-ignore @TODO FIX #125 `Property 'Default' does not exist on type '(fun: () => void) => { Case: (...values: X[]) => (fun: () => void) => ...; Default: (fun: () => void) => void; }'.`
+                                        // @ts-ignore @TODO FIX #127 `Property 'Default' does not exist on type '(fun: () => void) => { Case: (...values: X[]) => (fun: () => void) => ...; Default: (fun: () => void) => void; }'.`
                                         .Default(() => {
                                                 output.assign(float(-1.0))
                                         })

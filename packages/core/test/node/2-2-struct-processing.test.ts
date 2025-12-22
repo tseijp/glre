@@ -90,7 +90,7 @@ describe('Struct Processing System', () => {
                         const Material = struct({ albedo: vec4(), normal: vec3(), metallic: float(), roughness: float(), emissive: vec3() }, 'Material')
                         const context = createWGSLContext()
                         const instance = Material()
-                        // @ts-ignore @TODO FIX #125 `Argument of type 'Struct<{ albedo: Vec4; normal: Vec3; metallic: Float; roughness: Float; emissive: Vec3; }>' is not assignable to parameter of type 'Y<Constants>'. Type 'Struct<{ albedo: Vec4; normal: Vec3; metallic: Float; roughness: Float; emissive: Vec3; }>' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.`
+                        // @ts-ignore @TODO FIX #127 `Argument of type 'Struct<{ albedo: Vec4; normal: Vec3; metallic: Float; roughness: Float; emissive: Vec3; }>' is not assignable to parameter of type 'Y<Constants>'. Type 'Struct<{ albedo: Vec4; normal: Vec3; metallic: Float; roughness: Float; emissive: Vec3; }>' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.`
                         code(instance, context)
                         const header = context.code?.headers.get('Material')
                         expect(header).toContain('albedo: vec4f,')
@@ -196,13 +196,13 @@ describe('Struct Processing System', () => {
         describe('Nested Struct Support', () => {
                 it('should handle structs with struct fields', () => {
                         const Vector3 = struct({ x: float(), y: float(), z: float() }, 'Vector3')
-                        // @ts-ignore @TODO FIX #125 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                        // @ts-ignore @TODO FIX #127 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                         const Transform = struct({ position: Vector3(), scale: Vector3() }, 'Transform')
                         const result = build(() => {
                                 const transform = Transform({
-                                        // @ts-ignore @TODO FIX #125 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                                        // @ts-ignore @TODO FIX #127 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                                         position: Vector3({ x: float(1), y: float(2), z: float(3) }),
-                                        // @ts-ignore @TODO FIX #125 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                                        // @ts-ignore @TODO FIX #127 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                                         scale: Vector3({ x: float(1), y: float(1), z: float(1) }),
                                 })
                                 return transform.position.x
@@ -214,10 +214,10 @@ describe('Struct Processing System', () => {
 
                 it('should handle complex nested structures', () => {
                         const Material = struct({ color: vec3(), metallic: float() }, 'Material')
-                        // @ts-ignore @TODO FIX #125 `Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                        // @ts-ignore @TODO FIX #127 `Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                         const Mesh = struct({ material: Material(), vertexCount: int() }, 'Mesh')
                         const result = build(() => {
-                                // @ts-ignore @TODO FIX #125 `Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                                // @ts-ignore @TODO FIX #127 `Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ color: Vec3; metallic: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                                 const mesh = Mesh({ material: Material({ color: vec3(1, 0, 0), metallic: float(0.8) }), vertexCount: int(1000) })
                                 return mesh.material.color.length()
                         })
@@ -260,7 +260,7 @@ describe('Struct Processing System', () => {
                         }).setLayout({
                                 name: 'vectorLength',
                                 type: 'float',
-                                // @ts-ignore @TODO FIX #125 `Type '"Vector2"' is not assignable to type 'Constants | "auto"'.`
+                                // @ts-ignore @TODO FIX #127 `Type '"Vector2"' is not assignable to type 'Constants | "auto"'.`
                                 inputs: [{ name: 'vec', type: 'Vector2' }],
                         })
                         const result = build(() => {
@@ -275,7 +275,7 @@ describe('Struct Processing System', () => {
                         const Color = struct({ r: float(), g: float(), b: float() }, 'Color')
                         const createRed = Fn(() => {
                                 return Color({ r: float(1), g: float(0), b: float(0) })
-                                // @ts-ignore @TODO FIX #125 `Type '"Color"' is not assignable to type 'Constants | "auto"'. Did you mean '"color"'?`
+                                // @ts-ignore @TODO FIX #127 `Type '"Color"' is not assignable to type 'Constants | "auto"'. Did you mean '"color"'?`
                         }).setLayout({ name: 'createRedColor', type: 'Color' })
                         const result = build(() => {
                                 const red = createRed()
@@ -301,10 +301,10 @@ describe('Struct Processing System', () => {
         describe('Dependency Resolution and Ordering', () => {
                 it('should handle forward struct declarations', () => {
                         const NodeStruct = struct({ value: int(), next: int() }, 'Node')
-                        // @ts-ignore @TODO FIX #125 `Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                        // @ts-ignore @TODO FIX #127 `Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                         const ListStruct = struct({ head: NodeStruct(), size: int() }, 'List')
                         const result = build(() => {
-                                // @ts-ignore @TODO FIX #125 `ype 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                                // @ts-ignore @TODO FIX #127 `ype 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                                 const list = ListStruct({ head: NodeStruct({ value: int(1), next: int(0) }), size: int(1) })
                                 return list.head.value.toFloat()
                         })
@@ -314,9 +314,9 @@ describe('Struct Processing System', () => {
 
                 it('should resolve complex dependency chains', () => {
                         const Vector3 = struct({ x: float(), y: float(), z: float() }, 'Vector3')
-                        // @ts-ignore @TODO FIX #125 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                        // @ts-ignore @TODO FIX #127 `Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is not assignable to type 'StructBase'. Type 'Struct<{ x: Float; y: Float; z: Float; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                         const Vertex = struct({ position: Vector3(), normal: Vector3() }, 'Vertex')
-                        // @ts-ignore @TODO FIX #125 `Type 'Struct<StructFields>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<StructFields>' is not assignable to type 'StructBase'. Type 'Struct<StructFields>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                        // @ts-ignore @TODO FIX #127 `Type 'Struct<StructFields>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<StructFields>' is not assignable to type 'StructBase'. Type 'Struct<StructFields>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                         const Triangle = struct({ v1: Vertex(), v2: Vertex(), v3: Vertex() }, 'Triangle')
                         const result = build(() => {
                                 const tri = Triangle()
@@ -337,9 +337,9 @@ describe('Struct Processing System', () => {
                         const wgslContext = createWGSLContext()
                         const glslContext = createGLSLContext()
                         const instance = Material()
-                        // @ts-ignore @TODO FIX #125 `Argument of type 'Struct<{ diffuse: Vec3; specular: Float; }>' is not assignable to parameter of type 'Y<Constants>'. Type 'Struct<{ diffuse: Vec3; specular: Float; }>' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.`
+                        // @ts-ignore @TODO FIX #127 `Argument of type 'Struct<{ diffuse: Vec3; specular: Float; }>' is not assignable to parameter of type 'Y<Constants>'. Type 'Struct<{ diffuse: Vec3; specular: Float; }>' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.`
                         code(instance, wgslContext)
-                        // @ts-ignore @TODO FIX #125 `Argument of type 'Struct<{ diffuse: Vec3; specular: Float; }>' is not assignable to parameter of type 'Y<Constants>'. Type 'Struct<{ diffuse: Vec3; specular: Float; }>' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.`
+                        // @ts-ignore @TODO FIX #127 `Argument of type 'Struct<{ diffuse: Vec3; specular: Float; }>' is not assignable to parameter of type 'Y<Constants>'. Type 'Struct<{ diffuse: Vec3; specular: Float; }>' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 314 more.`
                         code(instance, glslContext)
                         const wgslHeader = wgslContext.code?.headers.get('Material')
                         const glslHeader = glslContext.code?.headers.get('Material')
