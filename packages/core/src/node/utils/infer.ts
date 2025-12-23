@@ -14,6 +14,7 @@ const inferSwizzleType = <T extends C>(L: T, len: 1 | 2 | 3 | 4): T => {
 
 // Unified logic with types.ts InferOperator type
 const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
+        if (op === 'not') return 'bool' as T // 'not' operator's right side is none, causing a warning in the next validator
         if (!validateOperatorTypes(L, R, op)) console.warn(`GLRE Type Warning: Invalid operator '${op}' between types '${L}' and '${R}'`)
         return getOperatorResultType(L, R, op) as T
 }
@@ -68,13 +69,13 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                 }
 
         if (type === 'member') {
-                if (isSwizzle(y)) return inferSwizzleType(infer(x, c), y.length as 1 | 2 | 3 | 4)
-                if (isX(x)) {
-                        const structType = infer(x, c)
-                        const fields = c.code?.structStructFields?.get(structType)
+                const constant = infer(x, c) // Check if struct first to avoid field/swizzle clash, e.g. Struct({ x: float(), y: float() })
+                if (!isConstants(constant)) {
+                        const fields = c.code?.structStructFields?.get(constant)
                         if (fields && fields[y]) return infer(fields[y], c) as T
                 }
-                return 'float' as T
+                if (isSwizzle(y)) return inferSwizzleType(constant, y.length as 1 | 2 | 3 | 4) as T
+                return 'float' as T // throw Error
         }
         if (inferFrom) return inferFromArray(inferFrom, c)
         return x ? infer(x, c) : ('void' as T) // for uniform and storage gather and scatter

@@ -30,6 +30,8 @@ export const TYPE_MAPPING = {
         struct: 'struct',
 } as const
 
+export const CONSTANTS = Object.keys(TYPE_MAPPING) as (keyof typeof TYPE_MAPPING)[]
+
 export const SWIZZLE_BASE_MAP = {
         float: 'float',
         vec2: 'float',
@@ -56,10 +58,8 @@ export const SWIZZLE_RESULT_MAP = {
         bool: { 1: 'bool', 2: 'bvec2', 3: 'bvec3', 4: 'bvec4' } as const,
 }
 
-export const CONSTANTS = Object.keys(TYPE_MAPPING) as (keyof typeof TYPE_MAPPING)[]
-
 export const OPERATORS = {
-        not: '', // IGNORED
+        not: '!',
         add: '+',
         sub: '-',
         mul: '*',
