@@ -7,18 +7,20 @@ import type { Constants as C, NodeContext, Y } from '../types'
 
 export * from './utils'
 
+const parseNumber = (target = 0) => {
+        const ret = `${target}`
+        if (ret.includes('.')) return ret
+        // Check if this number should be an integer based on the inferred type
+        // For now, keep the original behavior to maintain compatibility
+        return ret + '.0'
+}
+
 export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
         if (is.arr(target)) return parseArray(target, c)
         if (is.str(target)) return target
-        if (is.num(target)) {
-                const ret = `${target}`
-                if (ret.includes('.')) return ret
-                // Check if this number should be an integer based on the inferred type
-                // For now, keep the original behavior to maintain compatibility
-                return ret + '.0'
-        }
+        if (is.num(target)) return parseNumber(target)
         if (is.bol(target)) return target ? 'true' : 'false'
         if (!target) return ''
         if (!isX(target)) return ''
@@ -42,7 +44,12 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                         : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
         }
         if (type === 'ternary') return c.isWebGL ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})` : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
-        if (type === 'conversion') return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
+        if (type === 'conversion') {
+                if (x === 'float') if (is.num(y)) return parseNumber(y) // no conversion needed, e.g., float(1.0) → 1.0
+                if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
+                if (x === 'int') if (is.num(y)) return `${y << 0}`
+                return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
+        }
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
                 if (x === 'mod') return code(mod(y, z), c)
