@@ -75,10 +75,10 @@ describe('Abstract Syntax Tree Construction', () => {
         describe('Function Call AST Construction', () => {
                 it('should construct component-wise function nodes correctly', () => {
                         const x = vec3(1, 2, 3)
-                        const result = x.sin()
-                        expect(result.type).toBe('function')
-                        expect(result.props.children?.[0]).toBe('sin')
-                        expect(result.props.children?.[1]).toBe(x)
+                        const res = x.sin()
+                        expect(res.type).toBe('function')
+                        expect(res.props.children?.[0]).toBe('sin')
+                        expect(res.props.children?.[1]).toBe(x)
                 })
 
                 it('should construct reduction function nodes correctly', () => {
@@ -93,17 +93,17 @@ describe('Abstract Syntax Tree Construction', () => {
                         const x = vec3(1, 2, 3)
                         const y = vec3(4, 5, 6)
                         const z = float(0.5)
-                        const result = x.mix(y, z)
-                        expect(result.type).toBe('function')
-                        expect(result.props.children).toEqual(['mix', x, y, z])
+                        const res = x.mix(y, z)
+                        expect(res.type).toBe('function')
+                        expect(res.props.children).toEqual(['mix', x, y, z])
                 })
 
                 it('should handle nested function calls correctly', () => {
                         const x = vec3(1, 2, 3)
-                        const result = x.normalize().sin().abs()
-                        expect(result.type).toBe('function')
-                        expect(result.props.children?.[0]).toBe('abs')
-                        const sinNode = result.props.children?.[1]
+                        const res = x.normalize().sin().abs()
+                        expect(res.type).toBe('function')
+                        expect(res.props.children?.[0]).toBe('abs')
+                        const sinNode = res.props.children?.[1]
                         expect(sinNode?.type).toBe('function')
                         expect(sinNode?.props.children?.[0]).toBe('sin')
                         const normalizeNode = sinNode?.props.children?.[1]
@@ -185,10 +185,10 @@ describe('Abstract Syntax Tree Construction', () => {
                         const x = vec3(1, 2, 3)
                         const y = vec3(4, 5, 6)
                         const z = vec3(7, 8, 9)
-                        const result = x.add(y).cross(z).normalize()
-                        expect(result.type).toBe('function')
-                        expect(result.props.children?.[0]).toBe('normalize')
-                        const crossNode = result.props.children?.[1]
+                        const res = x.add(y).cross(z).normalize()
+                        expect(res.type).toBe('function')
+                        expect(res.props.children?.[0]).toBe('normalize')
+                        const crossNode = res.props.children?.[1]
                         expect(crossNode?.type).toBe('function')
                         expect(crossNode?.props.children?.[0]).toBe('cross')
                         const addNode = crossNode?.props.children?.[1]
@@ -199,10 +199,10 @@ describe('Abstract Syntax Tree Construction', () => {
                 it('should handle mixed operation types correctly', () => {
                         const x = vec3(1, 2, 3)
                         const y = float(2.0)
-                        const result = x.mul(y).x.add(float(1.0))
-                        expect(result.type).toBe('operator')
-                        expect(result.props.children?.[0]).toBe('add')
-                        const memberNode = result.props.children?.[1]
+                        const res = x.mul(y).x.add(float(1.0))
+                        expect(res.type).toBe('operator')
+                        expect(res.props.children?.[0]).toBe('add')
+                        const memberNode = res.props.children?.[1]
                         expect(memberNode?.type).toBe('member')
                         expect(memberNode?.props.children?.[1]).toBe('x')
                         const mulNode = memberNode?.props.children?.[0]
@@ -232,9 +232,9 @@ describe('Abstract Syntax Tree Construction', () => {
                         const condition = float(1.0).greaterThan(float(0.5))
                         const trueVal = vec3(1, 0, 0)
                         const falseVal = vec3(0, 1, 0)
-                        const result = trueVal.select(falseVal, condition)
-                        expect(result.type).toBe('ternary')
-                        expect(result.props.children).toEqual([trueVal, falseVal, condition])
+                        const res = trueVal.select(falseVal, condition)
+                        expect(res.type).toBe('ternary')
+                        expect(res.props.children).toEqual([trueVal, falseVal, condition])
                 })
         })
 })

@@ -17,7 +17,7 @@
                 "qwik": "cd examples/qwik && npm run dev",
                 "solid": "cd examples/solid && npm run start",
                 "watch": "cd packages/core && npx jest --watch --runInBand",
-                "cov": "cd packages/core && npx jest --coverage",
+                "cov": "cd packages/core && npx jest --coverage --detectOpenHandles",
                 "ls": "cd packages/core && npm publish --dry-run",
                 "tsup": "cd packages/core && npx tsup",
                 "vers": "npx changeset version",

@@ -32,8 +32,34 @@ export const TYPE_MAPPING = {
 
 export const CONSTANTS = Object.keys(TYPE_MAPPING) as (keyof typeof TYPE_MAPPING)[]
 
+export const SWIZZLE_BASE_MAP = {
+        float: 'float',
+        vec2: 'float',
+        vec3: 'float',
+        vec4: 'float',
+        int: 'int',
+        ivec2: 'int',
+        ivec3: 'int',
+        ivec4: 'int',
+        uint: 'uint',
+        uvec2: 'uint',
+        uvec3: 'uint',
+        uvec4: 'uint',
+        bool: 'bool',
+        bvec2: 'bool',
+        bvec3: 'bool',
+        bvec4: 'bool',
+} as const
+
+export const SWIZZLE_RESULT_MAP = {
+        float: { 1: 'float', 2: 'vec2', 3: 'vec3', 4: 'vec4', 9: 'mat3', 16: 'mat4' } as const,
+        int: { 1: 'int', 2: 'ivec2', 3: 'ivec3', 4: 'ivec4' } as const,
+        uint: { 1: 'uint', 2: 'uvec2', 3: 'uvec3', 4: 'uvec4' } as const,
+        bool: { 1: 'bool', 2: 'bvec2', 3: 'bvec3', 4: 'bvec4' } as const,
+}
+
 export const OPERATORS = {
-        not: '', // IGNORED
+        not: '!',
         add: '+',
         sub: '-',
         mul: '*',
@@ -65,15 +91,6 @@ export const OPERATORS = {
 } as const
 
 export const OPERATOR_KEYS = Object.keys(OPERATORS) as (keyof typeof OPERATORS)[]
-
-export const COMPONENT_COUNT_TO_TYPE = {
-        1: 'float',
-        2: 'vec2',
-        3: 'vec3',
-        4: 'vec4',
-        9: 'mat3',
-        16: 'mat4',
-} as const
 
 export const BUILTIN_TYPES = {
         // WGSL builtin variables

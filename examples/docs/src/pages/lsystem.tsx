@@ -102,6 +102,7 @@ void main() {
         fragColor = fragment(gl_FragCoord);
 }
  */
+// @ts-ignore
 import Layout from '@theme/Layout'
 import { Break, Fn, Float, If, Loop, Vec2, Vec4, float, iResolution, int, Int, iTime, mat3, position, smoothstep, uniform, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
