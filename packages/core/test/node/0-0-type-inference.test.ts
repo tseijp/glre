@@ -180,8 +180,8 @@ describe('Type Inference Engine', () => {
                         const x = vec3(1, 2, 3)
                         expect(infer(x.length())).toBe('float')
                         expect(infer(x.dot(vec3(4, 5, 6)))).toBe('float')
-                        const y = ivec3(1, 2, 3)
-                        expect(infer(y.dot(ivec3(4, 5, 6)))).toBe('int')
+                        // const y = ivec3(1, 2, 3)
+                        // expect(infer(y.dot(ivec3(4, 5, 6)))).toBe('int') // .dot does not allow operations between ivec3
                 })
 
                 it('should infer cross product as vec3', () => {

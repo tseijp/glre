@@ -21,7 +21,7 @@ const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
 export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
         if (is.bol(x)) return 'bool' as T
         if (is.str(x)) return 'texture' as T
-        if (is.num(x)) return 'float' as T // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
+        if (is.num(x)) return 'float' as T // @TODO FIX: Number.isInteger(x) ? 'int' : 'float'
         if (is.arr(x) || isFloat32(x)) return SWIZZLE_RESULT_MAP.float[x.length as 1 | 2 | 3 | 4 | 9 | 16] as T
         if (isElement(x)) return 'texture' as T
         return 'void' as T
