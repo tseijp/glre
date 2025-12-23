@@ -148,7 +148,7 @@ import { useGL } from 'glre/react'
 import { vec4, uv } from 'glre/node'
 
 const Canvas = () => {
-  const gl = useGL({ frag: vec4(uv, 0, 1) })
+  const gl = useGL({ fragment: vec4(uv, 0, 1) })
   return <canvas ref={gl.ref} />
 }
 
@@ -176,7 +176,7 @@ import { useGL } from 'glre/native'
 import { vec4, uv } from 'glre/node'
 
 const Canvas = () => {
-  const gl = useGL({ frag: vec4(uv, 0, 1) })
+  const gl = useGL({ fragment: vec4(uv, 0, 1) })
   return (
      <GLView
       style={{ flex: 1 }}
@@ -207,7 +207,7 @@ import { onGL } from 'glre/solid'
 import { vec4, uv } from 'glre/node'
 
 const Canvas = () => {
-  const gl = onGL({ frag: vec4(uv, 0, 1) })
+  const gl = onGL({ fragment: vec4(uv, 0, 1) })
   return <canvas ref={gl.ref} />
 }
 
@@ -253,8 +253,8 @@ function Canvas() {
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
-    vert: vec4(tri, 0, 1),
-    frag: vec4(vertexStage(col), 1),
+    vertex: vec4(tri, 0, 1),
+    fragment: vec4(vertexStage(col), 1),
   })
   return <canvas ref={gl.ref} />
 }
@@ -402,7 +402,7 @@ function Canvas() {
 function Canvas() {
   const gl = useGL({
     isWebGL: true,
-    frag: vec4(
+    fragment: vec4(
       uv.sub(iMouse).fract(),
       iTime.sin().mul(0.5).add(0.5),
       1
@@ -516,7 +516,7 @@ function Canvas() {
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
-    vert: vec4(tri, 0, 1),
+    vertex: vec4(tri, 0, 1),
   })
   return <canvas ref={gl.ref} />
 }
@@ -539,7 +539,7 @@ function Canvas() {
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
-    vert: `
+    vertex: `
     #version 300 es
     in vec4 tri;
     void main() {
@@ -630,11 +630,11 @@ function Canvas() {
     {
       isWebGL: true,
       triangleCount: 1,
-      vert: vec4(vec2(-0.5, 0).add(tri), 0, 1),
+      vertex: vec4(vec2(-0.5, 0).add(tri), 0, 1),
     },
     {
       triangleCount: 1,
-      vert: vec4(vec2(0.5, 0).add(tri), 0, 1),
+      vertex: vec4(vec2(0.5, 0).add(tri), 0, 1),
     }
   )
   return <canvas ref={gl.ref} />
@@ -659,7 +659,7 @@ function Canvas() {
     {
       isWebGL: true,
       triangleCount: 1,
-      vert: `
+      vertex: `
       #version 300 es
       in vec2 tri;
       void main() {
@@ -668,7 +668,7 @@ function Canvas() {
     },
     {
       triangleCount: 1,
-      vert: `
+      vertex: `
       #version 300 es
       in vec2 tri;
       void main() {
@@ -704,7 +704,7 @@ function Canvas() {
     {
       isWebGL: false,
       triangleCount: 1,
-      vert: `
+      vertex: `
       struct In {
         @location(0) tri: vec2f
       }
@@ -720,7 +720,7 @@ function Canvas() {
     },
     {
       triangleCount: 1,
-      vert: `
+      vertex: `
       struct In {
         @location(0) tri: vec2f
       }
@@ -780,7 +780,7 @@ function Canvas() {
   const iTexture = uniform('https://...')
   const gl = useGL({
     isWebGL: true,
-    frag: texture(iTexture, uv),
+    fragment: texture(iTexture, uv),
   })
   return <canvas ref={gl.ref} />
 }
@@ -897,7 +897,7 @@ function Canvas() {
     isWebGL: true,
     instanceCount: 1000,
     triangleCount: 1,
-    vert: vec4(
+    vertex: vec4(
       tri.mul(0.05).sub(1).add(pos.mul(2)),
       0,
       1
@@ -925,7 +925,7 @@ function Canvas() {
     isWebGL: true,
     instanceCount: 1000,
     triangleCount: 1,
-    vert: `
+    vertex: `
     #version 300 es
     in vec2 tri;
     in vec2 pos;
@@ -967,7 +967,7 @@ function Canvas() {
     isWebGL: false,
     instanceCount: 1000,
     triangleCount: 1,
-    vert: `
+    vertex: `
     struct In {
       @location(0) tri: vec2f,
       @location(1) pos: vec2f

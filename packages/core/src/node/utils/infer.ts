@@ -23,7 +23,7 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
 
 const inferFromCount = <T extends C>(count: number, error = console.warn, id = '') => {
         const ret = COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
-        if (!ret) console.warn(`glre node system error: Cannot infer ${id ? `${id} ` : ''} type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`)
+        if (!ret) error(`glre node system error: Cannot infer ${id ? `${id} ` : ''} type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`)
         return ret
 }
 
