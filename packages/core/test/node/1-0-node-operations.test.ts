@@ -126,17 +126,17 @@ describe('Node Creation & Operations', () => {
                 it('should perform scalar-vector broadcast operations correctly', () => {
                         const scalar = float(2.0)
                         const vector = vec3(1, 2, 3)
-                        const result1 = vector.mul(scalar)
-                        const result2 = vector.add(scalar)
-                        expect(infer(result1)).toBe('vec3')
-                        expect(infer(result2)).toBe('vec3')
+                        const res1 = vector.mul(scalar)
+                        const res2 = vector.add(scalar)
+                        expect(infer(res1)).toBe('vec3')
+                        expect(infer(res2)).toBe('vec3')
                 })
 
                 it('should perform matrix-vector operations correctly', () => {
                         const matrix = mat3()
                         const vector = vec3(1, 2, 3)
-                        const result = matrix.mul(vector)
-                        expect(infer(result)).toBe('vec3')
+                        const res = matrix.mul(vector)
+                        expect(infer(res)).toBe('vec3')
                 })
         })
 
@@ -161,8 +161,8 @@ describe('Node Creation & Operations', () => {
                 it('should handle vector comparison operations', () => {
                         const x = vec3(1, 2, 3)
                         const y = vec3(4, 5, 6)
-                        const result = x.equal(y)
-                        expect(infer(result)).toBe('bool')
+                        const res = x.equal(y)
+                        expect(infer(res)).toBe('bool')
                 })
         })
 
@@ -308,17 +308,17 @@ describe('Node Creation & Operations', () => {
                         const condition = bool(true)
                         const trueValue = vec3(1, 0, 0)
                         const falseValue = vec3(0, 1, 0)
-                        const result = trueValue.select(falseValue, condition)
-                        expect(result.type).toBe('ternary')
-                        expect(infer(result)).toBe('vec3')
+                        const res = trueValue.select(falseValue, condition)
+                        expect(res.type).toBe('ternary')
+                        expect(infer(res)).toBe('vec3')
                 })
 
                 it('should handle scalar conditional selection', () => {
                         const condition = bool(false)
                         const trueValue = float(1.0)
                         const falseValue = float(0.0)
-                        const result = trueValue.select(falseValue, condition)
-                        expect(infer(result)).toBe('float')
+                        const res = trueValue.select(falseValue, condition)
+                        expect(infer(res)).toBe('float')
                 })
         })
 
@@ -326,20 +326,20 @@ describe('Node Creation & Operations', () => {
                 it('should handle complex operation chains correctly', () => {
                         const x = vec3(1, 2, 3)
                         const y = vec3(4, 5, 6)
-                        const result = x.add(y).normalize().mul(float(2.0))
-                        expect(infer(result)).toBe('vec3')
+                        const res = x.add(y).normalize().mul(float(2.0))
+                        expect(infer(res)).toBe('vec3')
                 })
 
                 it('should maintain type correctness through chains', () => {
                         const x = vec3(1, 2, 3)
-                        const result = x.sin().cos().abs().length()
-                        expect(infer(result)).toBe('float')
+                        const res = x.sin().cos().abs().length()
+                        expect(infer(res)).toBe('float')
                 })
 
                 it('should handle mixed swizzle and arithmetic chains', () => {
                         const x = vec4(1, 2, 3, 4)
-                        const result = x.xyz.add(vec3(1, 1, 1)).xy
-                        expect(infer(result)).toBe('vec2')
+                        const res = x.xyz.add(vec3(1, 1, 1)).xy
+                        expect(infer(res)).toBe('vec2')
                 })
         })
 

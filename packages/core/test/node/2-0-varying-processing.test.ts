@@ -13,7 +13,6 @@ describe('Varying Processing System', () => {
                 it('should detect varying variables through vertexStage usage', () => {
                         const worldPos = vec3(1, 2, 3)
                         const vWorldPos = vertexStage(worldPos, 'worldPosition')
-
                         expect(vWorldPos.type).toBe('varying')
                         expect(vWorldPos.props.id).toBe('worldPosition')
                         expect(vWorldPos.props.inferFrom?.[0]).toBe(worldPos)
@@ -23,11 +22,9 @@ describe('Varying Processing System', () => {
                         const pos = vec3(1, 2, 3)
                         const norm = vec3(0, 1, 0)
                         const uv = vec3(0.5, 0.5, 0)
-
                         const vPos = vertexStage(pos, 'vPosition')
                         const vNorm = vertexStage(norm, 'vNormal')
                         const vUV = vertexStage(uv, 'vUV')
-
                         expect(vPos.props.id).toBe('vPosition')
                         expect(vNorm.props.id).toBe('vNormal')
                         expect(vUV.props.id).toBe('vUV')
@@ -36,7 +33,6 @@ describe('Varying Processing System', () => {
                 it('should auto-generate varying IDs when not provided', () => {
                         const data = vec4(1, 2, 3, 4)
                         const varying = vertexStage(data)
-
                         expect(varying.type).toBe('varying')
                         expect(varying.props.id).toMatch(/x\d+/)
                 })
@@ -49,13 +45,11 @@ describe('Varying Processing System', () => {
                                 const _varying = vertexStage(worldPos, 'worldPosition')
                                 return position
                         })
-
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-
-                        expect(result).toContain('struct Out {')
-                        expect(result).toContain('@location(0) worldPosition: vec3f')
-                        expect(result).toContain('out.worldPosition =')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('struct Out {')
+                        expect(res).toContain('@location(0) worldPosition: vec3f')
+                        expect(res).toContain('out.worldPosition =')
                 })
 
                 it('should generate correct GLSL vertex output with varyings', () => {
@@ -64,12 +58,10 @@ describe('Varying Processing System', () => {
                                 const _varying = vertexStage(worldPos, 'worldPosition')
                                 return position
                         })
-
-                        const context = createGLSLVertexContext()
-                        const result = vertex(vertexFunc(), context)
-
-                        expect(result).toContain('out vec3 worldPosition;')
-                        expect(result).toContain('worldPosition =')
+                        const c = createGLSLVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('out vec3 worldPosition;')
+                        expect(res).toContain('worldPosition =')
                 })
 
                 it('should handle multiple varyings in vertex shader output', () => {
@@ -82,14 +74,14 @@ describe('Varying Processing System', () => {
                                 const vColor = vertexStage(color, 'vColor')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-                        expect(result).toContain('@location(0) vPosition: vec3f')
-                        expect(result).toContain('@location(1) vNormal: vec3f')
-                        expect(result).toContain('@location(2) vColor: vec3f')
-                        expect(result).toContain('out.vPosition =')
-                        expect(result).toContain('out.vNormal =')
-                        expect(result).toContain('out.vColor =')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('@location(0) vPosition: vec3f')
+                        expect(res).toContain('@location(1) vNormal: vec3f')
+                        expect(res).toContain('@location(2) vColor: vec3f')
+                        expect(res).toContain('out.vPosition =')
+                        expect(res).toContain('out.vNormal =')
+                        expect(res).toContain('out.vColor =')
                 })
         })
 
@@ -100,19 +92,16 @@ describe('Varying Processing System', () => {
                                 const _varying = vertexStage(worldPos, 'worldPosition')
                                 return position
                         })
-
                         const fragmentFunc = Fn(([]) => {
                                 const worldPos = vec3(1, 2, 3)
                                 const varying = vertexStage(worldPos, 'worldPosition')
                                 return vec4(varying, 1)
                         })
-
                         vertex(vertexFunc(), createVertexContext())
-                        const context = createFragmentContext()
-                        const result = fragment(fragmentFunc(), context)
-
-                        expect(result).toContain('struct Out {')
-                        expect(result).toContain('@location(0) worldPosition: vec3f')
+                        const c = createFragmentContext()
+                        const res = fragment(fragmentFunc(), c)
+                        expect(res).toContain('struct Out {')
+                        expect(res).toContain('@location(0) worldPosition: vec3f')
                 })
 
                 it('should generate correct GLSL fragment input with varyings', () => {
@@ -127,10 +116,9 @@ describe('Varying Processing System', () => {
                                 return vec4(varying, 1)
                         })
                         vertex(vertexFunc(), createGLSLVertexContext())
-                        const context = createGLSLFragmentContext()
-                        const result = fragment(fragmentFunc(), context)
-
-                        expect(result).toContain('in vec3 worldPosition;')
+                        const c = createGLSLFragmentContext()
+                        const res = fragment(fragmentFunc(), c)
+                        expect(res).toContain('in vec3 worldPosition;')
                 })
 
                 it('should handle varying access in fragment shader', () => {
@@ -140,10 +128,10 @@ describe('Varying Processing System', () => {
                                 const normalized = varying.normalize()
                                 return vec4(normalized, 1)
                         })
-                        const context = createFragmentContext()
-                        const result = fragment(fragmentFunc(), context)
-                        expect(result).toContain('normalize')
-                        expect(result).toContain('out.worldPosition')
+                        const c = createFragmentContext()
+                        const res = fragment(fragmentFunc(), c)
+                        expect(res).toContain('normalize')
+                        expect(res).toContain('out.worldPosition')
                 })
         })
 
@@ -173,10 +161,10 @@ describe('Varying Processing System', () => {
                                 const vDepth = vertexStage(depth, 'depth')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-                        expect(result).toContain('depth: f32')
-                        expect(result).toContain('out.depth =')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('depth: f32')
+                        expect(res).toContain('out.depth =')
                 })
 
                 it('should handle vec4 varying types correctly', () => {
@@ -185,9 +173,9 @@ describe('Varying Processing System', () => {
                                 const vData = vertexStage(data, 'data')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-                        expect(result).toContain('data: vec4f')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('data: vec4f')
                 })
         })
 
@@ -202,11 +190,11 @@ describe('Varying Processing System', () => {
                                 const v3 = vertexStage(third, 'third')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-                        expect(result).toContain('@location(0) first')
-                        expect(result).toContain('@location(1) second')
-                        expect(result).toContain('@location(2) third')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('@location(0) first')
+                        expect(res).toContain('@location(1) second')
+                        expect(res).toContain('@location(2) third')
                 })
 
                 it('should start location numbering from 0', () => {
@@ -215,9 +203,9 @@ describe('Varying Processing System', () => {
                                 const vNormal = vertexStage(normal, 'normal')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-                        expect(result).toContain('@location(0) normal')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('@location(0) normal')
                 })
         })
 
@@ -261,28 +249,28 @@ describe('Varying Processing System', () => {
                                 const _vComputed = vertexStage(computed, 'computed')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const result = vertex(vertexFunc(), context)
-                        expect(result).toContain('computed: vec3f')
-                        expect(result).toContain('normalize')
-                        expect(result).toContain('* 2.0')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('computed: vec3f')
+                        expect(res).toContain('normalize')
+                        expect(res).toContain('* 2.0')
                 })
 
-                it('should handle varying with function call results', () => {
+                it('should handle varying with function call ress', () => {
                         const mathFunc = Fn(([x]) => {
                                 return x.sin().cos()
                         })
                         const vertexFunc = Fn(([]) => {
                                 const input = vec3(1, 2, 3)
-                                const result = mathFunc(input)
-                                const _vResult = vertexStage(result, 'processed')
+                                const res = mathFunc(input)
+                                const _vResult = vertexStage(res, 'processed')
                                 return position
                         })
-                        const context = createVertexContext()
-                        const shaderResult = vertex(vertexFunc(), context)
-                        expect(shaderResult).toContain('processed: vec3f')
-                        expect(shaderResult).toContain('sin')
-                        expect(shaderResult).toContain('cos')
+                        const c = createVertexContext()
+                        const res = vertex(vertexFunc(), c)
+                        expect(res).toContain('processed: vec3f')
+                        expect(res).toContain('sin')
+                        expect(res).toContain('cos')
                 })
 
                 it('should handle varying reuse across multiple shaders', () => {

@@ -8,39 +8,39 @@ describe('Function Definition System', () => {
                         const addFunc = Fn(([x, y]) => {
                                 return x.add(y)
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const a = float(1.0)
                                 const b = float(2.0)
                                 return addFunc(a, b)
                         })
-                        expect(result).toContain('fn ')
-                        expect(result).toContain('return ')
-                        expect(result).toMatch(/\(.*\+.*\)/)
+                        expect(res).toContain('fn ')
+                        expect(res).toContain('return ')
+                        expect(res).toMatch(/\(.*\+.*\)/)
                 })
 
                 it('should infer return types automatically', () => {
                         const vectorFunc = Fn(([x]) => {
                                 return x.normalize()
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const v = vec3(1, 2, 3)
                                 return vectorFunc(v)
                         })
-                        expect(result).toContain('normalize')
-                        expect(result).toContain('vec3f')
+                        expect(res).toContain('normalize')
+                        expect(res).toContain('vec3f')
                 })
 
                 it('should handle void functions correctly', () => {
                         const voidFunc = Fn(([x]) => {
                                 x.assign(float(0.0))
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const value = float(5.0).toVar('value')
                                 voidFunc(value)
                                 return value
                         })
-                        expect(result).toContain('fn ')
-                        expect(result).not.toContain('return')
+                        expect(res).toContain('fn ')
+                        expect(res).not.toContain('return')
                 })
         })
 
@@ -56,13 +56,13 @@ describe('Function Definition System', () => {
                                         { name: 'second', type: 'float' },
                                 ],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return multiply(float(3.0), float(4.0))
                         })
-                        expect(result).toContain('multiply')
-                        expect(result).toContain('first')
-                        expect(result).toContain('second')
-                        expect(result).toContain('f32')
+                        expect(res).toContain('multiply')
+                        expect(res).toContain('first')
+                        expect(res).toContain('second')
+                        expect(res).toContain('f32')
                 })
 
                 it('should handle auto type inference in layout', () => {
@@ -73,12 +73,12 @@ describe('Function Definition System', () => {
                                 type: 'auto',
                                 inputs: [{ name: 'input', type: 'auto' }],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return autoFunc(vec3(1, 2, 3))
                         })
-                        expect(result).toContain('trigFunc')
-                        expect(result).toContain('input')
-                        expect(result).toContain('sin')
+                        expect(res).toContain('trigFunc')
+                        expect(res).toContain('input')
+                        expect(res).toContain('sin')
                 })
 
                 it('should validate layout name consistency', () => {
@@ -92,14 +92,14 @@ describe('Function Definition System', () => {
                                         { name: 'vectorB', type: 'vec3' },
                                 ],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const v1 = vec3(1, 0, 0)
                                 const v2 = vec3(0, 1, 0)
                                 return namedFunc(v1, v2)
                         })
-                        expect(result).toContain('dotProduct')
-                        expect(result).toContain('vectorA')
-                        expect(result).toContain('vectorB')
+                        expect(res).toContain('dotProduct')
+                        expect(res).toContain('vectorA')
+                        expect(res).toContain('vectorB')
                 })
         })
 
@@ -117,13 +117,13 @@ describe('Function Definition System', () => {
                                         { name: 'doScale', type: 'bool' },
                                 ],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return mixedFunc(float(2.0), vec3(1, 2, 3), bool(true))
                         })
-                        expect(result).toContain('scale')
-                        expect(result).toContain('vec')
-                        expect(result).toContain('doScale')
-                        expect(result).toContain('select')
+                        expect(res).toContain('scale')
+                        expect(res).toContain('vec')
+                        expect(res).toContain('doScale')
+                        expect(res).toContain('select')
                 })
 
                 it('should handle parameter binding correctly', () => {
@@ -131,32 +131,32 @@ describe('Function Definition System', () => {
                                 const temp = x.add(y).toVar('temp')
                                 return temp.mul(float(2.0))
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return paramFunc(float(1.0), float(3.0))
                         })
-                        expect(result).toContain('temp')
-                        expect(result).toMatch(/p0.*p1/)
+                        expect(res).toContain('temp')
+                        expect(res).toMatch(/p0.*p1/)
                 })
 
                 it('should handle single parameter functions', () => {
                         const unaryFunc = Fn(([x]) => {
                                 return x.abs().sqrt()
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return unaryFunc(float(-4.0))
                         })
-                        expect(result).toContain('abs')
-                        expect(result).toContain('sqrt')
+                        expect(res).toContain('abs')
+                        expect(res).toContain('sqrt')
                 })
 
                 it('should handle zero parameter functions', () => {
                         const constantFunc = Fn(() => {
                                 return float(3.14159)
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return constantFunc()
                         })
-                        expect(result).toContain('3.14159')
+                        expect(res).toContain('3.14159')
                 })
         })
 
@@ -191,11 +191,11 @@ describe('Function Definition System', () => {
                                 const normalized = diff.normalize()
                                 return normalized.mul(float(0.5))
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return complexFunc(vec3(1, 2, 3), vec3(4, 5, 6))
                         })
-                        expect(result).toContain('normalize')
-                        expect(result).toContain('0.5')
+                        expect(res).toContain('normalize')
+                        expect(res).toContain('0.5')
                 })
         })
 
@@ -207,11 +207,11 @@ describe('Function Definition System', () => {
                         const outerFunc = Fn(([y]) => {
                                 return innerFunc(y).cos()
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return outerFunc(float(1.0))
                         })
-                        expect(result).toContain('sin')
-                        expect(result).toContain('cos')
+                        expect(res).toContain('sin')
+                        expect(res).toContain('cos')
                 })
 
                 it('should handle recursive-like function structures', () => {
@@ -222,10 +222,10 @@ describe('Function Definition System', () => {
                                 const stepped = stepFunc(x, float(0.5))
                                 return stepped.mul(x)
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return processFunc(float(0.75))
                         })
-                        expect(result).toContain('step')
+                        expect(res).toContain('step')
                 })
         })
 
@@ -233,26 +233,26 @@ describe('Function Definition System', () => {
                 it('should isolate function variable scope correctly', () => {
                         const isolatedFunc = Fn(([input]) => {
                                 const local = input.mul(float(2.0)).toVar('localVar')
-                                const result = local.add(float(1.0))
-                                return result
+                                const res = local.add(float(1.0))
+                                return res
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const external = float(5.0).toVar('external')
                                 const computed = isolatedFunc(external)
                                 return computed
                         })
-                        expect(result).toContain('localVar')
-                        expect(result).toContain('external')
+                        expect(res).toContain('localVar')
+                        expect(res).toContain('external')
                 })
 
                 it('should handle parameter shadowing correctly', () => {
                         const shadowFunc = Fn(([x]) => {
                                 return x.add(float(1.0)).toVar('x')
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return shadowFunc(float(2.0))
                         })
-                        expect(result).toContain('var x:')
+                        expect(res).toContain('var x:')
                 })
 
                 it('should handle closure-like behavior with parameter access', () => {
@@ -262,10 +262,10 @@ describe('Function Definition System', () => {
                                 })
                                 return innerFunc(float(10.0))
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return closureFunc(float(3.0))
                         })
-                        expect(result).toMatch(/.*\*.*/)
+                        expect(res).toMatch(/.*\*.*/)
                 })
         })
 
@@ -278,24 +278,24 @@ describe('Function Definition System', () => {
                                 type: 'vec3',
                                 inputs: [{ name: 'scalar', type: 'float' }],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return typedFunc(float(1.0))
                         })
-                        expect(result).toContain('scalarToVector')
-                        expect(result).toContain('scalar')
-                        expect(result).toContain('vec3f')
+                        expect(res).toContain('scalarToVector')
+                        expect(res).toContain('scalar')
+                        expect(res).toContain('vec3f')
                 })
 
                 it('should handle implicit type promotion in function calls', () => {
                         const promotionFunc = Fn(([a, b]) => {
                                 return a.add(b)
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const intVal = int(5)
                                 const floatVal = float(2.5)
                                 return promotionFunc(intVal.toFloat(), floatVal)
                         })
-                        expect(result).toContain('f32')
+                        expect(res).toContain('f32')
                 })
         })
 
@@ -314,11 +314,11 @@ describe('Function Definition System', () => {
                                         { name: 'b', type: 'float' },
                                 ],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return mathFunc(float(3.0), float(4.0))
                         })
-                        expect(result).toContain('complexMath')
-                        expect(result).toContain('abs')
+                        expect(res).toContain('complexMath')
+                        expect(res).toContain('abs')
                 })
 
                 it('should handle vector processing functions', () => {
@@ -336,15 +336,15 @@ describe('Function Definition System', () => {
                                         { name: 'factor', type: 'float' },
                                 ],
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 const start = vec3(1, 0, 0)
                                 const end = vec3(0, 1, 0)
                                 const t = float(0.5)
                                 return vectorProcess(start, end, t)
                         })
-                        expect(result).toContain('processVectors')
-                        expect(result).toContain('mix')
-                        expect(result).toContain('normalize')
+                        expect(res).toContain('processVectors')
+                        expect(res).toContain('mix')
+                        expect(res).toContain('normalize')
                 })
 
                 it('should handle conditional function logic', () => {
@@ -354,11 +354,11 @@ describe('Function Definition System', () => {
                                 const low = value.mul(float(0.5))
                                 return high.select(low, condition)
                         })
-                        const result = build(() => {
+                        const res = build(() => {
                                 return conditionalFunc(float(0.75), float(0.5))
                         })
-                        expect(result).toContain('select')
-                        expect(result).toContain('>')
+                        expect(res).toContain('select')
+                        expect(res).toContain('>')
                 })
         })
 })

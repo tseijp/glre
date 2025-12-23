@@ -1,5 +1,5 @@
 import { isConstants, isElement, isX, isSwizzle } from './utils'
-import { BUILTIN_TYPES, COMPONENT_COUNT_TO_TYPE, FUNCTION_RETURN_TYPES, getOperatorResultType, validateOperatorTypes } from './const'
+import { BUILTIN_TYPES, FUNCTION_RETURN_TYPES, getOperatorResultType, SWIZZLE_BASE_MAP, SWIZZLE_RESULT_MAP, validateOperatorTypes } from './const'
 import { is, getStride, isFloat32 } from '../../helpers'
 import type { Constants as C, NodeContext, X, Y } from '../types'
 
@@ -7,6 +7,12 @@ const inferBuiltin = <T extends C>(id: string | undefined) => {
         return BUILTIN_TYPES[id as keyof typeof BUILTIN_TYPES] as T
 }
 
+// Unified logic with types.ts inferArrayElement type
+const inferSwizzleType = <T extends C>(L: T, len: 1 | 2 | 3 | 4): T => {
+        return SWIZZLE_RESULT_MAP[SWIZZLE_BASE_MAP[L as 'float']][len] as T
+}
+
+// Unified logic with types.ts InferOperator type
 const inferOperator = <T extends C>(L: T, R: T, op: string): T => {
         if (!validateOperatorTypes(L, R, op)) console.warn(`GLRE Type Warning: Invalid operator '${op}' between types '${L}' and '${R}'`)
         return getOperatorResultType(L, R, op) as T
@@ -16,13 +22,13 @@ export const inferPrimitiveType = <T extends C>(x: Y<T>) => {
         if (is.bol(x)) return 'bool' as T
         if (is.str(x)) return 'texture' as T
         if (is.num(x)) return 'float' as T // @TODO FIX:  Number.isInteger(x) ? 'int' : 'float'
-        if (is.arr(x) || isFloat32(x)) return COMPONENT_COUNT_TO_TYPE[x.length as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        if (is.arr(x) || isFloat32(x)) return SWIZZLE_RESULT_MAP.float[x.length as 1 | 2 | 3 | 4 | 9 | 16] as T
         if (isElement(x)) return 'texture' as T
         return 'void' as T
 }
 
 const inferFromCount = <T extends C>(count: number, error = console.warn, id = '') => {
-        const ret = COMPONENT_COUNT_TO_TYPE[count as keyof typeof COMPONENT_COUNT_TO_TYPE] as T
+        const ret = SWIZZLE_RESULT_MAP.float[count as 1 | 2 | 3 | 4 | 9 | 16] as T
         if (!ret) error(`glre node system error: Cannot infer ${id ? `${id} ` : ''} type from array length ${count}. Check your data size. Supported: 1(float), 2(vec2), 3(vec3), 4(vec4), 9(mat3), 16(mat4)`)
         return ret
 }
@@ -62,7 +68,7 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                 }
 
         if (type === 'member') {
-                if (isSwizzle(y)) return inferFromCount(y.length, c.gl?.error, id)
+                if (isSwizzle(y)) return inferSwizzleType(infer(x, c), y.length as 1 | 2 | 3 | 4)
                 if (isX(x)) {
                         const structType = infer(x, c)
                         const fields = c.code?.structStructFields?.get(structType)
