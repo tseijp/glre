@@ -30,21 +30,20 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
                 if (key === 'variable') return (id = getId()) => variable(id)
                 if (key === 'builtin') return (id = getId()) => builtin(id)
                 if (key === 'vertexStage') return (id = getId()) => vertexStage(x, id)
-                if (key === 'element') return (arg: Y) => (type === 'storage' ? gather(x, arg) : element(x, arg))
-                if (key === 'member') return (arg: Y) => member(x, arg)
+                if (key === 'element') return (y: Y) => (type === 'storage' ? gather(x, y) : element(x, y))
+                if (key === 'member') return (y: Y) => member(x, y)
                 if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
                 if (key === 'select') return select.bind(null, x)
                 if (isOperator(key)) {
-                        if (key.endsWith('Assign')) return (...args: Y[]) => addToScope(operator(key, x, ...args))
-                        return (...args: Y[]) => operator(key, x, ...args)
+                        if (key.endsWith('Assign')) return (...y: Y[]) => addToScope(operator(key, x, ...y))
+                        return (...y: Y[]) => operator(key, x, ...y)
                 }
-                if (isFunction(key)) return (...args: Y[]) => function_(key, x, ...args)
+                if (isFunction(key)) return (...y: Y[]) => function_(key, x, ...y)
                 if (isConversion(key)) return () => conversion(getConstant(key), x)
                 if (is.str(key)) return isArrayAccess(key) ? element(x, key) : member(x, key)
         }
-        const set = (_: unknown, key: string, arg: Y) => {
-                if (key === 'value') listeners.forEach((fun) => fun(arg))
-                if (is.str(key)) member(x, key).assign(arg)
+        const set = (_: unknown, key: string, y: Y) => {
+                if (is.str(key)) member(x, key).assign(y)
                 return true
         }
         const x = new Proxy({}, { get, set }) as unknown as X<T>

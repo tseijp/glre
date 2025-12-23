@@ -11,7 +11,7 @@ export type Operators = (typeof OPERATOR_KEYS)[number]
  */
 export interface FnLayout {
         name: string
-        type: C | 'auto'
+        type?: C | 'auto'
         inputs?: Array<{
                 name: string
                 type: C | 'auto'
