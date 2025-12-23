@@ -1,6 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
 import { vec3, float, vec4, Fn, vertexStage, position } from '../../src/node'
-import { fragment, vertex } from '../../src/node/build'
 import type { NodeContext } from '../../src/node/types'
 
 describe('Varying Processing System', () => {

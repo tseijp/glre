@@ -2,7 +2,6 @@ import { describe, it, expect } from '@jest/globals'
 import { float, vec2, vec3, vec4, int, struct, Fn, Scope } from '../../src/node'
 import { build } from '../../test-utils'
 import { code } from '../../src/node/utils'
-import { fragment } from '../../src/node/build'
 import type { NodeContext } from '../../src/node/types'
 
 describe('Struct Processing System', () => {
@@ -294,13 +293,11 @@ describe('Struct Processing System', () => {
                         const NodeStruct = struct({ value: int(), next: int() }, 'Node')
                         // @ts-ignore @TODO FIX #127 `Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
                         const ListStruct = struct({ head: NodeStruct(), size: int() }, 'List')
-                        const res = fragment(
-                                Scope(() => {
-                                        // @ts-ignore @TODO FIX #127 `ype 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
-                                        const list = ListStruct({ head: NodeStruct({ value: int(1), next: int(0) }), size: int(1) })
-                                        return vec4(list.head.value)
-                                })
-                        )
+                        const res = Scope(() => {
+                                // @ts-ignore @TODO FIX #127 `ype 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'Void | Bool | UInt | Int | Float | BVec2 | IVec2 | UVec2 | Vec2 | BVec3 | IVec3 | UVec3 | Vec3 | ... 10 more ... | StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is not assignable to type 'StructBase'. Type 'Struct<{ value: Int; next: Int; }>' is missing the following properties from type '_X<"struct">': assign, select, fragment, compute, and 115 more.`
+                                const list = ListStruct({ head: NodeStruct({ value: int(1), next: int(0) }), size: int(1) })
+                                return vec4(list.head.value)
+                        }).fragment()
                         expect(res).toContain('struct Node {')
                 })
 
