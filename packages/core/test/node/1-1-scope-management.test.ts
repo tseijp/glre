@@ -179,7 +179,7 @@ describe('Scope Management System', () => {
                                 })
                                 return total
                         })
-                        expect(result).toMatch(/for.*for/s)
+                        expect(result).toMatch((/for[\s\S]*for/) // /for.*for/s
                 })
 
                 it('should handle Break and Continue statements', () => {
@@ -339,7 +339,7 @@ describe('Scope Management System', () => {
                                 })
                                 return result
                         })
-                        expect(result).toMatch(/for.*if.*for.*if/s)
+                        expect(result).toMatch(/for[\s\S]*if[\s\S]*for[\s\S]*if/) // /for.*if.*for.*if/s
                 })
         })
 })
