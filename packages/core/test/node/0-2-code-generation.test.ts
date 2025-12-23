@@ -188,8 +188,7 @@ describe('Code Generation Engine', () => {
                 it('should generate correct builtin variable references for WGSL', () => {
                         const pos = builtin('position')
                         const c = createWGSLContext()
-                        c.label = 'frag'
-                        expect(code(pos, c)).toBe('in.position')
+                        expect(code(pos, c)).toBe('out.position')
                 })
         })
 

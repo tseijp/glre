@@ -1,6 +1,3 @@
-/**
- * @jest-environment jsdom
- */
 import { describe, it, expect } from '@jest/globals'
 import { float, int, uint, bool, vec2, vec3, vec4, mat3, uniform, attribute, storage, constant, variable, builtin, color, texture2D } from '../../src/node'
 import { infer } from '../../src/node/utils/infer'

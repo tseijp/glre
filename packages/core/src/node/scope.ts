@@ -1,23 +1,12 @@
 import { conversion, create } from './create'
-import type {
-        FnLayout,
-        FnType,
-        Constants as C,
-        Int,
-        NodeProps,
-        Struct,
-        StructFactory,
-        StructFields,
-        X,
-        Y,
-} from './types'
 import { getId } from './utils'
+import type { FnLayout, FnType, Constants as C, Int, NodeProps, Struct, StructFactory, StructFields, X, Y } from './types'
 
 let scope: X | null = null
 let define: X | null = null
 
 export const addToScope = <T extends C>(x: X<T>) => {
-        if (!scope) return
+        if (!scope) return x
         if (!scope.props.children) scope.props.children = []
         scope.props.children.push(x)
         if (x.type !== 'return' || !define) return x
@@ -133,8 +122,7 @@ export function Fn<T extends X | Struct | void, Args extends any[]>(fun: (args: 
                         else
                                 paramDefs.push({
                                         id: input.name,
-                                        inferFrom:
-                                                input.type === 'auto' ? [args[i]] : [conversion(input.type, args[i])],
+                                        inferFrom: input.type === 'auto' ? [args[i]] : [conversion(input.type, args[i])],
                                 })
                 }
                 for (const props of paramDefs) paramVars.push(create('variable', props))

@@ -35,7 +35,8 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
                 if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
                 if (key === 'select') return select.bind(null, x)
                 if (isOperator(key)) {
-                        return key.endsWith('Assign') ? (...args: Y[]) => addToScope(operator(key, x, ...args)) : (...args: Y[]) => operator(key, x, ...args)
+                        if (key.endsWith('Assign')) return (...args: Y[]) => addToScope(operator(key, x, ...args))
+                        return (...args: Y[]) => operator(key, x, ...args)
                 }
                 if (isFunction(key)) return (...args: Y[]) => function_(key, x, ...args)
                 if (isConversion(key)) return () => conversion(getConstant(key), x)

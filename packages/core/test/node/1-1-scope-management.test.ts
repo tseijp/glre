@@ -179,7 +179,7 @@ describe('Scope Management System', () => {
                                 })
                                 return total
                         })
-                        expect(res).toMatch((/for[\s\S]*for/) // /for.*for/s
+                        expect(res).toMatch(/for[\s\S]*for/) // /for.*for/s
                 })
 
                 it('should handle Break and Continue statements', () => {
