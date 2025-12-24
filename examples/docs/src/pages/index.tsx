@@ -3,7 +3,7 @@ import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
 import { attribute, float, Fn, If, instance, int, ivec2, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
-import { type GL } from 'glre/src'
+import type { GL } from 'glre/src'
 import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
 
 const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
