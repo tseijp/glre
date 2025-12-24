@@ -21,7 +21,7 @@ This simple averaging operation produces the point equidistant from all three ve
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const time = iTime.mul(0.3)
         const tri = Triangle({
                 a: vec3(-0.5, -0.3, 0),
@@ -39,5 +39,5 @@ const fragment = () => Scope(() => {
         const isInside = triangleContain(tri, vec3(pos, 0))
         const baseColor = vec3(0.2, 0.3, 0.5).mul(float(0.3).select(1, isInside))
         return vec4(baseColor.add(vec3(1, 0.8, 0.2).mul(centerGlow).mul(4)).add(vec3(0.9, 0.5, 0.7).mul(vertexGlow).mul(2)), 1)
-})`}
+}`}
 />

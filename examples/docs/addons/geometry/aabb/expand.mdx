@@ -43,7 +43,7 @@ AABB expansion serves multiple computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const t = iTime.mul(0.5)
         const p = uv.mul(5).sub(2.5)
         const originalBox = AABB({
@@ -70,5 +70,5 @@ const fragment = () => Scope(() => {
                    .min(p.y.sub(expandedBox.maxBounds.y).abs()))
         const wireframe = smoothstep(0.02, 0.04, origEdge).oneMinus().add(smoothstep(0.01, 0.03, expEdge).oneMinus().mul(0.5))
         return vec4(color.add(wireframe.mul(0.3)), 1)
-})`}
+}`}
 />

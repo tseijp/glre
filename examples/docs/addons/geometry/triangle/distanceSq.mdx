@@ -39,7 +39,7 @@ This computes the squared perpendicular distance from the point to the triangle 
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const tri = Triangle({
                 a: vec3(-0.4, -0.3, 0),
                 b: vec3(0.4, -0.3, 0),
@@ -50,5 +50,5 @@ const fragment = () => Scope(() => {
         const field = dist.sqrt().mul(8)
         const gradient = field.fract()
         return vec4(vec3(gradient), 1)
-})`}
+}`}
 />

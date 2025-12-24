@@ -41,7 +41,7 @@ When both dot products are non-negative, the cross product vectors point in cons
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const tri = Triangle({
                 a: vec3(-0.4, -0.3, 0),
                 b: vec3(0.4, -0.3, 0),
@@ -52,5 +52,5 @@ const fragment = () => Scope(() => {
         const interior = vec3(0.2, 0.8, 0.4)
         const exterior = vec3(0.1, 0.2, 0.6)
         return vec4(exterior.select(interior, inside), 1)
-})`}
+}`}
 />

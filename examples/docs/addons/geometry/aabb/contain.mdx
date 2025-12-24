@@ -37,7 +37,7 @@ AABB containment testing provides optimal computational efficiency:
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const t = iTime.mul(0.4)
         const p = uv.mul(4).sub(2)
         const box = AABB({
@@ -56,5 +56,5 @@ const fragment = () => Scope(() => {
         const edge = edgeX.min(edgeY)
         const wireframe = smoothstep(0.02, 0.05, edge).oneMinus()
         return vec4(baseColor.mul(gradient.oneMinus().add(0.3)).add(wireframe.mul(0.6)), 1)
-})`}
+}`}
 />

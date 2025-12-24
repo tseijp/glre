@@ -40,7 +40,7 @@ The floor operation discretizes the angle into $V$ equal segments, creating the 
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const center = vec2(0.5)
         const minDist = float(1).toVar()
         Loop(4, ({ i }) => {
@@ -56,5 +56,5 @@ const fragment = () => Scope(() => {
         const brightness = minDist.step(0).mul(0.9).add(float(0.02).smoothstep(0, minDist.abs()).mul(0.3))
         const hue = uv.x.add(uv.y).mul(0.5)
         return vec4(brightness.mul(vec3(hue.mul(0.8).add(0.2), 0.6, 1)), 1)
-})`}
+}`}
 />

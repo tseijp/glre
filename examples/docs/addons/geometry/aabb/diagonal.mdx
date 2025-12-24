@@ -44,7 +44,7 @@ Diagonal calculations serve multiple computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const t = iTime.mul(0.3)
         const p = uv.mul(4).sub(2)
         const box = AABB({
@@ -64,5 +64,5 @@ const fragment = () => Scope(() => {
         const wireframe = smoothstep(0.02, 0.04, edgeX.min(edgeY)).oneMinus()
         const color = intensity.mul(vec3(diag.x.mul(0.3), diag.y.mul(0.4), 0.6)).add(stripes.mul(0.2))
         return vec4(color.add(wireframe.mul(0.5)), 1)
-})`}
+}`}
 />

@@ -50,7 +50,7 @@ When $t < 0$, the intersection occurs behind the ray origin. The function return
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const tri = Triangle({
                 a: vec3(-0.5, -0.4, 0),
                 b: vec3(0.5, -0.4, 0),
@@ -62,5 +62,5 @@ const fragment = () => Scope(() => {
         const hit = dist.step(1000)
         const depth = hit.mul(0.8).add(0.2)
         return vec4(vec3(depth), 1)
-})`}
+}`}
 />

@@ -32,7 +32,7 @@ The barycentric coordinates $(\alpha, \beta, \gamma)$ determine the final result
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const tri = Triangle({
                 a: vec3(-0.4, -0.3, 0),
                 b: vec3(0.4, -0.3, 0),
@@ -45,5 +45,5 @@ const fragment = () => Scope(() => {
         const green = nearest.x.add(0.5).saturate()
         const blue = nearest.y.add(0.5).saturate()
         return vec4(red, green, blue, 1)
-})`}
+}`}
 />

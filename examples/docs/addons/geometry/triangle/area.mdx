@@ -41,7 +41,7 @@ The cross product direction follows the right-hand rule, indicating surface norm
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const scale = iTime.mul(0.5).sin()
         const tri = Triangle({
                 a: vec3(-0.4, -0.4, 0),
@@ -53,5 +53,5 @@ const fragment = () => Scope(() => {
         const isInside = triangleContain(tri, vec3(pos, 0))
         const areaColor = vec3(triArea.mul(2), triArea.mul(1.5), 0.3)
         return vec4(vec3(0.1, 0.1, 0.15).select(areaColor, isInside), 1)
-})`}
+}`}
 />

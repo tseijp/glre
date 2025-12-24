@@ -108,8 +108,8 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 result.push(`fn main(${c.code?.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
                 result.push('  var out: Out;')
                 if (lines) result.push(`  ${lines}`)
-                result.push(`  out.position = ${ret};`)
                 if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  out.${id} = ${varying.code};`)
+                result.push(`  out.position = ${ret};`)
                 result.push('  return out;')
         }
         result.push('}')

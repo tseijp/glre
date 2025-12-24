@@ -38,7 +38,8 @@ function Canvas() {
                 })
         })
 
-        const cylinderSDF = Fn(([p, h, r, sign]) => {
+        const cylinderSDF = Fn(([position, h, r, sign]) => {
+                const p = position.toVar()
                 p.y.assign(p.y.sub(sign.mul(height)))
                 const dSphere = p.xy.length().sub(r)
                 const dPlane = sign.mul(dot(p.xy, vec2(-1, 1.64).normalize()))
@@ -47,7 +48,8 @@ function Canvas() {
                 return min(max(dx, dy), 0).add(vec2(max(dx, 0), max(dy, 0)).length())
         })
 
-        const SDF = Fn(([p]) => {
+        const SDF = Fn(([position]) => {
+                const p = position.toVar()
                 repetition(p, vec3(radius))
                 p.assign(scale(1.83, 1, 1).mul(p))
                 p.z.assign(p.z.add(2.6))

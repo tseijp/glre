@@ -55,7 +55,7 @@ $$
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const gearSystem = float(1000).toVar()
         Loop(4, ({ i }) => {
                 const angle = i.toFloat().mul(1.57)
@@ -72,5 +72,5 @@ const fragment = () => Scope(() => {
         })
         const brightness = gearSystem.step(0).mul(0.9).add(float(0.02).smoothstep(0, gearSystem.abs()).mul(0.4))
         return vec4(brightness.mul(vec3(0.7, 0.5, 0.3)), 1)
-})`}
+}`}
 />

@@ -46,7 +46,7 @@ Cubic bounding volumes serve specific computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const t = iTime.mul(0.4)
         const p = uv.mul(5).sub(2.5)
         const originalBox = AABB({
@@ -74,5 +74,5 @@ const fragment = () => Scope(() => {
         const sqWire = smoothstep(0.01, 0.03, sqEdge).oneMinus().mul(0.5)
         const wireframe = origWire.add(sqWire)
         return vec4(color.add(wireframe.mul(0.4)), 1)
-})`}
+}`}
 />

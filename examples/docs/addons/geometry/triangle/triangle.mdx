@@ -51,7 +51,7 @@ This structure integrates with all triangle-based geometric functions including 
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const tri = Triangle({
                 a: vec3(-0.3, -0.4, 0),
                 b: vec3(0.5, -0.2, 0),
@@ -64,7 +64,7 @@ const fragment = () => Scope(() => {
         const edgeC = point.sub(tri.c).length()
         const color = vec3(edgeA, edgeB, edgeC).select(vec3(0.9, 0.9, 0.2), isInside)
         return vec4(color, 1)
-})`}
+}`}
 />
 
 The visualization demonstrates triangle structure usage through vertex proximity mapping. Points inside the triangle appear yellow, while exterior points display color gradients based on distance to each vertex. Red, green, and blue intensities correspond to distances from vertices a, b, and c respectively.

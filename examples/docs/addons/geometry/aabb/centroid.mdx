@@ -30,7 +30,7 @@ The AABB centroid serves multiple computational purposes:
 
 <FragmentEditor
         code={`
-const fragment = () => Scope(() => {
+const fragment = () => {
         const t = iTime.mul(0.6)
         const box = AABB({
                 minBounds: vec3(t.sin().mul(1.2).sub(0.8), t.mul(1.3).cos().mul(0.9).sub(0.5), 0),
@@ -46,5 +46,5 @@ const fragment = () => Scope(() => {
                    .min(p.y.sub(box.maxBounds.y).abs()))
         const wireframe = smoothstep(0.02, 0.04, boxEdge).oneMinus()
         return vec4(centerGlow, wireframe.add(centerGlow.mul(0.8)), centerGlow.mul(0.6).add(wireframe), 1)
-})`}
+}`}
 />
