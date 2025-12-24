@@ -12,27 +12,6 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
-<FragmentEditor
-        isApp
-        code={`
-function Canvas() {
-        const tri = attribute([0, 0.73, -1, -1, 1, -1])
-        const col = attribute([1, 0, 0, 0, 1, 0, 0, 0, 1])
-        const vCol = varying(vec3())
-        const gl = useGL({
-                isWebGL: true,
-                isDebug: true,
-                triangleCount: 1,
-                vertex: Scope(() => {
-                        vCol.assign(col)
-                        return vec4(tri, 0, 1)
-                }),
-                fragment: vec4(vCol, 1),
-        })
-        return <canvas ref={gl.ref} />
-}`}
-/>
-
 # Introduction
 
 ## What does it look like?
