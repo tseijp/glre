@@ -552,14 +552,14 @@ This process generates variable IDs and adds variable declaration statements to 
 
 ### Factory Function Groups
 
-| Function                | Purpose           | Generated Node | Description              |
-| ----------------------- | ----------------- | -------------- | ------------------------ |
-| `attribute(value, id)`  | Vertex attributes | `attribute`    | Vertex data reception    |
-| `uniform(value, id)`    | Uniforms          | `uniform`      | CPU-GPU data transfer    |
-| `constant(value, id)`   | Constants         | `constant`     | Compile-time constants   |
-| `variable(id)`          | Variables         | `variable`     | Local variables          |
-| `builtin(id)`           | Builtins          | `builtin`      | Shader builtin variables |
-| `vertexStage(node, id)` | Varyings          | `varying`      | Vertex-fragment data     |
+| Function               | Purpose           | Generated Node | Description              |
+| ---------------------- | ----------------- | -------------- | ------------------------ |
+| `attribute(value, id)` | Vertex attributes | `attribute`    | Vertex data reception    |
+| `uniform(value, id)`   | Uniforms          | `uniform`      | CPU-GPU data transfer    |
+| `constant(value, id)`  | Constants         | `constant`     | Compile-time constants   |
+| `variable(id)`         | Variables         | `variable`     | Local variables          |
+| `builtin(id)`          | Builtins          | `builtin`      | Shader builtin variables |
+| `varying(node, id)`    | Varyings          | `varying`      | Vertex-fragment data     |
 
 ### Scope Operations
 
@@ -758,7 +758,7 @@ Dependencies ──→ TopologicalSort ──→ Header Order
 
 ### Varying Processing
 
-WebGPU varying (data transfer from vertex shader to fragment shader) is managed through the vertexStage() function.
+WebGPU varying (data transfer from vertex shader to fragment shader) is managed through the varying() function.
 This function assigns location numbers and generates varying declarations for both shaders.
 
 ### Dependency Resolution

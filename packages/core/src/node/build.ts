@@ -70,13 +70,13 @@ export const fragment = (x: X, c: NodeContext = {}) => {
                 for (const code of c.code?.fragInputs?.values() || []) result.push(`in ${code}`)
                 result.push(head)
                 result.push('void main() {')
-                result.push(`  ${lines}`)
+                if (lines) result.push(`  ${lines}`)
                 result.push(`  fragColor = ${ret};`)
         } else {
                 if (c.code?.fragInputs?.size) result.push(generateStruct('Out', c.code.fragInputs))
                 result.push(head)
                 result.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
-                result.push(`  ${lines}`)
+                if (lines) result.push(`  ${lines}`)
                 result.push(`  return ${ret};`)
         }
         result.push('}')
@@ -97,9 +97,9 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 for (const code of c.code?.vertOutputs?.values() || []) result.push(`out ${code}`)
                 result.push(head)
                 result.push('void main() {')
-                result.push(`  ${lines}`)
+                if (lines) result.push(`  ${lines}`)
+                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  ${id} = ${varying.code};`) // ② varying.code is already prebuilt
                 result.push(`  gl_Position = ${ret};`)
-                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) result.push(`  ${id} = ${varying.code!};`) // ② varying.code is already prebuilt
         } else {
                 if (c.code?.vertInputs?.size) result.push(generateStruct('In', c.code.vertInputs))
                 if (c.code?.vertOutputs?.size) result.push(generateStruct('Out', c.code.vertOutputs))
@@ -107,9 +107,9 @@ export const vertex = (x: X, c: NodeContext = {}) => {
                 result.push('@vertex')
                 result.push(`fn main(${c.code?.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
                 result.push('  var out: Out;')
-                result.push(`  ${lines}`)
+                if (lines) result.push(`  ${lines}`)
                 result.push(`  out.position = ${ret};`)
-                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) result.push(`  out.${id} = ${varying.code!};`)
+                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  out.${id} = ${varying.code};`)
                 result.push('  return out;')
         }
         result.push('}')
@@ -128,7 +128,7 @@ export const compute = (x: X, c: NodeContext = {}) => {
                 precisionHead(result, 'highp')
                 result.push(head)
                 result.push('void main() {')
-                result.push(`  ${lines}`)
+                if (lines) result.push(`  ${lines}`)
                 result.push(`  ${ret};`)
                 result.push('}')
         } else {
@@ -136,7 +136,7 @@ export const compute = (x: X, c: NodeContext = {}) => {
                 result.push(head)
                 result.push('@compute @workgroup_size(32)')
                 result.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
-                result.push(`  ${lines}`)
+                if (lines) result.push(`  ${lines}`)
                 result.push(`  ${ret};`)
                 result.push('}')
         }

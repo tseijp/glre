@@ -67,7 +67,6 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
                         const stride = getStride(x.length, count, c.gl?.error, id)
                         return inferFromCount(stride, c.gl?.error, id)
                 }
-
         if (type === 'member') {
                 const constant = infer(x, c) // Check if struct first to avoid field/swizzle clash, e.g. Struct({ x: float(), y: float() })
                 if (!isConstants(constant)) {

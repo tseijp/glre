@@ -523,14 +523,14 @@ toVar()メソッドは、式ノードを変数宣言ノードに変換する。
 
 ### ファクトリ関数群
 
-| 関数名                  | 用途         | 生成ノード型 | 説明                      |
-| ----------------------- | ------------ | ------------ | ------------------------- |
-| `attribute(value, id)`  | 頂点属性     | `attribute`  | 頂点データ受信            |
-| `uniform(value, id)`    | ユニフォーム | `uniform`    | CPU-GPU データ転送        |
-| `constant(value, id)`   | 定数         | `constant`   | コンパイル時定数          |
-| `variable(id)`          | 変数         | `variable`   | ローカル変数              |
-| `builtin(id)`           | ビルトイン   | `builtin`    | シェーダビルトイン変数    |
-| `vertexStage(node, id)` | バリング     | `varying`    | 頂点-フラグメント間データ |
+| 関数名                 | 用途         | 生成ノード型 | 説明                      |
+| ---------------------- | ------------ | ------------ | ------------------------- |
+| `attribute(value, id)` | 頂点属性     | `attribute`  | 頂点データ受信            |
+| `uniform(value, id)`   | ユニフォーム | `uniform`    | CPU-GPU データ転送        |
+| `constant(value, id)`  | 定数         | `constant`   | コンパイル時定数          |
+| `variable(id)`         | 変数         | `variable`   | ローカル変数              |
+| `builtin(id)`          | ビルトイン   | `builtin`    | シェーダビルトイン変数    |
+| `varying(node, id)`    | バリング     | `varying`    | 頂点-フラグメント間データ |
 
 ### スコープ操作
 
@@ -729,7 +729,7 @@ Dependencies ──→ TopologicalSort ──→ Header Order
 
 ### バリング処理
 
-WebGPU のバリング（頂点シェーダから フラグメントシェーダへのデータ受け渡し）は、vertexStage()関数を通じて管理される。
+WebGPU のバリング（頂点シェーダから フラグメントシェーダへのデータ受け渡し）は、varying()関数を通じて管理される。
 この関数は、location 番号を割り当て、両シェーダに対応するバリング宣言を生成する。
 
 ### 依存関係解決

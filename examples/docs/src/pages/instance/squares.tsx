@@ -1,7 +1,7 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { attribute, instance, vec4, vertexStage } from 'glre/src/node'
+import { attribute, instance, varying, vec4 } from 'glre/src/node'
 
 export default function WebGLInstancing() {
         const instanceCount = 100
@@ -33,7 +33,7 @@ export default function WebGLInstancing() {
                 instanceCount,
                 triangleCount: 2,
                 vert: vec4(box.add(pos), 0, 1),
-                frag: vertexStage(col),
+                frag: varying(col),
         })
 
         return (

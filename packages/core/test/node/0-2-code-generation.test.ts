@@ -1,5 +1,5 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, vec3, mat3, bool, int, uniform, builtin } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { bool, float, int, mat3, position, uniform, vec3 } from '../../src/node'
 import { code } from '../../src/node/utils'
 import type { NodeContext } from '../../src/node/types'
 
@@ -186,9 +186,8 @@ describe('Code Generation Engine', () => {
                 })
 
                 it('should generate correct builtin variable references for WGSL', () => {
-                        const pos = builtin('position')
                         const c = createWGSLContext()
-                        expect(code(pos, c)).toBe('out.position')
+                        expect(code(position, c)).toBe('out.position')
                 })
         })
 

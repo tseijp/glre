@@ -2,10 +2,13 @@ import { infer } from './infer'
 import { parseArray, parseAttribHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseUniformHead, parseVaryingHead } from './parse'
 import { getBluiltin, getConversions, getOperator, initNodeContext, isX, setupEvent } from './utils'
 import { is } from '../../helpers'
-import { mod } from '..'
-import type { Constants as C, NodeContext, Y } from '../types'
+import type { Constants as C, NodeContext, Y, X } from '../types'
 
 export * from './utils'
+
+export const mod = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => {
+        return (x as any).sub((x as any).div(y).floor().mul(y)) as X<T>
+}
 
 const parseNumber = (target = 0) => {
         const ret = `${target}`

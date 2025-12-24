@@ -1,5 +1,5 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, vec3, int, bool, Fn, If, Loop, Switch, Scope, Break, Continue, addToScope } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { bool, Break, Continue, float, Fn, If, int, Loop, vec3 } from '../../src/node'
 import { build } from '../../test-utils'
 
 describe('Scope Management System', () => {

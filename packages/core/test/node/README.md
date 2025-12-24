@@ -75,7 +75,7 @@ Confirm variable access within closures, accuracy of parameter binding, scope is
 
 #### Robustness Assurance of Varying Processing System
 
-Verify detection of varying variables through vertexStage, generation of input struct in fragment shader, generation of output struct in vertex shader, and input/output determination.
+Verify detection of varying variables, generation of input struct in fragment shader, generation of output struct in vertex shader, and input/output determination.
 
 Focus on confirming varying detection through fragment shader build precedence, automatic assignment of location numbers, type consistency of struct fields, and differences in declaration formats between WebGL/WebGPU.
 
@@ -161,7 +161,7 @@ Execute verification with patterns in variable declaration, statement addition, 
 
 ```
 Detection Pattern:
-vertexStage usage → detection verification → registration check
+varying usage → detection verification → registration check
 
 Generation Pattern:
 detected varying → struct generation → field verification

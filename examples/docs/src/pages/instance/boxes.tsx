@@ -1,7 +1,7 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { attribute, instance, uniform, mat4, Scope, vertexStage } from 'glre/src/node'
+import { attribute, instance, uniform, mat4, Scope, varying } from 'glre/src/node'
 
 const col = 4
 const row = 4
@@ -83,7 +83,7 @@ export default function InstancedBoxes() {
                         projectionMatrix.value = createProjectionMatrix()
                         viewMatrix.value = createViewMatrix()
                 },
-                frag: vertexStage(box),
+                frag: varying(box),
                 vert: Scope(() => {
                         const c = rot.cos().toVar('c')
                         const s = rot.sin().toVar('s')
