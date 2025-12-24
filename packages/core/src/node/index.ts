@@ -6,6 +6,7 @@ export * from './build'
 export * from './create'
 export * from './scope'
 export * from './types'
+export { mod } from './utils'
 
 // Builtin Variables
 export const position = b<'vec4'>('position')
@@ -141,6 +142,3 @@ export const refract = <T extends 'vec2' | 'vec3' | 'vec4', U extends C>(I: X<T>
 // 2. Functions where not first argument determines return type with unified parameter types
 export const smoothstep = <T extends C, U extends C>(e0: number | X<U>, e1: number | X<U>, x: X<T>) => f<T>('smoothstep', e0, e1, x)
 export const step = <T extends C, U extends C>(edge: number | X<U>, x: X<T>) => f<T>('step', edge, x)
-export const mod = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => {
-        return (x as any).sub((x as any).div(y).floor().mul(y)) as X<T>
-}

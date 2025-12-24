@@ -251,24 +251,25 @@ type Methods =
 interface _X<T extends C> {
         // System properties
         readonly __nodeType?: T
-        assign(x: any): X<T>
-        select(x: number | X<T>, y: X<'bool'>): X<T>
-        fragment(c: NodeContext): string
+        type: NodeTypes
+        props: NodeProps
+        isProxy: true
+        listeners: Set<(value: any) => void>
         toVar(name?: string): X<T>
         toString(c?: NodeContext): string
         fragment(c?: NodeContext): string
         compute(c?: NodeContext): string
         vertex(c?: NodeContext): string
-        type: NodeTypes
-        props: NodeProps
-        isProxy: true
-        listeners: Set<(value: any) => void>
-
-        // Element access for array/matrix types
-        element<Index extends X>(index: Index): X<InferArrayElement<T>>
-
-        // Enhanced member access with type preservation
-        member<K extends string>(key: K): K extends keyof T ? (T[K] extends X<infer U> ? X<U> : never) : never
+        varying(id?: string): X<T>
+        uniform(id?: string): X<T>
+        storage(id?: string): X<T>
+        instance(id?: string): X<T>
+        constant(id?: string): X<T>
+        attribute(id?: string): X<T>
+        element<Index extends X>(index: Index): X<InferArrayElement<T>> // // Element access for array/matrix types
+        member<K extends string>(key: K): K extends keyof T ? (T[K] extends X<infer U> ? X<U> : never) : never // // Enhanced member access with type preservation
+        select(x: number | X<T>, y: X<'bool'>): X<T>
+        assign(x: any): X<T>
 
         // Operators methods with unified type validation
         add<U extends C>(x: ValidateOperator<T, U> extends 0 ? never : number | X<U>): X<InferOperator<T, U>>

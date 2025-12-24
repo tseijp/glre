@@ -15,25 +15,24 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
         const get = (_: unknown, key: string | Symbol) => {
                 if (key === 'type') return type
                 if (key === 'props') return props
-                if (key === 'toVar') return toVar.bind(null, x)
                 if (key === 'isProxy') return true
+                if (key === 'listeners') return listeners
+                if (key === 'toVar') return toVar.bind(null, x)
                 if (key === 'toString') return code.bind(null, x)
                 if (key === 'fragment') return fragment.bind(null, x)
                 if (key === 'compute') return compute.bind(null, x)
                 if (key === 'vertex') return vertex.bind(null, x)
-                if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
-                if (key === 'listeners') return listeners
-                if (key === 'attribute') return (id = getId()) => attribute(x, id)
+                if (key === 'varying') return (id = getId()) => varying(x, id)
+                if (key === 'uniform') return (id = getId()) => uniform(x, id)
+                if (key === 'storage') return (id = getId()) => storage(x, id)
                 if (key === 'instance') return (id = getId()) => instance(x, id)
                 if (key === 'constant') return (id = getId()) => constant(x, id)
-                if (key === 'uniform') return (id = getId()) => uniform(x, id)
-                if (key === 'variable') return (id = getId()) => variable(id)
-                if (key === 'builtin') return (id = getId()) => builtin(id)
-                if (key === 'varying') return (id = getId()) => varying(x, id)
+                if (key === 'attribute') return (id = getId()) => attribute(x, id)
                 if (key === 'element') return (y: Y) => (type === 'storage' ? gather(x, y) : element(x, y))
                 if (key === 'member') return (y: Y) => member(x, y)
-                if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
                 if (key === 'select') return select.bind(null, x)
+                if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
+                if (key === Symbol.toPrimitive) return toPrimitive.bind(null, x)
                 if (isOperator(key)) {
                         if (key.endsWith('Assign')) return (...y: Y[]) => addToScope(operator(key, x, ...y))
                         return (...y: Y[]) => operator(key, x, ...y)

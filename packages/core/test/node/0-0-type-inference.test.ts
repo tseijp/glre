@@ -1,42 +1,42 @@
 import { describe, expect, it } from '@jest/globals'
 import { bool, bvec2, bvec3, bvec4, float, int, ivec2, ivec3, ivec4, mat2, mat3, mat4, uint, uvec2, uvec3, uvec4, vec2, vec3, vec4 } from '../../src/node'
-import { infer, inferPrimitiveType } from '../../src/node/utils/infer'
+import { infer } from '../../src/node/utils/infer'
 
 describe('Type Inference Engine', () => {
         describe('Primitive Type Inference', () => {
                 it('should infer bool from boolean values', () => {
-                        expect(inferPrimitiveType(true)).toBe('bool')
-                        expect(inferPrimitiveType(false)).toBe('bool')
+                        expect(infer(true)).toBe('bool')
+                        expect(infer(false)).toBe('bool')
                 })
 
                 it('should infer float from number values', () => {
-                        expect(inferPrimitiveType(42)).toBe('float')
-                        expect(inferPrimitiveType(3.14159)).toBe('float')
-                        expect(inferPrimitiveType(-1.5)).toBe('float')
-                        expect(inferPrimitiveType(0)).toBe('float')
+                        expect(infer(42)).toBe('float')
+                        expect(infer(3.14159)).toBe('float')
+                        expect(infer(-1.5)).toBe('float')
+                        expect(infer(0)).toBe('float')
                 })
 
                 it('should infer texture from string values', () => {
-                        expect(inferPrimitiveType('texture.png')).toBe('texture')
-                        expect(inferPrimitiveType('')).toBe('texture')
+                        expect(infer('texture.png')).toBe('texture')
+                        expect(infer('')).toBe('texture')
                 })
 
                 it('should infer vector types from array length', () => {
-                        expect(inferPrimitiveType([1])).toBe('float')
-                        expect(inferPrimitiveType([1, 2])).toBe('vec2')
-                        expect(inferPrimitiveType([1, 2, 3])).toBe('vec3')
-                        expect(inferPrimitiveType([1, 2, 3, 4])).toBe('vec4')
+                        expect(infer([1])).toBe('float')
+                        expect(infer([1, 2])).toBe('vec2')
+                        expect(infer([1, 2, 3])).toBe('vec3')
+                        expect(infer([1, 2, 3, 4])).toBe('vec4')
                 })
 
                 it('should infer matrix types from array length', () => {
-                        expect(inferPrimitiveType(new Array(9).fill(0))).toBe('mat3')
-                        expect(inferPrimitiveType(new Array(16).fill(0))).toBe('mat4')
+                        expect(infer(new Array(9).fill(0))).toBe('mat3')
+                        expect(infer(new Array(16).fill(0))).toBe('mat4')
                 })
 
                 it('should infer void from invalid values', () => {
-                        expect(inferPrimitiveType(undefined)).toBe('void')
+                        expect(infer(undefined)).toBe('void')
                         // @ts-ignore @TODO FIX #127 `Argument of type 'null' is not assignable to parameter of type 'Y<Constants>'.`
-                        expect(inferPrimitiveType(null)).toBe('void')
+                        expect(infer(null)).toBe('void')
                 })
         })
 

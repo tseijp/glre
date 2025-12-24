@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { attribute, bool, builtin, color, constant, float, int, mat3, storage, texture2D, uint, uniform, variable, vec2, vec3, vec4 } from '../../src/node'
+import { bool, builtin, color, float, int, mat3, texture2D, uint, variable, vec2, vec3, vec4 } from '../../src/node'
 import { infer } from '../../src/node/utils/infer'
 
 describe('Node Creation & Operations', () => {
@@ -47,7 +47,7 @@ describe('Node Creation & Operations', () => {
 
         describe('Variable Declaration Node Creation', () => {
                 it('should create uniform nodes with correct structure', () => {
-                        const x = uniform(float(1.0), 'testUniform')
+                        const x = float(1.0).uniform('testUniform')
                         expect(x.type).toBe('uniform')
                         expect(x.props.id).toBe('testUniform')
                         expect(x.props.children).toHaveLength(1)
@@ -55,21 +55,21 @@ describe('Node Creation & Operations', () => {
                 })
 
                 it('should create attribute nodes with correct structure', () => {
-                        const pos = attribute(vec3([1, 2, 3, 4, 5, 6]), 'position')
+                        const pos = vec3([1, 2, 3, 4, 5, 6]).attribute('position')
                         expect(pos.type).toBe('attribute')
                         expect(pos.props.id).toBe('position')
                         expect(infer(pos)).toBe('vec3')
                 })
 
                 it('should create storage nodes with correct structure', () => {
-                        const data = storage(float(), 'storageData')
+                        const data = float().storage('storageData')
                         expect(data.type).toBe('storage')
                         expect(data.props.id).toBe('storageData')
                         expect(infer(data)).toBe('float')
                 })
 
                 it('should create constant nodes with correct structure', () => {
-                        const pi = constant(float(3.14159), 'PI')
+                        const pi = float(3.14159).constant('PI')
                         expect(pi.type).toBe('constant')
                         expect(pi.props.id).toBe('PI')
                         expect(infer(pi)).toBe('float')

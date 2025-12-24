@@ -1,5 +1,5 @@
 import { describe, expect, it } from '@jest/globals'
-import { attribute, builtin, float, uniform, vec3 } from '../../src/node'
+import { float, vec3, vertexIndex } from '../../src/node'
 
 describe('Abstract Syntax Tree Construction', () => {
         describe('Node Structure Validation', () => {
@@ -160,23 +160,22 @@ describe('Abstract Syntax Tree Construction', () => {
 
         describe('Variable Declaration AST Construction', () => {
                 it('should construct uniform nodes correctly', () => {
-                        const x = uniform(float(), 'testUniform')
+                        const x = float().uniform('testUniform')
                         expect(x.type).toBe('uniform')
                         expect(x.props.id).toBe('testUniform')
                         expect(x.props.children?.[0]?.type).toBe('conversion')
                 })
 
                 it('should construct attribute nodes correctly', () => {
-                        const x = attribute(vec3(), 'position')
+                        const x = vec3().attribute('position')
                         expect(x.type).toBe('attribute')
                         expect(x.props.id).toBe('position')
                         expect(x.props.children?.[0]?.type).toBe('conversion')
                 })
 
                 it('should construct builtin nodes correctly', () => {
-                        const x = builtin('vertex_index')
-                        expect(x.type).toBe('builtin')
-                        expect(x.props.id).toBe('vertex_index')
+                        expect(vertexIndex.type).toBe('builtin')
+                        expect(vertexIndex.props.id).toBe('vertex_index')
                 })
         })
 

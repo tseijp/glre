@@ -1,6 +1,6 @@
 import { describe, expect, it } from '@jest/globals'
 import { compute } from '../../src/node/build'
-import { float, Fn, id, int, storage, vec2, vec3, vec4 } from '../../src/node'
+import { float, Fn, id, int, vec2, vec3, vec4 } from '../../src/node'
 import { code } from '../../src/node/utils'
 import type { NodeContext } from '../../src/node/types'
 
@@ -10,9 +10,9 @@ describe('Storage Buffer Management', () => {
 
         describe('Storage Buffer Creation', () => {
                 it('should create storage buffers with correct types', () => {
-                        const floatData = storage(float(), 'floatBuffer')
-                        const vecData = storage(vec3(), 'vectorBuffer')
-                        const vec4Data = storage(vec4(), 'vec4Buffer')
+                        const floatData = float().storage('floatBuffer')
+                        const vecData = vec3().storage('vectorBuffer')
+                        const vec4Data = vec4().storage('vec4Buffer')
                         expect(floatData.type).toBe('storage')
                         expect(floatData.props.id).toBe('floatBuffer')
                         expect(vecData.type).toBe('storage')
@@ -22,14 +22,14 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should auto-generate storage IDs when not provided', () => {
-                        const data = storage(float())
+                        const data = float().storage()
                         expect(data.type).toBe('storage')
                         expect(data.props.id).toMatch(/x\d+/)
                 })
 
                 it('should handle different storage buffer types', () => {
-                        const intData = storage(int(), 'intBuffer')
-                        const vec2Data = storage(vec2(), 'vec2Buffer')
+                        const intData = int().storage('intBuffer')
+                        const vec2Data = vec2().storage('vec2Buffer')
                         expect(intData.props.id).toBe('intBuffer')
                         expect(vec2Data.props.id).toBe('vec2Buffer')
                 })
@@ -37,7 +37,7 @@ describe('Storage Buffer Management', () => {
 
         describe('Storage Buffer Header Generation - WGPU', () => {
                 it('should generate correct WGSL storage buffer headers', () => {
-                        const data = storage(float(), 'testBuffer')
+                        const data = float().storage('testBuffer')
                         const c = createWGPUContext()
                         const res = code(data, c)
                         expect(res).toBe('testBuffer')
@@ -48,7 +48,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle vector storage buffers in WGSL', () => {
-                        const vectorData = storage(vec3(), 'vectorBuffer')
+                        const vectorData = vec3().storage('vectorBuffer')
                         const c = createWGPUContext()
                         code(vectorData, c)
                         const header = c.code?.headers.get('vectorBuffer')
@@ -56,7 +56,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle vec4 storage buffers in WGSL', () => {
-                        const vec4Data = storage(vec4(), 'vec4Buffer')
+                        const vec4Data = vec4().storage('vec4Buffer')
                         const c = createWGPUContext()
                         code(vec4Data, c)
                         const header = c.code?.headers.get('vec4Buffer')
@@ -64,8 +64,8 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should assign binding numbers automatically', () => {
-                        const buffer1 = storage(float(), 'buffer1')
-                        const buffer2 = storage(vec3(), 'buffer2')
+                        const buffer1 = float().storage('buffer1')
+                        const buffer2 = vec3().storage('buffer2')
                         const c = createWGPUContext()
                         code(buffer1, c)
                         code(buffer2, c)
@@ -79,7 +79,7 @@ describe('Storage Buffer Management', () => {
 
         describe('Storage Buffer Header Generation - WebGL', () => {
                 it('should generate correct WebGL texture buffer headers', () => {
-                        const data = storage(float(), 'testBuffer')
+                        const data = float().storage('testBuffer')
                         const c = createWebGLContext()
                         code(data, c)
                         const header = c.code?.headers.get('testBuffer')
@@ -87,7 +87,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle compute shader output buffers in WebGL', () => {
-                        const data = storage(vec4(), 'outputBuffer')
+                        const data = vec4().storage('outputBuffer')
                         const c = createWebGLContext()
                         c.label = 'compute'
                         code(data, c)
@@ -99,7 +99,7 @@ describe('Storage Buffer Management', () => {
 
         describe('Element Access Operations', () => {
                 it('should handle storage buffer element access correctly', () => {
-                        const data = storage(float(), 'buffer')
+                        const data = float().storage('buffer')
                         const index = int(5)
                         const element = data.element(index)
                         expect(element.type).toBe('gather')
@@ -108,7 +108,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should generate correct WGSL element access code', () => {
-                        const data = storage(float(), 'buffer')
+                        const data = float().storage('buffer')
                         const index = int(3)
                         const c = createWGPUContext()
                         const elementAccess = data.element(index)
@@ -117,7 +117,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should generate correct WebGL texture fetch code', () => {
-                        const data = storage(float(), 'buffer')
+                        const data = float().storage('buffer')
                         const index = int(7)
                         const c = createWebGLContext()
                         c.gl = { particleCount: [32, 32] }
@@ -129,7 +129,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle vector storage element access', () => {
-                        const vectorData = storage(vec3(), 'vectorBuffer')
+                        const vectorData = vec3().storage('vectorBuffer')
                         const index = int(2)
                         const c = createWGPUContext()
                         const elementAccess = vectorData.element(index)
@@ -138,7 +138,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle vec4 storage element access in WebGL', () => {
-                        const vec4Data = storage(vec4(), 'vec4Buffer')
+                        const vec4Data = vec4().storage('vec4Buffer')
                         const index = int(1)
                         const c = createWebGLContext()
                         c.gl = { particleCount: [16, 16] }
@@ -217,8 +217,8 @@ describe('Storage Buffer Management', () => {
 
         describe('Storage Buffer in Compute Shaders', () => {
                 it('should generate storage buffer usage in compute shaders', () => {
-                        const inputBuffer = storage(float(), 'input')
-                        const outputBuffer = storage(float(), 'output')
+                        const inputBuffer = float().storage('input')
+                        const outputBuffer = float().storage('output')
                         const computeFunc = Fn(([id]) => {
                                 const index = id.x
                                 const value = inputBuffer.element(index)
@@ -235,8 +235,8 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle vector storage in compute shaders', () => {
-                        const positionBuffer = storage(vec3(), 'positions')
-                        const velocityBuffer = storage(vec3(), 'velocities')
+                        const positionBuffer = vec3().storage('positions')
+                        const velocityBuffer = vec3().storage('velocities')
                         const computeFunc = Fn(([id]) => {
                                 const index = id.x
                                 const pos = positionBuffer.element(index)
@@ -251,8 +251,8 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle mixed storage buffer types', () => {
-                        const scalarData = storage(float(), 'scalars')
-                        const vectorData = storage(vec4(), 'vectors')
+                        const scalarData = float().storage('scalars')
+                        const vectorData = vec4().storage('vectors')
                         const computeFunc = Fn(([id]) => {
                                 const index = id.x
                                 const scalar = scalarData.element(index)
@@ -269,7 +269,7 @@ describe('Storage Buffer Management', () => {
 
         describe('Index Calculation and Boundary Handling', () => {
                 it('should handle computed indices correctly', () => {
-                        const data = storage(float(), 'buffer')
+                        const data = float().storage('buffer')
                         const baseIndex = int(5)
                         const offset = int(3)
                         const computedIndex = baseIndex.add(offset)
@@ -280,7 +280,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle variable indices', () => {
-                        const data = storage(vec2(), 'buffer')
+                        const data = vec2().storage('buffer')
                         const dynamicIndex = int(0).toVar('index')
                         const c = createWGPUContext()
                         const elementAccess = data.element(dynamicIndex)
@@ -289,7 +289,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle WebGL coordinate calculation for texture buffers', () => {
-                        const data = storage(float(), 'textureBuffer')
+                        const data = float().storage('textureBuffer')
                         const index = int(35)
                         const c = createWebGLContext()
                         c.gl = { particleCount: [8, 8] }
@@ -300,7 +300,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle different texture buffer sizes', () => {
-                        const data = storage(vec3(), 'largeBuffer')
+                        const data = vec3().storage('largeBuffer')
                         const index = int(100)
                         const c = createWebGLContext()
                         c.gl = { particleCount: [64, 64] }
@@ -313,8 +313,8 @@ describe('Storage Buffer Management', () => {
 
         describe('Storage Buffer Type Inference', () => {
                 it('should preserve element types through storage operations', () => {
-                        const floatBuffer = storage(float(), 'floats')
-                        const vecBuffer = storage(vec3(), 'vectors')
+                        const floatBuffer = float().storage('floats')
+                        const vecBuffer = vec3().storage('vectors')
                         const floatElement = floatBuffer.element(int(0))
                         const vecElement = vecBuffer.element(int(1))
                         expect(floatElement.type).toBe('gather')
@@ -322,7 +322,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle chained operations on storage elements', () => {
-                        const data = storage(vec3(), 'data')
+                        const data = vec3().storage('data')
                         const index = int(5)
                         const c = createWGPUContext()
                         const element = data.element(index)
@@ -332,7 +332,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle swizzle operations on storage elements', () => {
-                        const data = storage(vec4(), 'colors')
+                        const data = vec4().storage('colors')
                         const index = int(2)
                         const c = createWGPUContext()
                         const element = data.element(index)
@@ -344,7 +344,7 @@ describe('Storage Buffer Management', () => {
 
         describe('Platform-Specific Storage Differences', () => {
                 it('should generate different storage syntax for WebGL vs WebGPU', () => {
-                        const data = storage(float(), 'buffer')
+                        const data = float().storage('buffer')
                         const index = int(10)
                         const wgpuContext = createWGPUContext()
                         const webglContext = createWebGLContext()
@@ -358,7 +358,7 @@ describe('Storage Buffer Management', () => {
                 })
 
                 it('should handle storage declaration differences', () => {
-                        const vectorData = storage(vec2(), 'vectors')
+                        const vectorData = vec2().storage('vectors')
                         const wgpuContext = createWGPUContext()
                         const webglContext = createWebGLContext()
                         code(vectorData, wgpuContext)
