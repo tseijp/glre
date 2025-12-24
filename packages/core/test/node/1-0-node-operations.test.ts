@@ -172,7 +172,7 @@ describe('Node Creation & Operations', () => {
                         const notResult = x.not()
                         expect(infer(andResult)).toBe('bool')
                         expect(infer(orResult)).toBe('bool')
-                        // expect(infer(notResult)).toBe('bool') // ??
+                        expect(infer(notResult)).toBe('bool')
                 })
         })
 
