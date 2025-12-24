@@ -8,9 +8,9 @@ const toPrimitive = (x: Y, hint: string) => {
         if (hint === 'string') return code(x as any, null)
 }
 
-export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...args: Y[]) => {
+export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...children: Y[]) => {
         if (!props) props = {}
-        if (args.length) props.children = args
+        if (children.length) props.children = children
         const listeners = new Set<(value: any) => void>()
         const get = (_: unknown, key: string | Symbol) => {
                 if (key === 'type') return type
@@ -43,6 +43,7 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
                 if (is.str(key)) return isArrayAccess(key) ? element(x, key) : member(x, key)
         }
         const set = (_: unknown, key: string, y: Y) => {
+                if (key === 'value') listeners.forEach((fun) => fun(y))
                 if (is.str(key)) member(x, key).assign(y)
                 return true
         }
