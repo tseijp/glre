@@ -39,7 +39,7 @@ const transformCode = (isInView = true, isFun = true, isApp = false, isLoop = tr
         code = code.trim()
         if (isApp) return code
         let ret: string
-        if (isFun) ret = createCanvasTemplate(isLoop, 'fragment()', code)
+        if (isFun) ret = createCanvasTemplate(isLoop, 'Scope(fragment)', code)
         else ret = createCanvasTemplate(isLoop, code)
         ret = ret.trim()
         return ret

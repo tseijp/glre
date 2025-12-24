@@ -1,7 +1,7 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { attribute, instance, uniform, vec4, If, Fn, vertexStage } from 'glre/src/node'
+import { attribute, instance, uniform, vec4, If, Fn, varying } from 'glre/src/node'
 
 export default function ParticleSystem() {
         const gridSize = 100
@@ -104,7 +104,7 @@ export default function ParticleSystem() {
                 },
                 vert: vec4(pos.add(point), 0, 1),
                 frag: Fn(() => {
-                        const dist = vertexStage(pos).sub(mouseUniform).length()
+                        const dist = varying(pos).sub(mouseUniform).length()
                         const intensity = dist.mul(5.0).saturate()
                         If(mouseDownUniform.greaterThan(0.5), () => {
                                 return vec4(intensity.oneMinus(), intensity, 1.0, 1.0)

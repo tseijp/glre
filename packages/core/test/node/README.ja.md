@@ -75,7 +75,7 @@ closure 内での variable access、parameter binding の正確性、nested func
 
 #### Varying 処理システムの堅牢性確保
 
-vertexStage による varying 変数の検出、fragment shader における input struct 生成、vertex shader における output struct 生成、 input/output 判定を検証する。
+varying 変数の検出、fragment shader における input struct 生成、vertex shader における output struct 生成、 input/output 判定を検証する。
 
 fragment shader build 先行による varying detection、location number の automatic assignment、struct field の type consistency、WebGL/WebGPU における declaration format の差異を重点的に確認する。
 
@@ -161,7 +161,7 @@ variable declaration、statement addition、context switching における patte
 
 ```
 Detection Pattern:
-vertexStage usage → detection verification → registration check
+varying usage → detection verification → registration check
 
 Generation Pattern:
 detected varying → struct generation → field verification

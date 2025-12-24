@@ -29,7 +29,7 @@ export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, .
                 if (key === 'uniform') return (id = getId()) => uniform(x, id)
                 if (key === 'variable') return (id = getId()) => variable(id)
                 if (key === 'builtin') return (id = getId()) => builtin(id)
-                if (key === 'vertexStage') return (id = getId()) => vertexStage(x, id)
+                if (key === 'varying') return (id = getId()) => varying(x, id)
                 if (key === 'element') return (y: Y) => (type === 'storage' ? gather(x, y) : element(x, y))
                 if (key === 'member') return (y: Y) => member(x, y)
                 if (key === 'assign') return assign.bind(null, x, x.type === 'gather')
@@ -59,7 +59,7 @@ export const uniform = <T extends C>(x: Y<T>, id = getId()) => create<T>('unifor
 export const storage = <T extends C>(x: Y<T>, id = getId()) => create<T>('storage', { id }, x)
 export const variable = <T extends C>(id = getId()) => create<T>('variable', { id })
 export const builtin = <T extends C>(id = getId()) => create<T>('builtin', { id })
-export const vertexStage = <T extends C>(x: X<T>, id = getId()) => {
+export const varying = <T extends C>(x: X<T>, id = getId()) => {
         return create<T>('varying', { id, inferFrom: [x] }, x)
 }
 

@@ -259,7 +259,7 @@ const vertex = () => {
         const color = attribute('color')
 
         // Pass data to fragment shader
-        const worldColor = vertexStage(color, 'worldColor')
+        const worldColor = varying(color, 'worldColor')
 
         return position
 }

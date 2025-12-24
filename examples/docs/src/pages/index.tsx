@@ -2,7 +2,7 @@
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
-import { attribute, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture2D, uniform, vec3, vec4, vertexStage } from 'glre/src/node'
+import { attribute, float, Fn, If, instance, int, ivec2, mat4, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
 import { type GL } from 'glre/src'
 import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
 
@@ -63,7 +63,7 @@ const createNode = () => {
                 const world = off.add(local)
                 return iMVP.mul(vec4(world, 1))
         })
-        const frag = fs(vertexStage(center(vertex, scl, pos, normal)).toIVec3(), vertexStage(diffuse(normal)), vertexStage(aid))
+        const frag = fs(varying(center(vertex, scl, pos, normal)).toIVec3(), varying(diffuse(normal)), varying(aid))
         const vert = vs(pos, scl, aid)
         return { vert, frag, iMVP }
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from '@jest/globals'
-import { vec3, float, vec4, Fn, vertexStage, position, Scope } from '../../src/node'
+import { vec3, float, vec4, Fn, varying, position, Scope } from '../../src/node'
 import { fragment, vertex } from '../../src/node/build'
 import type { NodeContext } from '../../src/node/types'
 
@@ -10,9 +10,9 @@ describe('Varying Processing System', () => {
         const createGLSLFragmentContext = (): NodeContext => ({ isWebGL: true, label: 'frag' })
 
         describe('Varying Variable Detection', () => {
-                it('should detect varying variables through vertexStage usage', () => {
+                it('should detect varying variables through varying usage', () => {
                         const worldPos = vec3(1, 2, 3)
-                        const vWorldPos = vertexStage(worldPos, 'worldPosition')
+                        const vWorldPos = varying(worldPos, 'worldPosition')
                         expect(vWorldPos.type).toBe('varying')
                         expect(vWorldPos.props.id).toBe('worldPosition')
                         expect(vWorldPos.props.inferFrom?.[0]).toBe(worldPos)
@@ -22,9 +22,9 @@ describe('Varying Processing System', () => {
                         const pos = vec3(1, 2, 3)
                         const norm = vec3(0, 1, 0)
                         const uv = vec3(0.5, 0.5, 0)
-                        const vPos = vertexStage(pos, 'vPosition')
-                        const vNorm = vertexStage(norm, 'vNormal')
-                        const vUV = vertexStage(uv, 'vUV')
+                        const vPos = varying(pos, 'vPosition')
+                        const vNorm = varying(norm, 'vNormal')
+                        const vUV = varying(uv, 'vUV')
                         expect(vPos.props.id).toBe('vPosition')
                         expect(vNorm.props.id).toBe('vNormal')
                         expect(vUV.props.id).toBe('vUV')
@@ -32,7 +32,7 @@ describe('Varying Processing System', () => {
 
                 it('should auto-generate varying IDs when not provided', () => {
                         const data = vec4(1, 2, 3, 4)
-                        const varying = vertexStage(data)
+                        const varying = varying(data)
                         expect(varying.type).toBe('varying')
                         expect(varying.props.id).toMatch(/x\d+/)
                 })
@@ -42,7 +42,7 @@ describe('Varying Processing System', () => {
                 it('should generate correct WGSL vertex output struct with varyings', () => {
                         const vs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                const _varying = vertexStage(worldPos, 'worldPosition')
+                                const _varying = varying(worldPos, 'worldPosition')
                                 return position
                         })
                         const c = createVertexContext()
@@ -55,7 +55,7 @@ describe('Varying Processing System', () => {
                 it('should generate correct GLSL vertex output with varyings', () => {
                         const vs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                const _varying = vertexStage(worldPos, 'worldPosition')
+                                const _varying = varying(worldPos, 'worldPosition')
                                 return position
                         })
                         const c = createGLSLVertexContext()
@@ -69,9 +69,9 @@ describe('Varying Processing System', () => {
                                 const pos = vec3(1, 2, 3)
                                 const norm = vec3(0, 1, 0)
                                 const color = vec3(1, 0, 0)
-                                const vPos = vertexStage(pos, 'vPosition')
-                                const vNorm = vertexStage(norm, 'vNormal')
-                                const vColor = vertexStage(color, 'vColor')
+                                const vPos = varying(pos, 'vPosition')
+                                const vNorm = varying(norm, 'vNormal')
+                                const vColor = varying(color, 'vColor')
                                 return position
                         })
                         const c = createVertexContext()
@@ -89,12 +89,12 @@ describe('Varying Processing System', () => {
                 it('should generate correct WGSL fragment input struct with varyings', () => {
                         const vs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                vertexStage(worldPos, 'worldPosition')
+                                varying(worldPos, 'worldPosition')
                                 return position
                         })
                         const fs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                const varying = vertexStage(worldPos, 'worldPosition')
+                                const varying = varying(worldPos, 'worldPosition')
                                 return vec4(varying, 1)
                         })
                         vertex(vs, createVertexContext())
@@ -107,12 +107,12 @@ describe('Varying Processing System', () => {
                 it('should generate correct GLSL fragment input with varyings', () => {
                         const vs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                vertexStage(worldPos, 'worldPosition')
+                                varying(worldPos, 'worldPosition')
                                 return position
                         })
                         const fs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                const varying = vertexStage(worldPos, 'worldPosition')
+                                const varying = varying(worldPos, 'worldPosition')
                                 return vec4(varying, 1)
                         })
                         vertex(vs, createGLSLVertexContext())
@@ -124,7 +124,7 @@ describe('Varying Processing System', () => {
                 it('should handle varying access in fragment shader', () => {
                         const fs = Scope(() => {
                                 const worldPos = vec3(1, 2, 3)
-                                const varying = vertexStage(worldPos, 'worldPosition')
+                                const varying = varying(worldPos, 'worldPosition')
                                 const normalized = varying.normalize()
                                 return vec4(normalized, 1)
                         })
@@ -139,12 +139,12 @@ describe('Varying Processing System', () => {
                 it('should maintain type consistency between vertex and fragment shaders', () => {
                         const vs = Scope(() => {
                                 const color = vec3(1, 0.5, 0.2)
-                                const vColor = vertexStage(color, 'vertexColor')
+                                const vColor = varying(color, 'vertexColor')
                                 return position
                         })
                         const fs = Scope(() => {
                                 const color = vec3(1, 0.5, 0.2)
-                                const vColor = vertexStage(color, 'vertexColor')
+                                const vColor = varying(color, 'vertexColor')
                                 return vec4(vColor, 1)
                         })
                         const vertexContext = createVertexContext()
@@ -158,7 +158,7 @@ describe('Varying Processing System', () => {
                 it('should handle scalar varying types correctly', () => {
                         const vs = Scope(() => {
                                 const depth = float(0.5)
-                                const vDepth = vertexStage(depth, 'depth')
+                                const vDepth = varying(depth, 'depth')
                                 return position
                         })
                         const c = createVertexContext()
@@ -170,7 +170,7 @@ describe('Varying Processing System', () => {
                 it('should handle vec4 varying types correctly', () => {
                         const vs = Scope(() => {
                                 const data = vec4(1, 2, 3, 4)
-                                const vData = vertexStage(data, 'data')
+                                const vData = varying(data, 'data')
                                 return position
                         })
                         const c = createVertexContext()
@@ -185,9 +185,9 @@ describe('Varying Processing System', () => {
                                 const first = vec3(1, 2, 3)
                                 const second = vec3(4, 5, 6)
                                 const third = vec3(7, 8, 9)
-                                const v1 = vertexStage(first, 'first')
-                                const v2 = vertexStage(second, 'second')
-                                const v3 = vertexStage(third, 'third')
+                                const v1 = varying(first, 'first')
+                                const v2 = varying(second, 'second')
+                                const v3 = varying(third, 'third')
                                 return position
                         })
                         const c = createVertexContext()
@@ -200,7 +200,7 @@ describe('Varying Processing System', () => {
                 it('should start location numbering from 0', () => {
                         const vs = Scope(() => {
                                 const normal = vec3(0, 1, 0)
-                                const vNormal = vertexStage(normal, 'normal')
+                                const vNormal = varying(normal, 'normal')
                                 return position
                         })
                         const c = createVertexContext()
@@ -213,7 +213,7 @@ describe('Varying Processing System', () => {
                 it('should generate different syntax for WebGL vs WebGPU varyings', () => {
                         const vs = Scope(() => {
                                 const uv = vec3(0.5, 0.5, 0)
-                                const vUV = vertexStage(uv, 'texCoord')
+                                const vUV = varying(uv, 'texCoord')
                                 return position
                         })
                         const wgslContext = createVertexContext()
@@ -229,7 +229,7 @@ describe('Varying Processing System', () => {
                 it('should handle varying access differently in fragment shaders', () => {
                         const fs = Scope(() => {
                                 const uv = vec3(0.5, 0.5, 0)
-                                const vUV = vertexStage(uv, 'texCoord')
+                                const vUV = varying(uv, 'texCoord')
                                 return vec4(vUV, 1)
                         })
                         const wgslContext = createFragmentContext()
@@ -246,7 +246,7 @@ describe('Varying Processing System', () => {
                         const vs = Scope(() => {
                                 const base = vec3(1, 2, 3)
                                 const computed = base.normalize().mul(float(2.0))
-                                const _vComputed = vertexStage(computed, 'computed')
+                                const _vComputed = varying(computed, 'computed')
                                 return position
                         })
                         const c = createVertexContext()
@@ -263,7 +263,7 @@ describe('Varying Processing System', () => {
                         const vs = Scope(() => {
                                 const input = vec3(1, 2, 3)
                                 const res = mathFunc(input)
-                                const _vResult = vertexStage(res, 'processed')
+                                const _vResult = varying(res, 'processed')
                                 return position
                         })
                         const c = createVertexContext()
@@ -276,7 +276,7 @@ describe('Varying Processing System', () => {
                 it('should handle varying reuse across multiple shaders', () => {
                         const createSharedVarying = () => {
                                 const shared = vec3(1, 0.5, 0.2)
-                                return vertexStage(shared, 'sharedData')
+                                return varying(shared, 'sharedData')
                         }
                         const vs = Scope(() => {
                                 const vShared = createSharedVarying()

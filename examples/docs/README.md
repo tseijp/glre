@@ -255,7 +255,7 @@ function Canvas() {
     isWebGL: true,
     triangleCount: 1,
     vert: vec4(tri, 0, 1),
-    frag: vertexStage(col),
+    frag: varying(col),
   })
   return <canvas ref={gl.ref} />
 }
