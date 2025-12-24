@@ -1,13 +1,8 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, vec2, vec3, vec4, int, struct, Fn, Scope } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { float, Fn, int, Scope, struct, vec2, vec3, vec4 } from '../../src/node'
 import { build } from '../../test-utils'
-import { code } from '../../src/node/utils'
-import type { NodeContext } from '../../src/node/types'
 
 describe('Struct Processing System', () => {
-        const createWGSLContext = (): NodeContext => ({ isWebGL: false })
-        const createGLSLContext = (): NodeContext => ({ isWebGL: true })
-
         describe('Struct Definition', () => {
                 it('should handle struct instantiation without initial values', () => {
                         const Point = struct({ x: float(), y: float() }, 'Point')

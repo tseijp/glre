@@ -1,5 +1,5 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, int, uint, bool, vec2, vec3, vec4, mat3, uniform, attribute, storage, constant, variable, builtin, color, texture2D } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { attribute, bool, builtin, color, constant, float, int, mat3, storage, texture2D, uint, uniform, variable, vec2, vec3, vec4 } from '../../src/node'
 import { infer } from '../../src/node/utils/infer'
 
 describe('Node Creation & Operations', () => {

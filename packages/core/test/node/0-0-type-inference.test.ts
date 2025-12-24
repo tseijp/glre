@@ -1,6 +1,6 @@
-import { describe, it, expect } from '@jest/globals'
+import { describe, expect, it } from '@jest/globals'
+import { bool, bvec2, bvec3, bvec4, float, int, ivec2, ivec3, ivec4, mat2, mat3, mat4, uint, uvec2, uvec3, uvec4, vec2, vec3, vec4 } from '../../src/node'
 import { infer, inferPrimitiveType } from '../../src/node/utils/infer'
-import { float, int, uint, bool, vec2, vec3, vec4, mat2, mat3, mat4, ivec2, ivec3, ivec4, uvec2, uvec3, uvec4, bvec2, bvec3, bvec4 } from '../../src/node'
 
 describe('Type Inference Engine', () => {
         describe('Primitive Type Inference', () => {

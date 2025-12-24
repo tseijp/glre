@@ -1,5 +1,5 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, vec3, mat3, bool, int, uniform, builtin } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { bool, builtin, float, int, mat3, uniform, vec3 } from '../../src/node'
 import { code } from '../../src/node/utils'
 import type { NodeContext } from '../../src/node/types'
 

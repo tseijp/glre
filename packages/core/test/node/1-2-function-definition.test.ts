@@ -1,5 +1,5 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, vec3, int, bool, Fn } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { bool, float, Fn, int, vec3 } from '../../src/node'
 import { build } from '../../test-utils'
 
 describe('Function Definition System', () => {

@@ -1,5 +1,5 @@
-import { describe, it, expect } from '@jest/globals'
-import { float, vec3, uniform, attribute, builtin } from '../../src/node'
+import { describe, expect, it } from '@jest/globals'
+import { attribute, builtin, float, uniform, vec3 } from '../../src/node'
 
 describe('Abstract Syntax Tree Construction', () => {
         describe('Node Structure Validation', () => {
