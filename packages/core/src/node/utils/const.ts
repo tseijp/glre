@@ -59,7 +59,6 @@ export const SWIZZLE_RESULT_MAP = {
 }
 
 export const OPERATORS = {
-        not: '!',
         add: '+',
         sub: '-',
         mul: '*',
@@ -72,8 +71,11 @@ export const OPERATORS = {
         greaterThan: '>',
         greaterThanEqual: '>=',
         and: '&&',
+        not: '!',
         or: '||',
+        xor: '^',
         bitAnd: '&',
+        bitNot: '!',
         bitOr: '|',
         bitXor: '^',
         shiftLeft: '<<',
