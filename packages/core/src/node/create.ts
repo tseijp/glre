@@ -11,10 +11,12 @@ const toPrimitive = (x: Y, hint: string) => {
 export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...children: Y[]) => {
         if (!props) props = {}
         if (children.length) props.children = children
-        const listeners = new Set<(value: any) => void>()
+        let value: any
+        const listeners = new Set<(value: any) => void>([(_value) => (value = _value)])
         const get = (_: unknown, key: string | Symbol) => {
                 if (key === 'type') return type
                 if (key === 'props') return props
+                if (key === 'value') return value
                 if (key === 'isProxy') return true
                 if (key === 'listeners') return listeners
                 if (key === 'toVar') return toVar.bind(null, x)
