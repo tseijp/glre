@@ -114,12 +114,32 @@ npm install glre
 
 <table>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
-**React**
+**ESM**
 
 ---
+
+<!-- prettier-ignore -->
+```html
+<script type="module">
+  import { createGL } from 'https://esm.sh/glre'
+  import { vec4, uv } from 'https://esm.sh/glre/node'
+  createGL({ fs: vec4(uv, 0, 1) }).mount()
+</script>
+```
+
+</td>
+<td width="0px">
+<details>
+<summary>
+
+React
+
+---
+
+</summary>
 
 <!-- prettier-ignore -->
 ```ts
@@ -128,7 +148,7 @@ import { useGL } from 'glre/react'
 import { vec4, uv } from 'glre/node'
 
 const Canvas = () => {
-  const gl = useGL({ frag: vec4(uv, 0, 1) })
+  const gl = useGL({ fragment: vec4(uv, 0, 1) })
   return <canvas ref={gl.ref} />
 }
 
@@ -136,6 +156,7 @@ const root = document.getElementById('root')
 createRoot(root).render(<Canvas />)
 ```
 
+</details>
 </td>
 <td width="0px">
 <details>
@@ -155,7 +176,7 @@ import { useGL } from 'glre/native'
 import { vec4, uv } from 'glre/node'
 
 const Canvas = () => {
-  const gl = useGL({ frag: vec4(uv, 0, 1) })
+  const gl = useGL({ fragment: vec4(uv, 0, 1) })
   return (
      <GLView
       style={{ flex: 1 }}
@@ -186,32 +207,11 @@ import { onGL } from 'glre/solid'
 import { vec4, uv } from 'glre/node'
 
 const Canvas = () => {
-  const gl = onGL({ frag: vec4(uv, 0, 1) })
+  const gl = onGL({ fragment: vec4(uv, 0, 1) })
   return <canvas ref={gl.ref} />
 }
 
 render(() => <Canvas />, document.getElementById('root'))
-```
-
-</details>
-</td>
-<td width="0px">
-<details>
-<summary>
-
-ESM
-
----
-
-</summary>
-
-<!-- prettier-ignore -->
-```html
-<script type="module">
-  import { createGL } from 'https://esm.sh/glre'
-  import { vec4, uv } from 'https://esm.sh/glre/node'
-  createGL({ fs: vec4(uv, 0, 1) }).mount()
-</script>
 ```
 
 </details>
@@ -225,12 +225,12 @@ ESM
 <tr>
 <td width="100%" colspan="3">
 
-### [Varying](http://localhost:3000/docs#varying)
+### [Varying](https://glre.dev/docs#varying)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -247,19 +247,50 @@ function Canvas() {
   ])
   const col = attribute([
     1, 0, 0,
-    1, 0, 1,
     0, 1, 0,
-    0, 1, 1,
+    0, 0, 1,
   ])
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
-    vert: vec4(tri, 0, 1),
-    frag: varying(col),
+    vertex: vec4(tri, 0, 1),
+    fragment: vec4(varying(col), 1),
   })
   return <canvas ref={gl.ref} />
 }
 ```
+
+<details>
+        <summary>Or as follows:</summary>
+
+<!-- prettier-ignore -->
+```tsx
+function Canvas() {
+  const vCol = varying(vec3())
+  const tri = attribute([
+     0, 0.73,
+    -1,   -1,
+     1,   -1
+  ])
+  const col = attribute([
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1
+  ])
+  const gl = useGL({
+    isWebGL: true,
+    triangleCount: 1,
+    vertex: Scope(() => {
+      vCol.assign(col)
+      return vec4(tri, 0, 1)
+    }),
+    fragment: vec4(vCol, 1),
+  })
+  return <canvas ref={gl.ref} />
+}
+```
+
+</details>
 
 </td>
 <td width="0px">
@@ -281,8 +312,8 @@ function Canvas() {
     vertex: `
     #version 300 es
     in vec4 tri;
-    in vec4 col;
-    out vec4 v_col;
+    in vec3 col;
+    out vec3 v_col;
     void main() {
       gl_Position = tri;
       v_col = col;
@@ -290,10 +321,10 @@ function Canvas() {
     fragment: `
     #version 300 es
     precision mediump float;
-    in vec4 v_col;
+    in vec3 v_col;
     out vec4 fragColor;
     void main() {
-      fragColor = v_col;
+      fragColor = vec4(v_col, 1.0);
     }`,
   })
   gl.attribute('tri', [
@@ -303,9 +334,8 @@ function Canvas() {
   ])
   gl.attribute('col', [
     1, 0, 0,
-    1, 0, 1,
     0, 1, 0,
-    0, 1, 1,
+    0, 0, 1,
   ])
   return <canvas ref={gl.ref} />
 }
@@ -332,11 +362,11 @@ function Canvas() {
     vertex: `
     struct In {
       @location(0) tri: vec2f,
-      @location(1) col: vec4f,
+      @location(1) col: vec3f,
     }
     struct Out {
       @builtin(position) position: vec4f,
-      @location(0) v_col: vec4f,
+      @location(0) v_col: vec3f,
     }
     @vertex
     fn main(in: In) -> Out {
@@ -348,11 +378,11 @@ function Canvas() {
     fragment: `
     struct Out {
       @builtin(position) position: vec4f,
-      @location(0) v_col: vec4f,
+      @location(0) v_col: vec3f,
     }
     @fragment
     fn main(out: Out) -> @location(0) vec4f {
-      return out.v_col;
+      return vec4f(out.v_col, 1.0);
     }`,
   })
   gl.attribute('tri', [
@@ -362,9 +392,8 @@ function Canvas() {
   ])
   gl.attribute('col', [
     1, 0, 0,
-    1, 0, 1,
     0, 1, 0,
-    0, 1, 1
+    0, 0, 1
   ])
   return <canvas ref={gl.ref} />
 }
@@ -376,7 +405,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#varying">
-<img width="256px" src="./examples/docs/static/img/readme/varying.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/varying.jpg" />
 </a>
 </td>
 </tr>
@@ -388,12 +417,12 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Uniforms](http://localhost:3000/docs#uniforms)
+### [Uniforms](https://glre.dev/docs#uniforms)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -405,7 +434,7 @@ function Canvas() {
 function Canvas() {
   const gl = useGL({
     isWebGL: true,
-    frag: vec4(
+    fragment: vec4(
       uv.sub(iMouse).fract(),
       iTime.sin().mul(0.5).add(0.5),
       1
@@ -484,7 +513,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#uniforms">
-<img width="256px" src="./examples/docs/static/img/readme/uniform.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/uniform.jpg" />
 </a>
 </td>
 </tr>
@@ -496,12 +525,12 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Attributes](http://localhost:3000/docs#attributes)
+### [Attributes](https://glre.dev/docs#attributes)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -519,7 +548,7 @@ function Canvas() {
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
-    vert: vec4(tri, 0, 1),
+    vertex: vec4(tri, 0, 1),
   })
   return <canvas ref={gl.ref} />
 }
@@ -542,7 +571,7 @@ function Canvas() {
   const gl = useGL({
     isWebGL: true,
     triangleCount: 1,
-    vert: `
+    vertex: `
     #version 300 es
     in vec4 tri;
     void main() {
@@ -597,7 +626,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#attributes">
-<img width="256px" src="./examples/docs/static/img/readme/attribute.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/attribute.jpg" />
 </a>
 </td>
 </tr>
@@ -609,12 +638,12 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Multiples](http://localhost:3000/docs#multiples)
+### [Multiples](https://glre.dev/docs#multiples)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -633,11 +662,11 @@ function Canvas() {
     {
       isWebGL: true,
       triangleCount: 1,
-      vert: vec4(vec2(-0.5, 0).add(tri), 0, 1),
+      vertex: vec4(vec2(-0.5, 0).add(tri), 0, 1),
     },
     {
       triangleCount: 1,
-      vert: vec4(vec2(0.5, 0).add(tri), 0, 1),
+      vertex: vec4(vec2(0.5, 0).add(tri), 0, 1),
     }
   )
   return <canvas ref={gl.ref} />
@@ -662,7 +691,7 @@ function Canvas() {
     {
       isWebGL: true,
       triangleCount: 1,
-      vert: `
+      vertex: `
       #version 300 es
       in vec2 tri;
       void main() {
@@ -671,7 +700,7 @@ function Canvas() {
     },
     {
       triangleCount: 1,
-      vert: `
+      vertex: `
       #version 300 es
       in vec2 tri;
       void main() {
@@ -707,7 +736,7 @@ function Canvas() {
     {
       isWebGL: false,
       triangleCount: 1,
-      vert: `
+      vertex: `
       struct In {
         @location(0) tri: vec2f
       }
@@ -723,7 +752,7 @@ function Canvas() {
     },
     {
       triangleCount: 1,
-      vert: `
+      vertex: `
       struct In {
         @location(0) tri: vec2f
       }
@@ -753,7 +782,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#multiples">
-<img width="256px" src="./examples/docs/static/img/readme/multiple.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/multiple.jpg" />
 </a>
 </td>
 </tr>
@@ -765,12 +794,12 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Textures](http://localhost:3000/docs#textures)
+### [Textures](https://glre.dev/docs#textures)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -783,7 +812,7 @@ function Canvas() {
   const iTexture = uniform('https://...')
   const gl = useGL({
     isWebGL: true,
-    frag: texture(iTexture, uv),
+    fragment: texture(iTexture, uv),
   })
   return <canvas ref={gl.ref} />
 }
@@ -859,7 +888,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#textures">
-<img width="256px" src="./examples/docs/static/img/readme/texture.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/texture.jpg" />
 </a>
 </td>
 </tr>
@@ -871,12 +900,12 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Instancing](http://localhost:3000/docs#instancing)
+### [Instancing](https://glre.dev/docs#instancing)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -900,7 +929,7 @@ function Canvas() {
     isWebGL: true,
     instanceCount: 1000,
     triangleCount: 1,
-    vert: vec4(
+    vertex: vec4(
       tri.mul(0.05).sub(1).add(pos.mul(2)),
       0,
       1
@@ -928,7 +957,7 @@ function Canvas() {
     isWebGL: true,
     instanceCount: 1000,
     triangleCount: 1,
-    vert: `
+    vertex: `
     #version 300 es
     in vec2 tri;
     in vec2 pos;
@@ -970,7 +999,7 @@ function Canvas() {
     isWebGL: false,
     instanceCount: 1000,
     triangleCount: 1,
-    vert: `
+    vertex: `
     struct In {
       @location(0) tri: vec2f,
       @location(1) pos: vec2f
@@ -1006,7 +1035,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#instancing">
-<img width="256px" src="./examples/docs/static/img/readme/instancing.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/instancing.jpg" />
 </a>
 </td>
 </tr>
@@ -1018,12 +1047,12 @@ function Canvas() {
 <tr>
 <td width="100%" colspan="3">
 
-### [Computing](http://localhost:3000/docs#computing)
+### [Computing](https://glre.dev/docs#computing)
 
 </td>
 </tr>
 <tr valign="top">
-<td width="0px">
+<td width="1000px">
 <br />
 
 **TSL**
@@ -1158,7 +1187,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#computing">
-<img width="256px" src="./examples/docs/static/img/readme/computing.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/computing.jpg" />
 </a>
 </td>
 </tr>

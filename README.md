@@ -260,6 +260,38 @@ function Canvas() {
 }
 ```
 
+<details>
+        <summary>Or as follows:</summary>
+
+<!-- prettier-ignore -->
+```tsx
+function Canvas() {
+  const vCol = varying(vec3())
+  const tri = attribute([
+     0, 0.73,
+    -1,   -1,
+     1,   -1
+  ])
+  const col = attribute([
+    1, 0, 0,
+    0, 1, 0,
+    0, 0, 1
+  ])
+  const gl = useGL({
+    isWebGL: true,
+    triangleCount: 1,
+    vertex: Scope(() => {
+      vCol.assign(col)
+      return vec4(tri, 0, 1)
+    }),
+    fragment: vec4(vCol, 1),
+  })
+  return <canvas ref={gl.ref} />
+}
+```
+
+</details>
+
 </td>
 <td width="0px">
 <details>
@@ -373,7 +405,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#varying">
-<img width="256px" src="./examples/docs/static/img/readme/varying.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/varying.jpg" />
 </a>
 </td>
 </tr>
@@ -481,7 +513,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#uniforms">
-<img width="256px" src="./examples/docs/static/img/readme/uniform.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/uniform.jpg" />
 </a>
 </td>
 </tr>
@@ -594,7 +626,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#attributes">
-<img width="256px" src="./examples/docs/static/img/readme/attribute.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/attribute.jpg" />
 </a>
 </td>
 </tr>
@@ -750,7 +782,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#multiples">
-<img width="256px" src="./examples/docs/static/img/readme/multiple.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/multiple.jpg" />
 </a>
 </td>
 </tr>
@@ -856,7 +888,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#textures">
-<img width="256px" src="./examples/docs/static/img/readme/texture.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/texture.jpg" />
 </a>
 </td>
 </tr>
@@ -1003,7 +1035,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#instancing">
-<img width="256px" src="./examples/docs/static/img/readme/instancing.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/instancing.jpg" />
 </a>
 </td>
 </tr>
@@ -1155,7 +1187,7 @@ function Canvas() {
 <tr>
 <td colspan="3">
 <a href="https://glre.dev/docs#computing">
-<img width="256px" src="./examples/docs/static/img/readme/computing.jpg" />
+<img width="256px" src="https://glre.dev/img/readme/computing.jpg" />
 </a>
 </td>
 </tr>
