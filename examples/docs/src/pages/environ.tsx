@@ -55,8 +55,7 @@ export default function EnvironApp() {
         const mat = uniform(mat4())
         const inv = uniform(mat4())
         const geo = createSphere(1, 128, 128)
-        const norm = attribute(vec3(geo.normals), 'norm')
-        const sphere = attribute(vec3(geo.positions), 'sphere')
+        const sphere = attribute(vec3(geo.positions))
         const update = () => {
                 const cos = Math.cos(pitch)
                 const pos = [2 * Math.sin(yaw) * cos, 2 * Math.sin(pitch), 2 * Math.cos(yaw) * cos]
@@ -84,8 +83,8 @@ export default function EnvironApp() {
                         vertex: mat.mul(vec4(sphere, 1)),
                         fragment: Scope(() => {
                                 const p = varying(sphere)
-                                const n = varying(norm)
-                                const d = p.sub(cam).normalize().reflect(n).normalize()
+                                const n = varying(attribute(vec3(geo.normals)))
+                                const d = p.sub(cam).normalize().refract(n, 0.9) // .reflect(n)
                                 return texture(env, dir2uv(d))
                         }),
                         render() {
