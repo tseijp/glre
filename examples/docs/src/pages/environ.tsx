@@ -1,7 +1,7 @@
 // @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { attribute, builtin, float, Fn, iResolution, mat3, mat4, position, Scope, texture, uniform, uv, varying, vec2, vec3, Vec3, vec4 } from 'glre/src/node'
+import { attribute, Fn, mat4, Scope, texture, uniform, uv, varying, vec2, vec3, Vec3, vec4 } from 'glre/src/node'
 import { mat4 as m } from 'gl-matrix'
 
 export default function EnvironmentMap() {
@@ -27,15 +27,15 @@ export default function EnvironmentMap() {
                 mat.value = VP
                 inv.value = m.invert(tmp2, VP)
         }
-        const _uv = Fn(([_d]: [Vec3]) => {
-                const d = _d.normalize()
-                return vec2(d.x.atan2(d.z), d.y.asin()).div(vec2(6.28, 3.14)).mul(vec2(1, -1)).add(0.5)
+        const _uv = Fn(([d]: [Vec3]) => {
+                d = d.normalize().toVar()
+                return vec2(d.x.atan2(d.z), d.y.asin()).div(vec2(6.28, 3.14)).fma(vec2(1, -1), 0.5)
         })
         const gl = useGL(
                 {
-                        // isDepth: true,
+                        isDepth: true,
                         isWebGL: true,
-                        fragment: texture(env, _uv(inv.mul(vec4(uv.mul(2).sub(1), 1, 1)).xyz)),
+                        fragment: texture(env, _uv(inv.mul(vec4(uv.fma(2, -1), 1, 1)).xyz)),
                 },
                 {
                         triangleCount: 12,
@@ -43,7 +43,7 @@ export default function EnvironmentMap() {
                         fragment: Scope(() => {
                                 const p = varying(cube)
                                 const n = varying(norm)
-                                const d = p.sub(cam).normalize().toVar().reflect(n)
+                                const d = p.sub(cam).normalize().reflect(n)
                                 return texture(env, _uv(d))
                         }),
                         render() {

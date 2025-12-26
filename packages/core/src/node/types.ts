@@ -404,6 +404,7 @@ interface _X<T extends C> {
         min<U extends C>(y: number | X<U>): X<InferOperator<T, U>>
         mix<U extends C>(y: number | X<U>, a: number | Float | X<U>): X<InferOperator<T, U>>
         pow<U extends C>(y: number | X<U>): X<T>
+        fma<U extends C>(b: number | X<U>, c: number | X<U>): X<T>
         reflect<U extends C>(N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never): X<T>
         refract<U extends C>(N: T extends 'vec2' | 'vec3' | 'vec4' ? (U extends T ? number | X<U> : never) : never, eta: number | Float): T extends 'vec2' | 'vec3' | 'vec4' ? X<T> : never
 

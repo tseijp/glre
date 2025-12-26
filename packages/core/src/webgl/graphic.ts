@@ -55,6 +55,7 @@ export const graphic = (gl: GL) => {
 
         gl('render', () => {
                 c.useProgram((gl.program = pg))
+                if (gl.isDepth) c.clear(c.DEPTH_BUFFER_BIT)
                 if (gl.instanceCount > 1) {
                         c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
                 } else c.drawArrays(c.TRIANGLES, 0, gl.count)

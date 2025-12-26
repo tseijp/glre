@@ -136,6 +136,7 @@ export const max = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => f<T>
 export const min = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => f<T>('min', x, y)
 export const mix = <T extends C, U extends C>(x: X<T>, y: number | X<U>, a: number | Float | X<U>) => f<T>('mix', x, y, a)
 export const pow = <T extends C, U extends C>(x: X<T>, y: number | X<U>) => f<T>('pow', x, y)
+export const fma = <T extends C, U extends C>(a: X<T>, b: number | X<U>, c: number | X<U>) => f<T>('fma', a, b, c)
 export const reflect = <T extends 'vec2' | 'vec3' | 'vec4', U extends C>(I: X<T>, N: number | X<U>) => f<T>('reflect', I, N)
 export const refract = <T extends 'vec2' | 'vec3' | 'vec4', U extends C>(I: X<T>, N: number | X<U>, eta: number | Float) => f<T>('refract', I, N, eta)
 

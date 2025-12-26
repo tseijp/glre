@@ -248,6 +248,7 @@ export const FUNCTIONS = [
         'min',
         'mix',
         'pow',
+        'fma',
         'reflect',
         'refract',
         // 2. Functions where not first argument determines return type
