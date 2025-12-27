@@ -38,19 +38,10 @@ const config: Config = {
         themes: ['@docusaurus/theme-mermaid', '@docusaurus/theme-live-codeblock'], // @TODO
         presets: [['@docusaurus/preset-classic', { sitemap, docs: { path: 'docs/', routeBasePath: 'docs', editUrl } }]],
         plugins: [
-                ['@docusaurus/plugin-content-docs', { id: 'api', path: 'api/', routeBasePath: 'api', editUrl }],
+                ['@docusaurus/plugin-content-docs', { id: 'api', path: 'api/', routeBasePath: 'api', editUrl }], //
                 ['@docusaurus/plugin-content-docs', { id: 'guide', path: 'guide/', routeBasePath: 'guide', editUrl }],
-                [
-                        '@docusaurus/plugin-content-docs',
-                        {
-                                id: 'addons',
-                                path: 'addons/',
-                                routeBasePath: 'addons',
-                                editUrl,
-                                remarkPlugins: [remarkMath],
-                                rehypePlugins: [rehypeKatex],
-                        },
-                ],
+                ['@docusaurus/plugin-content-docs', { id: 'addons', path: 'addons/', routeBasePath: 'addons', editUrl, remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }],
+                ['@docusaurus/plugin-content-docs', { id: 'buffers', path: 'buffers/', routeBasePath: 'buffers', editUrl }],
                 wasmDebugPluginLoader,
         ],
         themeConfig: {
@@ -61,6 +52,7 @@ const config: Config = {
                                 { position: 'left', to: '/docs', label: 'Docs' },
                                 { position: 'left', to: '/api', label: 'API' },
                                 { position: 'left', to: '/addons', label: 'Addons' },
+                                { position: 'left', to: '/buffers', label: 'Buffers' },
                                 { position: 'left', to: '/guide', label: 'Guide' },
                                 { position: 'right', type: 'localeDropdown' },
                                 { position: 'right', label: 'GitHub', href: 'https://github.com/tseijp/glre' },
@@ -70,14 +62,8 @@ const config: Config = {
                         style: 'dark',
                         links: [
                                 { title: 'Docs', items: [{ label: 'Tutorial', to: '/docs/' }] },
-                                {
-                                        title: 'Community',
-                                        items: [{ label: 'Twitter', href: 'https://twitter.com/tseijp' }],
-                                },
-                                {
-                                        title: 'More',
-                                        items: [{ label: 'GitHub', href: 'https://github.com/tseijp/tseijp' }],
-                                },
+                                { title: 'Twitter', items: [{ label: 'Twitter', href: 'https://twitter.com/tseijp' }] },
+                                { title: 'More', items: [{ label: 'GitHub', href: 'https://github.com/tseijp/tseijp' }] },
                         ],
                         copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
                 },

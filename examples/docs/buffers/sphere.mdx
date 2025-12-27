@@ -1,0 +1,20 @@
+# Sphere
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = sphere({ radius: 1, widthSegments: 64, heightSegments: 64 })
+        const gl = useGL({
+                isWebGL: true,
+                wireframe: true,
+                count: geo.count,
+                vertex: vec4(geo.vertex, 1),
+                fragment: vec4(varying(geo.normal), 1)
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
