@@ -13,7 +13,7 @@ interface SphereProps {
         needIndice?: boolean
 }
 
-export const sphere = buffer(({ radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI, needNormal = true, needIndice = false }: SphereProps = {}, out: Attributes) => {
+export const sphere = buffer(({ radius = 1, widthSegments = 32, heightSegments = 16, phiStart = 0, phiLength = Math.PI * 2, thetaStart = 0, thetaLength = Math.PI, needNormal = true, needIndice = false }: SphereProps, out: Attributes) => {
         const vertex = [] as number[]
         const normal = [] as number[]
         const createIndices = (indice = [] as number[]) => {
@@ -54,5 +54,4 @@ export const sphere = buffer(({ radius = 1, widthSegments = 32, heightSegments =
         out.vertex.push(...vertex)
         out.normal.push(...normal)
         if (needIndice) createIndices(out.indice)
-        return out
 })

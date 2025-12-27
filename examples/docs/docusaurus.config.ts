@@ -41,7 +41,7 @@ const config: Config = {
                 ['@docusaurus/plugin-content-docs', { id: 'api', path: 'api/', routeBasePath: 'api', editUrl }], //
                 ['@docusaurus/plugin-content-docs', { id: 'guide', path: 'guide/', routeBasePath: 'guide', editUrl }],
                 ['@docusaurus/plugin-content-docs', { id: 'addons', path: 'addons/', routeBasePath: 'addons', editUrl, remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }],
-                ['@docusaurus/plugin-content-docs', { id: 'buffers', path: 'buffers/', routeBasePath: 'buffers', editUrl }],
+                ['@docusaurus/plugin-content-docs', { id: 'buffers', path: 'buffers/', routeBasePath: 'buffers', editUrl, remarkPlugins: [remarkMath], rehypePlugins: [rehypeKatex] }],
                 wasmDebugPluginLoader,
         ],
         themeConfig: {
