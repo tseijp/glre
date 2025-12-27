@@ -35,15 +35,20 @@
                         "import": "./src/addons/index.ts",
                         "default": "./src/addons/index.ts"
                 },
-                "./src/node": {
-                        "types": "./src/node/index.ts",
-                        "import": "./src/node/index.ts",
-                        "default": "./src/node/index.ts"
+                "./src/buffers": {
+                        "types": "./src/buffers/index.ts",
+                        "import": "./src/buffers/index.ts",
+                        "default": "./src/buffers/index.ts"
                 },
                 "./src/native": {
                         "types": "./src/native.ts",
                         "import": "./src/native.ts",
                         "default": "./src/native.ts"
+                },
+                "./src/node": {
+                        "types": "./src/node/index.ts",
+                        "import": "./src/node/index.ts",
+                        "default": "./src/node/index.ts"
                 },
                 "./src/react": {
                         "types": "./src/react.ts",
@@ -73,18 +78,18 @@
                         "require": "./dist/addons.cjs",
                         "default": "./dist/addons.js"
                 },
-                "./node": {
-                        "types": "./dist/node.d.ts",
+                "./buffers": {
+                        "types": "./dist/buffers.d.ts",
                         "import": {
-                                "types": "./dist/node.d.ts",
-                                "default": "./dist/node.js"
+                                "types": "./dist/buffers.d.ts",
+                                "default": "./dist/buffers.js"
                         },
                         "module": {
-                                "types": "./dist/node.d.ts",
-                                "default": "./dist/node.js"
+                                "types": "./dist/buffers.d.ts",
+                                "default": "./dist/buffers.js"
                         },
-                        "require": "./dist/node.cjs",
-                        "default": "./dist/node.js"
+                        "require": "./dist/buffers.cjs",
+                        "default": "./dist/buffers.js"
                 },
                 "./native": {
                         "types": "./dist/native.d.ts",
@@ -98,6 +103,19 @@
                         },
                         "require": "./dist/native.cjs",
                         "default": "./dist/native.js"
+                },
+                "./node": {
+                        "types": "./dist/node.d.ts",
+                        "import": {
+                                "types": "./dist/node.d.ts",
+                                "default": "./dist/node.js"
+                        },
+                        "module": {
+                                "types": "./dist/node.d.ts",
+                                "default": "./dist/node.js"
+                        },
+                        "require": "./dist/node.cjs",
+                        "default": "./dist/node.js"
                 },
                 "./react": {
                         "types": "./dist/react.d.ts",

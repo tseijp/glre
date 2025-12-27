@@ -1,0 +1,81 @@
+---
+title: 'cone'
+description: 'Generate cone geometry with precise mathematical control over radial and height segments'
+keywords: [cone, geometry, radial, height, segments, mathematical, polar, coordinates]
+date: 2025-12-27
+---
+
+# Cone
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = cone({ radius: 1, height: 2, radialSegments: 8 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Cone Props
+
+| **radius**         | The cone base radius.<br />Default is `1`.                                                       |
+| ------------------ | ------------------------------------------------------------------------------------------------ |
+| **height**         | The cone height.<br />Default is `1`.                                                            |
+| **radialSegments** | Number of segmented faces around circumference.<br />Minimum value is `3`.<br />Default is `32`. |
+| **heightSegments** | Number of rows of faces along height.<br />Minimum value is `1`.<br />Default is `1`.            |
+| **openEnded**      | Whether the base is open or capped.<br />Default is `false`.                                     |
+| **thetaStart**     | Start angle for first segment in radians.<br />Default is `0`.                                   |
+| **thetaLength**    | Central angle sweep size in radians.<br />Default is `Math.PI*2`.                                |
+
+### Mathematical Foundation
+
+Cone generation follows cylindrical coordinate transformation with linear radius interpolation. The parametric representation utilizes polar coordinates $(r, \theta, z)$ where radius varies linearly along the height axis.
+
+Given height parameter $h$ and base radius $R$, vertex position at parametric coordinates $(u, v)$ is computed as:
+
+$$
+\begin{align}
+r(v) &= v \cdot R \\
+\theta(u) &= \theta_{start} + u \cdot \theta_{length} \\
+x &= r(v) \cdot \sin(\theta(u)) \\
+y &= -v \cdot h + \frac{h}{2} \\
+z &= r(v) \cdot \cos(\theta(u))
+\end{align}
+$$
+
+Surface normals require slope calculation to account for cone tapering. The slope factor $s = \frac{R}{h}$ determines normal vector orientation:
+
+$$
+\vec{n} = \frac{(\sin(\theta), s, \cos(\theta))}{\sqrt{\sin^2(\theta) + s^2 + \cos^2(\theta)}}
+$$
+
+### Geometric Tessellation
+
+Radial segmentation creates angular divisions around the cone axis. Each segment spans $\frac{\theta_{length}}{radialSegments}$ radians. Height segmentation subdivides the cone along its vertical axis, enabling smooth curvature representation through increased polygon density.
+
+The vertex grid follows a $(radialSegments + 1) \times (heightSegments + 1)$ topology. Index generation connects adjacent vertices using quad decomposition into triangle pairs, maintaining consistent winding order for proper face orientation.
+
+### Structural Analysis
+
+Base cap generation occurs when `openEnded` is false. The algorithm creates center vertices for each radial segment, establishing a fan-like triangle structure. This approach ensures proper texture coordinate mapping while maintaining geometric continuity at the base perimeter.
+
+Partial cone generation through `thetaStart` and `thetaLength` parameters enables sector extraction. This technique proves valuable for creating cone segments, architectural elements, or specialized geometric patterns requiring angular constraints.
+
+### Implementation Characteristics
+
+The cone implementation extends cylindrical geometry principles with zero top radius. This relationship preserves mathematical consistency while enabling efficient computation through shared algorithmic foundations.
+
+Vertex ordering maintains counter-clockwise winding for outward-facing normals. Triangle indices follow systematic patterns ensuring proper lighting calculations and depth testing in rendering pipelines.
+
+Edge case handling addresses degenerate triangles at the cone apex. The algorithm automatically adjusts triangle generation to prevent zero-area faces while preserving visual continuity across varying segment densities.

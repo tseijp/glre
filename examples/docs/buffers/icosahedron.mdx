@@ -1,0 +1,83 @@
+---
+title: 'icosahedron'
+description: 'Creates a regular icosahedron geometry using the golden ratio. Supports recursive subdivision for smooth spherical approximation.'
+keywords: [icosahedron, polyhedron, platonic solid, golden ratio, phi, geodesic, subdivision]
+date: 2025-12-27
+---
+
+# Icosahedron
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = icosahedron({ radius: 1, detail: 2 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Icosahedron Props
+
+| **radius** | The icosahedron radius.<br />Default is `1`.                                                                                                                                               |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **detail** | Subdivision level for face refinement.<br />Value `0` creates the base 20-sided polyhedron.<br />Higher values increase vertex density through recursive subdivision.<br />Default is `0`. |
+
+### Geometric Foundation
+
+The icosahedron represents one of the five Platonic solids, characterized by 20 equilateral triangular faces, 12 vertices, and 30 edges. Its construction utilizes the golden ratio $\phi = \frac{1 + \sqrt{5}}{2}$, creating vertices at coordinates involving this mathematical constant.
+
+The base geometry positions vertices using golden ratio relationships. Each vertex coordinate follows the pattern where one component equals $\pm 1$, another equals $\pm \phi$, and the third equals zero. This arrangement produces the characteristic icosahedral symmetry.
+
+### Mathematical Structure
+
+The icosahedron's vertices satisfy the equation:
+
+$$
+V = \{(\pm 1, \pm \phi, 0), (0, \pm 1, \pm \phi), (\pm \phi, 0, \pm 1)\}
+$$
+
+where $\phi = \frac{1 + \sqrt{5}}{2} \approx 1.618$.
+
+Face connectivity creates 20 triangular surfaces through specific vertex index arrangements. The topology ensures each vertex connects to exactly five faces, maintaining the icosahedron's regular structure.
+
+### Subdivision Algorithm
+
+When `detail > 0`, the function applies recursive face subdivision. Each triangular face divides into smaller triangles through edge midpoint calculation and subsequent triangle generation.
+
+The subdivision process:
+
+1. Creates intermediate vertices along triangle edges
+2. Projects new vertices onto the circumsphere
+3. Generates additional triangular faces from subdivided regions
+4. Maintains surface connectivity throughout the process
+
+Higher detail values produce geodesic sphere approximations with increasingly uniform vertex distribution.
+
+### Vertex Normalization
+
+All vertices undergo normalization to unit length followed by radius scaling. This transformation projects the polyhedron onto a sphere of the specified radius while preserving the underlying icosahedral structure.
+
+The normalization formula:
+
+$$
+v_{normalized} = \frac{v}{|v|} \times radius
+$$
+
+where $v$ represents the original vertex position and $|v|$ denotes its magnitude.
+
+### Applications in Computational Graphics
+
+Icosahedra serve as foundation geometries for geodesic dome construction, spherical mapping systems, and planetary tessellation. The uniform triangle distribution makes them suitable for particle systems and procedural surface generation.
+
+The subdivision capability allows adaptive level-of-detail control, balancing geometric fidelity with computational requirements. Lower detail values provide efficient base geometry, while higher subdivision levels enable smooth spherical surfaces.

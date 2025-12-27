@@ -5,10 +5,7 @@ import type { Plugin } from 'esbuild'
 /**
  * Internal modules to exclude from framework bundles
  */
-const BUILD_TARGETS: Options[] = [
-        { format: 'cjs' },
-        { format: 'esm', dts: { compilerOptions: { moduleResolution: 'node' } } },
-]
+const BUILD_TARGETS: Options[] = [{ format: 'cjs' }, { format: 'esm', dts: { compilerOptions: { moduleResolution: 'node' } } }]
 
 const BASE_CONFIG: Options = {
         outDir: './dist',
@@ -19,6 +16,7 @@ const BASE_CONFIG: Options = {
 
 const MODULE_ENTRIES = {
         addons: 'src/addons/index.ts',
+        buffers: 'src/buffers/index.ts',
         node: 'src/node/index.ts',
         index: 'src/index.ts',
         native: 'src/native.ts',

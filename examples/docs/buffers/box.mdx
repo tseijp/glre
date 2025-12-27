@@ -1,0 +1,74 @@
+---
+title: 'box'
+description: 'Cuboid geometry generation for spatial modeling and mathematical visualization'
+keywords: [box, cuboid, rectangular, geometry, faceted, subdivision, spatial]
+date: 2025-12-27
+---
+
+# Box
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+	const geo = box({ width: 1, height: 1, depth: 1 })
+	const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+	const gl = useGL({
+		isWebGL: true,
+		isDepth: true,
+		count: geo.count,
+		vertex: vec4(mat.mul(geo.vertex), 1),
+		fragment: vec4(varying(geo.normal), 1),
+	})
+	return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Box Props
+
+| **width**          | The width dimension parallel to X-axis.<br />Default is `1`.  |
+| ------------------ | ------------------------------------------------------------- |
+| **height**         | The height dimension parallel to Y-axis.<br />Default is `1`. |
+| **depth**          | The depth dimension parallel to Z-axis.<br />Default is `1`.  |
+| **widthSegments**  | Subdivision count along width.<br />Default is `1`.           |
+| **heightSegments** | Subdivision count along height.<br />Default is `1`.          |
+| **depthSegments**  | Subdivision count along depth.<br />Default is `1`.           |
+
+### Cartesian Cuboid Generation
+
+Box function generates a rectangular parallelepiped centered at the origin. Each face consists of two triangles forming a quadrilateral surface. The parametric representation follows the mathematical definition of a rectangular prism with dimensions $(w, h, d)$ where vertices are positioned at coordinates:
+
+$$
+V = \{(\pm\frac{w}{2}, \pm\frac{h}{2}, \pm\frac{d}{2})\}
+$$
+
+The face normal vectors are axis-aligned unit vectors $\hat{n} \in \{(\pm1,0,0), (0,\pm1,0), (0,0,\pm1)\}$ corresponding to each orthogonal face direction. This generates six planar surfaces with consistent winding order for proper backface culling.
+
+### Subdivision Mathematics
+
+Segment parameters control tessellation density on each axis. For width segments $w_s$, height segments $h_s$, and depth segments $d_s$, the total vertex count becomes:
+
+$$
+N_{vertices} = 2[(w_s+1)(h_s+1) + (w_s+1)(d_s+1) + (h_s+1)(d_s+1)]
+$$
+
+Each face subdivides into a regular grid where segment boundaries create additional vertices for increased geometric detail. The subdivision creates uniform spacing across face dimensions, enabling consistent level-of-detail control.
+
+### Face Construction Algorithm
+
+Six faces are constructed using a plane-building function that maps 2D grid coordinates to 3D space. Each plane is defined by three orthogonal vectors $(u, v, w)$ where $u$ and $v$ span the face surface and $w$ defines the normal direction. The mapping transforms grid coordinates $(i, j)$ to world space:
+
+$$
+P_{ij} = \begin{pmatrix} x \\ y \\ z \end{pmatrix} = \begin{pmatrix} u_{dir} \cdot \frac{i \cdot w_{face}}{w_s} - \frac{w_{face}}{2} \\ v_{dir} \cdot \frac{j \cdot h_{face}}{h_s} - \frac{h_{face}}{2} \\ \frac{d_{face}}{2} \end{pmatrix}
+$$
+
+where $u_{dir}$ and $v_{dir}$ are directional multipliers and face dimensions determine scaling factors.
+
+### Geometric Applications
+
+Box geometry serves as fundamental building blocks for architectural modeling, voxel-based systems, and spatial partitioning algorithms. The uniform subdivision enables procedural detail addition through displacement mapping or fractal subdivision. Multiple boxes can be combined through boolean operations to create complex shapes while maintaining computational simplicity.
+
+The axis-aligned nature makes box geometry computationally efficient for collision detection, spatial indexing, and level-of-detail systems. Texture coordinate generation follows standard planar projection with consistent UV mapping across all faces.
