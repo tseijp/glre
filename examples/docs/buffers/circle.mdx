@@ -1,0 +1,62 @@
+---
+title: circle
+description: Generate planar circular geometry with parametric control over radius and angular segments
+keywords: [circle, geometry, triangulation, polar coordinates, planar surface, angular division]
+date: 2025-12-27
+---
+
+# Circle
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = circle({ radius: 1, segments: 32 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Circle Props
+
+| **radius**      | The circle radius. Default is `1`.                                            |
+| --------------- | ----------------------------------------------------------------------------- |
+| **segments**    | Number of triangular segments (minimum = `3`). Default is `32`.               |
+| **thetaStart**  | Start angle for first segment in radians. Default is `0`.                     |
+| **thetaLength** | The central angle sweep in radians. Default is `Math.PI*2` (complete circle). |
+
+### Mathematical Construction
+
+The circle geometry constructs a planar surface using triangular tessellation around a central vertex. Given a radius $r$ and angular resolution $n$, vertices are distributed along the circumference according to:
+
+$$
+\begin{cases}
+x_i = r \cos(\theta_i) \\
+y_i = r \sin(\theta_i) \\
+z_i = 0
+\end{cases}
+$$
+
+where $\theta_i = \theta_{start} + \frac{i}{n} \cdot \theta_{length}$ for each segment $i$.
+
+### Geometric Properties
+
+Each triangle connects the center point $(0, 0, 0)$ with adjacent circumference vertices. The triangulation pattern ensures uniform area distribution across the surface. Normal vectors remain constant at $(0, 0, 1)$ since the geometry lies entirely in the xy-plane.
+
+### Angular Parameterization
+
+The `thetaStart` and `thetaLength` parameters enable precise control over angular coverage. A partial circle with $\theta_{length} < 2\pi$ creates a sector geometry, useful for pie charts or angular masks. The starting angle allows rotation of the opening direction.
+
+### Segment Count Effects
+
+Lower segment counts produce polygon approximations of circles. Triangle count equals the segment count, with vertex count being segments plus one center vertex. Each triangle shares the central vertex, creating a fan topology.

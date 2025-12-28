@@ -1,0 +1,102 @@
+---
+title: 'sphere'
+description: 'Generate spherical geometry with parametric control over segments and angle ranges'
+keywords: [sphere, geometry, buffer, parametric, spherical, coordinates]
+date: 2025-12-27
+---
+
+# Sphere
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = sphere({ radius: 1 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Sphere Props
+
+| **radius**         | The sphere radius. Default is `1`.                                                  |
+| ------------------ | ----------------------------------------------------------------------------------- |
+| **widthSegments**  | The number of horizontal segments.<br />Minimum value is `3`.<br />Default is `32`. |
+| **heightSegments** | The number of vertical segments.<br />Minimum value is `2`.<br />Default is `16`.   |
+| **phiStart**       | The horizontal starting angle in radians.<br />Default is `0`.                      |
+| **phiLength**      | The horizontal sweep angle size.<br />Default is `Math.PI*2`.                       |
+| **thetaStart**     | The vertical starting angle in radians.<br />Default is `0`.                        |
+| **thetaLength**    | The vertical sweep angle size.<br />Default is `Math.PI`.                           |
+
+### Spherical Coordinate Mathematics
+
+The sphere buffer generates vertices using spherical coordinate transformations. Each point $(x,y,z)$ on the sphere surface follows the mathematical relationship:
+
+$$
+\begin{align}
+x &= r \sin(\theta) \cos(\phi) \\
+y &= r \cos(\theta) \\
+z &= r \sin(\theta) \sin(\phi)
+\end{align}
+$$
+
+Where $r$ represents radius, $\theta$ spans from `thetaStart` to `thetaStart + thetaLength` controlling vertical positioning, and $\phi$ spans from `phiStart` to `phiStart + phiLength` controlling horizontal rotation.
+
+The parametric equations enable precise control over sphere sections. Setting `thetaLength` to $\pi/2$ generates hemispheres. Adjusting `phiLength` creates spherical wedges for architectural visualization or pie chart representations.
+
+### Segment Density Control
+
+Triangle density follows the relationship $T = 2 \times \text{widthSegments} \times \text{heightSegments}$ for triangle count. Higher segment values produce smoother curvature but increase vertex buffer size.
+
+The vertex grid structure creates $(widthSegments + 1) \times (heightSegments + 1)$ points. Each grid cell generates two triangles, except at polar regions where triangle fans prevent degenerate geometry.
+
+### Angular Range Applications
+
+Partial spheres enable specialized visualizations. Setting `phiLength` to $\pi$ creates dome structures. Combining `thetaStart = \pi/4` and `thetaLength = \pi/2$ generates spherical bands for equatorial highlighting.
+
+The angular parameterization supports procedural animation through time-based angle modification. Gradually increasing `phiLength` from $0$ to $2\pi$ creates spherical unwrapping effects.
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const time = iTime.mul(0.5)
+        const phiLength = time.mod(PI.mul(2))
+        const geo = sphere({ phiLength: phiLength })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const angle = atan2(varying(geo.vertex).z, varying(geo.vertex).x)
+        const hue = angle.div(PI.mul(2)).add(0.5)
+        const color = vec3(hue, float(0.8), float(0.9))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(color, 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+### Surface Normal Properties
+
+Surface normals for spheres maintain unit length and point outward from the center. Each normal vector equals the normalized position vector, creating perfect diffuse lighting conditions.
+
+The mathematical relationship for sphere normals is:
+
+$$
+\vec{n} = \frac{\vec{p}}{|\vec{p}|}
+$$
+
+This property enables realistic lighting calculations without additional normal map textures. The geometric perfection of spherical normals makes them ideal for material testing and lighting validation.

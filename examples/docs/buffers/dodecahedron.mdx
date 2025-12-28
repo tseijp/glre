@@ -1,0 +1,69 @@
+---
+title: 'dodecahedron'
+description: 'Generate regular dodecahedron geometry with twelve pentagonal faces using golden ratio mathematics'
+keywords: [dodecahedron, polyhedron, golden-ratio, pentagon, platonic-solid, geometry]
+date: 2025-12-27
+---
+
+# Dodecahedron
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+	const geo = dodecahedron({ radius: 0.5 })
+	const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+	const gl = useGL({
+		isWebGL: true,
+		isDepth: true,
+		count: geo.count,
+		vertex: vec4(mat.mul(geo.vertex), 1),
+		fragment: vec4(varying(geo.normal), 1),
+	})
+	return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Dodecahedron Props
+
+| **radius**     | The dodecahedron radius.<br />Default is `1`.                                                           |
+| -------------- | ------------------------------------------------------------------------------------------------------- |
+| **detail**     | Subdivision level for additional vertices.<br />Higher values increase complexity.<br />Default is `0`. |
+| **needNormal** | Calculate surface normals for lighting.<br />Default is `true`.                                         |
+| **needIndice** | Generate triangle indices array.<br />Default is `false`.                                               |
+
+## Mathematical Foundation
+
+The dodecahedron employs the golden ratio $\phi = \frac{1 + \sqrt{5}}{2} \approx 1.618$ in its construction. This creates twelve regular pentagonal faces arranged in perfect symmetry.
+
+Let $r = \frac{1}{\phi}$ represent the reciprocal golden ratio. The twenty vertices distribute across three coordinate planes:
+
+$$
+\begin{aligned}
+\text{Cubic vertices} &: (\pm 1, \pm 1, \pm 1) \\
+\text{Rectangle YZ} &: (0, \pm r, \pm \phi) \\
+\text{Rectangle XZ} &: (\pm r, \pm \phi, 0) \\
+\text{Rectangle XY} &: (\pm \phi, 0, \pm r)
+\end{aligned}
+$$
+
+## Pentagonal Face Structure
+
+Each pentagonal face connects five vertices through specific angular relationships. The dihedral angle between adjacent faces measures $\arccos(-\frac{\sqrt{5}}{3}) \approx 116.57°$.
+
+The face arrangement follows icosahedral symmetry, creating exactly twelve regular pentagons. Each vertex participates in three faces, forming the characteristic three-dimensional structure.
+
+## Golden Ratio Properties
+
+The dodecahedron demonstrates golden ratio relationships throughout its geometry. Edge lengths, face diagonals, and vertex distances all involve powers of $\phi$.
+
+The circumscribed sphere radius equals $\frac{\sqrt{3}(1 + \sqrt{5})}{2}$ times the edge length. The inscribed sphere touches each face at its center, with radius $\frac{\sqrt{250 + 110\sqrt{5}}}{20}$ times edge length.
+
+## Dual Polyhedron Relationship
+
+The dodecahedron forms a dual relationship with the icosahedron. Each dodecahedron face corresponds to an icosahedron vertex, while each dodecahedron vertex corresponds to an icosahedron face.
+
+This duality creates complementary structures where one polyhedron fits inside the other with perfect geometric correspondence. The transformation involves reciprocal golden ratio scaling and coordinate inversion.

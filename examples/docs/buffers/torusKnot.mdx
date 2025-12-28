@@ -1,0 +1,64 @@
+---
+title: 'torusKnot'
+description: 'Parametric knot generator creating interwoven tube structures with controllable twist patterns'
+keywords: [torusKnot, knot, topology, tube, curve, parametric, twist]
+date: 2025-12-27
+---
+
+# Torus Knot
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = torusKnot({ radius: 0.5, tube: 0.25, p: 2, q: 3 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Torus Knot Props
+
+| **radius**          | The distance from the center to the midpoint of the tube.<br />Default is `1`. |
+| ------------------- | ------------------------------------------------------------------------------ |
+| **tube**            | The radius of the tube forming the knot.<br />Default is `0.4`.                |
+| **tubularSegments** | The number of segments along the tube path.<br />Default is `64`.              |
+| **radialSegments**  | The number of segments around the tube circumference.<br />Default is `8`.     |
+| **p**               | The number of winds around the rotational axis.<br />Default is `2`.           |
+| **q**               | The number of winds around the tube circumference.<br />Default is `3`.        |
+
+### Parametric Knot Definition
+
+The torus knot structure follows parametric equations determining its topology. The curve position is defined by parameter $u$ ranging from $0$ to $2\pi p$.
+
+$$
+\mathbf{r}(u) = \begin{bmatrix}
+R \cdot (2 + \cos(\frac{q}{p} u)) \cdot 0.5 \cdot \cos(u) \\
+R \cdot (2 + \cos(\frac{q}{p} u)) \cdot 0.5 \cdot \sin(u) \\
+R \cdot \sin(\frac{q}{p} u) \cdot 0.5
+\end{bmatrix}
+$$
+
+where $R$ is the radius parameter and $(p,q)$ are the winding numbers.
+
+### Winding Number Properties
+
+The relationship between parameters $p$ and $q$ determines the knot type. When $\gcd(p,q) = 1$, the result forms a true knot. Otherwise, it creates a torus link with multiple connected components.
+
+Increasing $p$ adds more revolutions around the major axis. Increasing $q$ adds more revolutions around the minor circumference. The tube parameter controls the thickness of the resulting structure.
+
+### Orthonormal Frame Construction
+
+The surface generation requires constructing an orthonormal basis at each curve point. This involves calculating the tangent vector $\mathbf{T}$ and normal vector $\mathbf{N}$ through finite differences, then computing the binormal $\mathbf{B} = \mathbf{T} \times \mathbf{N}$.
+
+The tube surface emerges by sweeping a circle in the $(\mathbf{N}, \mathbf{B})$ plane along the knot curve, creating the characteristic twisted tube geometry that defines torus knot structures.

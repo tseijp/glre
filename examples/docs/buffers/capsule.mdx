@@ -1,0 +1,99 @@
+---
+title: 'capsule'
+description: 'Capsule geometry buffer generation using parametric surface mathematics with hemispherical caps and cylindrical midsection'
+keywords: [capsule, geometry, buffer, parametric, hemisphere, cylinder, 3d]
+date: 2025-12-27
+---
+
+# Capsule
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = capsule({ radius: 0.5, height: 1, capSegments: 8, radialSegments: 16 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Capsule Props
+
+| **radius**         | The capsule radius. Default is `1`.                                                                   |
+| ------------------ | ----------------------------------------------------------------------------------------------------- |
+| **height**         | Height of the middle cylindrical section. Default is `1`.                                             |
+| **capSegments**    | Number of curve segments for each hemispherical cap.<br />Minimum value is `1`.<br />Default is `4`.  |
+| **radialSegments** | Number of segmented faces around the circumference.<br />Minimum value is `3`.<br />Default is `8`.   |
+| **heightSegments** | Number of rows of faces along the cylindrical height.<br />Minimum value is `1`.<br />Default is `1`. |
+
+### Capsule Mathematical Foundation
+
+A capsule represents a compound geometric primitive consisting of three parametrically defined sections. The mathematical foundation follows cylindrical coordinates with hemispherical terminations.
+
+For the bottom hemisphere section where $0 \leq t \leq \frac{\pi}{2}$:
+
+$$
+\begin{align}
+x &= -r \sin(t) \cos(\theta) \\
+y &= -\frac{h}{2} - r \cos(t) \\
+z &= r \sin(t) \sin(\theta)
+\end{align}
+$$
+
+The cylindrical midsection maintains constant radius $r$ while varying height linearly:
+
+$$
+\begin{align}
+x &= -r \cos(\theta) \\
+y &= -\frac{h}{2} + s \cdot h \quad \text{where } 0 \leq s \leq 1 \\
+z &= r \sin(\theta)
+\end{align}
+$$
+
+The top hemisphere section where $0 \leq t \leq \frac{\pi}{2}$:
+
+$$
+\begin{align}
+x &= -r \cos(t) \cos(\theta) \\
+y &= \frac{h}{2} + r \sin(t) \\
+z &= r \cos(t) \sin(\theta)
+\end{align}
+$$
+
+### Surface Normal Computation
+
+The normal vector calculation differs across the three regions. For hemispherical caps, normals point radially outward from the sphere centers. The cylindrical section maintains horizontal radial normals with zero vertical component.
+
+Normal vectors are computed per vertex and normalized to unit length:
+
+$$
+\vec{n} = \frac{\vec{n}_{raw}}{|\vec{n}_{raw}|}
+$$
+
+where $\vec{n}_{raw}$ varies by geometric section.
+
+### Parametric Surface Segmentation
+
+The capsule generation algorithm divides the surface into discrete segments based on the input parameters. Total vertical segments equal:
+
+$$
+\text{numVerticalSegments} = 2 \times \text{capSegments} + \text{heightSegments}
+$$
+
+Arc length parameterization ensures uniform texture coordinate distribution across the compound surface. The total arc length encompasses both hemispherical caps and the cylindrical section:
+
+$$
+L_{total} = \pi \cdot r + h
+$$
+
+This parameterization maintains proportional spacing between vertices regardless of the height-to-radius ratio.

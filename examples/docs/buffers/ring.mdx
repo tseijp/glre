@@ -1,0 +1,90 @@
+---
+title: 'ring'
+description: 'Ring geometry buffer with concentric radial structure for mathematical pattern visualization'
+keywords: [ring, geometry, buffer, radial, concentric, polar, coordinates, mathematical]
+date: 2025-12-27
+---
+
+# Ring
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = ring({ innerRadius: 0.5, outerRadius: 1, thetaSegments: 32, phiSegments: 4 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Ring Props
+
+| **innerRadius**   | The inner radius of the ring.<br />Default is `0.5`.                                                              |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------- |
+| **outerRadius**   | The outer radius of the ring.<br />Default is `1`.                                                                |
+| **thetaSegments** | Number of angular segments.<br />Higher values create smoother curves.<br />Minimum is `3`.<br />Default is `32`. |
+| **phiSegments**   | Number of radial segments.<br />Controls radial subdivision density.<br />Minimum is `1`.<br />Default is `1`.    |
+| **thetaStart**    | Starting angle in radians.<br />Default is `0`.                                                                   |
+| **thetaLength**   | Angular sweep in radians.<br />Default is `Math.PI*2`.                                                            |
+
+### Mathematical Foundation
+
+Ring geometry generates vertices in polar coordinate space following the parametric equations:
+
+$$
+x = r \cos(\theta)
+$$
+
+$$
+y = r \sin(\theta)
+$$
+
+where $r$ varies linearly from inner radius $r_{inner}$ to outer radius $r_{outer}$ across $\phi$ segments:
+
+$$
+r(\phi) = r_{inner} + \frac{\phi}{n_{\phi}} \cdot (r_{outer} - r_{inner})
+$$
+
+The angular parameter $\theta$ spans from $\theta_{start}$ to $\theta_{start} + \theta_{length}$ across $n_{\theta}$ segments:
+
+$$
+\theta(i) = \theta_{start} + \frac{i}{n_{\theta}} \cdot \theta_{length}
+$$
+
+### Radial Distribution Analysis
+
+Ring geometry establishes uniform radial distribution through linear interpolation. Each vertex position is determined by the intersection of radial lines and concentric circles. The vertex count formula:
+
+$$
+V = (n_{\theta} + 1) \times (n_{\phi} + 1)
+$$
+
+where $n_{\theta}$ and $n_{\phi}$ represent angular and radial segment counts respectively.
+
+### Geometric Properties
+
+Ring structures exhibit rotational symmetry about the z-axis. All vertices lie in the xy-plane with z-coordinate fixed at zero. Normal vectors remain constant as $\vec{n} = (0, 0, 1)$ for all vertices, indicating planar geometry.
+
+The area enclosed between concentric boundaries follows:
+
+$$
+A = \pi(r_{outer}^2 - r_{inner}^2)
+$$
+
+This area distribution enables mathematical pattern visualization through vertex density manipulation.
+
+### Practical Implementation
+
+Ring geometry serves mathematical visualization where polar coordinate relationships require explicit representation. The parametric control over radial and angular subdivision enables precise pattern generation for mathematical demonstrations.
+
+Segment parameters directly control mesh resolution. Angular segments determine circumferential smoothness, while radial segments control the density of concentric patterns.

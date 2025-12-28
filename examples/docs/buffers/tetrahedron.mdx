@@ -1,0 +1,78 @@
+---
+title: 'tetrahedron'
+description: 'Tetrahedral geometry with four triangular faces and mathematical symmetries'
+keywords: [tetrahedron, polyhedron, geometry, triangular, symmetry, platonic]
+date: 2025-12-27
+---
+
+# Tetrahedron
+
+import { FragmentEditor } from '@site/src/theme/FragmentEditor'
+
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const geo = tetrahedron({ radius: 0.5 })
+        const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
+        const gl = useGL({
+                isWebGL: true,
+                isDepth: true,
+                count: geo.count,
+                vertex: vec4(mat.mul(geo.vertex), 1),
+                fragment: vec4(varying(geo.normal), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+## Tetrahedron Props
+
+| **radius** | The tetrahedron radius.<br />Default is `1`. |
+| ---------- | -------------------------------------------- |
+
+### Tetrahedral Symmetry Structure
+
+The tetrahedron represents the simplest three-dimensional polyhedron with triangular faces. Each vertex connects to exactly three other vertices, forming four equilateral triangular faces. The tetrahedral angle between faces equals $\arccos(-1/3) \approx 109.47°$, creating fundamental geometric relationships in crystal structures.
+
+The face normals point outward from each triangular surface, maintaining unit length through normalization. Face orientation follows right-hand rule with vertices ordered counterclockwise when viewed from outside.
+
+$$
+\text{vertices} = \{(1,1,1), (-1,-1,1), (-1,1,-1), (1,-1,-1)\}
+$$
+
+$$
+\text{faces} = \{[2,1,0], [0,3,2], [1,3,0], [2,3,1]\}
+$$
+
+### Edge Length Computation
+
+The edge length of a tetrahedron with radius $r$ follows the relationship where all edges maintain equal length. The distance between any two vertices creates uniform edge lengths throughout the structure.
+
+$$
+\text{edge length} = r \sqrt{\frac{8}{3}} = r \cdot 2\sqrt{\frac{2}{3}}
+$$
+
+### Geometrical Properties
+
+The tetrahedron maintains tetrahedral symmetry with dihedral angle relationships. Volume calculations depend on edge length through cubic scaling, while surface area scales quadratically with radius parameter.
+
+<FragmentEditor
+        code={`
+function Canvas() {
+        const geo = tetrahedron({ radius: 1.5 })
+        const edges = geo.vertex.distance(geo.vertex.yzx()).step(2.3).mul(0.8)
+        const faces = geo.normal.dot(vec3(1,0,0)).abs().pow(8.0)
+        const gl = useGL({
+                isWebGL: true,
+                count: geo.count,
+                vertex: vec4(geo.vertex, 1),
+                fragment: vec4(edges.add(faces.mul(vec3(0.2,0.8,1.0))), 1),
+        })
+        return <canvas ref={gl.ref} />
+}
+`}
+/>
+
+The edge highlighting technique reveals tetrahedral structure through distance computation between vertex positions and their permuted coordinates. Face detection utilizes normal vector orientation to emphasize specific triangular surfaces based on viewing angle.
