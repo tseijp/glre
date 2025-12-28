@@ -13,7 +13,7 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
         isApp
         code={`
 function Canvas() {
-        const geo = capsule({ radius: 0.8, height: 1.6, capSegments: 8, radialSegments: 16 })
+        const geo = capsule({ radius: 0.5, height: 1, capSegments: 8, radialSegments: 16 })
         const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
         const gl = useGL({
                 isWebGL: true,

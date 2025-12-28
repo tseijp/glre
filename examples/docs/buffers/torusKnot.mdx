@@ -13,7 +13,7 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
         isApp
         code={`
 function Canvas() {
-        const geo = torusKnot({ radius: 1, tube: 0.3, p: 3, q: 5 })
+        const geo = torusKnot({ radius: 0.5, tube: 0.25, p: 2, q: 3 })
         const mat = rotate3dX(iMouse.y.negate()).mul(rotate3dY(iMouse.x))
         const gl = useGL({
                 isWebGL: true,
