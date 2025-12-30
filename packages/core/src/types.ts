@@ -63,10 +63,7 @@ export type GL = EventState<{
         error(e?: string): void
         render(): void
         resize(e?: Event): void
-        mousemove(e: MouseEvent): void
-        pointerdown(e: PointerEvent): void
-        pointermove(e: PointerEvent): void
-        pointerup(e: PointerEvent): void
+        mousemove(e: MouseEvent | TouchEvent | PointerEvent, x?: number, y?: number): void
 
         /**
          * setter
