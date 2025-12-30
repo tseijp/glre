@@ -31,6 +31,7 @@ export const createGL = (...args: Partial<GL>[]) => {
                 wireframe: false,
                 size: [0, 0],
                 mouse: [0, 0],
+                drag: [0, 0],
                 precision: 'highp',
                 error() {
                         gl.isError = true
@@ -41,6 +42,8 @@ export const createGL = (...args: Partial<GL>[]) => {
         }) as EventState<GL>
 
         let iTime = performance.now()
+        let isDragging = false
+        let lastPointer = [0, 0]
         gl.queue = createQueue()
         gl.frame = createFrame()
 
@@ -49,7 +52,7 @@ export const createGL = (...args: Partial<GL>[]) => {
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
         gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
-        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime })
+        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iDrag: [0, 0], iTime })
 
         gl('mount', async (el: HTMLCanvasElement) => {
                 gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)
@@ -83,6 +86,9 @@ export const createGL = (...args: Partial<GL>[]) => {
                 if (isAppend) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
                 gl.el.addEventListener('mousemove', gl.mousemove)
+                gl.el.addEventListener('pointerdown', gl.pointerdown)
+                document.addEventListener('pointermove', gl.pointermove)
+                document.addEventListener('pointerup', gl.pointerup)
         })
 
         gl('clean', () => {
@@ -90,6 +96,9 @@ export const createGL = (...args: Partial<GL>[]) => {
                 if (!gl.el || gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
                 gl.el.removeEventListener('mousemove', gl.mousemove)
+                gl.el.removeEventListener('pointerdown', gl.pointerdown)
+                document.removeEventListener('pointermove', gl.pointermove)
+                document.removeEventListener('pointerup', gl.pointerup)
         })
 
         gl('ref', (el: HTMLCanvasElement | null) => {
@@ -111,6 +120,32 @@ export const createGL = (...args: Partial<GL>[]) => {
                 gl.mouse[0] = (x - rect.left) / rect.width
                 gl.mouse[1] = -(y - rect.top) / rect.height + 1
                 gl.uniform('iMouse', gl.mouse)
+        })
+
+        gl('pointerdown', (_e: PointerEvent) => {
+                _e.preventDefault()
+                gl.el.setPointerCapture(_e.pointerId)
+                isDragging = true
+                lastPointer[0] = _e.clientX
+                lastPointer[1] = _e.clientY
+        })
+
+        gl('pointermove', (_e: PointerEvent) => {
+                if (!isDragging) return
+                const dx = _e.clientX - lastPointer[0]
+                const dy = _e.clientY - lastPointer[1]
+                const rect = gl.el.getBoundingClientRect()
+                gl.drag[0] += dx / rect.width
+                gl.drag[1] -= dy / rect.height
+                gl.uniform('iDrag', gl.drag)
+                lastPointer[0] = _e.clientX
+                lastPointer[1] = _e.clientY
+        })
+
+        gl('pointerup', (_e: PointerEvent) => {
+                if (!isDragging) return
+                if (gl.el) gl.el.releasePointerCapture(_e.pointerId)
+                isDragging = false
         })
 
         gl('render', () => {

@@ -59,6 +59,7 @@ export const color = (r?: Y, g?: Y, b?: Y) => {
 // Default uniforms with proper typing
 export const iResolution = u(vec2(), 'iResolution')
 export const iMouse = u(vec2(), 'iMouse')
+export const iDrag = u(vec2(), 'iDrag')
 export const iTime = u(float(), 'iTime')
 export const uv = position.xy.div(iResolution)
 
