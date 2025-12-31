@@ -18,6 +18,7 @@ export type GL = EventState<{
         height?: number
         size: [number, number]
         mouse: [number, number]
+        drag: [number, number]
         count: number // triangleCount × 3
         triangleCount: number
         instanceCount: number
@@ -62,7 +63,11 @@ export type GL = EventState<{
         error(e?: string): void
         render(): void
         resize(e?: Event): void
-        mousemove(e: MouseEvent): void
+        mousemove(e: MouseEvent | TouchEvent | PointerEvent, x?: number, y?: number): void
+        mousedown(e: MouseEvent | TouchEvent | PointerEvent): void
+        mouseup(e: MouseEvent | TouchEvent | PointerEvent): void
+        _drag(e: MouseEvent | TouchEvent | PointerEvent): void
+        _touchmove(e: TouchEvent): void
 
         /**
          * setter
