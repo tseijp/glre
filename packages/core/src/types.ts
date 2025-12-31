@@ -66,6 +66,8 @@ export type GL = EventState<{
         mousemove(e: MouseEvent | TouchEvent | PointerEvent, x?: number, y?: number): void
         mousedown(e: MouseEvent | TouchEvent | PointerEvent): void
         mouseup(e: MouseEvent | TouchEvent | PointerEvent): void
+        _drag(e: MouseEvent | TouchEvent | PointerEvent): void
+        _touchmove(e: TouchEvent): void
 
         /**
          * setter
