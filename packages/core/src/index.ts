@@ -57,6 +57,28 @@ export const createGL = (...args: Partial<GL>[]) => {
         gl.queue = createQueue()
         gl.frame = createFrame()
 
+        const startDrag = (x: number, y: number) => {
+                isDragging = true
+                lastPointer[0] = x
+                lastPointer[1] = y
+        }
+
+        const updateDrag = (x: number, y: number) => {
+                if (!isDragging) return
+                const dx = x - lastPointer[0]
+                const dy = y - lastPointer[1]
+                const rect = gl.el.getBoundingClientRect()
+                gl.drag[0] += dx / rect.width
+                gl.drag[1] -= dy / rect.height
+                gl.uniform('iDrag', gl.drag)
+                lastPointer[0] = x
+                lastPointer[1] = y
+        }
+
+        const stopDrag = () => {
+                isDragging = false
+        }
+
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
         gl.instance = durable((k, v, at) => gl.queue(() => gl._instance?.(k, v, at)), gl)
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
@@ -154,85 +176,44 @@ export const createGL = (...args: Partial<GL>[]) => {
                 gl.uniform('iMouse', gl.mouse)
         })
 
-        gl('_pointermove', (_e: PointerEvent) => {
-                gl.mousemove(_e, _e.clientX, _e.clientY)
-        })
+        gl('_pointermove', (_e: PointerEvent) => gl.mousemove(_e, _e.clientX, _e.clientY))
 
         gl('_pointerdown', (_e: PointerEvent) => {
                 _e.preventDefault()
                 gl.el.setPointerCapture(_e.pointerId)
-                isDragging = true
-                lastPointer[0] = _e.clientX
-                lastPointer[1] = _e.clientY
+                startDrag(_e.clientX, _e.clientY)
         })
 
-        gl('_pointerdrag', (_e: PointerEvent) => {
-                if (!isDragging) return
-                const dx = _e.clientX - lastPointer[0]
-                const dy = _e.clientY - lastPointer[1]
-                const rect = gl.el.getBoundingClientRect()
-                gl.drag[0] += dx / rect.width
-                gl.drag[1] -= dy / rect.height
-                gl.uniform('iDrag', gl.drag)
-                lastPointer[0] = _e.clientX
-                lastPointer[1] = _e.clientY
-        })
+        gl('_pointerdrag', (_e: PointerEvent) => updateDrag(_e.clientX, _e.clientY))
 
         gl('_pointerup', (_e: PointerEvent) => {
-                if (!isDragging) return
-                if (gl.el) gl.el.releasePointerCapture(_e.pointerId)
-                isDragging = false
+                if (isDragging && gl.el) gl.el.releasePointerCapture(_e.pointerId)
+                stopDrag()
         })
 
         gl('_touchstart', (_e: TouchEvent) => {
                 if (_e.touches.length === 0) return
                 _e.preventDefault()
-                isDragging = true
-                lastPointer[0] = _e.touches[0].clientX
-                lastPointer[1] = _e.touches[0].clientY
+                startDrag(_e.touches[0].clientX, _e.touches[0].clientY)
         })
 
         gl('_touchmove', (_e: TouchEvent) => {
                 if (_e.touches.length === 0) return
                 const touch = _e.touches[0]
                 gl.mousemove(_e, touch.clientX, touch.clientY)
-                if (!isDragging) return
-                const dx = touch.clientX - lastPointer[0]
-                const dy = touch.clientY - lastPointer[1]
-                const rect = gl.el.getBoundingClientRect()
-                gl.drag[0] += dx / rect.width
-                gl.drag[1] -= dy / rect.height
-                gl.uniform('iDrag', gl.drag)
-                lastPointer[0] = touch.clientX
-                lastPointer[1] = touch.clientY
+                updateDrag(touch.clientX, touch.clientY)
         })
 
-        gl('_touchend', (_e: TouchEvent) => {
-                isDragging = false
-        })
+        gl('_touchend', () => stopDrag())
 
         gl('_mousedown', (_e: MouseEvent) => {
                 _e.preventDefault()
-                isDragging = true
-                lastPointer[0] = _e.clientX
-                lastPointer[1] = _e.clientY
+                startDrag(_e.clientX, _e.clientY)
         })
 
-        gl('_mousedrag', (_e: MouseEvent) => {
-                if (!isDragging) return
-                const dx = _e.clientX - lastPointer[0]
-                const dy = _e.clientY - lastPointer[1]
-                const rect = gl.el.getBoundingClientRect()
-                gl.drag[0] += dx / rect.width
-                gl.drag[1] -= dy / rect.height
-                gl.uniform('iDrag', gl.drag)
-                lastPointer[0] = _e.clientX
-                lastPointer[1] = _e.clientY
-        })
+        gl('_mousedrag', (_e: MouseEvent) => updateDrag(_e.clientX, _e.clientY))
 
-        gl('_mouseup', (_e: MouseEvent) => {
-                isDragging = false
-        })
+        gl('_mouseup', () => stopDrag())
 
         gl('render', () => {
                 iTime = performance.now() / 1000
