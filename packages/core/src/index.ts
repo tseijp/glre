@@ -117,20 +117,17 @@ export const createGL = (...args: Partial<GL>[]) => {
                 if (gl.isNative) return
                 if (isAppend) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
-                if (isPointerEventsSupported()) {
-                        gl.el.addEventListener('pointermove', gl.mousemove)
-                        gl.el.addEventListener('pointerdown', gl.mousedown)
-                        document.addEventListener('pointermove', gl._drag)
-                        document.addEventListener('pointerup', gl.mouseup)
-                } else if (isTouchDevice()) {
-                        gl.el.addEventListener('touchstart', gl.mousedown)
-                        gl.el.addEventListener('touchmove', gl._touchmove)
-                        gl.el.addEventListener('touchend', gl.mouseup)
-                } else {
-                        gl.el.addEventListener('mousemove', gl.mousemove)
-                        gl.el.addEventListener('mousedown', gl.mousedown)
-                        document.addEventListener('mousemove', gl._drag)
-                        document.addEventListener('mouseup', gl.mouseup)
+                const prefix = isPointerEventsSupported() ? 'pointer' : isTouchDevice() ? 'touch' : 'mouse'
+                const isTouchMode = prefix === 'touch'
+                const moveEvent = prefix + 'move'
+                const downEvent = isTouchMode ? 'touchstart' : prefix + 'down'
+                const upEvent = isTouchMode ? 'touchend' : prefix + 'up'
+                gl.el.addEventListener(moveEvent, isTouchMode ? gl._touchmove : gl.mousemove)
+                gl.el.addEventListener(downEvent, gl.mousedown)
+                gl.el.addEventListener(upEvent, gl.mouseup)
+                if (!isTouchMode) {
+                        document.addEventListener(moveEvent, gl._drag)
+                        document.addEventListener(upEvent, gl.mouseup)
                 }
         })
 
@@ -138,20 +135,17 @@ export const createGL = (...args: Partial<GL>[]) => {
                 gl.frame.stop()
                 if (!gl.el || gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
-                if (isPointerEventsSupported()) {
-                        gl.el.removeEventListener('pointermove', gl.mousemove)
-                        gl.el.removeEventListener('pointerdown', gl.mousedown)
-                        document.removeEventListener('pointermove', gl._drag)
-                        document.removeEventListener('pointerup', gl.mouseup)
-                } else if (isTouchDevice()) {
-                        gl.el.removeEventListener('touchstart', gl.mousedown)
-                        gl.el.removeEventListener('touchmove', gl._touchmove)
-                        gl.el.removeEventListener('touchend', gl.mouseup)
-                } else {
-                        gl.el.removeEventListener('mousemove', gl.mousemove)
-                        gl.el.removeEventListener('mousedown', gl.mousedown)
-                        document.removeEventListener('mousemove', gl._drag)
-                        document.removeEventListener('mouseup', gl.mouseup)
+                const prefix = isPointerEventsSupported() ? 'pointer' : isTouchDevice() ? 'touch' : 'mouse'
+                const isTouchMode = prefix === 'touch'
+                const moveEvent = prefix + 'move'
+                const downEvent = isTouchMode ? 'touchstart' : prefix + 'down'
+                const upEvent = isTouchMode ? 'touchend' : prefix + 'up'
+                gl.el.removeEventListener(moveEvent, isTouchMode ? gl._touchmove : gl.mousemove)
+                gl.el.removeEventListener(downEvent, gl.mousedown)
+                gl.el.removeEventListener(upEvent, gl.mouseup)
+                if (!isTouchMode) {
+                        document.removeEventListener(moveEvent, gl._drag)
+                        document.removeEventListener(upEvent, gl.mouseup)
                 }
         })
 
