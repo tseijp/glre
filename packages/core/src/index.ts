@@ -84,7 +84,7 @@ export const createGL = (...args: Partial<GL>[]) => {
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
         gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
-        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iDrag: [0, 0], iTime })
+        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime, iDrag: [0, 0] })
 
         gl('mount', async (el: HTMLCanvasElement) => {
                 gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)

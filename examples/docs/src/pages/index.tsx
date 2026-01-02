@@ -131,31 +131,6 @@ const createViewer = async () => {
                 }
         }
 
-        const onMove = (e: any) => {
-                cam.turn([-e.movementX, -e.movementY])
-        }
-
-        let px = 0
-        let py = 0
-        const touchXY = (e: TouchEvent) => {
-                if (e.touches.length !== 1) return [0, 0]
-                const touch = e.touches[0]
-                return [touch.clientX, touch.clientY]
-        }
-
-        const onTouchStart = (e: TouchEvent) => {
-                ;[px, py] = touchXY(e)
-        }
-
-        const onTouch = (e: TouchEvent) => {
-                const [x, y] = touchXY(e)
-                const dx = x - px
-                const dy = y - py
-                px = x
-                py = y
-                cam.turn([dx * 8, dy * 3])
-        }
-
         let lastLockTime = 0
 
         const onLock = () => {
@@ -163,20 +138,8 @@ const createViewer = async () => {
                 cam.mode(mode.esc())
         }
 
-        const onDown = () => {
-                const tryLock = (trial = 0) => {
-                        if (trial > 20) return
-                        if (performance.now() - lastLockTime < 1300) return setTimeout(() => tryLock(trial + 1), 100)
-                        try {
-                                document.body.requestPointerLock()
-                        } catch (e) {
-                                console.error('pointer lock failed:', e)
-                        }
-                }
-                tryLock()
-        }
-
         const onKeyUp = (e: KeyboardEvent) => press(false, e)
+
         const onKeyDown = (e: KeyboardEvent) => press(true, e)
 
         const resize = (gl: GL) => {
@@ -213,36 +176,39 @@ const createViewer = async () => {
         const mount = (el: HTMLCanvasElement) => {
                 if (!el) return
                 const isSP = window.innerWidth <= 768
-                if (isSP) {
-                        document.addEventListener('touchstart', onTouchStart, { passive: false })
-                        document.addEventListener('touchmove', onTouch, { passive: false })
-                        document.addEventListener('mousemove', onMove, { passive: false })
-                } else {
-                        el.addEventListener('mousedown', onDown)
-                        document.addEventListener('mousemove', onMove)
-                        window.addEventListener('keyup', onKeyUp)
-                        window.addEventListener('keydown', onKeyDown)
-                        document.addEventListener('pointerlockchange', onLock)
-                }
+                if (isSP) return
+                window.addEventListener('keyup', onKeyUp)
+                window.addEventListener('keydown', onKeyDown)
+                document.addEventListener('pointerlockchange', onLock)
         }
 
         const unmount = (el: HTMLCanvasElement) => {
                 if (!el) return
                 const isSP = window.innerWidth <= 768
-                if (isSP) {
-                        document.removeEventListener('touchstart', onTouchStart)
-                        document.removeEventListener('touchmove', onTouch)
-                        document.removeEventListener('mousemove', onMove)
-                } else {
-                        el.removeEventListener('mousedown', onDown)
-                        document.removeEventListener('mousemove', onMove)
-                        window.removeEventListener('keyup', onKeyUp)
-                        window.removeEventListener('keydown', onKeyDown)
-                        document.removeEventListener('pointerlockchange', onLock)
-                }
+                if (isSP) return
+                window.removeEventListener('keyup', onKeyUp)
+                window.removeEventListener('keydown', onKeyDown)
+                document.removeEventListener('pointerlockchange', onLock)
         }
 
-        return { mode, node, cam, render, resize, mount, unmount, pt: 0 }
+        const mousedown = (e: any) => {
+                const tryLock = (trial = 0) => {
+                        if (trial > 20) return
+                        if (performance.now() - lastLockTime < 1300) return setTimeout(() => tryLock(trial + 1), 100)
+                        try {
+                                e.target.requestPointerLock()
+                        } catch (e) {
+                                console.error('pointer lock failed:', e)
+                        }
+                }
+                if ('requestPointerLock' in e.target) tryLock()
+        }
+
+        const mousemove = (e: any) => {
+                cam.turn([-e.movementX, -e.movementY])
+        }
+
+        return { mode, node, cam, render, resize, mount, unmount, mousedown, mousemove, pt: 0 }
 }
 
 type Viewer = Awaited<ReturnType<typeof createViewer>>
@@ -269,6 +235,12 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 },
                 clean() {
                         viewer.unmount(gl.el)
+                },
+                mousedown(e) {
+                        viewer.mousedown(e)
+                },
+                mousemove(e) {
+                        viewer.mousemove(e)
                 },
         })
         return <canvas ref={gl.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />
