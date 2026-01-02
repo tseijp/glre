@@ -3,7 +3,7 @@ import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
 import { attribute, float, Fn, If, instance, int, ivec2, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
-import type { GL } from 'glre/src'
+import type { Drag, GL } from 'glre/src'
 import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
 
 const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
@@ -138,6 +138,24 @@ const createViewer = async () => {
                 cam.mode(mode.esc())
         }
 
+        const mousemove = (drag: Drag) => {
+                // @ts-ignore
+                cam.turn([-drag.event.movementX, -drag.event.movementY])
+        }
+
+        const mousedown = (drag: Drag) => {
+                const tryLock = (trial = 0) => {
+                        if (trial > 20) return
+                        if (performance.now() - lastLockTime < 1300) return setTimeout(() => tryLock(trial + 1), 100)
+                        try {
+                                drag.target.requestPointerLock()
+                        } catch (e) {
+                                console.error('pointer lock failed:', e)
+                        }
+                }
+                if ('requestPointerLock' in drag.target) tryLock()
+        }
+
         const onKeyUp = (e: KeyboardEvent) => press(false, e)
 
         const onKeyDown = (e: KeyboardEvent) => press(true, e)
@@ -182,7 +200,7 @@ const createViewer = async () => {
                 document.addEventListener('pointerlockchange', onLock)
         }
 
-        const unmount = (el: HTMLCanvasElement) => {
+        const clean = (el: HTMLCanvasElement) => {
                 if (!el) return
                 const isSP = window.innerWidth <= 768
                 if (isSP) return
@@ -191,24 +209,7 @@ const createViewer = async () => {
                 document.removeEventListener('pointerlockchange', onLock)
         }
 
-        const mousedown = (e: any) => {
-                const tryLock = (trial = 0) => {
-                        if (trial > 20) return
-                        if (performance.now() - lastLockTime < 1300) return setTimeout(() => tryLock(trial + 1), 100)
-                        try {
-                                e.target.requestPointerLock()
-                        } catch (e) {
-                                console.error('pointer lock failed:', e)
-                        }
-                }
-                if ('requestPointerLock' in e.target) tryLock()
-        }
-
-        const mousemove = (e: any) => {
-                cam.turn([-e.movementX, -e.movementY])
-        }
-
-        return { mode, node, cam, render, resize, mount, unmount, mousedown, mousemove, pt: 0 }
+        return { mode, node, cam, render, resize, mount, clean, mousedown, mousemove, pt: 0 }
 }
 
 type Viewer = Awaited<ReturnType<typeof createViewer>>
@@ -234,13 +235,13 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                         viewer.mount(gl.el)
                 },
                 clean() {
-                        viewer.unmount(gl.el)
+                        viewer.clean(gl.el)
                 },
-                mousedown(e) {
-                        viewer.mousedown(e)
+                onDragStart(drag) {
+                        viewer.mousedown(drag)
                 },
-                mousemove(e) {
-                        viewer.mousemove(e)
+                onDragging(drag) {
+                        viewer.mousemove(drag)
                 },
         })
         return <canvas ref={gl.ref} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }} />

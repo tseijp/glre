@@ -1,4 +1,5 @@
 import { durable, event } from 'reev'
+import { dragEvent } from 'rege'
 import { createFrame, createQueue } from 'refr'
 import { is } from './helpers'
 import { webgl } from './webgl'
@@ -16,21 +17,34 @@ export const isWebGPUSupported = () => {
         return 'gpu' in navigator
 }
 
-const isPointerEventsSupported = () => {
-        if (isServer()) return false
-        return 'PointerEvent' in window
-}
-
-const isTouchDevice = () => {
-        if (isServer()) return false
-        return 'ontouchstart' in window || navigator.maxTouchPoints > 0
-}
-
 const findElement = (arg: Partial<GL>) => {
         return arg.el || arg.elem || arg.element
 }
 
 export const createGL = (...args: Partial<GL>[]) => {
+        const drag = dragEvent({
+                onDrag() {
+                        const [x, y] = drag.value
+                        const rect = gl.el.getBoundingClientRect()
+                        gl.mouse[0] = (x - rect.left) / rect.width
+                        gl.mouse[1] = -(y - rect.top) / rect.height + 1
+                        gl.offset[0] = drag.offset[0] / rect.width
+                        gl.offset[1] = -drag.offset[1] / rect.height + 1
+                        gl.uniform('iMouse', gl.mouse)
+                        gl.uniform('iDrag', gl.offset)
+                        gl.onDrag?.(drag)
+                },
+                onDragStart() {
+                        gl.onDragStart?.(drag)
+                },
+                onDragging() {
+                        gl.onDragging?.(drag)
+                },
+                onDragEnd() {
+                        gl.onDragEnd?.(drag)
+                },
+        })
+
         const gl = event({
                 isNative: false,
                 isWebGL: true,
@@ -41,8 +55,9 @@ export const createGL = (...args: Partial<GL>[]) => {
                 wireframe: false,
                 size: [0, 0],
                 mouse: [0, 0],
-                drag: [0, 0],
+                offset: [0, 0],
                 precision: 'highp',
+                ref: drag.ref,
                 error() {
                         gl.isError = true
                         gl.isLoop = false
@@ -52,32 +67,8 @@ export const createGL = (...args: Partial<GL>[]) => {
         }) as EventState<GL>
 
         let iTime = performance.now()
-        let isDragging = false
-        let lastPointer = [0, 0]
         gl.queue = createQueue()
         gl.frame = createFrame()
-
-        const startDrag = (x: number, y: number) => {
-                isDragging = true
-                lastPointer[0] = x
-                lastPointer[1] = y
-        }
-
-        const updateDrag = (x: number, y: number) => {
-                if (!isDragging) return
-                const dx = x - lastPointer[0]
-                const dy = y - lastPointer[1]
-                const rect = gl.el.getBoundingClientRect()
-                gl.drag[0] += dx / rect.width
-                gl.drag[1] -= dy / rect.height
-                gl.uniform('iDrag', gl.drag)
-                lastPointer[0] = x
-                lastPointer[1] = y
-        }
-
-        const stopDrag = () => {
-                isDragging = false
-        }
 
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
         gl.instance = durable((k, v, at) => gl.queue(() => gl._instance?.(k, v, at)), gl)
@@ -117,42 +108,12 @@ export const createGL = (...args: Partial<GL>[]) => {
                 if (gl.isNative) return
                 if (isAppend) document.body.appendChild(gl.el)
                 window.addEventListener('resize', gl.resize)
-                if (isPointerEventsSupported()) {
-                        gl.el.addEventListener('pointermove', gl.mousemove)
-                        gl.el.addEventListener('pointerdown', gl.mousedown)
-                        document.addEventListener('pointermove', gl._drag)
-                        document.addEventListener('pointerup', gl.mouseup)
-                } else if (isTouchDevice()) {
-                        gl.el.addEventListener('touchstart', gl.mousedown)
-                        gl.el.addEventListener('touchmove', gl._touchmove)
-                        gl.el.addEventListener('touchend', gl.mouseup)
-                } else {
-                        gl.el.addEventListener('mousemove', gl.mousemove)
-                        gl.el.addEventListener('mousedown', gl.mousedown)
-                        document.addEventListener('mousemove', gl._drag)
-                        document.addEventListener('mouseup', gl.mouseup)
-                }
         })
 
         gl('clean', () => {
                 gl.frame.stop()
                 if (!gl.el || gl.isNative) return
                 window.removeEventListener('resize', gl.resize)
-                if (isPointerEventsSupported()) {
-                        gl.el.removeEventListener('pointermove', gl.mousemove)
-                        gl.el.removeEventListener('pointerdown', gl.mousedown)
-                        document.removeEventListener('pointermove', gl._drag)
-                        document.removeEventListener('pointerup', gl.mouseup)
-                } else if (isTouchDevice()) {
-                        gl.el.removeEventListener('touchstart', gl.mousedown)
-                        gl.el.removeEventListener('touchmove', gl._touchmove)
-                        gl.el.removeEventListener('touchend', gl.mouseup)
-                } else {
-                        gl.el.removeEventListener('mousemove', gl.mousemove)
-                        gl.el.removeEventListener('mousedown', gl.mousedown)
-                        document.removeEventListener('mousemove', gl._drag)
-                        document.removeEventListener('mouseup', gl.mouseup)
-                }
         })
 
         gl('ref', (el: HTMLCanvasElement | null) => {
@@ -167,43 +128,6 @@ export const createGL = (...args: Partial<GL>[]) => {
                 gl.size[0] = gl.el.width = gl.width || rect?.width || window.innerWidth
                 gl.size[1] = gl.el.height = gl.height || rect?.height || window.innerHeight
                 gl.uniform('iResolution', gl.size)
-        })
-
-        gl('mousemove', (_e: any, x = _e.clientX, y = _e.clientY) => {
-                const rect = gl.el.getBoundingClientRect()
-                gl.mouse[0] = (x - rect.left) / rect.width
-                gl.mouse[1] = -(y - rect.top) / rect.height + 1
-                gl.uniform('iMouse', gl.mouse)
-        })
-
-        gl('mousedown', (_e: any) => {
-                _e.preventDefault()
-                const isPointer = 'pointerId' in _e
-                const touch = _e.touches?.[0]
-                const x = touch?.clientX ?? _e.clientX
-                const y = touch?.clientY ?? _e.clientY
-                if (isPointer) gl.el.setPointerCapture(_e.pointerId)
-                startDrag(x, y)
-        })
-
-        gl('mouseup', (_e: any) => {
-                const isPointer = 'pointerId' in _e
-                if (isDragging && isPointer && gl.el) gl.el.releasePointerCapture(_e.pointerId)
-                stopDrag()
-        })
-
-        gl('_drag', (_e: any) => {
-                const touch = _e.touches?.[0]
-                const x = touch?.clientX ?? _e.clientX
-                const y = touch?.clientY ?? _e.clientY
-                updateDrag(x, y)
-        })
-
-        gl('_touchmove', (_e: TouchEvent) => {
-                if (_e.touches.length === 0) return
-                const touch = _e.touches[0]
-                gl.mousemove(_e, touch.clientX, touch.clientY)
-                gl._drag(_e)
         })
 
         gl('render', () => {
