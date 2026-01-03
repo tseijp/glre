@@ -139,7 +139,7 @@ const createViewer = async () => {
         }
 
         const mousemove = (drag: Drag) => {
-                // @ts-ignore
+                if (drag.device === 'touch') return // @ts-ignore
                 cam.turn([-drag.event.movementX, -drag.event.movementY])
         }
 
@@ -153,6 +153,7 @@ const createViewer = async () => {
                                 console.error('pointer lock failed:', e)
                         }
                 }
+                if (drag.device === 'touch') return
                 if ('requestPointerLock' in drag.target) tryLock()
         }
 

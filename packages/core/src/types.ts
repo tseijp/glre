@@ -1,10 +1,10 @@
-import { dragEvent } from 'rege'
 import type { EventState } from 'reev'
+import type { DragState } from 'rege'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
 import type { Binding } from './webgpu/utils'
 
-export type Drag = ReturnType<typeof dragEvent>
+export type Drag = EventState<DragState<HTMLCanvasElement>>
 
 export type GL = EventState<{
         /**
@@ -60,7 +60,7 @@ export type GL = EventState<{
         /**
          * events
          */
-        ref?: any
+        ref?(el: HTMLCanvasElement | null): void
         mount(): void
         clean(): void
         error(e?: string): void

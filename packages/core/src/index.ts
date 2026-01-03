@@ -22,7 +22,7 @@ const findElement = (arg: Partial<GL>) => {
 }
 
 export const createGL = (...args: Partial<GL>[]) => {
-        const drag = dragEvent({
+        const drag = dragEvent<HTMLCanvasElement>({
                 drag() {
                         const [x, y] = drag.value
                         const rect = gl.el.getBoundingClientRect()
@@ -57,7 +57,6 @@ export const createGL = (...args: Partial<GL>[]) => {
                 mouse: [0, 0],
                 offset: [0, 0],
                 precision: 'highp',
-                ref: drag.ref,
                 error() {
                         gl.isError = true
                         gl.isLoop = false
@@ -117,6 +116,7 @@ export const createGL = (...args: Partial<GL>[]) => {
         })
 
         gl('ref', (el: HTMLCanvasElement | null) => {
+                drag.ref(el)
                 if (el) {
                         gl.el = el
                         gl.mount()
