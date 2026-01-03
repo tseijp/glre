@@ -22,6 +22,7 @@ const findElement = (arg: Partial<GL>) => arg.el || arg.elem || arg.element
 export const createGL = (...args: Partial<GL>[]) => {
         const drag = dragEvent<HTMLCanvasElement>({
                 drag() {
+                        drag.event.preventDefault()
                         const [x, y] = drag.value
                         const rect = gl.el.getBoundingClientRect()
                         gl.mouse[0] = (x - rect.left) / rect.width
