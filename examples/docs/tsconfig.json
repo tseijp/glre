@@ -1,3 +1,8 @@
 {
-        "extends": "@docusaurus//tsconfig/tsconfig.json"
+        "extends": "@docusaurus/tsconfig",
+        "compilerOptions": {
+                "baseUrl": ".",
+                "types": ["@docusaurus/theme-classic"]
+        },
+        "exclude": [".docusaurus", "build"]
 }

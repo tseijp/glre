@@ -1,7 +1,10 @@
+import { dragEvent } from 'rege'
 import type { EventState } from 'reev'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
 import type { Binding } from './webgpu/utils'
+
+export type Drag = ReturnType<typeof dragEvent>
 
 export type GL = EventState<{
         /**
@@ -18,7 +21,7 @@ export type GL = EventState<{
         height?: number
         size: [number, number]
         mouse: [number, number]
-        drag: [number, number]
+        offset: [number, number]
         count: number // triangleCount × 3
         triangleCount: number
         instanceCount: number
@@ -63,12 +66,10 @@ export type GL = EventState<{
         error(e?: string): void
         render(): void
         resize(e?: Event): void
-        mousemove(e: MouseEvent | TouchEvent | PointerEvent, x?: number, y?: number): void
-        mousedown(e: MouseEvent | TouchEvent | PointerEvent): void
-        mouseup(e: MouseEvent | TouchEvent | PointerEvent): void
-        _drag(e: MouseEvent | TouchEvent | PointerEvent): void
-        _touchmove(e: TouchEvent): void
-
+        dragStart(drag: Drag): void
+        dragging(drag: Drag): void
+        dragEnd(drag: Drag): void
+        drag(drag: Drag): void
         /**
          * setter
          */
