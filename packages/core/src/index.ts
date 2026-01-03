@@ -17,9 +17,7 @@ export const isWebGPUSupported = () => {
         return 'gpu' in navigator
 }
 
-const findElement = (arg: Partial<GL>) => {
-        return arg.el || arg.elem || arg.element
-}
+const findElement = (arg: Partial<GL>) => arg.el || arg.elem || arg.element
 
 export const createGL = (...args: Partial<GL>[]) => {
         const drag = dragEvent<HTMLCanvasElement>({
@@ -55,7 +53,7 @@ export const createGL = (...args: Partial<GL>[]) => {
                 wireframe: false,
                 size: [0, 0],
                 mouse: [0, 0],
-                offset: [0, 0],
+                offset: [0, 1],
                 precision: 'highp',
                 error() {
                         gl.isError = true
@@ -74,7 +72,7 @@ export const createGL = (...args: Partial<GL>[]) => {
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
         gl.texture = durable((k, v) => gl.queue(() => gl._texture?.(k, v)), gl)
         gl.uniform = durable((k, v) => gl.queue(() => gl._uniform?.(k, v)), gl)
-        gl.uniform({ iResolution: gl.size, iMouse: [0, 0], iTime, iDrag: [0, 0] })
+        gl.uniform({ iResolution: gl.size, iMouse: gl.mouse, iTime, iDrag: gl.offset })
 
         gl('mount', async (el: HTMLCanvasElement) => {
                 gl.el = findElement(gl) || el || args.map(findElement).find(Boolean)
