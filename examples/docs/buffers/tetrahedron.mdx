@@ -14,7 +14,7 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
         code={`
 function Canvas() {
         const geo = tetrahedron({ radius: 0.5 })
-        const mat = rotate3dX(iDrag.y.negate()).mul(rotate3dY(iDrag.x))
+        const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
         const gl = useGL({
                 isWebGL: true,
                 isDepth: true,

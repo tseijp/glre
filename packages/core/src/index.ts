@@ -28,7 +28,7 @@ export const createGL = (...args: Partial<GL>[]) => {
                         gl.mouse[0] = (x - rect.left) / rect.width
                         gl.mouse[1] = -(y - rect.top) / rect.height + 1
                         gl.offset[0] = drag.offset[0] / rect.width
-                        gl.offset[1] = -drag.offset[1] / rect.height
+                        gl.offset[1] = drag.offset[1] / rect.height
                         gl.uniform('iMouse', gl.mouse)
                         gl.uniform('iDrag', gl.offset)
                         gl.drag?.(drag)
