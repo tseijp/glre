@@ -66,10 +66,10 @@ export type GL = EventState<{
         error(e?: string): void
         render(): void
         resize(e?: Event): void
-        onDragStart(drag: Drag): void
-        onDragging(drag: Drag): void
-        onDragEnd(drag: Drag): void
-        onDrag(drag: Drag): void
+        dragStart(drag: Drag): void
+        dragging(drag: Drag): void
+        dragEnd(drag: Drag): void
+        drag(drag: Drag): void
         /**
          * setter
          */

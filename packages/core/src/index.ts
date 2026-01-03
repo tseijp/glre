@@ -23,7 +23,7 @@ const findElement = (arg: Partial<GL>) => {
 
 export const createGL = (...args: Partial<GL>[]) => {
         const drag = dragEvent({
-                onDrag() {
+                drag() {
                         const [x, y] = drag.value
                         const rect = gl.el.getBoundingClientRect()
                         gl.mouse[0] = (x - rect.left) / rect.width
@@ -32,16 +32,16 @@ export const createGL = (...args: Partial<GL>[]) => {
                         gl.offset[1] = -drag.offset[1] / rect.height + 1
                         gl.uniform('iMouse', gl.mouse)
                         gl.uniform('iDrag', gl.offset)
-                        gl.onDrag?.(drag)
+                        gl.drag?.(drag)
                 },
-                onDragStart() {
-                        gl.onDragStart?.(drag)
+                dragStart() {
+                        gl.dragStart?.(drag)
                 },
-                onDragging() {
-                        gl.onDragging?.(drag)
+                dragging() {
+                        gl.dragging?.(drag)
                 },
-                onDragEnd() {
-                        gl.onDragEnd?.(drag)
+                dragEnd() {
+                        gl.dragEnd?.(drag)
                 },
         })
 

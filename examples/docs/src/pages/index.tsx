@@ -237,10 +237,10 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
                 clean() {
                         viewer.clean(gl.el)
                 },
-                onDragStart(drag) {
+                dragStart(drag) {
                         viewer.mousedown(drag)
                 },
-                onDragging(drag) {
+                dragging(drag) {
                         viewer.mousemove(drag)
                 },
         })
