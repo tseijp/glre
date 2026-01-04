@@ -1,4 +1,5 @@
 // @ts-ignore
+import { createCamera, createMesh, createQueues, createRegions, createSlots } from 'voxelized-js'
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
@@ -87,9 +88,7 @@ const createMode = () => {
         return { tab, esc }
 }
 
-const createViewer = async () => {
-        // @ts-ignore
-        const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('voxelized-js')
+const createViewer = () => {
         let isReady = false
         let isLoading = false
         let ts = performance.now()
@@ -102,7 +101,7 @@ const createViewer = async () => {
         const node = createNode()
         const slots = createSlots(SLOT)
         const queues = createQueues(4, 1)
-        const regions = createRegions(mesh as any, cam as any, queues as any)
+        const regions = createRegions(mesh, cam, queues)
         try {
                 cam.update(1280 / 800) // Ensure MVP is valid for culling before first render.
                 regions.vis()
@@ -213,7 +212,7 @@ const createViewer = async () => {
         return { mode, node, cam, render, resize, mount, clean, mousedown, mousemove, pt: 0 }
 }
 
-type Viewer = Awaited<ReturnType<typeof createViewer>>
+type Viewer = ReturnType<typeof createViewer>
 
 const Canvas = ({ viewer }: { viewer: Viewer }) => {
         const gl = useGL({
@@ -250,7 +249,7 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
 
 export default function Home() {
         const [viewer, set] = useState<Viewer>()
-        useEffect(() => void createViewer().then(set), [])
+        useEffect(() => void set(createViewer()), [])
         return (
                 <Layout noFooter>
                         <div id="loading" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>

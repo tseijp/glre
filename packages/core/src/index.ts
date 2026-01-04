@@ -1,5 +1,6 @@
+// @ts-ignore
 import { durable, event } from 'reev'
-import { dragEvent } from 'rege'
+import { dragEvent } from 'reev/gesture/drag'
 import { createFrame, createQueue } from 'refr'
 import { is } from './helpers'
 import { webgl } from './webgl'

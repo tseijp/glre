@@ -3,7 +3,7 @@ import Layout from '@theme/Layout'
 import { Float, Fn, If, Loop, Vec3, Vec4, bool, constant, float, iResolution, iTime, int, mat3, position, struct, uniform, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
-import { useDrag } from 'rege/react'
+import { useDrag } from 'reev/gesture/drag/react'
 
 // constant
 const iterations = constant(int(200))

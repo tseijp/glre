@@ -17,10 +17,10 @@
         },
         "dependencies": {
                 "glre": "*",
+                "reev": "*",
                 "gl-matrix": "*",
                 "clsx": "*",
                 "leva": "*",
-                "rege": "*",
                 "stats.js": "*",
                 "voxelized-js": "0.4.0"
         },

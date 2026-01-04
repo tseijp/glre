@@ -1,5 +1,5 @@
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'rege/react'
+import { useDrag } from 'reev/gesture/drag/react'
 
 export default function GPGPUDrawApp() {
         const [w, h] = isServer() ? [1280, 800] : [window.innerWidth, window.innerHeight]
@@ -11,8 +11,8 @@ export default function GPGPUDrawApp() {
                         @builtin(global_invocation_id) global_invocation_id: vec3u
                 }
 
-                @group(0) @binding(3) var<uniform> m0: vec2f;
-                @group(0) @binding(4) var<uniform> m1: vec2f;
+                @group(0) @binding(4) var<uniform> m0: vec2f;
+                @group(0) @binding(5) var<uniform> m1: vec2f;
                 @group(2) @binding(0) var<storage, read_write> data: array<f32>;
 
                 fn lineSDF2D(st: vec2f, a: vec2f, b: vec2f) -> f32 {

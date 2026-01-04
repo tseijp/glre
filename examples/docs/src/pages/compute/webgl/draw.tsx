@@ -1,5 +1,5 @@
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'rege/react'
+import { useDrag } from 'reev/gesture/drag/react'
 
 export default function GPGPUDrawApp() {
         const [w, h] = isServer() ? [1280, 800] : [window.innerWidth, window.innerHeight]

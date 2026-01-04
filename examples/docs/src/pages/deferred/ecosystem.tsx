@@ -1,29 +1,4 @@
-import {
-        clamp,
-        cos,
-        exp,
-        float,
-        floor,
-        Fn,
-        fract,
-        fwidth,
-        int,
-        iResolution,
-        iTime,
-        Loop,
-        max,
-        min,
-        mod,
-        pow,
-        select,
-        sin,
-        smoothstep,
-        uniform,
-        uv,
-        vec2,
-        vec3,
-        vec4,
-} from 'glre/src/node'
+import { clamp, cos, exp, float, floor, Fn, fract, fwidth, int, iResolution, iTime, Loop, max, min, mod, pow, select, sin, smoothstep, uniform, uv, Vec2, vec2, vec3, vec4 } from 'glre/src/node'
 import { useGL } from 'glre/src/react'
 import { useControls } from 'leva'
 
@@ -42,7 +17,7 @@ const hash = Fn(([coord]) => {
 })
 
 // Geometry pass - ecosystem state calculation
-const ecosystemGeometry = Fn(([uv]) => {
+const ecosystemGeometry = Fn(([uv]: [Vec2]) => {
         uv.y = uv.y.mul(iResolution.y).div(iResolution.x)
         const time = iTime.mul(growthRate).toVar('time')
         const gridSize = float(100.0).toVar('gridSize')
@@ -123,9 +98,7 @@ const ecosystemLighting = Fn(([uv]) => {
         Loop(int(12), ({ i }) => {
                 const flowAngle = float(i).mul(0.524).toVar('flowAngle') // 30 degrees
                 const flowRadius = float(0.1).toVar('flowRadius')
-                const flowOffset = vec2(flowAngle.cos().mul(flowRadius), flowAngle.sin().mul(flowRadius)).toVar(
-                        'flowOffset'
-                )
+                const flowOffset = vec2(flowAngle.cos().mul(flowRadius), flowAngle.sin().mul(flowRadius)).toVar('flowOffset')
                 const flowPos = uv.add(flowOffset).toVar('flowPos')
 
                 // Sample neighboring ecosystem
@@ -154,22 +127,14 @@ const ecosystemLighting = Fn(([uv]) => {
 
         // Health-based color mixing
         const healthRatio = health.mul(2.0).clamp(0.0, 1.0).toVar('healthRatio')
-        const healthColor = stressedColor
-                .mul(healthRatio.oneMinus())
-                .add(healthyColor.mul(healthRatio))
-                .toVar('healthColor')
+        const healthColor = stressedColor.mul(healthRatio.oneMinus()).add(healthyColor.mul(healthRatio)).toVar('healthColor')
 
         // Flow visualization
         const flowColor = vec3(0.9, 0.9, 0.2).mul(flowIntensity.mul(0.5)).toVar('flowColor')
         const nutrientColor = vec3(0.6, 0.3, 0.9).mul(nutrientFlow.mul(0.3)).toVar('nutrientColor')
 
         // Ecosystem composition
-        const ecosystemColor = populationColor
-                .mul(0.4)
-                .add(healthColor.mul(0.3))
-                .add(flowColor)
-                .add(nutrientColor)
-                .toVar('ecosystemColor')
+        const ecosystemColor = populationColor.mul(0.4).add(healthColor.mul(0.3)).add(flowColor).add(nutrientColor).toVar('ecosystemColor')
 
         // Background (barren land)
         const barrenColor = vec4(0.1, 0.08, 0.05, 1.0).toVar('barrenColor')

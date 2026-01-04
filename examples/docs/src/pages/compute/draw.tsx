@@ -1,7 +1,7 @@
 import { aspect, lineSDF } from 'glre/src/addons'
 import { Fn, float, id, If, iResolution, storage, uniform, uv, UVec3, vec2, vec3, vec4, Vec2, Return } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'rege/react'
+import { useDrag } from 'reev/gesture/drag/react'
 
 const isWebGL = false
 

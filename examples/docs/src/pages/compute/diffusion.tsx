@@ -63,7 +63,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord) {
 */
 import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, uniform, float, If, Return } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'rege/react'
+import { useDrag } from 'reev/gesture/drag/react'
 
 const isWebGL = false
 

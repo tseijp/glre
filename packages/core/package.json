@@ -178,8 +178,7 @@
         ],
         "dependencies": {
                 "@webgpu/types": "*",
-                "reev": "0.13.0",
-                "rege": "0.6.0",
+                "reev": "0.15.0",
                 "refr": "0.7.0"
         },
         "peerDependencies": {

@@ -1,6 +1,6 @@
 import { Fn, float, Float, id, If, storage, uniform, uv, UVec3, vec2, vec3, vec4, Vec2 } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'rege/react'
+import { useDrag } from 'reev/gesture/drag/react'
 
 const isWebGL = false
 
