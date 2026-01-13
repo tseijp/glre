@@ -1,6 +1,7 @@
 // @ts-ignore
 import { createCamera, createMesh, createQueues, createRegions, createSlots } from 'voxelized-js'
 import Layout from '@theme/Layout'
+import { box } from 'glre/src/buffers'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
 import { attribute, float, Fn, If, instance, int, ivec2, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
@@ -15,10 +16,11 @@ const range = (n = 0) => [...Array(n).keys()]
 
 const createNode = () => {
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
+        const cube = box()
         const iAtlas = range(SLOT).map((i) => uniform(texture2D(), `iAtlas${i}`))
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
-        const vertex = attribute<'vec3'>([-0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, 0.5, 0.5, -0.5, -0.5, -0.5, -0.5, -0.5, -0.5, 0.5, -0.5, -0.5, 0.5, -0.5, 0.5, 0.5, -0.5, 0.5, -0.5, -0.5, -0.5, -0.5, 0.5, 0.5, -0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, -0.5, 0.5, 0.5, -0.5, -0.5, 0.5], 'vertex')
-        const normal = attribute<'vec3'>([-1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1], 'normal')
+        const vertex = attribute<'vec3'>(cube.attributes.vertex, 'vertex')
+        const normal = attribute<'vec3'>(cube.attributes.normal, 'normal')
         const scl = instance<'vec3'>(vec3(), 'scl')
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
