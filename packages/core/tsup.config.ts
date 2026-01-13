@@ -5,7 +5,7 @@ import type { Plugin } from 'esbuild'
 /**
  * Internal modules to exclude from framework bundles
  */
-const BUILD_TARGETS: Options[] = [{ format: 'cjs' }, { format: 'esm', dts: { compilerOptions: { moduleResolution: 'node' } } }]
+const BUILD_TARGETS: Options[] = [{ format: 'cjs' }, { format: 'esm', dts: { compilerOptions: { moduleResolution: 'bundler' } } }]
 
 const BASE_CONFIG: Options = {
         outDir: './dist',

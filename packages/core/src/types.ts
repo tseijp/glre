@@ -1,5 +1,5 @@
 import type { EventState } from 'reev'
-import type { DragState } from 'rege'
+import type { DragState } from 'reev/gesture/drag'
 import type { Queue, Frame } from 'refr'
 import type { Vec4, Void } from './node'
 import type { Binding } from './webgpu/utils'
