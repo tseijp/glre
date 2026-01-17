@@ -1,6 +1,4 @@
-// @ts-ignore
 import Layout from '@theme/Layout'
-// @ts-ignore
 import useBaseUrl from '@docusaurus/useBaseUrl'
 import { useGL } from 'glre/src/react'
 import { range, makePriority } from '../../helpers'
@@ -22,19 +20,6 @@ function Canvas() {
                 render() {
                         {
                                 range(8).forEach((i) => gl.uniform(`windowLightWeight${i}`, 1))
-                                const memo = [1, 1, 1, 1, 1, 1, 1]
-                                const priority = makePriority()
-                                gl('mousemove', () => {
-                                        if (Math.abs(gl.mouse[1]) > 0.5) return
-                                        const i = ((gl.mouse[0] + 1) * 4) << 0 // 0 ~ 7
-                                        if (memo[i] == 0) return
-                                        gl.uniform(`windowLightWeight${i}`, (memo[i] = 0))
-                                        priority.then(async () => {
-                                                await new Promise((_) => setTimeout(_, WINDOW_DELAY_MS))
-                                                gl.uniform(`windowLightWeight${i}`, 1)
-                                                memo[i] = 1
-                                        }, i)
-                                })
                         }
                 },
         })

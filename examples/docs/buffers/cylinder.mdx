@@ -70,36 +70,3 @@ The unnormalized normal vector at any point is:
 $$
 \vec{n} = (\sin\theta, \text{slope}, \cos\theta)
 $$
-
-### Geometric Versatility
-
-Setting different top and bottom radii creates various geometric forms. When $r_{\text{top}} = 0$, the function generates a cone. When $r_{\text{top}} \neq r_{\text{bottom}}$, it produces a truncated cone (frustum).
-
-The angular parameters $\theta_{\text{start}}$ and $\theta_{\text{length}}$ enable partial cylinder generation. Setting $\theta_{\text{length}} = \pi$ creates a half-cylinder, while smaller values generate cylinder segments.
-
-<FragmentEditor
-        isApp
-        code={`
-function Canvas() {
-        const time = uniform(0)
-        const radius1 = sin(time.mul(0.7)).mul(0.4).add(0.6)
-        const radius2 = cos(time.mul(0.5)).mul(0.3).add(0.7)
-        const angle = time.mul(0.3).add(3.14159)
-        const geo = cylinder({
-                radiusTop: radius1,
-                radiusBottom: radius2,
-                height: 2,
-                thetaLength: angle
-        })
-        const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
-        const gl = useGL({
-                isWebGL: true,
-                isDepth: true,
-                count: geo.count,
-                vertex: vec4(mat.mul(geo.vertex), 1),
-                fragment: vec4(length(geo.vertex.xz).mul(2), varying(geo.normal).y.mul(0.5).add(0.5), angle.div(6.28), 1),
-        })
-        return <canvas ref={gl.ref} />
-}
-`}
-/>

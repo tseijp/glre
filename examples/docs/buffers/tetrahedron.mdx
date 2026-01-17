@@ -53,26 +53,3 @@ The edge length of a tetrahedron with radius $r$ follows the relationship where 
 $$
 \text{edge length} = r \sqrt{\frac{8}{3}} = r \cdot 2\sqrt{\frac{2}{3}}
 $$
-
-### Geometrical Properties
-
-The tetrahedron maintains tetrahedral symmetry with dihedral angle relationships. Volume calculations depend on edge length through cubic scaling, while surface area scales quadratically with radius parameter.
-
-<FragmentEditor
-        code={`
-function Canvas() {
-        const geo = tetrahedron({ radius: 1.5 })
-        const edges = geo.vertex.distance(geo.vertex.yzx()).step(2.3).mul(0.8)
-        const faces = geo.normal.dot(vec3(1,0,0)).abs().pow(8.0)
-        const gl = useGL({
-                isWebGL: true,
-                count: geo.count,
-                vertex: vec4(geo.vertex, 1),
-                fragment: vec4(edges.add(faces.mul(vec3(0.2,0.8,1.0))), 1),
-        })
-        return <canvas ref={gl.ref} />
-}
-`}
-/>
-
-The edge highlighting technique reveals tetrahedral structure through distance computation between vertex positions and their permuted coordinates. Face detection utilizes normal vector orientation to emphasize specific triangular surfaces based on viewing angle.
