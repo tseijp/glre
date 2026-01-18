@@ -63,7 +63,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord) {
 */
 import { Float, Fn, id, storage, uv, UVec3, vec3, Vec2, vec4, vec2, uniform, float, If, Return } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'reev/gesture/drag/react'
 
 const isWebGL = false
 
@@ -140,15 +139,14 @@ export default function ReactionDiffusionApp() {
                         }
                         gl.storage(data.props.id!, initData)
                 },
-        })
-
-        const drag = useDrag(() => {
-                mousePos.value = [drag.value[0] / w, drag.value[1] / h]
-                isDragging.value = drag.isDragging ? 1 : 0
+                drag(drag) {
+                        mousePos.value = [drag.value[0] / w, drag.value[1] / h]
+                        isDragging.value = drag.isDragging ? 1 : 0
+                },
         })
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', width: '100%', height: '100%', cursor: 'crosshair' }}>
+                <div style={{ position: 'fixed', width: '100%', height: '100%', cursor: 'crosshair' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )
