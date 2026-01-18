@@ -20,13 +20,13 @@ vec2 id2ij(in int k, in int s) {
                 else hp ^= (hp.x ^ hp.y) & q;
                 if ((hp.x & p) != 0) hp.x ^= q;
         }
-        return 2.0 * (vec2(hp)/float(bb - 1)) - 1.0;
+        return 2.0 * (vec2(hp) / float(bb - 1)) - 1.0;
 }
 
 // from Inigo Quilez, https://www.shadertoy.com/view/Xlf3zl
 float segment(in vec2 p, in vec2 a, in vec2 b) {
         vec2 pa = p - a, ba = b - a;
-        vec2  d = pa - ba * clamp(dot(pa, ba)/dot(ba, ba), 0.0, 1.0);
+        vec2  d = pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0);
         return dot(d, d);
 }
 
@@ -36,7 +36,7 @@ float sdPointSq(in vec2 p, in vec2 a) {
 }
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
-        float e = 1.0/iResolution.y;
+        float e = 1.0 / iResolution.y;
         vec2 aspect = iResolution.xy * e;
         vec2 p = 2.2 * fragCoord.xy * e - 1.1 * aspect;
         vec3 col = vec3(0.992, 0.965, 0.89);
@@ -62,29 +62,38 @@ import { useGL } from 'glre/src/react'
 import { Fn, If, Loop, float, int, iResolution, iTime, ivec2, Scope, uv, vec2, vec3, vec4 } from 'glre/src/node'
 import type { IVec2, Int, Vec2, Vec4 } from 'glre/src/node'
 const MAX_STEPS = 10
+
+const segment = Fn(([p, a, b]: [Vec2, Vec2, Vec2]) => {
+        const q = vec4(p.sub(a), b.sub(a)).toVar()
+        const d = q.xy.sub(q.zw.mul(q.xy.dot(q.zw).div(q.zw.dot(q.zw)).clamp(0, 1))).toVar()
+        return d.dot(d)
+})
+
 const rot = (xy: IVec2, rxy: IVec2, side: Int) =>
         If(rxy.y.equal(int(0)), () => {
                 If(rxy.x.equal(int(1)), () => void xy.assign(side.sub(xy.add(int(1)))))
                 xy.assign(xy.yx)
         })
-const ij2id = Fn(([ij, step]: [Vec2, Int]) => {
+
+const ij2id = Fn(([ij, step]: [Vec2, Int]): Int => {
         const p = ij.toIVec2().toVar()
-        const d = int(0).toVar()
+        const id = int(0).toVar()
         const bit = step.sub(int(1)).toVar()
         const side = int(1).shiftLeft(bit).toVar()
         Loop(step, () => {
                 const rxy = p.shiftRight(ivec2(bit)).bitAnd(ivec2(1)).toVar()
-                d.addAssign(side.mul(side).mul(rxy.x.mul(int(3)).bitXor(rxy.y)))
+                id.addAssign(side.mul(side).mul(rxy.x.mul(int(3)).bitXor(rxy.y)))
                 rot(p, rxy, side)
                 side.shiftRightAssign(int(1))
                 bit.subAssign(int(1))
         })
-        return d
+        return id
 })
-const id2ij = Fn(([k, step]: [Int, Int]) => {
+
+const id2ij = Fn(([id, step]: [Int, Int]): Vec2 => {
         const p = ivec2(0).toVar()
         const side = int(1).toVar()
-        const t = k.toVar()
+        const t = id.toVar()
         Loop(step, () => {
                 const rxy = ivec2(t.shiftRight(int(1)), t.bitXor(t.shiftRight(int(1)))).toVar()
                 rxy.bitAndAssign(ivec2(1))
@@ -95,25 +104,21 @@ const id2ij = Fn(([k, step]: [Int, Int]) => {
         })
         return vec2(p)
 })
-const segment = Fn(([p, a, b]: [Vec2, Vec2, Vec2]) => {
-        const q = vec4(p.sub(a), b.sub(a)).toVar()
-        const d = q.xy.sub(q.zw.mul(q.xy.dot(q.zw).div(q.zw.dot(q.zw)).clamp(0, 1)))
-        return d.dot(d)
-})
+
 export const fragment = Scope<Vec4>(() => {
         const step = int(iTime.mod(MAX_STEPS).add(1)).toVar()
         const n = int(1).shiftLeft(step).toVar()
         const n1f = n.sub(int(1)).toFloat().toVar()
-        const scale = <T extends Vec2 | Vec4>(p: T): T => p.div(n1f).mul(2).sub(1) as T
+        const scale = (p: Vec2): Vec2 => p.div(n1f).mul(2).sub(1)
         const p = uv.mul(3).sub(1.5).mul(iResolution.xy.div(iResolution.y)).toVar()
         const max = n.mul(n).sub(int(1)).toVar()
         const ij = p.add(1).mul(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
         const id = ij2id(ij, step).clamp(int(0), max).toIVec2().add(ivec2(-1, 1)).clamp(int(0), max).toVar()
-        const bpn = scale(vec4(ij, id2ij(id.x, step))).toVar()
-        const d = segment(p, bpn.zw, bpn.xy).min(segment(p, bpn.xy, scale(id2ij(id.y, step))))
-        const t = float(1).div(iResolution.y).mul(1.5).pow(2)
-        return vec4(vec3(t.mul(2).smoothstep(t, d)).oneMinus(), 1)
+        const b = scale(ij).toVar()
+        const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
+        return vec4(vec3(t.mul(2).smoothstep(t, segment(p, scale(id2ij(id.x, step)), b).min(segment(p, b, scale(id2ij(id.y, step)))))).oneMinus(), 1)
 })
+
 export default () => (
         <Layout noFooter>
                 <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
