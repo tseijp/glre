@@ -59,7 +59,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
 
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { Fn, If, Loop, float, int, iResolution, iTime, ivec2, Scope, uv, vec2, vec3, vec4 } from 'glre/src/node'
+import { Fn, If, Loop, float, int, iMouse, iResolution, ivec2, Scope, uv, vec2, vec3, vec4 } from 'glre/src/node'
 import type { IVec2, Int, Vec2, Vec4 } from 'glre/src/node'
 const MAX_STEPS = 10
 
@@ -105,18 +105,21 @@ const id2ij = Fn(([id, step]: [Int, Int]): Vec2 => {
         return vec2(p)
 })
 
-export const fragment = Scope<Vec4>(() => {
-        const step = int(iTime.mod(MAX_STEPS).add(1)).toVar()
-        const n = int(1).shiftLeft(step).toVar()
-        const n1f = n.sub(int(1)).toFloat().toVar()
-        const scale = (p: Vec2): Vec2 => p.div(n1f).mul(2).sub(1)
-        const p = uv.sub(0.5).mul(2).mul(iResolution.xy.div(iResolution.y)).toVar()
-        const max = n.mul(n).sub(int(1)).toVar()
-        const ij = p.add(1).mul(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
+const fragment = Scope<Vec4>(() => {
+        const step = int(iMouse.x.mul(MAX_STEPS).mod(MAX_STEPS).add(1)).toVar()
+        const num = int(1).shiftLeft(step).toVar()
+        const n1f = num.sub(int(1)).toFloat().toVar()
+        const max = num.mul(num).sub(int(1)).toVar()
+        const pos = uv.sub(0.5).mul(2).mul(iResolution.div(iResolution.y)).toVar()
+        const ij = pos.add(1).mul(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
         const id = ij2id(ij, step).clamp(int(0), max).toIVec2().add(ivec2(-1, 1)).clamp(int(0), max).toVar()
+        const scale = (p: Vec2): Vec2 => p.div(n1f).mul(2).sub(1)
+        const a = scale(id2ij(id.x, step))
         const b = scale(ij).toVar()
+        const c = scale(id2ij(id.y, step))
+        const d = segment(pos, a, b).min(segment(pos, b, c))
         const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
-        return vec4(vec3(t.mul(2).smoothstep(t, segment(p, scale(id2ij(id.x, step)), b).min(segment(p, b, scale(id2ij(id.y, step)))))).oneMinus(), 1)
+        return vec4(vec3(t.mul(2).smoothstep(t, d)).oneMinus(), 1)
 })
 
 export default () => (

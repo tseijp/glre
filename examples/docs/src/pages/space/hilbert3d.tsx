@@ -61,7 +61,7 @@ const hilbertSDF = Fn(([p, order]: [Vec3, Int]): Float => {
         return d
 })
 
-export const fragment = Scope<Vec4>(() => {
+const fragment = Scope<Vec4>(() => {
         const eps = vec3(0.002, 0, 0)
         const eye = rotate3dX(iDrag.y.negate()).mul(rotate3dY(iDrag.x.negate())).mul(vec3(0, 0, 7.5))
         const order = int(iTime.mod(MAX_ORDER).add(1))

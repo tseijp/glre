@@ -25,12 +25,12 @@ uvec3 Float3ToUint3(vec3 v) {
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         vec2 uv = fragCoord/iResolution.xy;
         //uv.x /= iResolution.y/iResolution.x;
-        // Grid resolution to display
-        const uint res = 1u << 5u;
-        const uint res2 = res * res;
-        const float fres = float(res);
+        // Grid nolution to display
+        const uint n = 1u << 5u;
+        const uint n2 = n * n;
+        const float fn = float(n);
         // Scaled uv
-        vec3 vuv = vec3(uv * fres, 0.0);
+        vec3 vuv = vec3(uv * fn, 0.0);
         // Map floats to unsigned integers
         #if USE_NEW_MAPPING
         uvec3 uuv = Float3ToUint3(vuv);
@@ -38,10 +38,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         uvec3 uuv = uvec3(vuv);
         #endif
         // Find index on curve of pixel
-        uint curveIndex = MortonCodeEncode2D(uuv.x, uuv.y) % res2;
-        vec3 col = vec3(float(curveIndex) / float(res2));
+        uint curveIndex = MortonCodeEncode2D(uuv.x, uuv.y) % n2;
+        vec3 col = vec3(float(curveIndex) / float(n2));
         // Color one pixel so we can see the Z-order nature of the curve
-        if (curveIndex == uint(iTime*3.) % res2)
+        if (curveIndex == uint(iTime*3.) % n2)
         col = vec3(1.0, 0.0, 0.0);
         // Output to screen
         fragColor = vec4(col,1.0);
@@ -49,10 +49,10 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
  */
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { Fn, Loop, Scope, float, int, iResolution, iTime, ivec2, uv, vec2, vec3, vec4 } from 'glre/src/node'
+import { Fn, Scope, float, int, iMouse, iResolution, ivec2, ivec3, uv, vec2, vec3, vec4 } from 'glre/src/node'
 import type { Int, Vec2, Vec4 } from 'glre/src/node'
 
-const MAX_LEVEL = 4
+const MAX_STEPS = 10
 
 const mffff = int(0x0000ffff).constant()
 const m00ff = int(0x00ff00ff).constant()
@@ -94,19 +94,20 @@ const segment = Fn(([p, a, b]: [Vec2, Vec2, Vec2]) => {
         return d.dot(d)
 })
 
-export const fragment = Scope<Vec4>(() => {
-        const level = int(iTime.mod(MAX_LEVEL).add(1)).toVar()
-        const res = int(1).shiftLeft(level).toVar()
-        const resm1f = res.sub(int(1)).toFloat().toVar()
-        const max = ij2id(vec2(resm1f, resm1f)).toVar()
-        const aspect = iResolution.x.div(iResolution.y).toVar()
-        const p = uv.sub(0.5).mul(vec2(aspect, 1)).mul(2).toVar()
-        const d = float(1e6).toVar()
-        Loop(max, ({ i }) => {
-                const a = id2ij(i).div(resm1f).mul(2).sub(1).toVar()
-                const b = id2ij(int(1).add(i)).div(resm1f).mul(2).sub(1).toVar()
-                d.assign(d.min(segment(p, a, b)))
-        })
+const fragment = Scope<Vec4>(() => {
+        const step = int(iMouse.x.mul(MAX_STEPS).mod(MAX_STEPS).add(1)).toVar()
+        const num = int(1).shiftLeft(step).toVar()
+        const n1f = num.toFloat().sub(1).toVar()
+        const max = num.mul(num).sub(int(1)).toVar()
+        const pos = uv.sub(0.5).mul(2).mul(iResolution.div(iResolution.y)).toVar()
+        const ij = pos.mul(0.5).add(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
+        const id = ij2id(ij).clamp(int(0), max).toVar()
+        const ids = ivec3(id).add(ivec3(0, -1, 1)).clamp(int(0), max).toVar()
+        const scale = (p: Vec2) => p.div(n1f).mul(2).sub(1)
+        const a = scale(id2ij(ids.y)).toVar()
+        const b = scale(id2ij(ids.x)).toVar()
+        const c = scale(id2ij(ids.z)).toVar()
+        const d = segment(pos, a, b).min(segment(pos, b, c)).toVar()
         const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
         const col = vec3(t.mul(2).smoothstep(t, d).oneMinus()).toVar()
         return vec4(col, 1)
