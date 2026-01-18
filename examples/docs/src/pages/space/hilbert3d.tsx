@@ -4,7 +4,7 @@ import { Float, Fn, If, Loop, float, int, iDrag, iResolution, iTime, mat3, posit
 import { rotate3dX, rotate3dY } from 'glre/src/addons'
 import type { Int, Vec3, Vec4 } from 'glre/src/node'
 
-const MAX_ORDER = 2
+const MAX_ORDER = 1
 
 const hilbert3 = Fn(([index, order]: [Int, Int]): Vec3 => {
         const t = index.toVar()
@@ -14,18 +14,8 @@ const hilbert3 = Fn(([index, order]: [Int, Int]): Vec3 => {
         const bit = int(0).toVar()
         Loop(order, () => {
                 const base = bit.mul(int(3)).toVar()
-                x.addAssign(
-                        t
-                                .shiftRight(base.add(int(2)))
-                                .bitAnd(int(1))
-                                .shiftLeft(bit)
-                )
-                y.addAssign(
-                        t
-                                .shiftRight(base.add(int(1)))
-                                .bitAnd(int(1))
-                                .shiftLeft(bit)
-                )
+                x.addAssign(t.shiftRight(int(2).add(base)).bitAnd(int(1)).shiftLeft(bit))
+                y.addAssign(t.shiftRight(int(1).add(base)).bitAnd(int(1)).shiftLeft(bit))
                 z.addAssign(t.shiftRight(base).bitAnd(int(1)).shiftLeft(bit))
                 bit.addAssign(int(1))
         })
@@ -37,20 +27,26 @@ const hilbert3 = Fn(([index, order]: [Int, Int]): Vec3 => {
         Loop(order.sub(int(1)), () => {
                 const p = q.sub(int(1)).toVar()
                 const zq = z.bitAnd(q).toVar()
-                If(zq.equal(q), () => void x.bitXorAssign(p))
+                If(zq.equal(q), () => {
+                        x.bitXorAssign(p)
+                })
                 If(zq.equal(int(0)), () => {
                         const t3 = x.bitXor(z).bitAnd(p).toVar()
                         x.bitXorAssign(t3)
                         z.bitXorAssign(t3)
                 })
                 const yq = y.bitAnd(q).toVar()
-                If(yq.equal(q), () => void x.bitXorAssign(p))
+                If(yq.equal(q), () => {
+                        x.bitXorAssign(p)
+                })
                 If(yq.equal(int(0)), () => {
                         const t4 = x.bitXor(y).bitAnd(p).toVar()
                         x.bitXorAssign(t4)
                         y.bitXorAssign(t4)
                 })
-                If(x.bitAnd(q).equal(q), () => void x.bitXorAssign(p))
+                If(x.bitAnd(q).equal(q), () => {
+                        x.bitXorAssign(p)
+                })
                 q.shiftLeftAssign(int(1))
         })
         return vec3(x.toFloat(), y.toFloat(), z.toFloat())
@@ -58,21 +54,16 @@ const hilbert3 = Fn(([index, order]: [Int, Int]): Vec3 => {
 
 const hilbertSDF = Fn(([p, order]: [Vec3, Int]): Float => {
         const n1f = int(1).shiftLeft(order).sub(int(1)).toFloat().toVar()
-        const minD = float(1e6).toVar()
+        const d = float(1e6).toVar()
         const i = int(0).toVar()
         const a = hilbert3(i, order).div(n1f).mul(2).sub(1).toVar()
-        Loop(
-                int(1)
-                        .shiftLeft(order.mul(int(3)))
-                        .sub(int(1)),
-                () => {
-                        i.addAssign(int(1))
-                        const b = hilbert3(i, order).div(n1f).mul(2).sub(1).toVar()
-                        minD.assign(minD.min(segment(p, a, b).sub(float(0.035))))
-                        a.assign(b)
-                }
-        )
-        return minD
+        Loop(int(1).shiftLeft(int(3).mul(order)).sub(int(1)), () => {
+                i.addAssign(int(1))
+                const b = hilbert3(i, order).div(n1f).mul(2).sub(1).toVar()
+                d.assign(d.min(segment(p, a, b).sub(float(0.035))))
+                a.assign(b)
+        })
+        return d
 })
 
 const segment = Fn(([p, a, b]: [Vec3, Vec3, Vec3]) => {
@@ -92,23 +83,20 @@ export const fragment = Scope<Vec4>(() => {
                 const totalD = float(0).toVar()
                 Loop(32, () => {
                         If(d.lessThanEqual(eps.x), () => {
-                                return vec4(
-                                        vec3(hilbertSDF(p.add(eps.xyy), order).sub(d), hilbertSDF(p.add(eps.yxy), order).sub(d), hilbertSDF(p.add(eps.yyx), order).sub(d))
-                                                .normalize()
-                                                .mul(0.5)
-                                                .add(0.5)
-                                                .mul(vec3(0.2, 0.7, 0.95)),
-                                        1
-                                )
+                                return vec3(hilbertSDF(p.add(eps.xyy), order).sub(d), hilbertSDF(p.add(eps.yxy), order).sub(d), hilbertSDF(p.add(eps.yyx), order).sub(d))
+                                        .normalize()
+                                        .mul(0.5)
+                                        .add(0.5)
+                                        .mul(vec3(0.2, 0.7, 0.95))
                         })
                         If(totalD.greaterThan(float(10)), () => {
-                                return vec4(0)
+                                return vec3(0)
                         })
                         p.addAssign(d.mul(dir))
                         totalD.addAssign(d)
                         d.assign(hilbertSDF(p, order))
                 })
-                return vec4(0)
+                return vec3(0)
         })
         const z = eye.negate().normalize()
         const x = z.cross(up).normalize()
@@ -116,7 +104,7 @@ export const fragment = Scope<Vec4>(() => {
         const dir = mat3(x, y, z)
                 .mul(vec3(position.xy.div(iResolution.xy).sub(vec2(0.5)), 1.6))
                 .normalize()
-        return march(eye, dir)
+        return vec4(march(eye, dir), 1)
 })
 
 export default () => {
