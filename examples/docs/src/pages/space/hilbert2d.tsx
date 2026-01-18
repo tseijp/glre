@@ -64,9 +64,7 @@ import type { IVec2, Int, Vec2, Vec4 } from 'glre/src/node'
 const MAX_STEPS = 10
 const rot = (xy: IVec2, rxy: IVec2, side: Int) =>
         If(rxy.y.equal(int(0)), () => {
-                If(rxy.x.equal(int(1)), () => {
-                        xy.assign(side.sub(int(1)).sub(xy))
-                })
+                If(rxy.x.equal(int(1)), () => void xy.assign(side.sub(xy.add(int(1)))))
                 xy.assign(xy.yx)
         })
 const ij2id = Fn(([ij, step]: [Vec2, Int]) => {
@@ -75,7 +73,7 @@ const ij2id = Fn(([ij, step]: [Vec2, Int]) => {
         const bit = step.sub(int(1)).toVar()
         const side = int(1).shiftLeft(bit).toVar()
         Loop(step, () => {
-                const rxy = p.shiftRight(ivec2(bit, bit)).bitAnd(ivec2(1)).toVar()
+                const rxy = p.shiftRight(ivec2(bit)).bitAnd(ivec2(1)).toVar()
                 d.addAssign(side.mul(side).mul(rxy.x.mul(int(3)).bitXor(rxy.y)))
                 rot(p, rxy, side)
                 side.shiftRightAssign(int(1))
@@ -84,12 +82,11 @@ const ij2id = Fn(([ij, step]: [Vec2, Int]) => {
         return d
 })
 const id2ij = Fn(([k, step]: [Int, Int]) => {
-        const t = k.toVar()
         const p = ivec2(0).toVar()
         const side = int(1).toVar()
+        const t = k.toVar()
         Loop(step, () => {
-                const rxy = ivec2(t.shiftRight(int(1)), t).toVar()
-                rxy.bitXorAssign(ivec2(0, t.shiftRight(int(1))))
+                const rxy = ivec2(t.shiftRight(int(1)), t.bitXor(t.shiftRight(int(1)))).toVar()
                 rxy.bitAndAssign(ivec2(1))
                 rot(p, rxy, side)
                 p.addAssign(side.mul(rxy))
