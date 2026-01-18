@@ -5,9 +5,9 @@
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Display a Hilbert curve (https://en.wikipedia.org/wiki/Hilbert_curve)
 // Skilling's algorithm, https://doi.org/10.1063/1.1751381 and https://doi.org/10.1063/1.1751382
-// see also http://www.inference.org.uk/bayesys/test/hilbert.c and compare with https://www.shadertoy.com/view/tlf3zX
+// see also http://www.inference.org.uk/bayesys/test/id2xy.c and compare with https://www.shadertoy.com/view/tlf3zX
 
-vec2 hilbert(in int k, in int s) {
+vec2 id2xy(in int k, in int s) {
         int bb = 1 << s, b = bb;
         ivec2 t = ivec2(k ^ (k >> 1)), hp = ivec2(0);
         for(int j = s - 1; j >= 0; j--) {
@@ -43,9 +43,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         int s = (int(floor(0.2 * iTime)) % 5) + 1; // stage of Hilbert curve construction
         int NUM = (1 << (2 * s)) - 1;
         vec2 d = vec2(9.0);
-        vec2 a = vec2(hilbert(0, s)), b = a;
+        vec2 a = vec2(id2xy(0, s)), b = a;
         for(int i = 0; i < NUM; i++) {
-                b = vec2(hilbert(i + 1, s));
+                b = vec2(id2xy(i + 1, s));
                 d = min(d, vec2(segment(p, a, b), sdPointSq(p, a)));
                 a = b;
         }
@@ -64,7 +64,7 @@ import type { Int, Vec2, Vec4 } from 'glre/src/node'
 
 const MAX_STEPS = 10
 
-const hilbertRotate = (x: Int, y: Int, rx: Int, ry: Int, side: Int) => {
+const rot = (x: Int, y: Int, rx: Int, ry: Int, side: Int) => {
         If(ry.equal(int(0)), () => {
                 If(rx.equal(int(1)), () => {
                         const s = side.sub(int(1)).toVar('s')
@@ -77,7 +77,7 @@ const hilbertRotate = (x: Int, y: Int, rx: Int, ry: Int, side: Int) => {
         })
 }
 
-const hilbertIndex = Fn(([xIn, yIn, step]: [Int, Int, Int]) => {
+const xy2id = Fn(([xIn, yIn, step]: [Int, Int, Int]) => {
         const x = xIn.toVar('x')
         const y = yIn.toVar('y')
         const d = int(0).toVar('d')
@@ -87,14 +87,14 @@ const hilbertIndex = Fn(([xIn, yIn, step]: [Int, Int, Int]) => {
                 const rx = x.shiftRight(bit).bitAnd(int(1)).toVar('rx')
                 const ry = y.shiftRight(bit).bitAnd(int(1)).toVar('ry')
                 d.addAssign(side.mul(side).mul(rx.mul(int(3)).bitXor(ry)))
-                hilbertRotate(x, y, rx, ry, side)
+                rot(x, y, rx, ry, side)
                 side.shiftRightAssign(int(1))
                 bit.subAssign(int(1))
         })
         return d
 })
 
-const hilbert = Fn(([k, step]: [Int, Int]) => {
+const id2xy = Fn(([k, step]: [Int, Int]) => {
         const t = k.toVar('t')
         const x = int(0).toVar('x')
         const y = int(0).toVar('y')
@@ -102,7 +102,7 @@ const hilbert = Fn(([k, step]: [Int, Int]) => {
         Loop(step, () => {
                 const rx = t.shiftRight(int(1)).bitAnd(int(1)).toVar('rx')
                 const ry = t.bitXor(rx).bitAnd(int(1)).toVar('ry')
-                hilbertRotate(x, y, rx, ry, side)
+                rot(x, y, rx, ry, side)
                 x.addAssign(side.mul(rx))
                 y.addAssign(side.mul(ry))
                 t.shiftRightAssign(int(2))
@@ -120,7 +120,7 @@ const segment = Fn(([p, a, b]: [Vec2, Vec2, Vec2]) => {
 
 export const fragment = Scope<Vec4>(() => {
         const e = float(1).div(iResolution.y).toVar('e')
-        const p = position.xy.mul(e).mul(2.2).sub(iResolution.xy.mul(e).mul(1.1)).toVar('p')
+        const p = position.xy.mul(e).mul(3).sub(iResolution.xy.mul(e).mul(1.5)).toVar('p')
         const stage = int(iTime.mod(MAX_STEPS).add(1)).toVar('stage')
         const n = int(1).shiftLeft(stage).toVar('n')
         const n1 = n.sub(int(1)).toVar('n1')
@@ -129,12 +129,12 @@ export const fragment = Scope<Vec4>(() => {
         const maxK = n.mul(n).sub(int(1)).toVar('maxK')
         const gridX = grid.x.add(0.5).floor().toInt().clamp(int(0), n1).toVar('gridX')
         const gridY = grid.y.add(0.5).floor().toInt().clamp(int(0), n1).toVar('gridY')
-        const k = hilbertIndex(gridX, gridY, stage).clamp(int(0), maxK).toVar('k')
+        const k = xy2id(gridX, gridY, stage).clamp(int(0), maxK).toVar('k')
         const b = vec2(gridX.toFloat(), gridY.toFloat()).div(n1f).mul(2).sub(1).toVar('b')
         const kPrev = k.sub(int(1)).clamp(int(0), maxK)
         const kNext = k.add(int(1)).clamp(int(0), maxK)
-        const prev = hilbert(kPrev, stage)
-        const next = hilbert(kNext, stage)
+        const prev = id2xy(kPrev, stage)
+        const next = id2xy(kNext, stage)
         const minDist = segment(p, prev.div(n1f).mul(2).sub(1), b).min(segment(p, b, next.div(n1f).mul(2).sub(1)))
         const t2 = e.mul(1.5).pow(2).toVar('t2')
         const line = t2.smoothstep(t2.mul(2), minDist).oneMinus()
