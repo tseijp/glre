@@ -110,7 +110,7 @@ export const fragment = Scope<Vec4>(() => {
         const n = int(1).shiftLeft(step).toVar()
         const n1f = n.sub(int(1)).toFloat().toVar()
         const scale = (p: Vec2): Vec2 => p.div(n1f).mul(2).sub(1)
-        const p = uv.mul(3).sub(1.5).mul(iResolution.xy.div(iResolution.y)).toVar()
+        const p = uv.sub(0.5).mul(2).mul(iResolution.xy.div(iResolution.y)).toVar()
         const max = n.mul(n).sub(int(1)).toVar()
         const ij = p.add(1).mul(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
         const id = ij2id(ij, step).clamp(int(0), max).toIVec2().add(ivec2(-1, 1)).clamp(int(0), max).toVar()
@@ -121,7 +121,7 @@ export const fragment = Scope<Vec4>(() => {
 
 export default () => (
         <Layout noFooter>
-                <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%' }}>
+                <div style={{ position: 'fixed', top: 60, left: 0, width: '100%', height: 'calc(100% - 60px)' }}>
                         <canvas ref={useGL({ fragment }).ref} />
                 </div>
         </Layout>
