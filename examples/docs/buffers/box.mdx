@@ -13,16 +13,16 @@ import { FragmentEditor } from '@site/src/theme/FragmentEditor'
         isApp
         code={`
 function Canvas() {
-	const geo = box({ width: 1, height: 1, depth: 1 })
-	const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
-	const gl = useGL({
-		isWebGL: true,
-		isDepth: true,
-		count: geo.count,
-		vertex: vec4(mat.mul(geo.vertex), 1),
-		fragment: vec4(varying(geo.normal), 1),
-	})
-	return <canvas ref={gl.ref} />
+				const geo = box({ width: 1, height: 1, depth: 1 })
+				const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
+				const gl = useGL({
+								isWebGL: true,
+								isDepth: true,
+								count: geo.count,
+								vertex: vec4(mat.mul(geo.vertex), 1),
+								fragment: vec4(varying(geo.normal), 1),
+				})
+				return <canvas ref={gl.ref} />
 }
 `}
 />

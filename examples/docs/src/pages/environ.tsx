@@ -6,10 +6,6 @@ import { Fn, mat4, Scope, texture, uniform, uv, varying, vec2, vec3, Vec3, vec4 
 import { mat4 as m } from 'gl-matrix'
 
 export default function EnvironApp() {
-        let yaw = 0
-        let pitch = 0
-        let mouseDown = false
-        let mouseLast = [0, 0]
         const tmp1 = m.create()
         const tmp2 = m.create()
         const env = uniform('https://r.tsei.jp/texture/hdr.jpg')
@@ -18,6 +14,7 @@ export default function EnvironApp() {
         const inv = uniform(mat4())
         const geo = sphere({ radius: 1, widthSegments: 128, heightSegments: 128 })
         const update = () => {
+                const [yaw, pitch] = gl.offset
                 const cos = Math.cos(pitch)
                 const pos = [2 * Math.sin(yaw) * cos, 2 * Math.sin(pitch), 2 * Math.cos(yaw) * cos]
                 const P = m.perspective(tmp1, 1.047, innerWidth / innerHeight, 0.1, 100)
@@ -49,21 +46,7 @@ export default function EnvironApp() {
                                 return texture(env, dir2uv(d))
                         }),
                         render() {
-                                if (mouseDown) return
-                                yaw += 0.001
                                 update()
-                        },
-                        mousemove(e) {
-                                if (!mouseDown) return
-                                yaw -= (e.clientX - mouseLast[0]) * 0.01
-                                pitch = Math.max(-0.7, Math.min(0.7, pitch + (e.clientY - mouseLast[1]) * 0.01))
-                                mouseLast = [e.clientX, e.clientY]
-                                update()
-                        },
-                        mount() {
-                                gl.el.addEventListener('mousedown', (e) => void ((mouseDown = true), (mouseLast = [e.clientX, e.clientY])))
-                                gl.el.addEventListener('mouseover', () => (mouseDown = false))
-                                gl.el.addEventListener('mouseup', () => (mouseDown = false))
                         },
                 }
         )

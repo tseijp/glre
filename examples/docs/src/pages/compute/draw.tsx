@@ -1,7 +1,6 @@
 import { aspect, lineSDF } from 'glre/src/addons'
 import { Fn, float, id, If, iResolution, storage, uniform, uv, UVec3, vec2, vec3, vec4, Vec2, Return } from 'glre/src/node'
 import { useGL, isServer } from 'glre/src/react'
-import { useDrag } from 'reev/gesture/drag/react'
 
 const isWebGL = false
 
@@ -44,19 +43,18 @@ export default function GPGPUDrawApp() {
                 isWebGL,
                 cs: cs(id),
                 fs: fs(uv),
-        })
-
-        const drag = useDrag(() => {
-                m1.value = drag._value
-                if (drag.isDragging) {
-                        m0.value = drag.value
-                } else m0.value = [-1, -1]
+                drag(drag) {
+                        m1.value = drag._value
+                        if (drag.isDragging) {
+                                m0.value = drag.value
+                        } else m0.value = [-1, -1]
+                },
         })
 
         gl.storage(data.props.id, new Float32Array(w * h).fill(1))
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', width: '100%', height: '100%' }}>
+                <div style={{ position: 'fixed', width: '100%', height: '100%' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )

@@ -1,5 +1,3 @@
-// @ts-ignore
-import { createCamera, createMesh, createQueues, createRegions, createSlots } from 'voxelized-js'
 import Layout from '@theme/Layout'
 import { box } from 'glre/src/buffers'
 import { useGL } from 'glre/src/react'
@@ -90,7 +88,8 @@ const createMode = () => {
         return { tab, esc }
 }
 
-const createViewer = () => {
+const createViewer = async () => {
+        const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('voxelized-js') // Dynamic import is required. Static import causes ReferenceError: __dirname is not defined.
         let isReady = false
         let isLoading = false
         let ts = performance.now()
@@ -214,9 +213,7 @@ const createViewer = () => {
         return { mode, node, cam, render, resize, mount, clean, mousedown, mousemove, pt: 0 }
 }
 
-type Viewer = ReturnType<typeof createViewer>
-
-const Canvas = ({ viewer }: { viewer: Viewer }) => {
+const Canvas = ({ viewer }: any) => {
         const gl = useGL({
                 precision: 'highp',
                 // wireframe: true,
@@ -250,8 +247,8 @@ const Canvas = ({ viewer }: { viewer: Viewer }) => {
 }
 
 export default function Home() {
-        const [viewer, set] = useState<Viewer>()
-        useEffect(() => void set(createViewer()), [])
+        const [viewer, set] = useState()
+        useEffect(() => void createViewer().then(set), [])
         return (
                 <Layout noFooter>
                         <div id="loading" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>

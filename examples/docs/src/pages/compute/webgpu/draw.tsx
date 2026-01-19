@@ -68,13 +68,12 @@ export default function GPGPUDrawApp() {
                         return fs(out.position.xy / iResolution);
                 }
                 `,
-        })
-
-        const drag = useDrag(() => {
-                gl.uniform('m1', drag._value)
-                if (drag.isDragging) {
-                        gl.uniform('m0', drag.value)
-                } else gl.uniform('m0', [-1, -1])
+                drag(drag) {
+                        gl.uniform('m1', drag._value)
+                        if (drag.isDragging) {
+                                gl.uniform('m0', drag.value)
+                        } else gl.uniform('m0', [-1, -1])
+                },
         })
 
         gl.uniform('m0', [-1, -1])
@@ -82,7 +81,7 @@ export default function GPGPUDrawApp() {
         gl.storage('data', new Float32Array(w * h).fill(1))
 
         return (
-                <div ref={drag.ref} style={{ position: 'fixed', width: '100%', height: '100%' }}>
+                <div style={{ position: 'fixed', width: '100%', height: '100%' }}>
                         <canvas ref={gl.ref} />
                 </div>
         )
