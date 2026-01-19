@@ -109,7 +109,9 @@ const fragment = Scope<Vec4>(() => {
         const c = scale(id2ij(ids.z)).toVar()
         const d = segment(pos, a, b).min(segment(pos, b, c)).toVar()
         const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
-        const col = vec3(t.mul(2).smoothstep(t, d).oneMinus()).toVar()
+        const idf = id.toFloat().div(max.toFloat()).toVar()
+        const grad = vec3(0, 1, 1).mix(vec3(1, 1, 0), idf).toVar()
+        const col = t.mul(2).smoothstep(t, d).mul(grad).oneMinus().toVar()
         return vec4(col, 1)
 })
 

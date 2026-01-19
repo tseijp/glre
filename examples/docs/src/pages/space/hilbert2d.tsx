@@ -105,7 +105,7 @@ const id2ij = Fn(([id, step]: [Int, Int]): Vec2 => {
         return vec2(p)
 })
 
-const fragment = Scope<Vec4>(() => {
+const fragment = Scope((): Vec4 => {
         const step = int(iMouse.x.mul(MAX_STEPS).mod(MAX_STEPS).add(1)).toVar()
         const num = int(1).shiftLeft(step).toVar()
         const n1f = num.sub(int(1)).toFloat().toVar()
@@ -114,12 +114,15 @@ const fragment = Scope<Vec4>(() => {
         const ij = pos.add(1).mul(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
         const id = ij2id(ij, step).clamp(int(0), max).toIVec2().add(ivec2(-1, 1)).clamp(int(0), max).toVar()
         const scale = (p: Vec2): Vec2 => p.div(n1f).mul(2).sub(1)
-        const a = scale(id2ij(id.x, step))
+        const a = scale(id2ij(id.x, step)).toVar()
         const b = scale(ij).toVar()
-        const c = scale(id2ij(id.y, step))
-        const d = segment(pos, a, b).min(segment(pos, b, c))
+        const c = scale(id2ij(id.y, step)).toVar()
+        const d = segment(pos, a, b).min(segment(pos, b, c)).toVar()
         const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
-        return vec4(vec3(t.mul(2).smoothstep(t, d)).oneMinus(), 1)
+        const idf = id.toFloat().div(max.toFloat()).toVar()
+        const grad = vec3(0, 1, 1).mix(vec3(1, 1, 0), idf).toVar()
+        const col = t.mul(2).smoothstep(t, d).mul(grad).oneMinus().toVar()
+        return vec4(col, 1)
 })
 
 export default () => (
