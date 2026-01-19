@@ -3,6 +3,7 @@
 - [hilbert3d](/space/hilbert3d)
 - [morton](/space/morton)
 - [morton2d](/space/morton2d)
+- [morton3d](/space/morton3d)
 - [original](/space/original)
 - [original2d](/space/original2d)
 - [original3d](/space/original3d)

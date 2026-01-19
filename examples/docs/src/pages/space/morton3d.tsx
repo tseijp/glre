@@ -1,33 +1,51 @@
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { Fn, If, Scope, int, iMouse, iResolution, iDrag, varying, instance, vec3, vec4, ivec2, ivec3, mat3 } from 'glre/src/node'
+import { Fn, If, Scope, int, iMouse, iResolution, iDrag, varying, instance, vec3, vec4, ivec3, mat3 } from 'glre/src/node'
 import { rotate3dX, rotate3dY, perspective } from 'glre/src/addons'
 import { box } from 'glre/src/buffers'
 import type { Int, Vec3 } from 'glre/src/node'
 
+/**
+ * ref
+const xyz2id = Fn(([xyz]: [Vec3]): Int => {
+        const p = xyz.toIVec3().toVar()
+        p.bitAndAssign(ivec3(m3ff))
+        p.bitXorAssign(p.shiftLeft(int(16)))
+        p.bitAndAssign(ivec3(mff0000ff))
+        p.bitXorAssign(p.shiftLeft(int(8)))
+        p.bitAndAssign(ivec3(m0300f00f))
+        p.bitXorAssign(p.shiftLeft(int(4)))
+        p.bitAndAssign(ivec3(m030c30c3))
+        p.bitXorAssign(p.shiftLeft(int(2)))
+        p.bitAndAssign(ivec3(m09249249))
+        return p.z
+                .shiftLeft(int(2))
+                .add(p.y.shiftLeft(int(1)))
+                .add(p.x)
+})
+ */
+
 const MAX_STEP = 5
 const MAX_CUBE = (1 << (3 * MAX_STEP)) - 1
 
-const original3 = Fn(([index, step]: [Int, Int]): Vec3 => {
-        const lh = ivec2(step.shiftRight(int(1)), step.sub(step.shiftRight(int(1)))).toVar()
-        const masks = ivec2(int(1)).shiftLeft(lh).sub(ivec2(1)).toVar()
-        const span = lh.x.mul(int(3)).toVar()
-        const spanMask = int(1).shiftLeft(span).sub(int(1)).toVar()
-        const lowPart = index.bitAnd(spanMask).toVar()
-        const highPart = index.shiftRight(span).toVar()
-        const lowX = lowPart.bitAnd(masks.x).toVar()
-        const lowY = lowPart.shiftRight(lh.x).bitAnd(masks.x).toVar()
-        const lowZ = lowPart
-                .shiftRight(lh.x.mul(int(2)))
-                .bitAnd(masks.x)
-                .toVar()
-        const highX = highPart.bitAnd(masks.y).toVar()
-        const highY = highPart.shiftRight(lh.y).bitAnd(masks.y).toVar()
-        const highZ = highPart
-                .shiftRight(lh.y.mul(int(2)))
-                .bitAnd(masks.y)
-                .toVar()
-        return vec3(lowX.add(highX.shiftLeft(lh.x)), lowY.add(highY.shiftLeft(lh.x)), lowZ.add(highZ.shiftLeft(lh.x)))
+const m3ff = int(0x000003ff).constant()
+const mff0000ff = int(0xff0000ff).constant()
+const m0300f00f = int(0x0300f00f).constant()
+const m030c30c3 = int(0x030c30c3).constant()
+const m09249249 = int(0x09249249).constant()
+
+const id2xyz = Fn(([c]: [Int]): Vec3 => {
+        const p = ivec3(c, c.shiftRight(int(1)), c.shiftRight(int(2))).toVar()
+        p.bitAndAssign(ivec3(m09249249))
+        p.bitXorAssign(p.shiftRight(int(2)))
+        p.bitAndAssign(ivec3(m030c30c3))
+        p.bitXorAssign(p.shiftRight(int(4)))
+        p.bitAndAssign(ivec3(m0300f00f))
+        p.bitXorAssign(p.shiftRight(int(8)))
+        p.bitAndAssign(ivec3(mff0000ff))
+        p.bitXorAssign(p.shiftRight(int(16)))
+        p.bitAndAssign(ivec3(m3ff))
+        return vec3(p)
 })
 
 const index = instance<'float'>(Array.from({ length: MAX_CUBE }, (_, i) => i))
@@ -39,8 +57,8 @@ const vertex = Scope(() => {
         const max = base.pow(3).sub(1).toVar()
         const offset = n1f.mul(0.5).toVar()
         const scale = offset.reciprocal().toVar()
-        const a = original3(index.toInt(), step).sub(offset).mul(scale).toVar()
-        const b = original3(index.add(1).toInt(), step).sub(offset).mul(scale).toVar()
+        const a = id2xyz(index.toInt()).sub(offset).mul(scale).toVar()
+        const b = id2xyz(index.add(1).toInt()).sub(offset).mul(scale).toVar()
         const direct = b.sub(a).toVar()
         const normal = direct.normalize().toVar()
         const up = vec3(0, 1, 0).toVar()
