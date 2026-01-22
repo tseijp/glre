@@ -69,40 +69,96 @@ const segment = Fn(([p, a, b]: [Vec2, Vec2, Vec2]) => {
         return d.dot(d)
 })
 
-const rot = (xy: IVec2, rxy: IVec2, side: Int) =>
-        If(rxy.y.equal(int(0)), () => {
-                If(rxy.x.equal(int(1)), () => void xy.assign(side.sub(xy.add(int(1)))))
-                xy.assign(xy.yx)
+const uv2m = Fn(([xy, bits]: [IVec2, Int]): Int => {
+        const result = int(0).toVar()
+        const bit = int(0).toVar()
+        Loop(bits, () => {
+                const shift = bit.mul(int(2)).toVar()
+                result.bitOrAssign(xy.x.shiftRight(bit).bitAnd(int(1)).shiftLeft(shift))
+                result.bitOrAssign(
+                        xy.y
+                                .shiftRight(bit)
+                                .bitAnd(int(1))
+                                .shiftLeft(shift.add(int(1)))
+                )
+                bit.addAssign(int(1))
         })
+        return result
+})
+
+const m2uv = Fn(([morton, bits]: [Int, Int]): IVec2 => {
+        const x = int(0).toVar()
+        const y = int(0).toVar()
+        const bit = int(0).toVar()
+        Loop(bits, () => {
+                const shift = bit.mul(int(2)).toVar()
+                x.bitOrAssign(morton.shiftRight(shift).bitAnd(int(1)).shiftLeft(bit))
+                y.bitOrAssign(
+                        morton
+                                .shiftRight(shift.add(int(1)))
+                                .bitAnd(int(1))
+                                .shiftLeft(bit)
+                )
+                bit.addAssign(int(1))
+        })
+        return ivec2(x, y)
+})
+
+const LUT_2D_H2M = [0x00, 0x01, 0x03, 0x02, 0x10, 0x13, 0x17, 0x14, 0x20, 0x21, 0x23, 0x22, 0x30, 0x31, 0x33, 0x32]
+const LUT_2D_M2H = [0x00, 0x01, 0x03, 0x02, 0x10, 0x11, 0x13, 0x12, 0x20, 0x21, 0x23, 0x22, 0x30, 0x33, 0x37, 0x34]
+
+const h2m = Fn(([hilbert, bits]: [Int, Int]): Int => {
+        const state = int(0).toVar()
+        const output = int(0).toVar()
+        const step = int(0).toVar()
+        Loop(bits, () => {
+                const shift = int(2)
+                        .mul(bits.sub(step).sub(int(1)))
+                        .toVar()
+                const quad = hilbert.shiftRight(shift).bitAnd(int(3)).toVar()
+                const idx = state.bitOr(quad).toVar()
+                const entry = int(LUT_2D_H2M[0]).toVar()
+                If(idx.equal(int(0)), () => void entry.assign(int(LUT_2D_H2M[0])))
+                for (let j = 1; j < LUT_2D_H2M.length; j++) {
+                        If(idx.equal(int(j)), () => void entry.assign(int(LUT_2D_H2M[j])))
+                }
+                output.assign(output.shiftLeft(int(2)).bitOr(entry.bitAnd(int(3))))
+                state.assign(entry.bitAnd(int(~3)))
+                step.addAssign(int(1))
+        })
+        return output
+})
+
+const m2h = Fn(([morton, bits]: [Int, Int]): Int => {
+        const state = int(0).toVar()
+        const output = int(0).toVar()
+        const step = int(0).toVar()
+        Loop(bits, () => {
+                const shift = int(2)
+                        .mul(bits.sub(step).sub(int(1)))
+                        .toVar()
+                const quad = morton.shiftRight(shift).bitAnd(int(3)).toVar()
+                const idx = state.bitOr(quad).toVar()
+                const entry = int(LUT_2D_M2H[0]).toVar()
+                If(idx.equal(int(0)), () => void entry.assign(int(LUT_2D_M2H[0])))
+                for (let j = 1; j < LUT_2D_M2H.length; j++) {
+                        If(idx.equal(int(j)), () => void entry.assign(int(LUT_2D_M2H[j])))
+                }
+                output.assign(output.shiftLeft(int(2)).bitOr(entry.bitAnd(int(3))))
+                state.assign(entry.bitAnd(int(~3)))
+                step.addAssign(int(1))
+        })
+        return output
+})
 
 const ij2id = Fn(([ij, step]: [Vec2, Int]): Int => {
-        const p = ij.toIVec2().toVar()
-        const id = int(0).toVar()
-        const bit = step.sub(int(1)).toVar()
-        const side = int(1).shiftLeft(bit).toVar()
-        Loop(step, () => {
-                const rxy = p.shiftRight(ivec2(bit)).bitAnd(ivec2(1)).toVar()
-                id.addAssign(side.mul(side).mul(rxy.x.mul(int(3)).bitXor(rxy.y)))
-                rot(p, rxy, side)
-                side.shiftRightAssign(int(1))
-                bit.subAssign(int(1))
-        })
-        return id
+        const morton = uv2m(ivec2(ij.x.toInt(), ij.y.toInt()), step)
+        return m2h(morton, step)
 })
 
 const id2ij = Fn(([id, step]: [Int, Int]): Vec2 => {
-        const p = ivec2(0).toVar()
-        const side = int(1).toVar()
-        const t = id.toVar()
-        Loop(step, () => {
-                const rxy = ivec2(t.shiftRight(int(1)), t.bitXor(t.shiftRight(int(1)))).toVar()
-                rxy.bitAndAssign(ivec2(1))
-                rot(p, rxy, side)
-                p.addAssign(side.mul(rxy))
-                t.shiftRightAssign(int(2))
-                side.shiftLeftAssign(int(1))
-        })
-        return vec2(p)
+        const morton = h2m(id, step)
+        return vec2(m2uv(morton, step))
 })
 
 const fragment = Scope((): Vec4 => {
