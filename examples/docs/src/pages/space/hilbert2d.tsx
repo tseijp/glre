@@ -104,8 +104,8 @@ const m2uv = Fn(([morton, bits]: [Int, Int]): IVec2 => {
         return ivec2(x, y)
 })
 
-const LUT_2D_H2M = [0x00, 0x01, 0x03, 0x02, 0x10, 0x13, 0x17, 0x14, 0x20, 0x21, 0x23, 0x22, 0x30, 0x31, 0x33, 0x32]
-const LUT_2D_M2H = [0x00, 0x01, 0x03, 0x02, 0x10, 0x11, 0x13, 0x12, 0x20, 0x21, 0x23, 0x22, 0x30, 0x33, 0x37, 0x34]
+const LUT_2D_H2M = [0x10, 0x02, 0x03, 0x21, 0x00, 0x11, 0x13, 0x32, 0x33, 0x22, 0x20, 0x01, 0x23, 0x31, 0x30, 0x12]
+const LUT_2D_M2H = [0x10, 0x23, 0x01, 0x02, 0x00, 0x11, 0x33, 0x12, 0x22, 0x03, 0x21, 0x30, 0x32, 0x31, 0x13, 0x20]
 
 const h2m = Fn(([hilbert, bits]: [Int, Int]): Int => {
         const state = int(0).toVar()
@@ -116,7 +116,7 @@ const h2m = Fn(([hilbert, bits]: [Int, Int]): Int => {
                         .mul(bits.sub(step).sub(int(1)))
                         .toVar()
                 const quad = hilbert.shiftRight(shift).bitAnd(int(3)).toVar()
-                const idx = state.bitOr(quad).toVar()
+                const idx = state.shiftRight(int(4)).shiftLeft(int(2)).bitOr(quad).toVar()
                 const entry = int(LUT_2D_H2M[0]).toVar()
                 If(idx.equal(int(0)), () => void entry.assign(int(LUT_2D_H2M[0])))
                 for (let j = 1; j < LUT_2D_H2M.length; j++) {
@@ -138,7 +138,7 @@ const m2h = Fn(([morton, bits]: [Int, Int]): Int => {
                         .mul(bits.sub(step).sub(int(1)))
                         .toVar()
                 const quad = morton.shiftRight(shift).bitAnd(int(3)).toVar()
-                const idx = state.bitOr(quad).toVar()
+                const idx = state.shiftRight(int(4)).shiftLeft(int(2)).bitOr(quad).toVar()
                 const entry = int(LUT_2D_M2H[0]).toVar()
                 If(idx.equal(int(0)), () => void entry.assign(int(LUT_2D_M2H[0])))
                 for (let j = 1; j < LUT_2D_M2H.length; j++) {
