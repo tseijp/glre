@@ -5,9 +5,9 @@
 // Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions: The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software. THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // Display a Hilbert curve (https://en.wikipedia.org/wiki/Hilbert_curve)
 // Skilling's algorithm, https://doi.org/10.1063/1.1751381 and https://doi.org/10.1063/1.1751382
-// see also http://www.inference.org.uk/bayesys/test/id2ij.c and compare with https://www.shadertoy.com/view/tlf3zX
+// see also http://www.inference.org.uk/bayesys/test/h2uv.c and compare with https://www.shadertoy.com/view/tlf3zX
 
-vec2 id2ij(in int k, in int s) {
+vec2 h2uv(in int k, in int s) {
         int bb = 1 << s, b = bb;
         ivec2 t = ivec2(k ^ (k >> 1)), hp = ivec2(0);
         for (int j = s - 1; j >= 0; j--) {
@@ -43,9 +43,9 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         int s = (int(floor(0.2 * iTime)) % 5) + 1; // stage of Hilbert curve construction
         int NUM = (1 << (2 * s)) - 1;
         vec2 d = vec2(9.0);
-        vec2 a = vec2(id2ij(0, s)), b = a;
+        vec2 a = vec2(h2uv(0, s)), b = a;
         for (int i = 0; i < NUM; i++) {
-                b = vec2(id2ij(i + 1, s));
+                b = vec2(h2uv(i + 1, s));
                 d = min(d, vec2(segment(p, a, b), sdPointSq(p, a)));
                 a = b;
         }
@@ -67,41 +67,6 @@ const segment = Fn(([p, a, b]: [Vec2, Vec2, Vec2]) => {
         const q = vec4(p.sub(a), b.sub(a)).toVar()
         const d = q.xy.sub(q.zw.mul(q.xy.dot(q.zw).div(q.zw.dot(q.zw)).clamp(0, 1))).toVar()
         return d.dot(d)
-})
-
-const uv2m = Fn(([xy, bits]: [IVec2, Int]): Int => {
-        const result = int(0).toVar()
-        const bit = int(0).toVar()
-        Loop(bits, () => {
-                const shift = bit.mul(int(2)).toVar()
-                result.bitOrAssign(xy.x.shiftRight(bit).bitAnd(int(1)).shiftLeft(shift))
-                result.bitOrAssign(
-                        xy.y
-                                .shiftRight(bit)
-                                .bitAnd(int(1))
-                                .shiftLeft(shift.add(int(1)))
-                )
-                bit.addAssign(int(1))
-        })
-        return result
-})
-
-const m2uv = Fn(([morton, bits]: [Int, Int]): IVec2 => {
-        const x = int(0).toVar()
-        const y = int(0).toVar()
-        const bit = int(0).toVar()
-        Loop(bits, () => {
-                const shift = bit.mul(int(2)).toVar()
-                x.bitOrAssign(morton.shiftRight(shift).bitAnd(int(1)).shiftLeft(bit))
-                y.bitOrAssign(
-                        morton
-                                .shiftRight(shift.add(int(1)))
-                                .bitAnd(int(1))
-                                .shiftLeft(bit)
-                )
-                bit.addAssign(int(1))
-        })
-        return ivec2(x, y)
 })
 
 const LUT_2D_H2M = [0x10, 0x02, 0x03, 0x21, 0x00, 0x11, 0x13, 0x32, 0x33, 0x22, 0x20, 0x01, 0x23, 0x31, 0x30, 0x12]
@@ -151,16 +116,59 @@ const m2h = Fn(([morton, bits]: [Int, Int]): Int => {
         return output
 })
 
-const ij2id = Fn(([ij, step]: [Vec2, Int]): Int => {
+/**
+ * morton
+ */
+const uv2m = Fn(([xy, bits]: [IVec2, Int]): Int => {
+        const result = int(0).toVar()
+        const bit = int(0).toVar()
+        Loop(bits, () => {
+                const shift = bit.mul(int(2)).toVar()
+                result.bitOrAssign(xy.x.shiftRight(bit).bitAnd(int(1)).shiftLeft(shift))
+                result.bitOrAssign(
+                        xy.y
+                                .shiftRight(bit)
+                                .bitAnd(int(1))
+                                .shiftLeft(shift.add(int(1)))
+                )
+                bit.addAssign(int(1))
+        })
+        return result
+})
+
+const m2uv = Fn(([morton, bits]: [Int, Int]): IVec2 => {
+        const x = int(0).toVar()
+        const y = int(0).toVar()
+        const bit = int(0).toVar()
+        Loop(bits, () => {
+                const shift = bit.mul(int(2)).toVar()
+                x.bitOrAssign(morton.shiftRight(shift).bitAnd(int(1)).shiftLeft(bit))
+                y.bitOrAssign(
+                        morton
+                                .shiftRight(shift.add(int(1)))
+                                .bitAnd(int(1))
+                                .shiftLeft(bit)
+                )
+                bit.addAssign(int(1))
+        })
+        return ivec2(x, y)
+})
+
+/**
+ * hilbert
+ */
+const uv2h = Fn(([ij, step]: [Vec2, Int]): Int => {
         const morton = uv2m(ivec2(ij.x.toInt(), ij.y.toInt()), step)
         return m2h(morton, step)
 })
 
-const id2ij = Fn(([id, step]: [Int, Int]): Vec2 => {
-        const morton = h2m(id, step)
-        return vec2(m2uv(morton, step))
+const h2uv = Fn(([id, step]: [Int, Int]): Vec2 => {
+        return vec2(m2uv(h2m(id, step), step))
 })
 
+/**
+ * main
+ */
 const fragment = Scope((): Vec4 => {
         const step = int(iMouse.x.mul(MAX_STEPS).mod(MAX_STEPS).add(1)).toVar()
         const num = int(1).shiftLeft(step).toVar()
@@ -168,11 +176,11 @@ const fragment = Scope((): Vec4 => {
         const max = num.mul(num).sub(int(1)).toVar()
         const pos = uv.sub(0.5).mul(2).mul(iResolution.div(iResolution.y)).toVar()
         const ij = pos.add(1).mul(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
-        const id = ij2id(ij, step).clamp(int(0), max).toIVec2().add(ivec2(-1, 1)).clamp(int(0), max).toVar()
+        const id = uv2h(ij, step).clamp(int(0), max).toIVec2().add(ivec2(-1, 1)).clamp(int(0), max).toVar()
         const scale = (p: Vec2): Vec2 => p.div(n1f).mul(2).sub(1)
-        const a = scale(id2ij(id.x, step)).toVar()
+        const a = scale(h2uv(id.x, step)).toVar()
         const b = scale(ij).toVar()
-        const c = scale(id2ij(id.y, step)).toVar()
+        const c = scale(h2uv(id.y, step)).toVar()
         const d = segment(pos, a, b).min(segment(pos, b, c)).toVar()
         const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
         const idf = id.toFloat().div(max.toFloat()).toVar()
