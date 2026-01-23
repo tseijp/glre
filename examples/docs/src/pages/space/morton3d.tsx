@@ -34,7 +34,7 @@ const m0300f00f = int(0x0300f00f).constant()
 const m030c30c3 = int(0x030c30c3).constant()
 const m09249249 = int(0x09249249).constant()
 
-const id2xyz = Fn(([c]: [Int]): Vec3 => {
+const m2xyz = Fn(([c]: [Int]): Vec3 => {
         const p = ivec3(c, c.shiftRight(int(1)), c.shiftRight(int(2))).toVar()
         p.bitAndAssign(ivec3(m09249249))
         p.bitXorAssign(p.shiftRight(int(2)))
@@ -57,8 +57,8 @@ const vertex = Scope(() => {
         const max = base.pow(3).sub(1).toVar()
         const offset = n1f.mul(0.5).toVar()
         const scale = offset.reciprocal().toVar()
-        const a = id2xyz(index.toInt()).sub(offset).mul(scale).toVar()
-        const b = id2xyz(index.add(1).toInt()).sub(offset).mul(scale).toVar()
+        const a = m2xyz(index.toInt()).sub(offset).mul(scale).toVar()
+        const b = m2xyz(index.add(1).toInt()).sub(offset).mul(scale).toVar()
         const direct = b.sub(a).toVar()
         const normal = direct.normalize().toVar()
         const up = vec3(0, 1, 0).toVar()

@@ -3,43 +3,64 @@ import { useGL } from 'glre/src/react'
 import { Fn, If, Loop, Scope, int, iMouse, iResolution, iDrag, varying, instance, vec3, vec4, ivec3, mat3 } from 'glre/src/node'
 import { rotate3dX, rotate3dY, perspective } from 'glre/src/addons'
 import { box } from 'glre/src/buffers'
-import type { Int, Vec3 } from 'glre/src/node'
+import type { Int, IVec3, Vec3 } from 'glre/src/node'
 
 const MAX_STEP = 5
 const MAX_CUBE = (1 << (3 * MAX_STEP)) - 1
 
-const hilbert3 = Fn(([index, step]: [Int, Int]): Vec3 => {
-        const t = index.toVar()
-        const p = ivec3(0).toVar()
-        const bit = int(0).toVar()
-        Loop(step, () => {
-                const base = bit.mul(int(3)).toVar()
-                p.x.addAssign(t.shiftRight(int(2).add(base)).bitAnd(int(1)).shiftLeft(bit))
-                p.y.addAssign(t.shiftRight(int(1).add(base)).bitAnd(int(1)).shiftLeft(bit))
-                p.z.addAssign(t.shiftRight(base).bitAnd(int(1)).shiftLeft(bit))
-                bit.addAssign(int(1))
+const LUT_H2M = [0x30, 0x24, 0x26, 0x1a, 0x1b, 0x4f, 0x4d, 0x29, 0x4b, 0x41, 0x40, 0x32, 0x36, 0x1c, 0x1d, 0x3f, 0x1e, 0x57, 0x53, 0x4a, 0x48, 0x31, 0x35, 0x5c, 0x56, 0x12, 0x10, 0x04, 0x05, 0x39, 0x3b, 0x0f, 0x00, 0x31, 0x35, 0x3c, 0x3e, 0x57, 0x53, 0x42, 0x3d, 0x5f, 0x5e, 0x54, 0x50, 0x02, 0x03, 0x49, 0x20, 0x02, 0x03, 0x09, 0x0d, 0x5f, 0x5e, 0x14, 0x5d, 0x2c, 0x28, 0x21, 0x23, 0x0a, 0x0e, 0x1f, 0x0b, 0x4f, 0x4d, 0x59, 0x58, 0x24, 0x26, 0x52, 0x43, 0x0a, 0x0e, 0x17, 0x15, 0x2c, 0x28, 0x01, 0x16, 0x1c, 0x1d, 0x2f, 0x2b, 0x41, 0x40, 0x22, 0x2d, 0x39, 0x3b, 0x47, 0x46, 0x12, 0x10, 0x34]
+
+const h2m = Fn(([hilbert, bits]: [Int, Int]): Int => {
+        const state = int(0).toVar()
+        const output = int(0).toVar()
+        const step = int(0).toVar()
+        Loop(bits, () => {
+                const shift = int(3)
+                        .mul(bits.sub(step).sub(int(1)))
+                        .toVar()
+                const octant = hilbert.shiftRight(shift).bitAnd(int(7)).toVar()
+                const idx = state.bitOr(octant).toVar()
+                const entry = int(LUT_H2M[0]).toVar()
+                If(idx.equal(int(0)), () => void entry.assign(int(LUT_H2M[0])))
+                for (let j = 1; j < LUT_H2M.length; j++) {
+                        If(idx.equal(int(j)), () => void entry.assign(int(LUT_H2M[j])))
+                }
+                output.assign(output.shiftLeft(int(3)).bitOr(entry.bitAnd(int(7))))
+                state.assign(entry.bitAnd(int(~7)))
+                step.addAssign(int(1))
         })
-        p.assign(p.bitXor(ivec3(p.z.shiftRight(int(1)), p.x, p.y)))
-        const q = int(2).toVar()
-        Loop(step.sub(int(1)), () => {
-                const mask = q.sub(int(1)).toVar()
-                const pq = p.bitAnd(ivec3(q)).toVar()
-                If(pq.z.equal(q), () => void p.x.bitXorAssign(mask))
-                If(pq.z.equal(int(0)), () => {
-                        const t3 = p.x.bitXor(p.z).bitAnd(mask).toVar()
-                        p.x.bitXorAssign(t3)
-                        p.z.bitXorAssign(t3)
-                })
-                If(pq.y.equal(q), () => void p.x.bitXorAssign(mask))
-                If(pq.y.equal(int(0)), () => {
-                        const t4 = p.x.bitXor(p.y).bitAnd(mask).toVar()
-                        p.x.bitXorAssign(t4)
-                        p.y.bitXorAssign(t4)
-                })
-                If(pq.x.equal(q), () => void p.x.bitXorAssign(mask))
-                q.shiftLeftAssign(int(1))
-        })
-        return vec3(p)
+        return output
+})
+
+/**
+ * morton
+ */
+const m3ff = int(0x000003ff).constant()
+const mff0000ff = int(0xff0000ff).constant()
+const m0300f00f = int(0x0300f00f).constant()
+const m030c30c3 = int(0x030c30c3).constant()
+const m09249249 = int(0x09249249).constant()
+
+const m2xyz = Fn(([c]: [Int]): IVec3 => {
+        const p = ivec3(c, c.shiftRight(int(1)), c.shiftRight(int(2))).toVar()
+        p.bitAndAssign(ivec3(m09249249))
+        p.bitXorAssign(p.shiftRight(int(2)))
+        p.bitAndAssign(ivec3(m030c30c3))
+        p.bitXorAssign(p.shiftRight(int(4)))
+        p.bitAndAssign(ivec3(m0300f00f))
+        p.bitXorAssign(p.shiftRight(int(8)))
+        p.bitAndAssign(ivec3(mff0000ff))
+        p.bitXorAssign(p.shiftRight(int(16)))
+        p.bitAndAssign(ivec3(m3ff))
+        return p
+})
+
+/**
+ * hilbert
+ */
+const h2xyz = Fn(([index, step]: [Int, Int]): Vec3 => {
+        const morton = h2m(index, step)
+        return vec3(m2xyz(morton))
 })
 
 const index = instance<'float'>(Array.from({ length: MAX_CUBE }, (_, i) => i))
@@ -51,8 +72,8 @@ const vertex = Scope(() => {
         const max = base.pow(3).sub(1).toVar()
         const offset = n1f.mul(0.5).toVar()
         const scale = offset.reciprocal().toVar()
-        const a = hilbert3(index.toInt(), step).sub(offset).mul(scale).toVar()
-        const b = hilbert3(index.add(1).toInt(), step).sub(offset).mul(scale).toVar()
+        const a = h2xyz(index.toInt(), step).sub(offset).mul(scale).toVar()
+        const b = h2xyz(index.add(1).toInt(), step).sub(offset).mul(scale).toVar()
         const direct = b.sub(a).toVar()
         const normal = direct.normalize().toVar()
         const up = vec3(0, 1, 0).toVar()

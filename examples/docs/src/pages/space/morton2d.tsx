@@ -60,7 +60,7 @@ const m0f0f = int(0x0f0f0f0f).constant()
 const m3333 = int(0x33333333).constant()
 const m5555 = int(0x55555555).constant()
 
-const ij2id = Fn(([ij]: [Vec2]): Int => {
+const uv2m = Fn(([ij]: [Vec2]): Int => {
         const p = ij.toIVec2().toVar()
         p.bitAndAssign(ivec2(mffff))
         p.bitXorAssign(p.shiftLeft(int(8)))
@@ -74,7 +74,7 @@ const ij2id = Fn(([ij]: [Vec2]): Int => {
         return p.y.shiftLeft(int(1)).add(p.x)
 })
 
-const id2ij = Fn(([c]: [Int]): Vec2 => {
+const m2uv = Fn(([c]: [Int]): Vec2 => {
         const p = ivec2(c, c.shiftRight(int(1))).toVar()
         p.bitAndAssign(ivec2(m5555))
         p.bitXorAssign(p.shiftRight(int(1)))
@@ -101,12 +101,12 @@ const fragment = Scope<Vec4>(() => {
         const max = num.mul(num).sub(int(1)).toVar()
         const pos = uv.sub(0.5).mul(2).mul(iResolution.div(iResolution.y)).toVar()
         const ij = pos.mul(0.5).add(0.5).mul(n1f).add(0.5).floor().clamp(0, n1f).toVar()
-        const id = ij2id(ij).clamp(int(0), max).toVar()
+        const id = uv2m(ij).clamp(int(0), max).toVar()
         const ids = ivec3(id).add(ivec3(0, -1, 1)).clamp(int(0), max).toVar()
         const scale = (p: Vec2) => p.div(n1f).mul(2).sub(1)
-        const a = scale(id2ij(ids.y)).toVar()
-        const b = scale(id2ij(ids.x)).toVar()
-        const c = scale(id2ij(ids.z)).toVar()
+        const a = scale(m2uv(ids.y)).toVar()
+        const b = scale(m2uv(ids.x)).toVar()
+        const c = scale(m2uv(ids.z)).toVar()
         const d = segment(pos, a, b).min(segment(pos, b, c)).toVar()
         const t = float(1).div(iResolution.y).mul(1.5).pow(2).toVar()
         const idf = id.toFloat().div(max.toFloat()).toVar()
