@@ -12,6 +12,29 @@ import Tabs from '@theme/Tabs'
 import TabItem from '@theme/TabItem'
 import { FragmentEditor } from '@site/src/theme/FragmentEditor'
 
+<FragmentEditor
+        isApp
+        code={`
+function Canvas() {
+        const a = attribute([0, 0.37, -0.5, -0.5, 0.5, -0.5], "a")
+        const b = attribute([0, -0.37, -0.5, 0.5, 0.5, 0.5], "b")
+        const gl = useGL(
+                {
+                        isWebGL: true,
+                        triangleCount: 1,
+                        attributes: { a: null },
+                        vertex: vec4(vec2(-0.5, 0).add(a), 0, 1),
+                },
+                {
+                        triangleCount: 1,
+                        attributes: { b: null },
+                        vertex: vec4(vec2(0.5, 0).add(b), 0, 1),
+                }
+        )
+        return <canvas ref={gl.ref} />
+}`}
+/>
+
 # Introduction
 
 ## What does it look like?

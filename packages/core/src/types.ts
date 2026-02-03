@@ -39,6 +39,11 @@ export type GL = EventState<{
         vertex?: string | Vec4
         compute?: string | Void
         fragment?: string | Vec4
+        uniforms?: Record<string, Uniform | null>
+        textures?: Record<string, Texture | null>
+        storages?: Record<string, Storage | null>
+        instances?: Record<string, Storage | null>
+        attributes?: Record<string, Storage | null>
         program: WebGLProgram
         gl: WebGL2RenderingContext
         gpu: GPUCanvasContext
@@ -79,12 +84,12 @@ export type GL = EventState<{
         _texture?(key: string, value: Texture): GL
         texture(key: string, value: Texture): GL
         texture(target: { [key: string]: Texture }): GL
-        _attribute?(key: string, value: Attribute, iboValue?: Attribute): GL
-        attribute(key: string, value: Attribute, iboValue?: Attribute): GL
-        attribute(target: { [key: string]: Attribute }): GL
-        _instance?(key: string, value: Attribute, at?: number): GL
-        instance(key: string, value: Attribute, at?: number): GL
-        instance(target: { [key: string]: Attribute }): GL
+        _attribute?(key: string, value: Storage, iboValue?: Storage): GL
+        attribute(key: string, value: Storage, iboValue?: Storage): GL
+        attribute(target: { [key: string]: Storage }): GL
+        _instance?(key: string, value: Storage, at?: number): GL
+        instance(key: string, value: Storage, at?: number): GL
+        instance(target: { [key: string]: Storage }): GL
         _storage?(key: string, value: Storage): GL
         storage(key: string, value: Storage): GL
         storage(target: { [key: string]: Storage }): GL
@@ -92,7 +97,6 @@ export type GL = EventState<{
 
 type Uniform = number | number[] | Float32Array
 type Texture = string | HTMLImageElement | HTMLVideoElement
-type Attribute = number[] | Float32Array
 type Storage = number[] | Float32Array
 
 /**

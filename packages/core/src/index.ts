@@ -19,6 +19,21 @@ export const isWebGPUSupported = () => {
 
 const findElement = (arg: Partial<GL>) => arg.el || arg.elem || arg.element
 
+const collectArg = (a: GL, b: Partial<GL>) => {
+        a.fs = b.fs || b.frag || b.fragment || undefined
+        a.cs = b.cs || b.comp || b.compute || undefined
+        a.vs = b.vs || b.vert || b.vertex || undefined
+        a.uniforms = b.uniforms || undefined
+        a.textures = b.textures || undefined
+        a.storages = b.storages || undefined
+        a.instances = b.instances || undefined
+        a.attributes = b.attributes || undefined
+        a.triangleCount = b.triangleCount || 2
+        a.instanceCount = b.instanceCount || 1
+        a.particleCount = b.particleCount || 1024
+        a.count = b.count || a.triangleCount * 3 || 6
+}
+
 export const createGL = (...args: Partial<GL>[]) => {
         const drag = dragEvent<HTMLCanvasElement>({
                 drag() {
@@ -84,13 +99,7 @@ export const createGL = (...args: Partial<GL>[]) => {
                 }
                 for (let i = 0; i < args.length; i++) {
                         const arg = args[i]
-                        gl.fs = arg.fs || arg.frag || arg.fragment || undefined
-                        gl.cs = arg.cs || arg.comp || arg.compute || undefined
-                        gl.vs = arg.vs || arg.vert || arg.vertex || undefined
-                        gl.triangleCount = arg.triangleCount || 2
-                        gl.instanceCount = arg.instanceCount || 1
-                        gl.particleCount = arg.particleCount || 1024
-                        gl.count = arg.count || gl.triangleCount * 3 || 6
+                        collectArg(gl, arg)
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
                         if (gl.isWebGL) webgl(gl)
