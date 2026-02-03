@@ -10,14 +10,15 @@ export const webgpu = async (gl: GL, isLast = false) => {
         const isInit = !gl.gpu
         if (isInit) {
                 const gpu = gl.el!.getContext('webgpu') as GPUCanvasContext
-                const binding = createBinding()
                 const { device, format } = await createDevice(gpu, gl.error)
-                gl({ device, format, binding, gpu })
+                gl({ device, format, gpu })
                 gl('resize', () => {
                         gl.depthTexture?.destroy()
                         if (gl.isDepth) gl.depthTexture = createDepthTexture(gl.device, ...gl.size)
                 })
         }
+
+        gl.binding = createBinding() // isolate per args to match shader and pipeline locations
 
         gl('render', () => {
                 if (isUpdate) update()

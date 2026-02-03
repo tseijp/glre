@@ -4,25 +4,24 @@ import { createBuffer, createTextureSampler, updateBuffer } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL, update = () => {}) => {
-        const { count, instanceCount, attributes, instances, uniforms, textures } = gl
+        const { count, instanceCount, attributes, instances, uniforms, textures, binding } = gl
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
-        let attribLocation = 0
 
         const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)) => {
                 update()
-                return { location: attribLocation++, ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
+                return { ...binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
         const _uniforms = nested((key, value: number[] | Float32Array) => {
                 update()
-                return { ...gl.binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
+                return { ...binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
         })
 
         const _textures = nested((key, width = 1, height = 1) => {
                 update()
-                return { ...gl.binding.texture(key), ...createTextureSampler(gl.device, width, height) }
+                return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height) }
         })
 
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
