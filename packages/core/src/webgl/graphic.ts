@@ -9,6 +9,7 @@ export const graphic = (gl: GL) => {
         fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : GLSL_FS
         vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : GLSL_VS
         const pg = createProgram(c, fs, vs, gl)!
+        const vao = c.createVertexArray()
         let activeUnit = 0
 
         const _units = nested(() => activeUnit++)
@@ -21,6 +22,7 @@ export const graphic = (gl: GL) => {
         gl('_attribute', (key: string, value: number[]) => {
                 if (attributes && !(key in attributes)) return
                 c.useProgram((gl.program = pg))
+                c.bindVertexArray(vao)
                 const a = _attributes(key, value)
                 updateBuffer(c, a.array, a.buffer, value)
                 updateAttrib(c, a.location, a.stride, a.buffer)
@@ -29,6 +31,7 @@ export const graphic = (gl: GL) => {
         gl('_instance', (key: string, value: number[]) => {
                 if (instances && !(key in instances)) return
                 c.useProgram((gl.program = pg))
+                c.bindVertexArray(vao)
                 const a = _attributes(key, value, true)
                 updateBuffer(c, a.array, a.buffer, value)
                 updateInstance(c, a.location, a.stride, a.buffer)
@@ -54,11 +57,13 @@ export const graphic = (gl: GL) => {
         })
 
         gl('clean', () => {
+                c.deleteVertexArray(vao)
                 c.deleteProgram(pg)
         })
 
         gl('render', () => {
                 c.useProgram((gl.program = pg))
+                c.bindVertexArray(vao)
                 if (gl.isDepth) c.clear(c.DEPTH_BUFFER_BIT)
                 if (gl.instanceCount > 1) {
                         c.drawArraysInstanced(c.TRIANGLES, 0, gl.count, gl.instanceCount)
