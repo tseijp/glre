@@ -19,8 +19,7 @@ export const graphic = (gl: GL) => {
         })
 
         gl('_attribute', (key: string, value: number[]) => {
-                console.log(key, attributes, !!attributes && key in attributes)
-                // if (attributes && !(key in attributes)) return
+                if (attributes && !(key in attributes)) return
                 c.useProgram((gl.program = pg))
                 const a = _attributes(key, value)
                 updateBuffer(c, a.array, a.buffer, value)
@@ -36,13 +35,13 @@ export const graphic = (gl: GL) => {
         })
 
         gl('_uniform', (key: string, value: number | number[]) => {
-                if (textures && !(key in textures)) return
+                if (uniforms && !(key in uniforms)) return
                 c.useProgram((gl.program = pg))
                 updateUniform(c, _uniforms(key), value)
         })
 
         gl('_texture', (key: string, src: string) => {
-                if (uniforms && !(key in uniforms)) return
+                if (textures && !(key in textures)) return
                 c.useProgram((gl.program = pg))
                 const location = _uniforms(key)
                 const unit = _units(key)
