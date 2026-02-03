@@ -3,12 +3,12 @@ import { createBuffer, updateBuffer, workgroupCount } from './utils'
 import type { GL } from '../types'
 
 export const compute = (gl: GL) => {
-        const { particleCount, storages } = gl // Save this WebGPU instance's particleCount (overwritten per args)
+        const { particleCount, storages, binding } = gl // Save this WebGPU instance's particleCount (overwritten per args)
         let pipeline: GPUComputePipeline | undefined
         let bindGroups: GPUBindGroup[] | undefined
 
         const _storages = nested((key, value: number[] | Float32Array) => {
-                return { ...gl.binding.storage(key), ...createBuffer(gl.device, value, 'storage') }
+                return { ...binding.storage(key), ...createBuffer(gl.device, value, 'storage') }
         })
 
         gl('_storage', (key: string, value: number[] | Float32Array) => {
