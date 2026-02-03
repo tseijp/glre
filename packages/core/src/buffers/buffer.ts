@@ -13,9 +13,9 @@ export const buffer = <T extends object>(fun: (props: T, out: Attributes) => voi
                 return {
                         attributes,
                         count: Math.round(attributes.vertex.length / 3),
-                        vertex: (id?: string) => attribute(vec3(attributes.vertex, id)),
-                        normal: (id?: string) => attribute(vec3(attributes.normal, id)),
-                        indice: (id?: string) => attribute(float(attributes.indice, id)),
+                        vertex: (id = 'vertex') => attribute(vec3(attributes.vertex), id),
+                        normal: (id = 'normal') => attribute(vec3(attributes.normal), id),
+                        indice: (id = 'indice') => attribute(float(attributes.indice), id),
                 }
         }
 }
