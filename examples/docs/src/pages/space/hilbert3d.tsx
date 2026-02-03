@@ -90,7 +90,7 @@ const vertex = Scope(() => {
         If(index.lessThan(max), () => {
                 const geometry = box({ width: 0.015, height: 1.0, depth: 0.015, needNormal: false })
                 const center = a.add(b).mul(0.5)
-                const rotate = mat3(right, normal, normal.cross(right)).mul(geometry.vertex.mul(vec3(1, direct.length(), 1)))
+                const rotate = mat3(right, normal, normal.cross(right)).mul(geometry.vertex().mul(vec3(1, direct.length(), 1)))
                 pos.assign(center.add(rotate))
         }).Else(() => {
                 pos.assign(vec3(0, 0, -1000))

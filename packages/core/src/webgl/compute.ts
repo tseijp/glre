@@ -4,7 +4,7 @@ import { GLSL_VS, is } from '../helpers'
 import type { GL } from '../types'
 
 export const compute = (gl: GL) => {
-        let { cs, particleCount, gl: c } = gl
+        let { cs, particleCount, gl: c, storages } = gl
         if (!cs) return
         c.getExtension('EXT_color_buffer_float') // Enable high precision GPGPU by writing to float textures
 
