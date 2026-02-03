@@ -8,10 +8,11 @@ export const graphic = (gl: GL, update = () => {}) => {
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
+        let attribLocation = 0
 
         const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)) => {
                 update()
-                return { ...gl.binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
+                return { location: attribLocation++, ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
         const _uniforms = nested((key, value: number[] | Float32Array) => {
@@ -77,5 +78,5 @@ export const graphic = (gl: GL, update = () => {}) => {
                 vertexBuffers = _vertexBuffers
         }
 
-        return { uniforms, textures, attributes, set }
+        return { _uniforms, _textures, _attributes, set }
 }
