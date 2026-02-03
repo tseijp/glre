@@ -4,44 +4,48 @@ import { createBuffer, createTextureSampler, updateBuffer } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL, update = () => {}) => {
-        const { count, instanceCount } = gl // // Save this WebGPU item's count (overwritten per args)
+        const { count, instanceCount, attributes, instances, uniforms, textures } = gl
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
 
-        const attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)) => {
+        const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)) => {
                 update()
                 return { ...gl.binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
-        const uniforms = nested((key, value: number[] | Float32Array) => {
+        const _uniforms = nested((key, value: number[] | Float32Array) => {
                 update()
                 return { ...gl.binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
         })
 
-        const textures = nested((key, width = 1, height = 1) => {
+        const _textures = nested((key, width = 1, height = 1) => {
                 update()
                 return { ...gl.binding.texture(key), ...createTextureSampler(gl.device, width, height) }
         })
 
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
-                const a = attributes(key, value)
+                if (attributes && !(key in attributes)) return
+                const a = _attributes(key, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
         gl('_instance', (key: string, value: number[] | Float32Array) => {
-                const a = attributes(key, value, true)
+                if (instances && !(key in instances)) return
+                const a = _attributes(key, value, true)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
         gl('_uniform', (key: string, value: number | number[] | Float32Array) => {
+                if (uniforms && !(key in uniforms)) return
                 if (is.num(value)) value = [value]
-                const u = uniforms(key, value)
+                const u = _uniforms(key, value)
                 updateBuffer(gl.device, value, u.array, u.buffer)
         })
 
         gl('_texture', (key: string, src: string) => {
-                const t = textures(key)
+                if (textures && !(key in textures)) return
+                const t = _textures(key)
                 loadingTexture(src, (source, isVideo) => {
                         const [width, height] = isVideo ? [source.videoWidth, source.videoHeight] : [source.width, source.height]
                         t.texture.destroy()
@@ -62,9 +66,9 @@ export const graphic = (gl: GL, update = () => {}) => {
         })
 
         gl('clean', () => {
-                for (const { buffer } of attributes.map.values()) buffer.destroy()
-                for (const { texture } of textures.map.values()) texture.destroy()
-                for (const { buffer } of uniforms.map.values()) buffer.destroy()
+                for (const { buffer } of _attributes.map.values()) buffer.destroy()
+                for (const { texture } of _textures.map.values()) texture.destroy()
+                for (const { buffer } of _uniforms.map.values()) buffer.destroy()
         })
 
         const set = (_pipeline: GPURenderPipeline, _bindGroups: GPUBindGroup[], _vertexBuffers: GPUBuffer[]) => {
