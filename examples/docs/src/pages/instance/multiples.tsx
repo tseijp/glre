@@ -7,10 +7,10 @@ import { rotate3dX, rotate3dY } from 'glre/src/addons'
 export default function WebGLInstancing() {
         const instanceCount = 200
         const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
-        const rand = (a = -1, b = 1) => (b - a) * Math.random() + a
-        const geo1 = box({ width: 0.1, height: 0.1, depth: 0.1 })
+        const rand = (a = -0.75, b = 0.75) => (b - a) * Math.random() + a
+        const geo1 = box({ width: 0.01, height: 0.01, depth: 0.01 })
+        const geo2 = sphere({ radius: 0.01 })
         const pos1 = instance(vec3(), 'pos1')
-        const geo2 = sphere({ radius: 0.1 })
         const pos2 = instance(vec3(), 'pos2')
 
         const gl = useGL(
@@ -25,20 +25,22 @@ export default function WebGLInstancing() {
                         attributes: { boxVertex: null, boxNormal: null },
                         mount() {
                                 const pos = []
-                                for (let i = 0; i < instanceCount; i++) pos.push(rand(), rand(), rand(0, -1))
+                                for (let i = 0; i < instanceCount; i++) pos.push(rand(), rand(), rand())
                                 pos1.value = pos
                         },
                 },
                 {
+                        isWebGL: true,
+                        isDepth: true,
                         count: geo2.count,
                         instanceCount,
-                        vertex: vec4(mat.mul(geo2.vertex('sphereVertex').add(pos1)), 1),
+                        vertex: vec4(mat.mul(geo2.vertex('sphereVertex').add(pos2)), 1),
                         fragment: vec4(varying(geo2.normal('sphereNormal')), 1),
                         instances: { pos2: null },
                         attributes: { sphereVertex: null, sphereNormal: null },
                         mount() {
                                 const pos = []
-                                for (let i = 0; i < instanceCount; i++) pos.push(rand(), rand(), rand(0, -1))
+                                for (let i = 0; i < instanceCount; i++) pos.push(rand(), rand(), rand())
                                 pos2.value = pos
                         },
                 }
