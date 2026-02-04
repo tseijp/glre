@@ -4,7 +4,7 @@ import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer,
 import type { GL } from '../types'
 
 export const graphic = (gl: GL): Partial<GL> => {
-        let { context: c, count, instanceCount, isDepth, textures, uniforms, instances, attributes } = gl
+        let { context: c, count, instanceCount, textures, uniforms, instances, attributes } = gl
         const config = { isWebGL: true, gl }
         const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : GLSL_FS
         const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : GLSL_VS
@@ -58,7 +58,6 @@ export const graphic = (gl: GL): Partial<GL> => {
                 render() {
                         c.useProgram((gl.program = pg))
                         c.bindVertexArray(vao)
-                        if (isDepth) c.clear(c.DEPTH_BUFFER_BIT)
                         if (instanceCount > 1) {
                                 c.drawArraysInstanced(c.TRIANGLES, 0, count, instanceCount)
                         } else c.drawArrays(c.TRIANGLES, 0, count)

@@ -26,6 +26,7 @@ const collectArg = (a: GL, b: Partial<GL>) => {
         a.fs = b.fs || b.frag || b.fragment || undefined
         a.cs = b.cs || b.comp || b.compute || undefined
         a.vs = b.vs || b.vert || b.vertex || undefined
+        a.isDepth = a.isDepth || b.isDepth || false
         a.uniforms = b.uniforms || undefined
         a.textures = b.textures || undefined
         a.storages = b.storages || undefined

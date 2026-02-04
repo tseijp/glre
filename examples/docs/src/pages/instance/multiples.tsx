@@ -7,12 +7,11 @@ import { rotate3dX, rotate3dY } from 'glre/src/addons'
 export default function WebGLInstancing() {
         const instanceCount = 200
         const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
-        const rand = (a = -0.75, b = 0.75) => (b - a) * Math.random() + a
-        const geo1 = box({ width: 0.01, height: 0.01, depth: 0.01 })
-        const geo2 = sphere({ radius: 0.01 })
+        const rand = (a = -0.5, b = 0.5) => (b - a) * Math.random() + a
+        const geo1 = box({ width: 0.05, height: 0.05, depth: 0.05 })
+        const geo2 = sphere({ radius: 0.05 })
         const pos1 = instance(vec3(), 'pos1')
         const pos2 = instance(vec3(), 'pos2')
-
         const gl = useGL(
                 {
                         isWebGL: true,
@@ -45,7 +44,6 @@ export default function WebGLInstancing() {
                         },
                 }
         )
-
         return (
                 <Layout noFooter>
                         <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', touchAction: 'none' }}>

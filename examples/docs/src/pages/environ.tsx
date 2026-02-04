@@ -29,8 +29,8 @@ export default function EnvironApp() {
         })
         const gl = useGL(
                 {
-                        isDepth: true,
                         isWebGL: true,
+                        isDepth: true,
                         attributes: {},
                         fragment: Scope(() => {
                                 const d = inv.mul(vec4(uv.fma(2, -1), 1, 1)).xyz.normalize()
@@ -40,6 +40,7 @@ export default function EnvironApp() {
                 {
                         count: geo.count,
                         vertex: mat.mul(vec4(geo.vertex(), 1)),
+                        attributes: { vertex: null, normal: null },
                         fragment: Scope(() => {
                                 const p = varying(geo.vertex())
                                 const n = varying(geo.normal())
