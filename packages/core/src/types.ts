@@ -45,7 +45,7 @@ export type GL = EventState<{
         instances?: Record<string, Storage | null>
         attributes?: Record<string, Storage | null>
         program: WebGLProgram
-        gl: WebGL2RenderingContext
+        context: WebGL2RenderingContext
         gpu: GPUCanvasContext
         device: GPUDevice
         format: GPUTextureFormat

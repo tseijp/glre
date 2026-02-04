@@ -185,11 +185,11 @@ const createViewer = async () => {
                                 isLoading = true
                         }
                 if (isLoading)
-                        if (slots.step(gl.gl, gl.program, 6)) {
+                        if (slots.step(gl.context, gl.program, 6)) {
                                 mesh.commit()
                                 isLoading = false
                         }
-                gl.instanceCount = mesh.draw(gl.gl, gl.program)
+                gl.instanceCount = mesh.draw(gl.context, gl.program)
         }
 
         const mount = (el: HTMLCanvasElement) => {

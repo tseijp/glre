@@ -6,7 +6,10 @@ import { webgl } from './webgl'
 import { webgpu } from './webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
+
 export * from './types'
+export * from './webgl'
+export * from './webgpu'
 
 export const isServer = () => {
         return typeof window === 'undefined'
@@ -34,7 +37,7 @@ const collectArg = (a: GL, b: Partial<GL>) => {
         a.count = b.count || a.triangleCount * 3 || 6
 }
 
-export const createGL = (...args: Partial<GL>[]) => {
+export const createGL = (...args: Partial<GL>[]): EventState<GL> => {
         const drag = dragEvent<HTMLCanvasElement>({
                 drag() {
                         drag.event.preventDefault()
