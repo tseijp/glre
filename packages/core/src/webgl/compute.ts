@@ -7,10 +7,8 @@ export const compute = (gl: GL): Partial<GL> => {
         let { cs, particleCount, context: c, storages } = gl
         if (!cs) return {}
         c.getExtension('EXT_color_buffer_float') // Enable high precision GPGPU by writing to float textures
-
         let _texture = 0 // for texture active units
         let _storage = 0 // for storage current num
-
         const units = nested(() => _texture++)
         cs = is.str(cs) ? cs : cs!.compute({ isWebGL: true, gl, units })
         const pg = createProgram(c, cs, GLSL_VS, gl)!

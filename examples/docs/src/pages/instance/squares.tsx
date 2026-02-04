@@ -1,4 +1,3 @@
-// @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { attribute, instance, varying, vec4 } from 'glre/src/node'

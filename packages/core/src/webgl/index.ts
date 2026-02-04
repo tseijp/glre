@@ -9,10 +9,8 @@ export const webgl = (gl: GL) => {
                 const c = (gl.context = gl.el.getContext('webgl2')!)
                 gl('render', () => c.viewport(0, 0, ...gl.size!)) // Run before other renderers' events to prevent flickering
         }
-
         gl(compute(gl))
         gl(graphic(gl))
-
         if (isInit) {
                 gl('clean', () => loseContext(gl.context))
                 if (gl.isDepth) enableDepth(gl.context)

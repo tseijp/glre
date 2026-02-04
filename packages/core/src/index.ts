@@ -85,7 +85,6 @@ export const createGL = (...args: Partial<GL>[]): EventState<GL> => {
         let iTime = performance.now()
         gl.queue = createQueue()
         gl.frame = createFrame()
-
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
         gl.instance = durable((k, v, at) => gl.queue(() => gl._instance?.(k, v, at)), gl)
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
