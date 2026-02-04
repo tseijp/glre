@@ -93,6 +93,9 @@ export type GL = EventState<{
         _storage?(key: string, value: Storage): GL
         storage(key: string, value: Storage): GL
         storage(target: { [key: string]: Storage }): GL
+        setCount(next: number): void
+        setTriangleCount(next: number): void
+        setInstanceCount(next: number): void
 }>
 
 type Uniform = number | number[] | Float32Array

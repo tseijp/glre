@@ -18,7 +18,7 @@ export const graphic = (gl: GL): Partial<GL> => {
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
         return {
-                _attribute(key: string, value: number[]) {
+                _attribute(key, value) {
                         if (attributes && !(key in attributes)) return
                         c.useProgram((gl.program = pg))
                         c.bindVertexArray(vao)
@@ -26,18 +26,18 @@ export const graphic = (gl: GL): Partial<GL> => {
                         updateBuffer(c, a.array, a.buffer, value as number[])
                         updateAttrib(c, a.location, a.stride, a.buffer)
                 },
-                _instance(key: string, value: number[]) {
+                _instance(key, value) {
                         if (instances && !(key in instances)) return
                         c.useProgram((gl.program = pg))
                         c.bindVertexArray(vao)
                         const a = _attributes(key, value, true)
-                        updateBuffer(c, a.array, a.buffer, value)
+                        updateBuffer(c, a.array, a.buffer, value as number[])
                         updateInstance(c, a.location, a.stride, a.buffer)
                 },
-                _uniform(key: string, value: number | number[]) {
+                _uniform(key, value) {
                         if (uniforms && !(key in uniforms)) return
                         c.useProgram((gl.program = pg))
-                        updateUniform(c, _uniforms(key), value)
+                        updateUniform(c, _uniforms(key), value as number[])
                 },
                 _texture(key: string, src: string) {
                         if (textures && !(key in textures)) return
@@ -63,6 +63,15 @@ export const graphic = (gl: GL): Partial<GL> => {
                                 c.drawArraysInstanced(c.TRIANGLES, 0, count, instanceCount)
                         } else c.drawArrays(c.TRIANGLES, 0, count)
                         c.bindFramebuffer(c.FRAMEBUFFER, null)
+                },
+                setCount(next) {
+                        count = next
+                },
+                setTriangleCount(next) {
+                        count = next * 3
+                },
+                setInstanceCount(next) {
+                        instanceCount = next
                 },
         } as Partial<GL>
 }
