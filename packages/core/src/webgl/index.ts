@@ -3,7 +3,7 @@ import { graphic } from './graphic'
 import { enableDepth, enableWireframe, loseContext } from './utils'
 import type { GL } from '../types'
 
-export const webgl = (gl: GL) => {
+export const webgl = (gl: GL, index = 0) => {
         const isInit = !gl.context
         if (isInit) {
                 const c = (gl.context = gl.el.getContext('webgl2')!)
@@ -13,7 +13,7 @@ export const webgl = (gl: GL) => {
                 })
         }
         gl(compute(gl))
-        gl(graphic(gl))
+        gl(graphic(gl, index))
         if (isInit) {
                 gl('clean', () => loseContext(gl.context))
                 if (gl.wireframe) enableWireframe(gl.context)

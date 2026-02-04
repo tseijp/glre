@@ -44,6 +44,7 @@ export type GL = EventState<{
         storages?: Record<string, Storage | null>
         instances?: Record<string, Storage | null>
         attributes?: Record<string, Storage | null>
+        vao: WebGLVertexArrayObject
         program: WebGLProgram
         context: WebGL2RenderingContext
         gpu: GPUCanvasContext
@@ -93,9 +94,9 @@ export type GL = EventState<{
         _storage?(key: string, value: Storage): GL
         storage(key: string, value: Storage): GL
         storage(target: { [key: string]: Storage }): GL
-        setCount(next: number): void
-        setTriangleCount(next: number): void
-        setInstanceCount(next: number): void
+        setCount(next: number, at?: number): void
+        setTriangleCount(next: number, at?: number): void
+        setInstanceCount(next: number, at?: number): void
 }>
 
 type Uniform = number | number[] | Float32Array

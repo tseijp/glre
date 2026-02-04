@@ -22,12 +22,12 @@ export const compute = (gl: GL): Partial<GL> => {
         })
         return {
                 _uniform(key: string, value: number | number[]) {
-                        c.useProgram((gl.program = pg))
+                        c.useProgram(pg)
                         updateUniform(c, _uniforms(key), value)
                 },
                 _storage(key: string, value: number[]) {
                         if (storages && !(key in storages)) return
-                        c.useProgram((gl.program = pg))
+                        c.useProgram(pg)
                         const { ping, pong, unit, array } = _storages(key)
                         createStorage(c, value, size.x, size.y, ping, pong, unit, array)
                 },
@@ -36,7 +36,7 @@ export const compute = (gl: GL): Partial<GL> => {
                         cleanStorage(c, _storages.map.values())
                 },
                 render() {
-                        c.useProgram((gl.program = pg))
+                        c.useProgram(pg)
                         const attachments = _storages.map.values().map(({ ping, pong, loc, unit }, index) => {
                                 const [i, o] = _storage % 2 ? [ping, pong] : [pong, ping]
                                 return createAttachment(c, i, o, loc, unit, index)
