@@ -32,11 +32,14 @@ export const createBuffer = (c: WebGL2RenderingContext, data: number[]) => {
         return { array, buffer }
 }
 
-export const updateBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[]) => {
-        array.set(value)
+export const updateBuffer = (c: WebGL2RenderingContext, array: Float32Array, buffer: WebGLBuffer, value: number[] | Float32Array) => {
+        if (value instanceof Float32Array) array = value
+        else if (value.length === array.length) array.set(value)
+        else array = new Float32Array(value)
         c.bindBuffer(c.ARRAY_BUFFER, buffer)
         c.bufferData(c.ARRAY_BUFFER, array, c.STATIC_DRAW)
         c.bindBuffer(c.ARRAY_BUFFER, null)
+        return array
 }
 
 export const updateAttrib = (c: WebGL2RenderingContext, loc: number, stride: number, buffer: WebGLBuffer) => {
