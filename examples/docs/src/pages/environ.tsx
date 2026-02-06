@@ -16,7 +16,7 @@ export default function EnvironApp() {
         const update = () => {
                 const [yaw, pitch] = gl.offset
                 const cos = Math.cos(pitch)
-                const pos = [2 * Math.sin(yaw) * cos, 2 * Math.sin(pitch), 2 * Math.cos(yaw) * cos]
+                const pos = [2 * Math.sin(-yaw) * cos, 2 * Math.sin(pitch), 2 * Math.cos(-yaw) * cos]
                 const P = m.perspective(tmp1, 1.047, innerWidth / innerHeight, 0.1, 100)
                 const V = m.lookAt(tmp2, pos, [0, 0, 0], [0, 1, 0])
                 const VP = m.multiply(tmp1, P, V)

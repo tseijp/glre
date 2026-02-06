@@ -1,12 +1,16 @@
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
-import { iDrag, instance, varying, vec3, vec4 } from 'glre/src/node'
+import { iDrag, iResolution, instance, varying, vec3, vec4 } from 'glre/src/node'
 import { box, sphere } from 'glre/src/buffers'
-import { rotate3dX, rotate3dY } from 'glre/src/addons'
+import { rotate4dX, rotate4dY, perspective, translate4d } from 'glre/src/addons'
+import type { Vec3 } from 'glre/src/node'
 
 export default function WebGLInstancing() {
         const instanceCount = 200
-        const mat = rotate3dX(iDrag.y).mul(rotate3dY(iDrag.x))
+        const aspect = iResolution.x.div(iResolution.y)
+        const rot = rotate4dX(iDrag.y).mul(rotate4dY(iDrag.x))
+        const mvp = perspective(1.0, aspect, 0.1, 100).mul(translate4d(0, 0, -1)).mul(rot)
+        const view = (v: Vec3) => mvp.mul(vec4(v, 1))
         const rand = (a = -0.5, b = 0.5) => (b - a) * Math.random() + a
         const geo1 = box({ width: 0.05, height: 0.05, depth: 0.05 })
         const geo2 = sphere({ radius: 0.05 })
@@ -18,7 +22,7 @@ export default function WebGLInstancing() {
                         isDepth: true,
                         count: geo1.count,
                         instanceCount,
-                        vertex: vec4(mat.mul(geo1.vertex('boxVertex').add(pos1)), 1),
+                        vertex: view(geo1.vertex('boxVertex').add(pos1)),
                         fragment: vec4(varying(geo1.normal('boxNormal')), 1),
                         instances: { pos1: null },
                         attributes: { boxVertex: null, boxNormal: null },
@@ -33,7 +37,7 @@ export default function WebGLInstancing() {
                         isDepth: true,
                         count: geo2.count,
                         instanceCount,
-                        vertex: vec4(mat.mul(geo2.vertex('sphereVertex').add(pos2)), 1),
+                        vertex: view(geo2.vertex('sphereVertex').add(pos2)),
                         fragment: vec4(varying(geo2.normal('sphereNormal')), 1),
                         instances: { pos2: null },
                         attributes: { sphereVertex: null, sphereNormal: null },
