@@ -35,29 +35,24 @@ const h2m = Fn(([hilbert, bits]: [Int, Int]): Int => {
 /**
  * morton
  */
-const m2xyz = Fn(([morton, bits]: [Int, Int]): IVec3 => {
-        const x = int(0).toVar()
-        const y = int(0).toVar()
-        const z = int(0).toVar()
-        const bit = int(0).toVar()
-        Loop(bits, () => {
-                const shift = bit.mul(int(3)).toVar()
-                x.bitOrAssign(morton.shiftRight(shift).bitAnd(int(1)).shiftLeft(bit))
-                z.bitOrAssign(
-                        morton
-                                .shiftRight(shift.add(int(1)))
-                                .bitAnd(int(1))
-                                .shiftLeft(bit)
-                )
-                y.bitOrAssign(
-                        morton
-                                .shiftRight(shift.add(int(2)))
-                                .bitAnd(int(1))
-                                .shiftLeft(bit)
-                )
-                bit.addAssign(int(1))
-        })
-        return ivec3(x, y, z)
+const m3ff = int(0x000003ff).constant()
+const mff0000ff = int(0xff0000ff).constant()
+const m0300f00f = int(0x0300f00f).constant()
+const m030c30c3 = int(0x030c30c3).constant()
+const m09249249 = int(0x09249249).constant()
+
+const m2xyz = Fn(([c]: [Int]): IVec3 => {
+        const p = ivec3(c, c.shiftRight(int(1)), c.shiftRight(int(2))).toVar()
+        p.bitAndAssign(ivec3(m09249249))
+        p.bitXorAssign(p.shiftRight(int(2)))
+        p.bitAndAssign(ivec3(m030c30c3))
+        p.bitXorAssign(p.shiftRight(int(4)))
+        p.bitAndAssign(ivec3(m0300f00f))
+        p.bitXorAssign(p.shiftRight(int(8)))
+        p.bitAndAssign(ivec3(mff0000ff))
+        p.bitXorAssign(p.shiftRight(int(16)))
+        p.bitAndAssign(ivec3(m3ff))
+        return p
 })
 
 /**
@@ -65,7 +60,7 @@ const m2xyz = Fn(([morton, bits]: [Int, Int]): IVec3 => {
  */
 const h2xyz = Fn(([index, step]: [Int, Int]): Vec3 => {
         const morton = h2m(index, step)
-        return vec3(m2xyz(morton, step))
+        return vec3(m2xyz(morton))
 })
 
 const index = instance<'float'>(Array.from({ length: MAX_CUBE }, (_, i) => i))
