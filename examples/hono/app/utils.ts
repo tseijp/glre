@@ -17,8 +17,6 @@ export const resizeGL = (gl: any) => {
         gl.uniform('iResolution', gl.size)
 }
 
-let ctx = null as any
-
 export const mountGL = (gl: any) => {
         gl.init()
         gl.frame.start()
@@ -29,7 +27,7 @@ export const mountGL = (gl: any) => {
 
 export const cleanGL = (gl: any) => {
         gl.frame.stop()
-        gl.gl?.deleteProgram?.(gl.pg)
+        gl.context?.deleteProgram?.(gl.pg)
         window.removeEventListener('resize', gl._resize)
 }
 

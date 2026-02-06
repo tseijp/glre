@@ -86,7 +86,7 @@ export const GLSL_VS = /* cpp */ `
 void main() {
   float x = float(gl_VertexID % 2) * 4.0 - 1.0;
   float y = float(gl_VertexID / 2) * 4.0 - 1.0;
-  gl_Position = vec4(x, y, 0.0, 1.0);
+  gl_Position = vec4(x, y, 1.0, 1.0);
 }`
 
 export const WGSL_VS = /* rust */ `
@@ -97,7 +97,7 @@ fn main(in: In) -> Out {
   var out: Out;
   var x = f32(in.vertex_index % 2) * 4.0 - 1.0;
   var y = f32(in.vertex_index / 2) * 4.0 - 1.0;
-  out.position = vec4f(x, y, 0.0, 1.0);
+  out.position = vec4f(x, y, 1.0, 1.0);
   return out;
 }
 `.trim()

@@ -6,7 +6,10 @@ import { webgl } from './webgl'
 import { webgpu } from './webgpu'
 import type { EventState } from 'reev'
 import type { GL } from './types'
+
 export * from './types'
+export * from './webgl'
+export * from './webgpu'
 
 export const isServer = () => {
         return typeof window === 'undefined'
@@ -23,6 +26,7 @@ const collectArg = (a: GL, b: Partial<GL>) => {
         a.fs = b.fs || b.frag || b.fragment || undefined
         a.cs = b.cs || b.comp || b.compute || undefined
         a.vs = b.vs || b.vert || b.vertex || undefined
+        a.isDepth = a.isDepth || b.isDepth || false
         a.uniforms = b.uniforms || undefined
         a.textures = b.textures || undefined
         a.storages = b.storages || undefined
@@ -34,7 +38,7 @@ const collectArg = (a: GL, b: Partial<GL>) => {
         a.count = b.count || a.triangleCount * 3 || 6
 }
 
-export const createGL = (...args: Partial<GL>[]) => {
+export const createGL = (...args: Partial<GL>[]): EventState<GL> => {
         const drag = dragEvent<HTMLCanvasElement>({
                 drag() {
                         drag.event.preventDefault()
@@ -82,7 +86,6 @@ export const createGL = (...args: Partial<GL>[]) => {
         let iTime = performance.now()
         gl.queue = createQueue()
         gl.frame = createFrame()
-
         gl.attribute = durable((k, v, i) => gl.queue(() => gl._attribute?.(k, v, i)), gl)
         gl.instance = durable((k, v, at) => gl.queue(() => gl._instance?.(k, v, at)), gl)
         gl.storage = durable((k, v) => gl.queue(() => gl._storage?.(k, v)), gl)
@@ -102,11 +105,11 @@ export const createGL = (...args: Partial<GL>[]) => {
                         collectArg(gl, arg)
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
-                        if (gl.isWebGL) webgl(gl)
+                        if (gl.isWebGL) webgl(gl, i)
                         else await webgpu(gl, i === args.length - 1)
-                        if (arg.mount) arg.mount() // events added in mount phase need explicit call to execute
+                        if (arg.mount) arg.mount() // @MEMO events added in mount phase need explicit call to execute
                 }
-                if (!gl.el || gl.isError) return // stop if error or canvas was unmounted during async
+                if (!gl.el || gl.isError) return // @MEMO stop if error or canvas was unmounted during async
                 gl.resize()
                 gl.frame(() => {
                         gl.render()

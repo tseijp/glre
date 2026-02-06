@@ -3,19 +3,20 @@ import { graphic } from './graphic'
 import { enableDepth, enableWireframe, loseContext } from './utils'
 import type { GL } from '../types'
 
-export const webgl = (gl: GL) => {
-        const isInit = !gl.gl
+export const webgl = (gl: GL, index = 0) => {
+        const isInit = !gl.context
         if (isInit) {
-                const c = (gl.gl = gl.el.getContext('webgl2')!)
-                gl('render', () => c.viewport(0, 0, ...gl.size!)) // Run before other renderers' events to prevent flickering
+                const c = (gl.context = gl.el.getContext('webgl2')!)
+                gl('render', () => {
+                        c.viewport(0, 0, ...gl.size!)
+                        if (gl.isDepth) c.clear(c.DEPTH_BUFFER_BIT)
+                })
         }
-
-        compute(gl)
-        graphic(gl)
-
+        gl(compute(gl))
+        gl(graphic(gl, index))
         if (isInit) {
-                gl('clean', () => loseContext(gl.gl))
-                if (gl.isDepth) enableDepth(gl.gl)
-                if (gl.wireframe) enableWireframe(gl.gl)
+                gl('clean', () => loseContext(gl.context))
+                if (gl.wireframe) enableWireframe(gl.context)
         }
+        if (gl.isDepth) enableDepth(gl.context)
 }

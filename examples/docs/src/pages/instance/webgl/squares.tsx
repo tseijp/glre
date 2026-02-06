@@ -1,4 +1,3 @@
-// @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 

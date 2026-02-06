@@ -2,7 +2,7 @@ import Layout from '@theme/Layout'
 import { box } from 'glre/src/buffers'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
-import { attribute, float, Fn, If, instance, int, ivec2, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
+import { float, Fn, If, instance, int, ivec2, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
 import type { Drag, GL } from 'glre/src'
 import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
 
@@ -185,11 +185,11 @@ const createViewer = async () => {
                                 isLoading = true
                         }
                 if (isLoading)
-                        if (slots.step(gl.gl, gl.program, 6)) {
+                        if (slots.step(gl.context, gl.program, 6)) {
                                 mesh.commit()
                                 isLoading = false
                         }
-                gl.instanceCount = mesh.draw(gl.gl, gl.program)
+                gl.setInstanceCount(mesh.draw(gl.context, gl.program))
         }
 
         const mount = (el: HTMLCanvasElement) => {

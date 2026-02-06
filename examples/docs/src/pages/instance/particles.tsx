@@ -1,4 +1,3 @@
-// @ts-ignore
 import Layout from '@theme/Layout'
 import { useGL } from 'glre/src/react'
 import { attribute, instance, uniform, vec4, If, Fn, varying } from 'glre/src/node'
@@ -70,37 +69,18 @@ export default function ParticleSystem() {
                 isWebGL: true,
                 instanceCount,
                 count: 6,
-                mount() {
-                        const canvas = gl.el
-                        const handleMouseMove = (e: MouseEvent) => {
-                                const rect = canvas.getBoundingClientRect()
-                                const x = ((e.clientX - rect.left) / rect.width) * 2 - 1
-                                const y = -(((e.clientY - rect.top) / rect.height) * 2 - 1)
-                                mousePos = [x, y]
-                        }
-                        const handleMouseDown = () => {
-                                isMouseDown = true
-                        }
-                        const handleMouseUp = () => {
-                                isMouseDown = false
-                        }
-                        canvas.addEventListener('mousemove', handleMouseMove)
-                        canvas.addEventListener('mousedown', handleMouseDown)
-                        canvas.addEventListener('mouseup', handleMouseUp)
-                        canvas.style.cursor = 'crosshair'
+                drag() {
+                        let [x, y] = gl.mouse
+                        x = x * 2 - 1
+                        y = y * 2 - 1
+                        mousePos = [x, y]
                 },
-                // clean() {
-                //         {
-                //                 canvas.removeEventListener('mousemove', handleMouseMove)
-                //                 canvas.removeEventListener('mousedown', handleMouseDown)
-                //                 canvas.removeEventListener('mouseup', handleMouseUp)
-                //         }
-                // },
                 render() {
-                        updateParticles()
-                        pos.value = particlePositions
-                        mouseUniform.value = mousePos
-                        mouseDownUniform.value = isMouseDown ? 1.0 : 0.0
+                        // @TODO FIX NOT WORK
+                        // updateParticles()
+                        // pos.value = particlePositions
+                        // mouseUniform.value = mousePos
+                        // mouseDownUniform.value = isMouseDown ? 1.0 : 0.0
                 },
                 vert: vec4(pos.add(point), 0, 1),
                 frag: Fn(() => {
