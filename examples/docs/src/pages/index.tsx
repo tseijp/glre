@@ -17,8 +17,8 @@ const createNode = () => {
         const cube = box()
         const iAtlas = range(SLOT).map((i) => uniform(texture2D(), `iAtlas${i}`))
         const iOffset = range(SLOT).map((i) => uniform(vec3(0, 0, 0), `iOffset${i}`))
-        const vertex = attribute<'vec3'>(cube.attributes.vertex, 'vertex')
-        const normal = attribute<'vec3'>(cube.attributes.normal, 'normal')
+        const vertex = cube.vertex()
+        const normal = cube.normal()
         const scl = instance<'vec3'>(vec3(), 'scl')
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
@@ -248,7 +248,7 @@ const Canvas = ({ viewer }: any) => {
 
 export default function Home() {
         const [viewer, set] = useState()
-        useEffect(() => void createViewer().then(set), [])
+        useEffect(() => void createViewer().then(set as any), [])
         return (
                 <Layout noFooter>
                         <div id="loading" style={{ position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}>

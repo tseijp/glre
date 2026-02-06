@@ -10,14 +10,15 @@ export const webgpu = async (gl: GL, isLast = false) => {
         const isInit = !gl.gpu
         if (isInit) {
                 const gpu = gl.el!.getContext('webgpu') as GPUCanvasContext
-                const binding = createBinding()
                 const { device, format } = await createDevice(gpu, gl.error)
-                gl({ device, format, binding, gpu })
+                gl({ device, format, gpu })
                 gl('resize', () => {
                         gl.depthTexture?.destroy()
                         if (gl.isDepth) gl.depthTexture = createDepthTexture(gl.device, ...gl.size)
                 })
         }
+
+        gl.binding = createBinding() // isolate per args to match shader and pipeline locations
 
         gl('render', () => {
                 if (isUpdate) update()
@@ -43,7 +44,7 @@ export const webgpu = async (gl: GL, isLast = false) => {
                 fs = fs ? (is.str(fs) ? fs : fs.fragment(config)) : WGSL_FS
                 vs = vs ? (is.str(vs) ? vs : vs.vertex(config)) : WGSL_VS
                 cs = cs ? (is.str(cs) ? cs : cs.compute(config)) : ''
-                const p = updatePipeline(gl.device, gl.format, g.attributes.map.values(), g.uniforms.map.values(), g.textures.map.values(), c.storages.map.values(), fs, cs, vs, gl.isDepth)
+                const p = updatePipeline(gl.device, gl.format, g._attributes.map.values(), g._uniforms.map.values(), g._textures.map.values(), c._storages.map.values(), fs, cs, vs, gl.isDepth)
                 c.set(p.computePipeline, p.bindGroups)
                 g.set(p.graphicPipeline, p.bindGroups, p.vertexBuffers)
         }

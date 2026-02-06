@@ -31,6 +31,7 @@ export default function EnvironApp() {
                 {
                         isDepth: true,
                         isWebGL: true,
+                        attributes: {},
                         fragment: Scope(() => {
                                 const d = inv.mul(vec4(uv.fma(2, -1), 1, 1)).xyz.normalize()
                                 return texture(env, dir2uv(d))
@@ -38,10 +39,10 @@ export default function EnvironApp() {
                 },
                 {
                         count: geo.count,
-                        vertex: mat.mul(vec4(geo.vertex, 1)),
+                        vertex: mat.mul(vec4(geo.vertex(), 1)),
                         fragment: Scope(() => {
-                                const p = varying(geo.vertex)
-                                const n = varying(geo.normal)
+                                const p = varying(geo.vertex())
+                                const n = varying(geo.normal())
                                 const d = p.sub(cam).normalize().refract(n, 0.9) // .reflect(n)
                                 return texture(env, dir2uv(d))
                         }),

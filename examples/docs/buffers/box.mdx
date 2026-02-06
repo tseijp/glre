@@ -19,8 +19,8 @@ function Canvas() {
 								isWebGL: true,
 								isDepth: true,
 								count: geo.count,
-								vertex: vec4(mat.mul(geo.vertex), 1),
-								fragment: vec4(varying(geo.normal), 1),
+								vertex: vec4(mat.mul(geo.vertex()), 1),
+								fragment: vec4(varying(geo.normal()), 1),
 				})
 				return <canvas ref={gl.ref} />
 }
