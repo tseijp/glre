@@ -22,7 +22,7 @@
                 "clsx": "*",
                 "leva": "*",
                 "stats.js": "*",
-                "voxelized-js": "0.4.0"
+                "voxelized-js": "0.12.0"
         },
         "devDependencies": {
                 "@docusaurus/core": "3.9.2",

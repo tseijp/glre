@@ -2,15 +2,46 @@ import Layout from '@theme/Layout'
 import { box } from 'glre/src/buffers'
 import { useGL } from 'glre/src/react'
 import { useEffect, useState } from 'react'
-import { float, Fn, If, instance, int, ivec2, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
+import { float, Fn, If, instance, int, ivec2, ivec3, mat4, Scope, texelFetch, texture2D, uniform, varying, vec3, vec4 } from 'glre/src/node'
 import type { Drag, GL } from 'glre/src'
-import type { Float, IVec2, IVec3, Vec3 } from 'glre/src/node'
+import type { Float, Int, IVec2, IVec3, Vec3 } from 'glre/src/node'
 
-const SCOPE = { x0: 28, x1: 123, y0: 75, y1: 79 }
-const ROW = SCOPE.x1 - SCOPE.x0 + 1 // 96 region = 96×16×16 voxel [m]
 const SLOT = 16
-const REGION = 256
 const range = (n = 0) => [...Array(n).keys()]
+const mff0000ff = int(0xff0000ff).constant()
+const m0300f00f = int(0x0300f00f).constant()
+const m030c30c3 = int(0x030c30c3).constant()
+const m09249249 = int(0x09249249).constant()
+const m5555 = int(0x55555555).constant()
+const m3333 = int(0x33333333).constant()
+const m0f0f = int(0x0f0f0f0f).constant()
+const m00ff = int(0x00ff00ff).constant()
+const mffff = int(0x0000ffff).constant()
+const xyz2m = Fn(([xyz]: [IVec3]): Int => {
+        const p = xyz.toVar()
+        p.bitOrAssign(p.shiftLeft(int(16)))
+        p.bitAndAssign(ivec3(mff0000ff))
+        p.bitOrAssign(p.shiftLeft(int(8)))
+        p.bitAndAssign(ivec3(m0300f00f))
+        p.bitOrAssign(p.shiftLeft(int(4)))
+        p.bitAndAssign(ivec3(m030c30c3))
+        p.bitOrAssign(p.shiftLeft(int(2)))
+        p.bitAndAssign(ivec3(m09249249))
+        return p.x.bitOr(p.y.shiftLeft(int(1))).bitOr(p.z.shiftLeft(int(2)))
+})
+const m2uv = Fn(([morton]: [Int]): IVec2 => {
+        const p = ivec2(morton, morton.shiftRight(int(1))).toVar()
+        p.bitAndAssign(ivec2(m5555))
+        p.bitOrAssign(p.shiftRight(int(1)))
+        p.bitAndAssign(ivec2(m3333))
+        p.bitOrAssign(p.shiftRight(int(2)))
+        p.bitAndAssign(ivec2(m0f0f))
+        p.bitOrAssign(p.shiftRight(int(4)))
+        p.bitAndAssign(ivec2(m00ff))
+        p.bitOrAssign(p.shiftRight(int(8)))
+        p.bitAndAssign(ivec2(mffff))
+        return p
+})
 
 const createNode = () => {
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
@@ -23,16 +54,9 @@ const createNode = () => {
         const pos = instance<'vec3'>(vec3(), 'pos')
         const aid = instance<'float'>(float(), 'aid')
         const vCenter = varying<'vec3'>(vec3(), 'vCenter')
-        const atlas = Fn(([p]: [IVec3]) => {
-                const ci = p.div(int(16)).mul(int(16)).toVar('ci') // left shift like k & 3
-                const lp = p.sub(ci).toVar('lp') // ................ right shift like k >> 2
-                const a = int(ci.z.div(int(64))).toVar('a')
-                const b = int(ci.z.div(int(16)).sub(a.mul(int(4)))).toVar('b')
-                const c = int(lp.z.div(int(4))).toVar('c')
-                const d = int(lp.z.sub(c.mul(int(4)))).toVar('d')
-                const zt = ivec2(b, a).mul(int(1024))
-                const lt = ivec2(d, c).mul(int(16)).add(lp.xy)
-                return int(4).mul(ci.xy).add(zt).add(lt)
+        const atlas = Fn(([p]: [IVec3]): IVec2 => {
+                const morton = xyz2m(p.clamp(int(0), int(255))).toVar()
+                return m2uv(morton)
         })
         const pick = Fn(([id, uvPix]: [Float, IVec2]) => {
                 const t = vec4(0, 0, 0, 1).toVar('t')
@@ -89,24 +113,18 @@ const createMode = () => {
 }
 
 const createViewer = async () => {
-        const { createCamera, createMesh, createQueues, createRegions, createSlots } = await import('voxelized-js') // Dynamic import is required. Static import causes ReferenceError: __dirname is not defined.
+        const { createCamera, createMesh, createScene } = await import('voxelized-js') // Dynamic import is required. Static import causes ReferenceError: __dirname is not defined.
         let isReady = false
-        let isLoading = false
         let ts = performance.now()
         let pt = ts
         let dt = 0
-        let pt2 = ts - 200
-        const cam = createCamera({ X: (Math.random() * 0.5 + 0.5) * ROW * REGION, Y: 720, Z: (REGION * (SCOPE.y1 - SCOPE.y0 + 1)) / 2 })
+        const worker = new Worker(new URL('../worker.ts', import.meta.url))
+        worker.onerror = (e) => console.error('worker error', e)
+        const cam = createCamera({ X: 22912, Y: 800, Z: 20096, yaw: Math.PI / 2, pitch: -Math.PI / 2 + 0.01, mode: -1 })
         const mesh = createMesh()
+        const scene = createScene(mesh, cam, worker)
         const mode = createMode()
         const node = createNode()
-        const slots = createSlots(SLOT)
-        const queues = createQueues(4, 1)
-        const regions = createRegions(mesh, cam, queues)
-        try {
-                cam.update(1280 / 800) // Ensure MVP is valid for culling before first render.
-                regions.vis()
-        } catch {}
 
         const press = (isPress = false, e: KeyboardEvent) => {
                 const k = e.code
@@ -170,26 +188,16 @@ const createViewer = async () => {
                 pt = ts
                 ts = performance.now()
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
-                if (mesh.isReady()) {
-                        if (!isReady) document.getElementById('loading')?.remove()
+                cam.tick(dt, scene.pick)
+                cam.update(gl.size[0] / gl.size[1])
+                node.iMVP.value = [...cam.MVP]
+                scene.render(gl.context, gl.program)
+                const count = mesh.draw(gl.context, gl.program, gl.vao)
+                if (!isReady && count > 0) {
+                        document.getElementById('loading')?.remove()
                         isReady = true
-                        cam.tick(dt, regions.pick)
-                        cam.update(gl.size[0] / gl.size[1])
-                        node.iMVP.value = [...cam.MVP]
                 }
-                if (!isLoading)
-                        if (ts - pt2 >= 100) {
-                                pt2 = ts
-                                mesh.reset()
-                                slots.begin(regions.vis())
-                                isLoading = true
-                        }
-                if (isLoading)
-                        if (slots.step(gl.context, gl.program, 6)) {
-                                mesh.commit()
-                                isLoading = false
-                        }
-                gl.setInstanceCount(mesh.draw(gl.context, gl.program))
+                gl.setInstanceCount(count)
         }
 
         const mount = (el: HTMLCanvasElement) => {
