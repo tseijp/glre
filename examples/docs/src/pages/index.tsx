@@ -193,7 +193,7 @@ const createViewer = async () => {
                 node.iMVP.value = [...cam.MVP]
                 scene.render(gl.context, gl.program)
                 const count = mesh.draw(gl.context, gl.program, gl.vao)
-                if (!isReady && count > 0) {
+                if (!isReady && count > 1) {
                         document.getElementById('loading')?.remove()
                         isReady = true
                 }
