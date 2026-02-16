@@ -21,7 +21,7 @@ const sitemap: Preset.Options['sitemap'] = {
 const config: Config = {
         title: 'glre',
         tagline: 'GLSL Reactive Engine',
-        url: 'https://glre.tsei.jp/',
+        url: 'https://glre.dev',
         baseUrl: '/',
         onBrokenLinks: 'warn',
         onBrokenMarkdownLinks: 'warn',
