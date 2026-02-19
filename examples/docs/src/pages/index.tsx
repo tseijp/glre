@@ -43,7 +43,13 @@ const m2uv = Fn(([morton]: [Int]): IVec2 => {
         return p
 })
 
+const FC = float(2.0).div(float(4001.0).log2()).constant()
+const depth = Fn(([w]: [Float]) => {
+        return w.abs().add(1.0).log2().mul(FC).mul(0.5).mul(w)
+})
+
 const createNode = () => {
+        const iCam = uniform<'vec3'>(vec3(), 'iCam')
         const iMVP = uniform<'mat4'>(mat4(), 'iMVP')
         const cube = box()
         const iAtlas = range(SLOT).map((i) => uniform(texture2D(), `iAtlas${i}`))
@@ -81,7 +87,11 @@ const createNode = () => {
                 const world = off.add(local)
                 const center = local.sub(normal.sign().mul(0.5)).floor()
                 vCenter.assign(center)
-                return iMVP.mul(vec4(world, 1))
+                const clip = iMVP.mul(vec4(world, 1)).toVar('clip')
+                If(iCam.y.greaterThan(250), () => {
+                        clip.z = depth(clip.w)
+                })
+                return clip
         })
         const frag = Scope(() => {
                 const p = vCenter.toIVec3()
@@ -91,7 +101,7 @@ const createNode = () => {
                 const rgb = pick(i, uv).rgb.mul(d).toVar('rgb')
                 return vec4(rgb, 1)
         })
-        return { vert, frag, iMVP }
+        return { vert, frag, iCam, iMVP }
 }
 
 const createMode = () => {
@@ -190,6 +200,7 @@ const createViewer = async () => {
                 dt = Math.min((ts - pt) / 1000, 0.03) // 0.03 is 1 / (30fps)
                 cam.tick(dt, scene.pick)
                 cam.update(gl.size[0] / gl.size[1])
+                node.iCam.value = [...cam.pos]
                 node.iMVP.value = [...cam.MVP]
                 scene.render(gl.context, gl.program)
                 const count = mesh.draw(gl.context, gl.program, gl.vao)

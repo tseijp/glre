@@ -18,6 +18,7 @@ export const sampleIndex = b<'uint'>('sample_index')
 export const sampleMask = b<'uint'>('sample_mask')
 export const pointCoord = b<'vec2'>('point_coord')
 export const id = b<'uvec3'>('global_invocation_id')
+export const fragCoord = position
 
 // TSL Compatible Builtin Variables
 export const positionLocal = b<'vec3'>('position')
