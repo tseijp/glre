@@ -100,7 +100,7 @@ export type GL = EventState<{
 }>
 
 type Uniform = number | number[] | Float32Array
-type Texture = string | HTMLImageElement | HTMLVideoElement
+type Texture = string | HTMLImageElement | HTMLVideoElement | ImageBitmap
 type Storage = number[] | Float32Array
 
 /**

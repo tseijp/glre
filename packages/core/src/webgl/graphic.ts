@@ -1,10 +1,10 @@
 import { nested } from 'reev'
 import { getStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
-import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer, updateInstance, updateUniform } from './utils'
+import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer, updateInstance, updateTexture, updateUniform } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL, index = 0): Partial<GL> => {
-        let { context: c, count, instanceCount, textures, uniforms, instances, attributes } = gl
+        let { context: c, count, instanceCount: _count, textures, uniforms, instances, attributes } = gl
         const config = { isWebGL: true, gl }
         const fs = gl.fs ? (is.str(gl.fs) ? gl.fs : gl.fs.fragment(config)) : GLSL_FS
         const vs = gl.vs ? (is.str(gl.vs) ? gl.vs : gl.vs.vertex(config)) : GLSL_VS
@@ -13,8 +13,9 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
         let activeUnit = 0
         const _units = nested(() => activeUnit++)
         const _uniforms = nested((key) => c.getUniformLocation(pg, key))
+        const _textures = nested((key) => createTexture(c, _uniforms(key), _units(key)))
         const _attributes = nested((key, value: number[], isInstance = false) => {
-                const stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)
+                const stride = getStride(value.length, isInstance ? _count : count, gl.error, key)
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
         return {
@@ -39,16 +40,14 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                         c.useProgram(pg)
                         updateUniform(c, _uniforms(key), value as number[])
                 },
-                _texture(key: string, src: string) {
+                _texture(key: string, src) {
                         if (textures && !(key in textures)) return
                         c.useProgram(pg)
-                        const loc = _uniforms(key)
-                        const unit = _units(key)
-                        createTexture(c, null, loc, unit, false)
-                        loadingTexture(src, (source, isVideo) => {
+                        const t = _textures(key)
+                        loadingTexture(src as string, (source, isVideo) => {
                                 c.useProgram(pg)
-                                const render = createTexture(c, source, loc, unit, isVideo)
-                                if (render) gl({ render })
+                                updateTexture(c, t.texture, t.unit, source as TexImageSource)
+                                if (isVideo) gl({ render: () => updateTexture(c, t.texture, t.unit, source) })
                         })
                 },
                 clean() {
@@ -58,8 +57,8 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                 render() {
                         c.useProgram(pg)
                         c.bindVertexArray(vao)
-                        if (instanceCount > 1) {
-                                c.drawArraysInstanced(c.TRIANGLES, 0, count, instanceCount)
+                        if (_count > 1) {
+                                c.drawArraysInstanced(c.TRIANGLES, 0, count, _count)
                         } else c.drawArrays(c.TRIANGLES, 0, count)
                         c.bindFramebuffer(c.FRAMEBUFFER, null)
                 },
@@ -70,7 +69,7 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                         if (at === index) count = next * 3
                 },
                 setInstanceCount(next, at = index) {
-                        if (at === index) instanceCount = next
+                        if (at === index) _count = next
                 },
         } as Partial<GL>
 }
