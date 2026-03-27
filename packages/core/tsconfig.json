@@ -1,6 +1,7 @@
 {
         "compilerOptions": {
                 "types": ["@webgpu/types"],
+                "lib": ["ESNext", "DOM"],
                 "target": "ESNext",
                 "module": "ESNext",
                 "esModuleInterop": true,
