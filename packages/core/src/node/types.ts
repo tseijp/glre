@@ -54,6 +54,9 @@ export type NodeTypes =
         | 'element'
         | 'gather'
         | 'scatter'
+        | 'uniformArray'
+        | 'instanceArray'
+        | 'attributeArray'
         // scopes
         | 'scope'
         | 'assign'

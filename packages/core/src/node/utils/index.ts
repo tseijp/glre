@@ -1,5 +1,5 @@
 import { infer } from './infer'
-import { parseArray, parseAttribHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseUniformHead, parseVaryingHead } from './parse'
+import { parseArray, parseAttribHead, parseAttributeArrayHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseUniformArrayHead, parseUniformHead, parseVaryingHead } from './parse'
 import { getBluiltin, getConversions, getOperator, initNodeContext, isX, setupEvent } from './utils'
 import { is } from '../../helpers'
 import type { Constants as C, NodeContext, Y, X } from '../types'
@@ -123,6 +123,16 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         }
         if (c.code?.headers.has(id)) return id // must last
         let head = ''
+        if (type === 'uniformArray') {
+                const varType = infer(target, c)
+                setupEvent(c, id, varType, target, x)
+                head = parseUniformArrayHead(c, id, varType, props.args?.[0])
+        }
+        // @TODO FIX
+        if (type === 'instanceArray' || type === 'attributeArray') {
+                setupEvent(c, id, type, target, x)
+                head = parseAttributeArrayHead(c, id, infer(target, c))
+        }
         if (type === 'uniform') {
                 const varType = infer(target, c)
                 setupEvent(c, id, varType, target, x)

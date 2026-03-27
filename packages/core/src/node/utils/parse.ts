@@ -179,6 +179,25 @@ export const parseUniformHead = (c: NodeContext, id: string, type: Constants) =>
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: ${wgslType};`
 }
 
+// @TODO FIX
+export const parseAttributeArrayHead = (c: NodeContext, id: string, type: Constants) => {
+        if (c.isWebGL) return `uniform sampler2D ${id};`
+        const { group = 0, binding = 0 } = c.gl?.binding?.storage(id) || {}
+        const wgslType = getConversions(type, c)
+        return `@group(${group}) @binding(${binding}) var<storage, read> ${id}: array<${wgslType}>;`
+}
+
+export const parseUniformArrayHead = (c: NodeContext, id: string, type: Constants, count?: number) => {
+        if (c.isWebGL) {
+                const countStr = count !== undefined ? `[${count}]` : '[]'
+                return `uniform ${type} ${id}${countStr};`
+        }
+        const { group = 0, binding = 0 } = c.gl?.binding?.uniform(id) || {}
+        const wgslType = getConversions(type, c)
+        const countStr = count !== undefined ? `, ${count}` : ''
+        return `@group(${group}) @binding(${binding}) var<uniform> ${id}: array<${wgslType}${countStr}>;`
+}
+
 export const parseStorageHead = (c: NodeContext, id: string, type: Constants) => {
         if (c.isWebGL) {
                 const ret = `uniform sampler2D ${id};`
