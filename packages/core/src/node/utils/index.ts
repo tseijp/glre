@@ -51,6 +51,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'float') if (is.num(y)) return parseNumber(y) // no conversion needed, e.g., float(1.0) → 1.0
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
                 if (x === 'int') if (is.num(y)) return `${y << 0}`
+                if (x === 'uint') if (is.num(y)) return `${y >>> 0}`
                 return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         }
         if (type === 'operator') {
@@ -71,6 +72,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 } else {
                         if (x === 'dFdx') return `dpdx(${code(y, c)})`
                         if (x === 'dFdy') return `dpdy(${code(y, c)})`
+                        if (x === 'texelFetch') return `textureLoad(${code(y, c)}, ${code(z, c)}, ${code(w, c)})`
                 }
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
