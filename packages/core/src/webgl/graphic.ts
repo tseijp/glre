@@ -35,9 +35,10 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                         updateBuffer(c, a.array, a.buffer, value as number[])
                         updateInstance(c, a.location, a.stride, a.buffer)
                 },
-                _uniform(key, value) {
+                _uniform(key, value, at?) {
                         if (uniforms && !(key in uniforms)) return
                         c.useProgram(pg)
+                        if (at !== undefined) key = `${key}[${at}]`
                         updateUniform(c, _uniforms(key), value as number[])
                 },
                 _texture(key: string, src) {

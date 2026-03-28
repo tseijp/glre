@@ -55,13 +55,14 @@ export const updateInstance = (c: WebGL2RenderingContext, loc: number, stride: n
         c.vertexAttribDivisor(loc, 1) // divisor is 1
 }
 
-export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, value: number | number[]) => {
+export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, value: number | number[] | Float32Array) => {
         if (is.nul(loc)) return
         if (is.num(value)) return c.uniform1f(loc, value)
-        let l = value.length
+        const l = value.length
         if (l <= 4) return c[`uniform${l as 2}fv`](loc, value)
-        l = Math.sqrt(l) << 0
-        c[`uniformMatrix${l as 2}fv`](loc, false, value)
+        const m = Math.sqrt(l) << 0
+        if (m < 2 || m > 4) return console.warn(`GLRE Uniform Warning: invalid uniform length ${l}`)
+        c[`uniformMatrix${m as 2}fv`](loc, false, value)
 }
 
 export const createTexture = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, unit: number) => {
