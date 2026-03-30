@@ -1,5 +1,5 @@
 import { infer } from './infer'
-import { parseArray, parseAttribHead, parseAttributeArrayHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseUniformArrayHead, parseUniformHead, parseVaryingHead } from './parse'
+import { parseArray, parseAttribHead, parseAttributeArrayHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseTextureArrayHead, parseUniformArrayHead, parseUniformHead, parseVaryingHead } from './parse'
 import { getBluiltin, getConversions, getOperator, initNodeContext, isX, setupEvent } from './utils'
 import { is } from '../../helpers'
 import type { Constants as C, NodeContext, Y, X } from '../types'
@@ -35,7 +35,11 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
          */
         if (type === 'variable') return id
         if (type === 'member') return `${code(x, c)}.${code(y, c)}`
-        if (type === 'element') return `${code(x, c)}[${code(y, c)}]`
+        if (type === 'element') {
+                if (!c.isWebGL && isX(x) && infer(x, c) === 'texture')
+                        return `${code(x, c)}${is.num(y) ? y : code(y, c)}`
+                return `${code(x, c)}[${code(y, c)}]`
+        }
         if (type === 'gather')
                 return c.isWebGL //
                         ? parseGather(c, x, y, target)
@@ -126,7 +130,8 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'uniformArray') {
                 const varType = infer(target, c)
                 setupEvent(c, id, varType, target, x)
-                head = parseUniformArrayHead(c, id, varType, props.args?.[0])
+                if (varType === 'texture') head = parseTextureArrayHead(c, id, props.args?.[0])
+                else head = parseUniformArrayHead(c, id, varType, props.args?.[0])
         }
         // @TODO FIX
         if (type === 'instanceArray' || type === 'attributeArray') {

@@ -41,10 +41,11 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                         if (at !== undefined) key = `${key}[${at}]`
                         updateUniform(c, _uniforms(key), value as number[])
                 },
-                _texture(key: string, src) {
+                _texture(key: string, src, at?) {
                         if (textures && !(key in textures)) return
                         c.useProgram(pg)
-                        const t = _textures(key)
+                        const textureKey = at !== undefined ? `${key}[${at}]` : key
+                        const t = _textures(textureKey)
                         loadingTexture(src as string, (source, isVideo) => {
                                 c.useProgram(pg)
                                 updateTexture(c, t.texture, t.unit, source as TexImageSource)

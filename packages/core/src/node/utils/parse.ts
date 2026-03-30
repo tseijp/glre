@@ -187,6 +187,20 @@ export const parseAttributeArrayHead = (c: NodeContext, id: string, type: Consta
         return `@group(${group}) @binding(${binding}) var<storage, read> ${id}: array<${wgslType}>;`
 }
 
+export const parseTextureArrayHead = (c: NodeContext, id: string, count?: number) => {
+        if (c.isWebGL) {
+                const countStr = count !== undefined ? `[${count}]` : '[]'
+                return `uniform sampler2D ${id}${countStr};`
+        }
+        const n = count ?? 1
+        const lines: string[] = []
+        for (let i = 0; i < n; i++) {
+                const { group = 1, binding = 0 } = c.gl?.binding?.texture(`${id}${i}`) || {}
+                lines.push(`@group(${group}) @binding(${binding}) var ${id}${i}Sampler: sampler;\n@group(${group}) @binding(${binding + 1}) var ${id}${i}: texture_2d<f32>;`)
+        }
+        return lines.join('\n')
+}
+
 export const parseUniformArrayHead = (c: NodeContext, id: string, type: Constants, count?: number) => {
         if (c.isWebGL) {
                 const countStr = count !== undefined ? `[${count}]` : '[]'

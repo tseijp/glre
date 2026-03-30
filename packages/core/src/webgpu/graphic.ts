@@ -45,14 +45,15 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 updateBuffer(gl.device, value, u.array, u.buffer)
         })
 
-        gl('_texture', (key: string, src: string | ImageBitmap) => {
+        gl('_texture', (key: string, src: string | ImageBitmap, at?: number) => {
                 if (textures && !(key in textures)) return
+                const textureKey = at !== undefined ? `${key}${at}` : key
                 if (src instanceof ImageBitmap) {
-                        const t = _textures(key, src.width, src.height)
+                        const t = _textures(textureKey, src.width, src.height)
                         gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture }, { width: src.width, height: src.height })
                         return
                 }
-                const t = _textures(key)
+                const t = _textures(textureKey)
                 loadingTexture(src, (source, isVideo) => {
                         const [width, height] = isVideo ? [source.videoWidth, source.videoHeight] : [source.width, source.height]
                         t.texture.destroy()
