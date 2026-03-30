@@ -119,6 +119,7 @@ export interface TextureData {
         texture: GPUTexture
         sampler: GPUSampler
         view: GPUTextureView
+        isArray?: boolean
 }
 
 export interface AttribData {

@@ -1,5 +1,5 @@
 import { infer } from './infer'
-import { parseArray, parseAttribHead, parseAttributeArrayHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseTextureArrayHead, parseUniformArrayHead, parseUniformHead, parseVaryingHead } from './parse'
+import { parseArray, parseAttribHead, parseAttributeArrayHead, parseConstantHead, parseDeclare, parseDefine, parseGather, parseIf, parseLoop, parseScatter, parseStorageHead, parseStruct, parseStructHead, parseSwitch, parseTexture, parseTextureArray, parseTextureArrayHead, parseUniformArrayHead, parseUniformHead, parseVaryingHead } from './parse'
 import { getBluiltin, getConversions, getOperator, initNodeContext, isX, setupEvent } from './utils'
 import { is } from '../../helpers'
 import type { Constants as C, NodeContext, Y, X } from '../types'
@@ -36,8 +36,8 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'variable') return id
         if (type === 'member') return `${code(x, c)}.${code(y, c)}`
         if (type === 'element') {
-                if (!c.isWebGL && isX(x) && infer(x, c) === 'texture')
-                        return `${code(x, c)}${is.num(y) ? y : code(y, c)}`
+                if (isX(x) && x.type === 'uniformArray' && infer(x, c) === 'texture') return code(x, c)
+                if (!c.isWebGL && isX(x) && infer(x, c) === 'texture') return `${code(x, c)}${is.num(y) ? y : code(y, c)}`
                 return `${code(x, c)}[${code(y, c)}]`
         }
         if (type === 'gather')
@@ -69,14 +69,21 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'reciprocal') return `(1.0 / ${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
-                if (x === 'texture') return parseTexture(c, y, z, w)
+                if (x === 'texture' || x === 'texelFetch') {
+                        if (isX(y) && y.type === 'element') {
+                                const [tn, ln] = y.props.children || []
+                                if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture')
+                                        return parseTextureArray(c, x, tn, ln, z, w)
+                        }
+                        if (x === 'texture') return parseTexture(c, y, z, w)
+                        if (!c.isWebGL) return `textureLoad(${code(y, c)}, ${code(z, c)}, ${code(w, c)})`
+                }
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 if (c.isWebGL) {
                         if (x === 'fma') return `(${code(y, c)} * ${code(z, c)} + ${code(w, c)})` // GLSL lacks fma builtin
                 } else {
                         if (x === 'dFdx') return `dpdx(${code(y, c)})`
                         if (x === 'dFdy') return `dpdy(${code(y, c)})`
-                        if (x === 'texelFetch') return `textureLoad(${code(y, c)}, ${code(z, c)}, ${code(w, c)})`
                 }
                 return `${x}(${parseArray(children.slice(1), c)})`
         }
@@ -130,7 +137,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'uniformArray') {
                 const varType = infer(target, c)
                 setupEvent(c, id, varType, target, x)
-                if (varType === 'texture') head = parseTextureArrayHead(c, id, props.args?.[0])
+                if (varType === 'texture') head = parseTextureArrayHead(c, id)
                 else head = parseUniformArrayHead(c, id, varType, props.args?.[0])
         }
         // @TODO FIX

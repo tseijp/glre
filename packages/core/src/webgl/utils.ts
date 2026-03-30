@@ -65,22 +65,30 @@ export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocati
         c[`uniformMatrix${m as 2}fv`](loc, false, value)
 }
 
-export const createTexture = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, unit: number) => {
+export const createTexture = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, unit: number, isArray = false, layers = 16, width = 1, height = 1) => {
         const texture = c.createTexture()!
+        const target = isArray ? c.TEXTURE_2D_ARRAY : c.TEXTURE_2D
+        const filter = isArray ? c.NEAREST : c.LINEAR
         c.activeTexture(c.TEXTURE0 + unit)
-        c.bindTexture(c.TEXTURE_2D, texture)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MIN_FILTER, c.LINEAR)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_MAG_FILTER, c.LINEAR)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
-        c.texParameteri(c.TEXTURE_2D, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
+        c.bindTexture(target, texture)
+        if (isArray) c.texImage3D(target, 0, c.RGBA, width, height, layers, 0, c.RGBA, c.UNSIGNED_BYTE, null)
+        c.texParameteri(target, c.TEXTURE_MIN_FILTER, filter)
+        c.texParameteri(target, c.TEXTURE_MAG_FILTER, filter)
+        c.texParameteri(target, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
+        c.texParameteri(target, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
         c.uniform1i(loc, unit)
-        return { texture, unit }
+        return { texture, unit, isArray }
 }
 
-export const updateTexture = (c: WebGL2RenderingContext, texture: WebGLTexture, unit: number, el: TexImageSource) => {
+export const updateTexture = (c: WebGL2RenderingContext, texture: WebGLTexture, unit: number, el: TexImageSource, isArray = false, layer = 0) => {
         c.activeTexture(c.TEXTURE0 + unit)
-        c.bindTexture(c.TEXTURE_2D, texture)
-        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+        if (isArray) {
+                c.bindTexture(c.TEXTURE_2D_ARRAY, texture)
+                c.texSubImage3D(c.TEXTURE_2D_ARRAY, 0, 0, 0, layer, (el as any).width, (el as any).height, 1, c.RGBA, c.UNSIGNED_BYTE, el)
+        } else {
+                c.bindTexture(c.TEXTURE_2D, texture)
+                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+        }
 }
 
 /**

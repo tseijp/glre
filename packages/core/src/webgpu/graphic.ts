@@ -21,9 +21,9 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 return { ...binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
         })
 
-        const _textures = nested((key, width = 1, height = 1) => {
+        const _textures = nested((key: string, width = 1, height = 1, isArray = false) => {
                 update()
-                return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height) }
+                return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height, isArray) }
         })
 
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
@@ -34,6 +34,7 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
 
         gl('_instance', (key: string, value: number[] | Float32Array) => {
                 if (instances && !(key in instances)) return
+                if (!_count) return
                 const a = _attributes(key, value, true)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
@@ -47,13 +48,19 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
 
         gl('_texture', (key: string, src: string | ImageBitmap, at?: number) => {
                 if (textures && !(key in textures)) return
-                const textureKey = at !== undefined ? `${key}${at}` : key
+                if (at !== undefined) {
+                        if (src instanceof ImageBitmap) {
+                                const t = _textures(key, src.width, src.height, true)
+                                gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture, origin: [0, 0, at] }, { width: src.width, height: src.height })
+                        }
+                        return
+                }
                 if (src instanceof ImageBitmap) {
-                        const t = _textures(textureKey, src.width, src.height)
+                        const t = _textures(key, src.width, src.height)
                         gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture }, { width: src.width, height: src.height })
                         return
                 }
-                const t = _textures(textureKey)
+                const t = _textures(key)
                 loadingTexture(src, (source, isVideo) => {
                         const [width, height] = isVideo ? [source.videoWidth, source.videoHeight] : [source.width, source.height]
                         t.texture.destroy()

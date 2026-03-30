@@ -13,7 +13,9 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
         let activeUnit = 0
         const _units = nested(() => activeUnit++)
         const _uniforms = nested((key) => c.getUniformLocation(pg, key))
-        const _textures = nested((key) => createTexture(c, _uniforms(key), _units(key)))
+        const _textures = nested((key: string, isArray = false, width = 1, height = 1) => {
+                return createTexture(c, _uniforms(key), _units(key), isArray, 16, width, height)
+        })
         const _attributes = nested((key, value: number[], isInstance = false) => {
                 const stride = getStride(value.length, isInstance ? _count : count, gl.error, key)
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
@@ -44,8 +46,19 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                 _texture(key: string, src, at?) {
                         if (textures && !(key in textures)) return
                         c.useProgram(pg)
-                        const textureKey = at !== undefined ? `${key}[${at}]` : key
-                        const t = _textures(textureKey)
+                        if (at !== undefined) {
+                                const upload = (source: TexImageSource) => {
+                                        c.useProgram(pg)
+                                        const w = (source as any).width || 1
+                                        const h = (source as any).height || 1
+                                        const t = _textures(key, true, w, h)
+                                        updateTexture(c, t.texture, t.unit, source, true, at)
+                                }
+                                if (is.str(src)) loadingTexture(src, (source) => upload(source as TexImageSource))
+                                else upload(src as TexImageSource)
+                                return
+                        }
+                        const t = _textures(key)
                         loadingTexture(src as string, (source, isVideo) => {
                                 c.useProgram(pg)
                                 updateTexture(c, t.texture, t.unit, source as TexImageSource)

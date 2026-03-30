@@ -110,9 +110,10 @@ const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: IText
         for (const { binding, buffer, group } of storages) {
                 add(group, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
         }
-        for (const { binding: b, group, sampler, view } of textures) {
+        for (const { binding: b, group, sampler, view, isArray } of textures) {
                 add(group, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
-                add(group, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
+                const dim: GPUTextureBindingLayout = isArray ? { viewDimension: '2d-array' } : {}
+                add(group, { binding: b + 1, visibility: 2, texture: dim }, { binding: b + 1, resource: view })
         }
         for (const [i, { layouts, bindings }] of groups) {
                 ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: layouts })
@@ -190,10 +191,13 @@ export const createDescriptor = (c: GPUCanvasContext, depthTexture?: GPUTexture)
 /**
  * textures
  */
-export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
-        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
-        const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
-        return { texture, sampler, view: texture.createView() }
+export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800, isArray = false, layers = 16) => {
+        const size: GPUExtent3DStrict = isArray ? [width, height, layers] : [width, height]
+        const filter: GPUFilterMode = isArray ? 'nearest' : 'linear'
+        const texture = device.createTexture({ size, format: 'rgba8unorm', usage: 22, dimension: '2d' }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+        const sampler = device.createSampler({ magFilter: filter, minFilter: filter })
+        const view = texture.createView(isArray ? { dimension: '2d-array' } : undefined)
+        return { texture, sampler, view, isArray }
 }
 
 export const createDepthTexture = (device: GPUDevice, width: number, height: number) => {
