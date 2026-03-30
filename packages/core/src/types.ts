@@ -80,10 +80,10 @@ export type GL = EventState<{
          * setter
          */
         _uniform?(key: string, value: Uniform, at?: number): GL
-        uniform(key: string, value: Uniform, isMatrix?: boolean): GL
+        uniform(key: string, value: Uniform, at?: number): GL
         uniform(target: { [key: string]: Uniform }): GL
-        _texture?(key: string, value: Texture, at?: number): GL
-        texture(key: string, value: Texture): GL
+        _texture?(key: string, value: Texture, at?: number, config?: TextureConfig): GL
+        texture(key: string, value: Texture, at?: number, config?: TextureConfig): GL
         texture(target: { [key: string]: Texture }): GL
         _attribute?(key: string, value: Storage, iboValue?: Storage): GL
         attribute(key: string, value: Storage, iboValue?: Storage): GL
@@ -102,6 +102,15 @@ export type GL = EventState<{
 type Uniform = number | number[] | Float32Array
 type Texture = string | HTMLImageElement | HTMLVideoElement | ImageBitmap
 type Storage = number[] | Float32Array
+
+/**
+ * for webgl
+ */
+export interface TextureConfig {
+        width?: number
+        height?: number
+        depth?: number
+}
 
 /**
  * for webgpu

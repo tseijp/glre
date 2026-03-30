@@ -1,5 +1,5 @@
 import { is } from '../helpers'
-import type { GL } from '../types'
+import type { GL, TextureConfig } from '../types'
 
 const createShader = (c: WebGL2RenderingContext, source: string, type: number, onError = console.warn) => {
         const shader = c.createShader(type)
@@ -65,30 +65,41 @@ export const updateUniform = (c: WebGL2RenderingContext, loc: WebGLUniformLocati
         c[`uniformMatrix${m as 2}fv`](loc, false, value)
 }
 
-export const createTexture = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, unit: number, isArray = false, layers = 16, width = 1, height = 1) => {
+const textureTarget = (c: WebGL2RenderingContext, isArray = false) => {
+        if (isArray) return c.TEXTURE_2D_ARRAY
+        return c.TEXTURE_2D
+}
+
+const textureFilter = (c: WebGL2RenderingContext, isArray = false) => {
+        if (isArray) return c.NEAREST
+        return c.LINEAR
+}
+
+export const createTexture = (c: WebGL2RenderingContext, loc: WebGLUniformLocation | null, unit: number, at?: number, config?: TextureConfig) => {
         const texture = c.createTexture()!
-        const target = isArray ? c.TEXTURE_2D_ARRAY : c.TEXTURE_2D
-        const filter = isArray ? c.NEAREST : c.LINEAR
+        const isArray = at !== undefined
+        const target = textureTarget(c, isArray)
+        const filter = textureFilter(c, isArray)
         c.activeTexture(c.TEXTURE0 + unit)
         c.bindTexture(target, texture)
-        if (isArray) c.texImage3D(target, 0, c.RGBA, width, height, layers, 0, c.RGBA, c.UNSIGNED_BYTE, null)
+        if (isArray) c.texImage3D(target, 0, c.RGBA, config?.width ?? 1, config?.height ?? 1, config?.depth ?? 1, 0, c.RGBA, c.UNSIGNED_BYTE, null)
         c.texParameteri(target, c.TEXTURE_MIN_FILTER, filter)
         c.texParameteri(target, c.TEXTURE_MAG_FILTER, filter)
         c.texParameteri(target, c.TEXTURE_WRAP_S, c.CLAMP_TO_EDGE)
         c.texParameteri(target, c.TEXTURE_WRAP_T, c.CLAMP_TO_EDGE)
         c.uniform1i(loc, unit)
-        return { texture, unit, isArray }
+        return { texture, unit }
 }
 
-export const updateTexture = (c: WebGL2RenderingContext, texture: WebGLTexture, unit: number, el: TexImageSource, isArray = false, layer = 0) => {
+export const updateTexture = (c: WebGL2RenderingContext, texture: WebGLTexture, unit: number, source: TexImageSource, at?: number, config?: TextureConfig) => {
         c.activeTexture(c.TEXTURE0 + unit)
+        const isArray = at !== undefined
+        c.bindTexture(textureTarget(c, isArray), texture)
         if (isArray) {
-                c.bindTexture(c.TEXTURE_2D_ARRAY, texture)
-                c.texSubImage3D(c.TEXTURE_2D_ARRAY, 0, 0, 0, layer, (el as any).width, (el as any).height, 1, c.RGBA, c.UNSIGNED_BYTE, el)
-        } else {
-                c.bindTexture(c.TEXTURE_2D, texture)
-                c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, el)
+                c.texSubImage3D(c.TEXTURE_2D_ARRAY, 0, 0, 0, at, config?.width ?? 1, config?.height ?? 1, config?.depth ?? 1, c.RGBA, c.UNSIGNED_BYTE, source)
+                return
         }
+        c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, source)
 }
 
 /**
