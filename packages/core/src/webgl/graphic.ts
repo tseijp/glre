@@ -1,5 +1,5 @@
 import { nested } from 'reev'
-import { getStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
+import { countStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
 import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer, updateInstance, updateTexture, updateUniform } from './utils'
 import type { GL } from '../types'
 
@@ -17,7 +17,7 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                 return createTexture(c, _uniforms(key), _units(key), at, config)
         })
         const _attributes = nested((key, value: number[], isInstance = false) => {
-                const stride = getStride(value.length, isInstance ? _count : count, gl.error, key)
+                const stride = countStride(value.length, isInstance ? _count : count, gl.error, key)
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
         return {

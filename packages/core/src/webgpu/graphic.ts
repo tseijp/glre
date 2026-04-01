@@ -1,6 +1,6 @@
 import { nested } from 'reev'
-import { getStride, is, loadingTexture } from '../helpers'
-import { createBuffer, createTextureSampler, updateBuffer } from './utils'
+import { countStride, is, loadingTexture } from '../helpers'
+import { createBuffer, createTextureSampler, createUniformArray, updateBuffer, updateUniformArray } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL, update = () => {}, index = 0) => {
@@ -11,14 +11,14 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
 
-        const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? _count : count, gl.error, key)) => {
+        const _attributes = nested((key, value: number[], isInstance = false, stride = countStride(value.length, isInstance ? _count : count, gl.error, key)) => {
                 update()
                 return { ...binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
         const _uniforms = nested((key, value: number[] | Float32Array) => {
                 update()
-                return { ...binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
+                return { ...binding.uniform(key), ...createUniformArray(gl.device, value) }
         })
 
         const _textures = nested((key: string, width = 1, height = 1, isArray = false) => {
@@ -26,9 +26,17 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height, isArray) }
         })
 
+        const resizeAttrib = (a: any, value: number[] | Float32Array) => {
+                a.buffer.destroy()
+                Object.assign(a, createBuffer(gl.device, value, 'attrib'))
+                updateBuffer(gl.device, value, a.array, a.buffer)
+                update()
+        }
+
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
                 if (attributes && !(key in attributes)) return
                 const a = _attributes(key, value)
+                if (value.length > a.array.length) return resizeAttrib(a, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
@@ -36,13 +44,15 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 if (instances && !(key in instances)) return
                 if (!_count) return
                 const a = _attributes(key, value, true)
+                if (value.length > a.array.length) return resizeAttrib(a, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
-        gl('_uniform', (key: string, value: number | number[] | Float32Array) => {
+        gl('_uniform', (key: string, value: number | number[] | Float32Array, at?: number) => {
                 if (uniforms && !(key in uniforms)) return
                 if (is.num(value)) value = [value]
                 const u = _uniforms(key, value)
+                if (at !== undefined) return updateUniformArray(gl.device, value, u.array, u.buffer, at, gl.error)
                 updateBuffer(gl.device, value, u.array, u.buffer)
         })
 

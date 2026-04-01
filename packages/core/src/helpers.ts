@@ -57,18 +57,43 @@ export function loadingTexture(src: string | HTMLImageElement | HTMLVideoElement
                 fun(el as HTMLVideoElement, isVideo)
         })
 }
-const isValidStride = (stride: number) => [1, 2, 3, 4, 9, 16].includes(stride)
+const { ceil, floor, max } = Math
 
-const calcStride = (arrayLength: number, count = 3) => {
-        if (arrayLength % count === 0) return Math.floor(arrayLength / count)
-        return -1
+const VALID = [1, 2, 3, 4, 9, 16]
+const valid = (fn: (s: number) => number) => {
+        let _check = (_a: number, _b: number) => true
+        let _catch = ''
+        const call = (s: number, error = console.warn, id = '') => {
+                const ret = fn(s)
+                if (!_check(s, ret)) error(`glre ${_catch} ${s}${id ? ` for '${id}'` : ''}`)
+                return ret
+        }
+        call.check = (c = _check) => {
+                _check = c
+                return call
+        }
+        call.catch = (m = _catch) => {
+                _catch = m
+                return call
+        }
+        return call
 }
 
-export const getStride = (arrayLength: number, count = 1, error = console.warn, id = '') => {
-        const ret = calcStride(arrayLength, count)
-        if (!isValidStride(ret)) error(`glre attribute error: Invalid attribute length ${arrayLength}, ${id ? `${id} ` : ' '}must divide by vertex count (${count}) with valid stride (1,2,3,4,9,16)`)
-        return ret
-}
+export const arrayStride = valid((s) => ceil(s / 4) * 4)
+        .check((s: number) => VALID.includes(s))
+        .catch('uniform array: invalid element size')
+export const alignStride = valid((s) => max(4, ceil((s * 4) / 4) * 4))
+        .check((s) => 1 <= s && s <= 4)
+        .catch('vertex buffer: invalid component size')
+export const countStride = (len: number, count = 1, error = console.warn, id = '') =>
+        valid((s) => floor(s / count))
+                .check((_s, r) => VALID.includes(r))
+                .catch(`attribute: invalid stride from ${len}/${count}`)(len, error, id)
+
+export const arrayOffset = (n: number, at: number) => at * arrayStride(n)
+export const bindingGroup = (i: number, n: number, base = 0) => base + floor(i / n)
+export const bindingIndex = (i: number, n: number, s = 1) => (i % n) * s
+export const alignTo256 = (n: number) => ceil(n / 256) * 256
 
 export const GLSL_FS = /* cpp */ `
 #version 300 es

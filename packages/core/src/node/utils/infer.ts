@@ -1,6 +1,6 @@
 import { isConstants, isElement, isX, isSwizzle } from './utils'
 import { BUILTIN_TYPES, FUNCTION_RETURN_TYPES, getOperatorResultType, SWIZZLE_BASE_MAP, SWIZZLE_RESULT_MAP, validateOperatorTypes } from './const'
-import { is, getStride, isFloat32 } from '../../helpers'
+import { is, countStride, isFloat32 } from '../../helpers'
 import type { Constants as C, NodeContext, X, Y } from '../types'
 
 const inferBuiltin = <T extends C>(id: string | undefined) => {
@@ -64,7 +64,7 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
         if (type === 'attribute' || type === 'instance')
                 if (is.arr(x)) {
                         const count = type === 'instance' ? c.gl?.instanceCount : c.gl?.count
-                        const stride = getStride(x.length, count, c.gl?.error, id)
+                        const stride = countStride(x.length, count, c.gl?.error, id)
                         return inferFromCount(stride, c.gl?.error, id)
                 }
         if (type === 'member') {

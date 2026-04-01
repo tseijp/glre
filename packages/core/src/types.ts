@@ -79,16 +79,16 @@ export type GL = EventState<{
         /**
          * setter
          */
-        _uniform?(key: string, value: Uniform, at?: number): GL
+        _uniform(key: string, value: Uniform, at?: number): GL
         uniform(key: string, value: Uniform, at?: number): GL
         uniform(target: { [key: string]: Uniform }): GL
-        _texture?(key: string, value: Texture, at?: number, config?: TextureConfig): GL
+        _texture(key: string, value: Texture, at?: number, config?: TextureConfig): GL
         texture(key: string, value: Texture, at?: number, config?: TextureConfig): GL
         texture(target: { [key: string]: Texture }): GL
-        _attribute?(key: string, value: Storage, iboValue?: Storage): GL
+        _attribute(key: string, value: Storage, iboValue?: Storage): GL
         attribute(key: string, value: Storage, iboValue?: Storage): GL
         attribute(target: { [key: string]: Storage }): GL
-        _instance?(key: string, value: Storage, at?: number): GL
+        _instance(key: string, value: Storage, at?: number): GL
         instance(key: string, value: Storage, at?: number): GL
         instance(target: { [key: string]: Storage }): GL
         _storage?(key: string, value: Storage): GL
