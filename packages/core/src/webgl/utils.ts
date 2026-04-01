@@ -96,7 +96,7 @@ export const updateTexture = (c: WebGL2RenderingContext, texture: WebGLTexture, 
         const isArray = at !== undefined
         c.bindTexture(textureTarget(c, isArray), texture)
         if (isArray) {
-                c.texSubImage3D(c.TEXTURE_2D_ARRAY, 0, 0, 0, at, config?.width ?? 1, config?.height ?? 1, config?.depth ?? 1, c.RGBA, c.UNSIGNED_BYTE, source)
+                c.texSubImage3D(c.TEXTURE_2D_ARRAY, 0, 0, 0, at, config?.width ?? 1, config?.height ?? 1, 1, c.RGBA, c.UNSIGNED_BYTE, source)
                 return
         }
         c.texImage2D(c.TEXTURE_2D, 0, c.RGBA, c.RGBA, c.UNSIGNED_BYTE, source)

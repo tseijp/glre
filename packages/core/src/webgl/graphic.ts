@@ -49,7 +49,7 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                         loadingTexture(src as string, (source, isVideo) => {
                                 c.useProgram(pg)
                                 const t = _textures(key, at, config)
-                                const render = () => updateTexture(c, t.texture, t.unit, source, at)
+                                const render = () => updateTexture(c, t.texture, t.unit, source, at, config)
                                 render()
                                 if (isVideo) gl({ render })
                         })
