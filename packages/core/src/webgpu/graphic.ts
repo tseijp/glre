@@ -26,7 +26,7 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height, isArray) }
         })
 
-        const resizeAttrib = (a: any, value: number[] | Float32Array) => {
+        const _resize = (a: any, value: number[] | Float32Array) => {
                 a.buffer.destroy()
                 Object.assign(a, createBuffer(gl.device, value, 'attrib'))
                 updateBuffer(gl.device, value, a.array, a.buffer)
@@ -36,7 +36,7 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
                 if (attributes && !(key in attributes)) return
                 const a = _attributes(key, value)
-                if (value.length > a.array.length) return resizeAttrib(a, value)
+                if (value.length > a.array.length) return _resize(a, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
@@ -44,7 +44,7 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 if (instances && !(key in instances)) return
                 if (!_count) return
                 const a = _attributes(key, value, true)
-                if (value.length > a.array.length) return resizeAttrib(a, value)
+                if (value.length > a.array.length) return _resize(a, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
