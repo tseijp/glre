@@ -102,19 +102,6 @@ export const parseDeclare = (c: NodeContext, x: Y, y: Y) => {
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
 }
 
-export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
-        c.code?.structStructFields?.set(id, fields)
-        const lines: string[] = []
-        for (const key in fields) {
-                const fieldType = fields[key]
-                const type = infer(fieldType, c)
-                if (c.isWebGL) addDependency(c, id, type)
-                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${getConversions(type, c)},`)
-        }
-        const ret = lines.join('\n  ')
-        return `struct ${id} {\n  ${ret}\n};`
-}
-
 export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: StructFields) => {
         const fields = c.code?.structStructFields?.get(id) || {}
         if (c.isWebGL) {
@@ -170,6 +157,19 @@ export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
 /**
  * headers
  */
+export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
+        c.code?.structStructFields?.set(id, fields)
+        const lines: string[] = []
+        for (const key in fields) {
+                const fieldType = fields[key]
+                const type = infer(fieldType, c)
+                if (c.isWebGL) addDependency(c, id, type)
+                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${getConversions(type, c)},`)
+        }
+        const ret = lines.join('\n  ')
+        return `struct ${id} {\n  ${ret}\n};`
+}
+
 export const parseVaryingHead = (c: NodeContext, id: string, type: Constants) => {
         return c.isWebGL ? `${type} ${id};` : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
 }
@@ -210,14 +210,14 @@ export const parseTextureArrayHead = (c: NodeContext, id: string) => {
         return `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d_array<f32>;`
 }
 
-export const parseUniformArrayHead = (c: NodeContext, id: string, type: Constants, count?: number) => {
+export const parseUniformArrayHead = (c: NodeContext, id: string, type: Constants, count = 0) => {
         if (c.isWebGL) {
-                const countStr = count !== undefined ? `[${count}]` : '[]'
+                const countStr = count ? `[${count}]` : '[]'
                 return `uniform ${type} ${id}${countStr};`
         }
         const { group = 0, binding = 0 } = c.gl?.binding?.uniform(id) || {}
         const wgslType = getConversions(type, c)
-        const countStr = count !== undefined ? `, ${count}` : ''
+        const countStr = count ? `, ${count}` : ''
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: array<${wgslType}${countStr}>;`
 }
 

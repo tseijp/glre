@@ -46,16 +46,16 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
                 updateBuffer(gl.device, value, u.array, u.buffer)
         })
 
-        gl('_texture', (key: string, src: string | ImageBitmap, at?: number) => {
+        gl('_texture', (key: string, src: string | ImageBitmap | OffscreenCanvas, at?: number) => {
                 if (textures && !(key in textures)) return
                 if (at !== undefined) {
-                        if (src instanceof ImageBitmap) {
+                        if (src instanceof ImageBitmap || src instanceof OffscreenCanvas) {
                                 const t = _textures(key, src.width, src.height, true)
                                 gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture, origin: [0, 0, at] }, { width: src.width, height: src.height })
                         }
                         return
                 }
-                if (src instanceof ImageBitmap) {
+                if (src instanceof ImageBitmap || src instanceof OffscreenCanvas) {
                         const t = _textures(key, src.width, src.height)
                         gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture }, { width: src.width, height: src.height })
                         return

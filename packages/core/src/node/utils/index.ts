@@ -69,19 +69,17 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'reciprocal') return `(1.0 / ${code(y, c)})`
                 if (x === 'oneMinus') return `(1.0-${code(y, c)})`
                 if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
-                if (x === 'texture' || x === 'texelFetch') {
-                        if (isX(y) && y.type === 'element') {
-                                const [tn, ln] = y.props.children || []
-                                if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture')
-                                        return parseTextureArray(c, x, tn, ln, z, w)
-                        }
-                        if (x === 'texture') return parseTexture(c, y, z, w)
-                        if (!c.isWebGL) return `textureLoad(${code(y, c)}, ${code(z, c)}, ${code(w, c)})`
+                if ((x === 'texture' || x === 'texelFetch') && isX(y) && y.type === 'element') {
+                        const [tn, ln] = y.props.children || []
+                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture')
+                                return parseTextureArray(c, x, tn, ln, z, w)
                 }
+                if (x === 'texture') return parseTexture(c, y, z, w)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 if (c.isWebGL) {
-                        if (x === 'fma') return `(${code(y, c)} * ${code(z, c)} + ${code(w, c)})` // GLSL lacks fma builtin
+                        if (x === 'fma') return `(${code(y, c)} * ${code(z, c)} + ${code(w, c)})`
                 } else {
+                        if (x === 'texelFetch') return `textureLoad(${code(y, c)}, ${code(z, c)}, ${code(w, c)})`
                         if (x === 'dFdx') return `dpdx(${code(y, c)})`
                         if (x === 'dFdy') return `dpdy(${code(y, c)})`
                 }
