@@ -99,9 +99,9 @@ export type GL = EventState<{
         setInstanceCount(next: number, at?: number): void
 }>
 
-type Uniform = number | number[] | Float32Array
-type Texture = string | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas
+type Uniform = number[] | Float32Array | number
 type Storage = number[] | Float32Array
+type Texture = string | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas
 
 /**
  * for webgl
