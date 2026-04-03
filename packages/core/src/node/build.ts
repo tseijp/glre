@@ -74,10 +74,14 @@ export const fragment = (x: X, c: NodeContext = {}) => {
                 result.push(`  fragColor = ${ret};`)
         } else {
                 if (c.code?.fragInputs?.size) result.push(generateStruct('Out', c.code.fragInputs))
+                const fo = c.code?.fragOutputs
+                if (fo?.size) result.push(generateStruct('FragOut', new Map([['color', '@location(0) color: vec4f'], ...fo])))
                 result.push(head)
-                result.push(`@fragment\nfn main(out: Out) -> @location(0) vec4f {`)
+                result.push(`@fragment\nfn main(out: Out) -> ${fo?.size ? 'FragOut' : '@location(0) vec4f'} {`)
+                if (fo?.size) result.push('  var ret: FragOut;')
                 if (lines) result.push(`  ${lines}`)
-                result.push(`  return ${ret};`)
+                if (fo?.size) result.push(`  ret.color = ${ret};\n  return ret;`)
+                else result.push(`  return ${ret};`)
         }
         result.push('}')
         const main = result.filter(Boolean).join('\n').trim()

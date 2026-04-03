@@ -71,8 +71,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
                 if ((x === 'texture' || x === 'texelFetch') && isX(y) && y.type === 'element') {
                         const [tn, ln] = y.props.children || []
-                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture')
-                                return parseTextureArray(c, x, tn, ln, z, w)
+                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture') return parseTextureArray(c, x, tn, ln, z, w)
                 }
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
@@ -119,6 +118,10 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(c, id)
                 if (id === 'position') return 'out.position'
+                if (id === 'frag_depth' && c.label === 'frag') {
+                        c.code?.fragOutputs?.set(id, `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`)
+                        return `ret.${id}`
+                }
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.label === 'compute') c.code?.computeInputs.set(id, field)
                 else if (c.label === 'frag') c.code?.fragInputs.set(id, field)

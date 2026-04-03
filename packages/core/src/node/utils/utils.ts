@@ -77,6 +77,7 @@ export const initNodeContext = (c: NodeContext) => {
         c.code = {
                 headers: new Map(),
                 fragInputs: new Map(),
+                fragOutputs: new Map(),
                 vertInputs: new Map(),
                 vertOutputs: new Map(),
                 vertVaryings: new Map(),
