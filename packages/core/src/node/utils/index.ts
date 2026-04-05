@@ -55,7 +55,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'float') if (is.num(y)) return parseNumber(y) // no conversion needed, e.g., float(1.0) → 1.0
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
                 if (x === 'int') if (is.num(y)) return `${y << 0}`
-                if (x === 'uint') if (is.num(y)) return `${y >>> 0}`
+                if (x === 'uint') if (is.num(y)) return `${y >>> 0}u`
                 return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         }
         if (type === 'operator') {
