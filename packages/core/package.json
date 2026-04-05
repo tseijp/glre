@@ -1,6 +1,6 @@
 {
         "name": "glre",
-        "version": "0.53.0",
+        "version": "0.54.0",
         "author": "tseijp",
         "license": "MIT",
         "private": false,
@@ -66,26 +66,26 @@
                         "default": "./src/index.ts"
                 },
                 "./addons": {
-                        "types": "./dist/addons.d.ts",
+                        "types": "./dist/addons/index.d.ts",
                         "import": {
-                                "types": "./dist/addons.d.ts",
+                                "types": "./dist/addons/index.d.ts",
                                 "default": "./dist/addons.js"
                         },
                         "module": {
-                                "types": "./dist/addons.d.ts",
+                                "types": "./dist/addons/index.d.ts",
                                 "default": "./dist/addons.js"
                         },
                         "require": "./dist/addons.cjs",
                         "default": "./dist/addons.js"
                 },
                 "./buffers": {
-                        "types": "./dist/buffers.d.ts",
+                        "types": "./dist/buffers/index.d.ts",
                         "import": {
-                                "types": "./dist/buffers.d.ts",
+                                "types": "./dist/buffers/index.d.ts",
                                 "default": "./dist/buffers.js"
                         },
                         "module": {
-                                "types": "./dist/buffers.d.ts",
+                                "types": "./dist/buffers/index.d.ts",
                                 "default": "./dist/buffers.js"
                         },
                         "require": "./dist/buffers.cjs",
@@ -105,13 +105,13 @@
                         "default": "./dist/native.js"
                 },
                 "./node": {
-                        "types": "./dist/node.d.ts",
+                        "types": "./dist/node/index.d.ts",
                         "import": {
-                                "types": "./dist/node.d.ts",
+                                "types": "./dist/node/index.d.ts",
                                 "default": "./dist/node.js"
                         },
                         "module": {
-                                "types": "./dist/node.d.ts",
+                                "types": "./dist/node/index.d.ts",
                                 "default": "./dist/node.js"
                         },
                         "require": "./dist/node.cjs",

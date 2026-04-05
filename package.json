@@ -19,7 +19,7 @@
                 "watch": "vitest --config packages/core/vitest.config.ts",
                 "cov": "vitest run --config packages/core/vitest.config.ts --coverage",
                 "ls": "cd packages/core && npm publish --dry-run",
-                "tsup": "cd packages/core && npx tsup",
+                "tsup": "cd packages/core && npx tsup && npx tsc -p tsconfig2.json && for f in addons buffers node; do echo \"export * from './$f/index'\" > dist/$f.d.ts; done",
                 "vers": "npx changeset version",
                 "pub": "npm run tsup && npx changeset publish"
         },
