@@ -3,13 +3,15 @@ import { getStride, is, loadingTexture } from '../helpers'
 import { createBuffer, createTextureSampler, updateBuffer } from './utils'
 import type { GL } from '../types'
 
-export const graphic = (gl: GL, update = () => {}) => {
-        const { count, instanceCount, attributes, instances, uniforms, textures, binding } = gl
+export const graphic = (gl: GL, update = () => {}, index = 0) => {
+        const { attributes, instances, uniforms, textures, binding } = gl
+        let count = gl.count
+        let _count = gl.instanceCount
         let pipeline: GPURenderPipeline
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
 
-        const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? instanceCount : count, gl.error, key)) => {
+        const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? _count : count, gl.error, key)) => {
                 update()
                 return { ...binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
@@ -43,14 +45,19 @@ export const graphic = (gl: GL, update = () => {}) => {
                 updateBuffer(gl.device, value, u.array, u.buffer)
         })
 
-        gl('_texture', (key: string, src: string) => {
+        gl('_texture', (key: string, src: string | ImageBitmap) => {
                 if (textures && !(key in textures)) return
+                if (src instanceof ImageBitmap) {
+                        const t = _textures(key, src.width, src.height)
+                        gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture }, { width: src.width, height: src.height })
+                        return
+                }
                 const t = _textures(key)
                 loadingTexture(src, (source, isVideo) => {
                         const [width, height] = isVideo ? [source.videoWidth, source.videoHeight] : [source.width, source.height]
                         t.texture.destroy()
                         Object.assign(t, createTextureSampler(gl.device, width, height))
-                        update() // Rebuilding BindGroups because the texture size has changed
+                        update()
                         const render = () => void gl.device.queue.copyExternalImageToTexture({ source }, { texture: t.texture }, { width, height })
                         if (isVideo) gl({ render })
                         else render()
@@ -62,13 +69,25 @@ export const graphic = (gl: GL, update = () => {}) => {
                 gl.passEncoder.setPipeline(pipeline)
                 bindGroups.forEach((v, i) => gl.passEncoder.setBindGroup(i, v))
                 vertexBuffers.forEach((v, i) => gl.passEncoder.setVertexBuffer(i, v))
-                gl.passEncoder.draw(count, instanceCount, 0, 0)
+                gl.passEncoder.draw(count, _count, 0, 0)
         })
 
         gl('clean', () => {
                 for (const { buffer } of _attributes.map.values()) buffer.destroy()
                 for (const { texture } of _textures.map.values()) texture.destroy()
                 for (const { buffer } of _uniforms.map.values()) buffer.destroy()
+        })
+
+        gl('setCount', (next: number, at = index) => {
+                if (at === index) count = next
+        })
+
+        gl('setTriangleCount', (next: number, at = index) => {
+                if (at === index) count = next * 3
+        })
+
+        gl('setInstanceCount', (next: number, at = index) => {
+                if (at === index) _count = next
         })
 
         const set = (_pipeline: GPURenderPipeline, _bindGroups: GPUBindGroup[], _vertexBuffers: GPUBuffer[]) => {

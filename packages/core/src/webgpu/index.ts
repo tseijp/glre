@@ -4,7 +4,7 @@ import { createBinding, createDepthTexture, createDescriptor, createDevice, upda
 import { is, WGSL_FS, WGSL_VS } from '../helpers'
 import type { GL } from '../types'
 
-export const webgpu = async (gl: GL, isLast = false) => {
+export const webgpu = async (gl: GL, isLast = false, index = 0) => {
         let { vs, fs, cs } = gl
         let isUpdate = true
         const isInit = !gl.gpu
@@ -36,7 +36,7 @@ export const webgpu = async (gl: GL, isLast = false) => {
                         gl.passEncoder = gl.commandEncoder.beginRenderPass(createDescriptor(gl.gpu, gl.depthTexture))
                 })
 
-        const g = graphic(gl, () => (isUpdate = true))
+        const g = graphic(gl, () => (isUpdate = true), index)
 
         const update = () => {
                 isUpdate = false

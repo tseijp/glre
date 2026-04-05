@@ -106,7 +106,7 @@ export const createGL = (...args: Partial<GL>[]): EventState<GL> => {
                         gl(arg)
                         if (is.bol(arg.isWebGL)) gl.isWebGL = arg.isWebGL || !isWebGPUSupported()
                         if (gl.isWebGL) webgl(gl, i)
-                        else await webgpu(gl, i === args.length - 1)
+                        else await webgpu(gl, i === args.length - 1, i)
                         if (arg.mount) arg.mount() // @MEMO events added in mount phase need explicit call to execute
                 }
                 if (!gl.el || gl.isError) return // @MEMO stop if error or canvas was unmounted during async
