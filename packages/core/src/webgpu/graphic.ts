@@ -1,6 +1,6 @@
 import { nested } from 'reev'
-import { getStride, is, loadingTexture } from '../helpers'
-import { createBuffer, createTextureSampler, updateBuffer } from './utils'
+import { countStride, is, loadingTexture } from '../helpers'
+import { createBuffer, createTextureSampler, createUniformArray, updateBuffer, updateUniformArray } from './utils'
 import type { GL } from '../types'
 
 export const graphic = (gl: GL, update = () => {}, index = 0) => {
@@ -11,43 +11,61 @@ export const graphic = (gl: GL, update = () => {}, index = 0) => {
         let bindGroups: GPUBindGroup[]
         let vertexBuffers: GPUBuffer[]
 
-        const _attributes = nested((key, value: number[], isInstance = false, stride = getStride(value.length, isInstance ? _count : count, gl.error, key)) => {
+        const _attributes = nested((key, value: number[], isInstance = false, stride = countStride(value.length, isInstance ? _count : count, gl.error, key)) => {
                 update()
                 return { ...binding.attrib(key), ...createBuffer(gl.device, value, 'attrib'), isInstance, stride }
         })
 
         const _uniforms = nested((key, value: number[] | Float32Array) => {
                 update()
-                return { ...binding.uniform(key), ...createBuffer(gl.device, value, 'uniform') }
+                return { ...binding.uniform(key), ...createUniformArray(gl.device, value) }
         })
 
-        const _textures = nested((key, width = 1, height = 1) => {
+        const _textures = nested((key: string, width = 1, height = 1, isArray = false) => {
                 update()
-                return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height) }
+                return { ...binding.texture(key), ...createTextureSampler(gl.device, width, height, isArray) }
         })
+
+        const _resize = (a: any, value: number[] | Float32Array) => {
+                a.buffer.destroy()
+                Object.assign(a, createBuffer(gl.device, value, 'attrib'))
+                updateBuffer(gl.device, value, a.array, a.buffer)
+                update()
+        }
 
         gl('_attribute', (key: string, value: number[] | Float32Array) => {
                 if (attributes && !(key in attributes)) return
                 const a = _attributes(key, value)
+                if (value.length > a.array.length) return _resize(a, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
         gl('_instance', (key: string, value: number[] | Float32Array) => {
                 if (instances && !(key in instances)) return
+                if (!_count) return
                 const a = _attributes(key, value, true)
+                if (value.length > a.array.length) return _resize(a, value)
                 updateBuffer(gl.device, value, a.array, a.buffer)
         })
 
-        gl('_uniform', (key: string, value: number | number[] | Float32Array) => {
+        gl('_uniform', (key: string, value: number | number[] | Float32Array, at?: number) => {
                 if (uniforms && !(key in uniforms)) return
                 if (is.num(value)) value = [value]
                 const u = _uniforms(key, value)
+                if (at !== undefined) return updateUniformArray(gl.device, value, u.array, u.buffer, at, gl.error)
                 updateBuffer(gl.device, value, u.array, u.buffer)
         })
 
-        gl('_texture', (key: string, src: string | ImageBitmap) => {
+        gl('_texture', (key: string, src: string | ImageBitmap | OffscreenCanvas, at?: number) => {
                 if (textures && !(key in textures)) return
-                if (src instanceof ImageBitmap) {
+                if (at !== undefined) {
+                        if (src instanceof ImageBitmap || src instanceof OffscreenCanvas) {
+                                const t = _textures(key, src.width, src.height, true)
+                                gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture, origin: [0, 0, at] }, { width: src.width, height: src.height })
+                        }
+                        return
+                }
+                if (src instanceof ImageBitmap || src instanceof OffscreenCanvas) {
                         const t = _textures(key, src.width, src.height)
                         gl.device.queue.copyExternalImageToTexture({ source: src }, { texture: t.texture }, { width: src.width, height: src.height })
                         return

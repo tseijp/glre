@@ -1,5 +1,5 @@
 import { nested } from 'reev'
-import { is, isFloat32 } from '../helpers'
+import { alignStride, alignTo256, arrayOffset, arrayStride, bindingGroup, bindingIndex, is, isFloat32 } from '../helpers'
 import type { AttribData, TextureData, UniformData, StorageData } from '../types'
 
 type IAttribs = Iterable<AttribData & { isInstance?: boolean }>
@@ -16,30 +16,26 @@ export const createBinding = () => {
         let _storage = 0
         let _attrib = 0
         const uniform = nested(() => {
-                const group = Math.floor(_uniform / 12)
-                const binding = _uniform % 12
+                const group = bindingGroup(_uniform, 12)
+                const binding = bindingIndex(_uniform, 12)
                 _uniform++
                 return { group, binding }
         })
         const texture = nested(() => {
-                const baseGroup = Math.floor(_uniform / 12) + 1
-                const group = baseGroup + Math.floor(_texture / 6)
-                const binding = (_texture % 6) * 2
+                const base = bindingGroup(_uniform, 12) + 1
+                const group = bindingGroup(_texture, 6, base)
+                const binding = bindingIndex(_texture, 6, 2)
                 _texture++
                 return { group, binding }
         })
         const storage = nested(() => {
-                const baseGroup = Math.floor(_uniform / 12) + Math.floor(_texture / 6) + 2
-                const group = baseGroup + Math.floor(_storage / 12)
-                const binding = _storage % 12
+                const base = bindingGroup(_uniform, 12) + bindingGroup(_texture, 6) + 2
+                const group = bindingGroup(_storage, 12, base)
+                const binding = bindingIndex(_storage, 12)
                 _storage++
                 return { group, binding }
         })
-        const attrib = nested(() => {
-                const location = _attrib
-                _attrib++
-                return { location }
-        })
+        const attrib = nested(() => ({ location: _attrib++ }))
         return { uniform, texture, storage, attrib }
 }
 
@@ -73,13 +69,12 @@ const getVertexFormat = (stride: number): GPUVertexFormat => {
         return 'float32'
 }
 
-const createVertexBuffers = (attribs: IAttribs) => {
+const createVertexBuffers = (attribs: IAttribs, error = console.warn) => {
         const vertexBuffers: GPUBuffer[] = []
         const bufferLayouts: GPUVertexBufferLayout[] = []
         for (const { buffer, location, stride, isInstance } of attribs) {
                 vertexBuffers[location] = buffer
-                const componentSize = Math.min(Math.max(Math.floor(stride), 1), 4)
-                const arrayStride = Math.max(4, Math.ceil((componentSize * 4) / 4) * 4)
+                const arrayStride = alignStride(stride, error)
                 bufferLayouts[location] = {
                         arrayStride,
                         stepMode: isInstance ? 'instance' : 'vertex',
@@ -87,7 +82,7 @@ const createVertexBuffers = (attribs: IAttribs) => {
                                 {
                                         shaderLocation: location,
                                         offset: 0,
-                                        format: getVertexFormat(componentSize),
+                                        format: getVertexFormat(stride),
                                 },
                         ],
                 }
@@ -110,9 +105,10 @@ const createBindGroup = (device: GPUDevice, uniforms: IUniforms, textures: IText
         for (const { binding, buffer, group } of storages) {
                 add(group, { binding, visibility: 6, buffer: { type: 'storage' } }, { binding, resource: { buffer } })
         }
-        for (const { binding: b, group, sampler, view } of textures) {
+        for (const { binding: b, group, sampler, view, isArray } of textures) {
                 add(group, { binding: b, visibility: 2, sampler: {} }, { binding: b, resource: sampler })
-                add(group, { binding: b + 1, visibility: 2, texture: {} }, { binding: b + 1, resource: view })
+                const dim: GPUTextureBindingLayout = isArray ? { viewDimension: '2d-array' } : {}
+                add(group, { binding: b + 1, visibility: 2, texture: dim }, { binding: b + 1, resource: view })
         }
         for (const [i, { layouts, bindings }] of groups) {
                 ret.bindGroupLayouts[i] = device.createBindGroupLayout({ entries: layouts })
@@ -151,8 +147,8 @@ const createComputePipeline = (device: GPUDevice, bindGroupLayouts: GPUBindGroup
         })
 }
 
-export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string, isDepth: boolean) => {
-        const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs)
+export const updatePipeline = (device: GPUDevice, format: GPUTextureFormat, attribs: IAttribs, uniforms: IUniforms, textures: ITextures, storages: IStorages, fs: string, cs: string, vs: string, isDepth: boolean, error = console.warn) => {
+        const { vertexBuffers, bufferLayouts } = createVertexBuffers(attribs, error)
         const { bindGroups, bindGroupLayouts } = createBindGroup(device, uniforms, textures, storages)
         const computePipeline = createComputePipeline(device, bindGroupLayouts, cs)
         const graphicPipeline = createPipeline(device, format, bufferLayouts, bindGroupLayouts, vs, fs, isDepth)
@@ -171,14 +167,30 @@ const bufferUsage = (type: 'uniform' | 'storage' | 'attrib') => {
 export const createBuffer = (device: GPUDevice, array: number[] | Float32Array, type: 'uniform' | 'storage' | 'attrib') => {
         if (!isFloat32(array)) array = new Float32Array(array)
         const usage = bufferUsage(type)
-        const size = type === 'uniform' ? Math.ceil(array.byteLength / 256) * 256 : array.byteLength
+        const size = type === 'uniform' ? alignTo256(array.byteLength) : array.byteLength
         const buffer = device.createBuffer({ size, usage })
         return { array, buffer }
 }
 
 export const updateBuffer = (device: GPUDevice, value: number[] | Float32Array, array: Float32Array, buffer: GPUBuffer) => {
-        array.set(value)
+        array.set(value as Float32Array)
         device.queue.writeBuffer(buffer, 0, array as GPUAllowSharedBufferSource)
+}
+
+export const createUniformArray = (device: GPUDevice, value: number[] | Float32Array) => {
+        if (!isFloat32(value)) value = new Float32Array(value)
+        const size = alignTo256((value as Float32Array).byteLength)
+        const buffer = device.createBuffer({ size, usage: 72 })
+        const array = new Float32Array(size / 4)
+        array.set(value as Float32Array)
+        return { array, buffer }
+}
+
+export const updateUniformArray = (device: GPUDevice, value: number[] | Float32Array, array: Float32Array, buffer: GPUBuffer, at: number, error = console.warn) => {
+        const offset = arrayOffset(value.length, at)
+        const stride = arrayStride(value.length, error)
+        for (let i = 0; i < value.length; i++) array[offset + i] = value[i]
+        device.queue.writeBuffer(buffer, offset * 4, array as GPUAllowSharedBufferSource, offset, stride)
 }
 
 export const createDescriptor = (c: GPUCanvasContext, depthTexture?: GPUTexture) => {
@@ -190,10 +202,15 @@ export const createDescriptor = (c: GPUCanvasContext, depthTexture?: GPUTexture)
 /**
  * textures
  */
-export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800) => {
-        const texture = device.createTexture({ size: [width, height], format: 'rgba8unorm', usage: 22 }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
-        const sampler = device.createSampler({ magFilter: 'linear', minFilter: 'linear' })
-        return { texture, sampler, view: texture.createView() }
+export const createTextureSampler = (device: GPUDevice, width = 1280, height = 800, isArray = false, layers = 16) => {
+        const size: GPUExtent3DStrict = isArray ? [width, height, layers] : [width, height]
+        const filter: GPUFilterMode = isArray ? 'nearest' : 'linear'
+        const texture = device.createTexture({ size, format: 'rgba8unorm', usage: 22, dimension: '2d' }) // 22 is GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT
+        // const usage = isArray ? 6 : 22 // 6 is TEXTURE_BINDING | COPY_DST, 22 adds RENDER_ATTACHMENT
+        // const texture = device.createTexture({ size, format: 'rgba8unorm', usage, dimension: '2d' })
+        const sampler = device.createSampler({ magFilter: filter, minFilter: filter })
+        const view = texture.createView(isArray ? { dimension: '2d-array' } : undefined)
+        return { texture, sampler, view, isArray }
 }
 
 export const createDepthTexture = (device: GPUDevice, width: number, height: number) => {

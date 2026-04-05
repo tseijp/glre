@@ -79,16 +79,16 @@ export type GL = EventState<{
         /**
          * setter
          */
-        _uniform?(key: string, value: Uniform, at?: number): GL
-        uniform(key: string, value: Uniform, isMatrix?: boolean): GL
+        _uniform(key: string, value: Uniform, at?: number): GL
+        uniform(key: string, value: Uniform, at?: number): GL
         uniform(target: { [key: string]: Uniform }): GL
-        _texture?(key: string, value: Texture): GL
-        texture(key: string, value: Texture): GL
+        _texture(key: string, value: Texture, at?: number, config?: TextureConfig): GL
+        texture(key: string, value: Texture, at?: number, config?: TextureConfig): GL
         texture(target: { [key: string]: Texture }): GL
-        _attribute?(key: string, value: Storage, iboValue?: Storage): GL
+        _attribute(key: string, value: Storage, iboValue?: Storage): GL
         attribute(key: string, value: Storage, iboValue?: Storage): GL
         attribute(target: { [key: string]: Storage }): GL
-        _instance?(key: string, value: Storage, at?: number): GL
+        _instance(key: string, value: Storage, at?: number): GL
         instance(key: string, value: Storage, at?: number): GL
         instance(target: { [key: string]: Storage }): GL
         _storage?(key: string, value: Storage): GL
@@ -99,9 +99,18 @@ export type GL = EventState<{
         setInstanceCount(next: number, at?: number): void
 }>
 
-type Uniform = number | number[] | Float32Array
-type Texture = string | HTMLImageElement | HTMLVideoElement | ImageBitmap
+type Uniform = number[] | Float32Array | number
 type Storage = number[] | Float32Array
+type Texture = string | HTMLImageElement | HTMLVideoElement | ImageBitmap | OffscreenCanvas
+
+/**
+ * for webgl
+ */
+export interface TextureConfig {
+        width?: number
+        height?: number
+        depth?: number
+}
 
 /**
  * for webgpu
@@ -119,6 +128,7 @@ export interface TextureData {
         texture: GPUTexture
         sampler: GPUSampler
         view: GPUTextureView
+        isArray?: boolean
 }
 
 export interface AttribData {

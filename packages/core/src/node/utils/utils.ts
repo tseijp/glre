@@ -16,8 +16,9 @@ export const isFunction = (key: unknown): key is Functions => {
 }
 
 export const isElement = (x: unknown): x is Element => {
+        if (typeof Element === 'undefined') return false // @MEMO for unit test without dom
         if (is.obj(x)) return false
-        return typeof Element !== 'undefined' && x instanceof Element
+        return x instanceof Element
 }
 
 export const isConversion = (key: unknown): key is Conversions => {

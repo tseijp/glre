@@ -53,6 +53,23 @@ export const parseTexture = (c: NodeContext, y: Y, z: Y, w: Y) => {
         return `textureSampleLevel(${args})`
 }
 
+export const parseTextureArray = (c: NodeContext, fn: string, texNode: Y, layerNode: Y, coordNode: Y, lodNode?: Y) => {
+        const tex = code(texNode, c)
+        const layer = code(layerNode, c)
+        const coord = code(coordNode, c)
+        if (fn === 'texelFetch') {
+                const lod = lodNode ? code(lodNode, c) : '0'
+                if (c.isWebGL) return `texelFetch(${tex}, ivec3(${coord}, ${layer}), ${lod})`
+                return `textureLoad(${tex}, ${coord}, ${layer}, ${lod})`
+        }
+        if (c.isWebGL) {
+                if (lodNode) return `textureLod(${tex}, vec3(${coord}, float(${layer})), ${code(lodNode, c)})`
+                return `texture(${tex}, vec3(${coord}, float(${layer})))`
+        }
+        if (lodNode) return `textureSampleLevel(${tex}, ${tex}Sampler, ${coord}, ${layer}, ${code(lodNode, c)})`
+        return `textureSample(${tex}, ${tex}Sampler, ${coord}, ${layer})`
+}
+
 /**
  * scopes
  */
@@ -83,19 +100,6 @@ export const parseDeclare = (c: NodeContext, x: Y, y: Y) => {
         if (c.isWebGL) return `${type} ${varName} = ${code(x, c)};`
         const wgslType = getConversions(type)
         return `var ${varName}: ${wgslType} = ${code(x, c)};`
-}
-
-export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
-        c.code?.structStructFields?.set(id, fields)
-        const lines: string[] = []
-        for (const key in fields) {
-                const fieldType = fields[key]
-                const type = infer(fieldType, c)
-                if (c.isWebGL) addDependency(c, id, type)
-                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${getConversions(type, c)},`)
-        }
-        const ret = lines.join('\n  ')
-        return `struct ${id} {\n  ${ret}\n};`
 }
 
 export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: StructFields) => {
@@ -153,6 +157,19 @@ export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
 /**
  * headers
  */
+export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
+        c.code?.structStructFields?.set(id, fields)
+        const lines: string[] = []
+        for (const key in fields) {
+                const fieldType = fields[key]
+                const type = infer(fieldType, c)
+                if (c.isWebGL) addDependency(c, id, type)
+                lines.push(c.isWebGL ? `${type} ${key};` : `${key}: ${getConversions(type, c)},`)
+        }
+        const ret = lines.join('\n  ')
+        return `struct ${id} {\n  ${ret}\n};`
+}
+
 export const parseVaryingHead = (c: NodeContext, id: string, type: Constants) => {
         return c.isWebGL ? `${type} ${id};` : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
 }
@@ -187,14 +204,20 @@ export const parseAttributeArrayHead = (c: NodeContext, id: string, type: Consta
         return `@group(${group}) @binding(${binding}) var<storage, read> ${id}: array<${wgslType}>;`
 }
 
-export const parseUniformArrayHead = (c: NodeContext, id: string, type: Constants, count?: number) => {
+export const parseTextureArrayHead = (c: NodeContext, id: string) => {
+        if (c.isWebGL) return `uniform sampler2DArray ${id};`
+        const { group = 1, binding = 0 } = c.gl?.binding?.texture(id) || {}
+        return `@group(${group}) @binding(${binding}) var ${id}Sampler: sampler;\n@group(${group}) @binding(${binding + 1}) var ${id}: texture_2d_array<f32>;`
+}
+
+export const parseUniformArrayHead = (c: NodeContext, id: string, type: Constants, count = 0) => {
         if (c.isWebGL) {
-                const countStr = count !== undefined ? `[${count}]` : '[]'
+                const countStr = count ? `[${count}]` : '[]'
                 return `uniform ${type} ${id}${countStr};`
         }
         const { group = 0, binding = 0 } = c.gl?.binding?.uniform(id) || {}
         const wgslType = getConversions(type, c)
-        const countStr = count !== undefined ? `, ${count}` : ''
+        const countStr = count ? `, ${count}` : ''
         return `@group(${group}) @binding(${binding}) var<uniform> ${id}: array<${wgslType}${countStr}>;`
 }
 

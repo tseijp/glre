@@ -1,5 +1,5 @@
 import { nested } from 'reev'
-import { getStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
+import { countStride, GLSL_FS, GLSL_VS, is, loadingTexture } from '../helpers'
 import { createBuffer, createProgram, createTexture, updateAttrib, updateBuffer, updateInstance, updateTexture, updateUniform } from './utils'
 import type { GL } from '../types'
 
@@ -13,9 +13,11 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
         let activeUnit = 0
         const _units = nested(() => activeUnit++)
         const _uniforms = nested((key) => c.getUniformLocation(pg, key))
-        const _textures = nested((key) => createTexture(c, _uniforms(key), _units(key)))
+        const _textures = nested((key, at, config) => {
+                return createTexture(c, _uniforms(key), _units(key), at, config)
+        })
         const _attributes = nested((key, value: number[], isInstance = false) => {
-                const stride = getStride(value.length, isInstance ? _count : count, gl.error, key)
+                const stride = countStride(value.length, isInstance ? _count : count, gl.error, key)
                 return { stride, location: c.getAttribLocation(pg, key), ...createBuffer(c, value) }
         })
         return {
@@ -35,20 +37,21 @@ export const graphic = (gl: GL, index = 0): Partial<GL> => {
                         updateBuffer(c, a.array, a.buffer, value as number[])
                         updateInstance(c, a.location, a.stride, a.buffer)
                 },
-                _uniform(key, value, at?) {
+                _uniform(key, value, at) {
                         if (uniforms && !(key in uniforms)) return
                         c.useProgram(pg)
                         if (at !== undefined) key = `${key}[${at}]`
                         updateUniform(c, _uniforms(key), value as number[])
                 },
-                _texture(key: string, src) {
+                _texture(key, src, at, config) {
                         if (textures && !(key in textures)) return
                         c.useProgram(pg)
-                        const t = _textures(key)
                         loadingTexture(src as string, (source, isVideo) => {
                                 c.useProgram(pg)
-                                updateTexture(c, t.texture, t.unit, source as TexImageSource)
-                                if (isVideo) gl({ render: () => updateTexture(c, t.texture, t.unit, source) })
+                                const t = _textures(key, at, config)
+                                const render = () => updateTexture(c, t.texture, t.unit, source, at, config)
+                                render()
+                                if (isVideo) gl({ render })
                         })
                 },
                 clean() {
