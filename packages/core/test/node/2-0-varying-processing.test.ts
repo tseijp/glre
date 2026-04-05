@@ -108,7 +108,7 @@ describe('Varying Processing System', () => {
                         })
                         const res = fs.fragment(ctx())
                         expect(res).toContain('normalize')
-                        expect(res).toContain('out.pos')
+                        expect(res).toContain('in.pos')
                 })
         })
 
@@ -199,7 +199,7 @@ describe('Varying Processing System', () => {
                         })
                         const wgslResult = fs.fragment(ctx())
                         const glslResult = fs.fragment(ctx(true))
-                        expect(wgslResult).toContain('out.texCoord')
+                        expect(wgslResult).toContain('in.texCoord')
                         expect(glslResult).toContain('texCoord')
                 })
         })

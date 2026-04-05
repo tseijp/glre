@@ -1,6 +1,0 @@
-{
-        "$schema": "../../node_modules/wrangler/config-schema.json",
-        "name": "party",
-        "compatibility_date": "2025-08-03",
-        "main": "./src/index.tsx"
-}

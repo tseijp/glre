@@ -33,13 +33,13 @@ describe('Array Node System', () => {
                 })
 
                 it('should create instancedArray with correct type', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         expect(arr.type).toBe('instanceArray')
                         expect(arr.props.id).toBe('offsets')
                 })
 
                 it('should create attributeArray with correct type', () => {
-                        const arr = attributeArray(float(), 'weights', 8)
+                        const arr = attributeArray(float(), 'weights')
                         expect(arr.type).toBe('attributeArray')
                         expect(arr.props.id).toBe('weights')
                 })
@@ -146,7 +146,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(vec3(), 'iOffset', 16)
                         const c = wgpu()
                         code(arr, c)
-                        const header = c.code?.headers.get('iOffset')
+                        const header = c.headers.get('iOffset')
                         expect(header).toContain('var<uniform>')
                         expect(header).toContain('array<vec3f, 16>')
                         expect(header).toContain('@group(0) @binding(0)')
@@ -156,7 +156,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(float(), 'vals')
                         const c = wgpu()
                         code(arr, c)
-                        const header = c.code?.headers.get('vals')
+                        const header = c.headers.get('vals')
                         expect(header).toContain('var<uniform>')
                         expect(header).toContain('array<f32>')
                 })
@@ -165,7 +165,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(float(), 'scalars', 8)
                         const c = wgpu()
                         code(arr, c)
-                        const header = c.code?.headers.get('scalars')
+                        const header = c.headers.get('scalars')
                         expect(header).toContain('array<f32, 8>')
                 })
 
@@ -182,7 +182,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(vec3(), 'iOffset', 16)
                         const c = webgl()
                         code(arr, c)
-                        const header = c.code?.headers.get('iOffset')
+                        const header = c.headers.get('iOffset')
                         expect(header).toBe('uniform vec3 iOffset[16];')
                 })
 
@@ -190,7 +190,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(float(), 'scalars', 4)
                         const c = webgl()
                         code(arr, c)
-                        const header = c.code?.headers.get('scalars')
+                        const header = c.headers.get('scalars')
                         expect(header).toBe('uniform float scalars[4];')
                 })
 
@@ -198,7 +198,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(vec4(), 'quads')
                         const c = webgl()
                         code(arr, c)
-                        const header = c.code?.headers.get('quads')
+                        const header = c.headers.get('quads')
                         expect(header).toContain('uniform vec4 quads')
                 })
 
@@ -212,22 +212,22 @@ describe('Array Node System', () => {
 
         describe('instancedArray and attributeArray', () => {
                 it('instancedArray should have instanceArray node type', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         expect(arr.type).toBe('instanceArray')
                 })
 
                 it('attributeArray should have attributeArray node type', () => {
-                        const arr = attributeArray(float(), 'weights', 8)
+                        const arr = attributeArray(float(), 'weights')
                         expect(arr.type).toBe('attributeArray')
                 })
 
                 it('instancedArray should infer element type correctly', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         expect(infer(arr)).toBe('vec3')
                 })
 
                 it('instancedArray element access should generate correct code', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         const c = wgpu()
                         const res = code(arr.element(int(0)), c)
                         expect(res).toBe('offsets[0]')

@@ -25,10 +25,10 @@
         },
         "devDependencies": {
                 "@changesets/cli": "*",
-                "@vitest/coverage-v8": "*",
-                "tsup": "*",
-                "vite": "*",
-                "vitest": "*"
+                "@vitest/coverage-v8": "4.1.2",
+                "tsup": "8.5.1",
+                "vite": "8.0.3",
+                "vitest": "4.1.2"
         },
         "engines": {
                 "node": ">=14"

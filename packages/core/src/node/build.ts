@@ -1,4 +1,4 @@
-import { code } from './utils'
+import { code, initNodeContext } from './utils'
 import type { NodeContext, X } from './types'
 
 const topological = (headers: Map<string, string>, dependencies: Map<string, Set<string>>) => {
@@ -22,10 +22,10 @@ const topological = (headers: Map<string, string>, dependencies: Map<string, Set
 const build = (x: X, c: NodeContext) => {
         const body = code(x, c)
         let head = ''
-        if (c.isWebGL && c.code?.dependencies) {
-                const sorted = topological(c.code.headers, c.code.dependencies)
+        if (c.isWebGL && c.dependencies) {
+                const sorted = topological(c.headers, c.dependencies)
                 head = sorted.map(([, value]) => value).join('\n')
-        } else head = Array.from(c.code?.headers?.values() || []).join('\n')
+        } else head = Array.from(c.headers.values()).join('\n')
         let [lines, ret] = body.split('return ')
         if (ret) ret = ret.replace(';', '')
         else [lines, ret] = ['', body]
@@ -58,27 +58,27 @@ const getMaxPrecision = (c?: WebGL2RenderingContext, precision = 'highp') => {
         return 'lowp'
 }
 
-export const fragment = (x: X, c: NodeContext = {}) => {
-        c.code?.headers?.clear()
-        c.label = 'frag' // for varying inputs or outputs
+export const fragment = (x: X, c = {} as NodeContext) => {
+        initNodeContext(c)
+        c.headers.clear()
+        c.label = 'frag'
         const [head, lines, ret] = build(x, c)
         const result = []
         if (c.isWebGL) {
                 result.push('#version 300 es')
                 precisionHead(result, getMaxPrecision(c.gl?.context, c.gl?.precision))
                 result.push('out vec4 fragColor;')
-                for (const code of c.code?.fragInputs?.values() || []) result.push(`in ${code}`)
+                for (const code of c.fragInputs.values()) result.push(`in ${code}`)
                 result.push(head)
                 result.push('void main() {')
                 if (lines) result.push(`  ${lines}`)
                 result.push(`  fragColor = ${ret};`)
         } else {
-                if (c.code?.fragInputs?.size) result.push(generateStruct('In', c.code.fragInputs))
-                const fo = c.code?.fragOutputs
-                const outFields = new Map([['color', '@location(0) color: vec4f'], ...(fo?.size ? fo : [])])
+                if (c.fragInputs.size) result.push(generateStruct('In', c.fragInputs))
+                const outFields = new Map([['color', '@location(0) color: vec4f'], ...c.fragOutputs])
                 result.push(generateStruct('Out', outFields))
                 result.push(head)
-                result.push(`@fragment\nfn main(${c.code?.fragInputs?.size ? 'in: In' : ''}) -> Out {`)
+                result.push(`@fragment\nfn main(${c.fragInputs.size ? 'in: In' : ''}) -> Out {`)
                 result.push('  var out: Out;')
                 if (lines) result.push(`  ${lines}`)
                 result.push(`  out.color = ${ret};\n  return out;`)
@@ -89,30 +89,31 @@ export const fragment = (x: X, c: NodeContext = {}) => {
         return main
 }
 
-export const vertex = (x: X, c: NodeContext = {}) => {
-        c.code?.headers?.clear()
-        c.label = 'vert' // for varying inputs or outputs
-        if (c.code) for (const [id, { node }] of c.code.vertVaryings.entries()) c.code.vertVaryings.set(id, { node, code: code(node, c) }) // ① prebuild varying.code because the scope (e.g. output function definitions) is fixed to vertex.
+export const vertex = (x: X, c = {} as NodeContext) => {
+        initNodeContext(c)
+        c.headers.clear()
+        c.label = 'vert'
+        for (const [id, { node }] of c.vertVaryings.entries()) c.vertVaryings.set(id, { node, code: code(node, c) })
         const [head, lines, ret] = build(x, c)
         const result = []
         if (c.isWebGL) {
                 result.push('#version 300 es')
-                for (const code of c.code?.vertInputs?.values() || []) result.push(`in ${code}`)
-                for (const code of c.code?.vertOutputs?.values() || []) result.push(`out ${code}`)
+                for (const code of c.vertInputs.values()) result.push(`in ${code}`)
+                for (const code of c.vertOutputs.values()) result.push(`out ${code}`)
                 result.push(head)
                 result.push('void main() {')
                 if (lines) result.push(`  ${lines}`)
-                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  ${id} = ${varying.code};`) // ② varying.code is already prebuilt
+                for (const [id, varying] of c.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  ${id} = ${varying.code};`)
                 result.push(`  gl_Position = ${ret};`)
         } else {
-                if (c.code?.vertInputs?.size) result.push(generateStruct('In', c.code.vertInputs))
-                if (c.code?.vertOutputs?.size) result.push(generateStruct('Out', c.code.vertOutputs))
+                if (c.vertInputs.size) result.push(generateStruct('In', c.vertInputs))
+                if (c.vertOutputs.size) result.push(generateStruct('Out', c.vertOutputs))
                 result.push(head)
                 result.push('@vertex')
-                result.push(`fn main(${c.code?.vertInputs?.size ? 'in: In' : ''}) -> Out {`)
+                result.push(`fn main(${c.vertInputs.size ? 'in: In' : ''}) -> Out {`)
                 result.push('  var out: Out;')
                 if (lines) result.push(`  ${lines}`)
-                if (c.code) for (const [id, varying] of c.code.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  out.${id} = ${varying.code};`)
+                for (const [id, varying] of c.vertVaryings.entries()) if (varying.code && !lines.includes(`${id} =`)) result.push(`  out.${id} = ${varying.code};`)
                 result.push(`  out.position = ${ret};`)
                 result.push('  return out;')
         }
@@ -122,8 +123,9 @@ export const vertex = (x: X, c: NodeContext = {}) => {
         return main
 }
 
-export const compute = (x: X, c: NodeContext = {}) => {
-        c.code?.headers?.clear()
+export const compute = (x: X, c = {} as NodeContext) => {
+        initNodeContext(c)
+        c.headers.clear()
         c.label = 'compute'
         const [head, lines, ret] = build(x, c)
         const result = []
@@ -136,10 +138,10 @@ export const compute = (x: X, c: NodeContext = {}) => {
                 result.push(`  ${ret};`)
                 result.push('}')
         } else {
-                if (c.code?.computeInputs?.size) result.push(generateStruct('In', c.code.computeInputs))
+                if (c.computeInputs.size) result.push(generateStruct('In', c.computeInputs))
                 result.push(head)
                 result.push('@compute @workgroup_size(32)')
-                result.push(`fn main(${c.code?.computeInputs?.size ? 'in: In' : ''}) {`)
+                result.push(`fn main(${c.computeInputs.size ? 'in: In' : ''}) {`)
                 if (lines) result.push(`  ${lines}`)
                 result.push(`  ${ret};`)
                 result.push('}')

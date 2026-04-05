@@ -73,21 +73,19 @@ export const getConstant = (conversionKey: string): C => {
 }
 
 export const initNodeContext = (c: NodeContext) => {
-        if (c.code) return c
-        c.code = {
-                headers: new Map(),
-                fragInputs: new Map(),
-                fragOutputs: new Map(),
-                vertInputs: new Map(),
-                vertOutputs: new Map(),
-                vertVaryings: new Map(),
-                computeInputs: new Map(),
-                dependencies: new Map(),
-                structStructFields: new Map(),
-        }
+        if (c.headers) return c
+        c.headers = new Map()
+        c.fragInputs = new Map()
+        c.fragOutputs = new Map()
+        c.vertInputs = new Map()
+        c.vertOutputs = new Map()
+        c.vertVaryings = new Map()
+        c.computeInputs = new Map()
+        c.dependencies = new Map()
+        c.structStructFields = new Map()
         if (c.isWebGL) return c
-        c.code.fragInputs.set('position', '@builtin(position) position: vec4f')
-        c.code.vertOutputs.set('position', '@builtin(position) position: vec4f')
+        c.fragInputs.set('position', '@builtin(position) position: vec4f')
+        c.vertOutputs.set('position', '@builtin(position) position: vec4f')
         return c
 }
 
@@ -96,8 +94,8 @@ export const isArrayAccess = (key: unknown): boolean => {
 }
 
 export const addDependency = (c: NodeContext, id = '', type: string) => {
-        if (!c.code?.dependencies?.has(id)) c.code!.dependencies.set(id, new Set())
-        if (!isConstants(type)) c.code!.dependencies.get(id)!.add(type)
+        if (!c.dependencies.has(id)) c.dependencies.set(id, new Set())
+        if (!isConstants(type)) c.dependencies.get(id)!.add(type)
 }
 
 /**
