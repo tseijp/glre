@@ -108,19 +108,19 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
          * headers
          */
         if (type === 'varying') {
-                if (c.code?.vertOutputs.has(id)) return c.isWebGL ? `${id}` : `out.${id}`
+                if (c.code?.vertOutputs.has(id)) return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
                 const field = parseVaryingHead(c, id, infer(target, c))
                 c.code?.fragInputs.set(id, field)
                 c.code?.vertOutputs.set(id, field)
                 c.code?.vertVaryings.set(id, { node: x })
-                return c.isWebGL ? `${id}` : `out.${id}`
+                return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
         }
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(c, id)
-                if (id === 'position') return 'out.position'
+                if (id === 'position') return c.label === 'frag' ? 'in.position' : 'out.position'
                 if (id === 'frag_depth' && c.label === 'frag') {
                         c.code?.fragOutputs?.set(id, `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`)
-                        return `ret.${id}`
+                        return `out.${id}`
                 }
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.label === 'compute') c.code?.computeInputs.set(id, field)
