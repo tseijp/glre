@@ -21,7 +21,7 @@ const parseNumber = (target = 0) => {
 export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
-        if (is.arr(target)) return parseArray((target as any[]).map((child) => code(child, c)))
+        if (is.arr(target)) return parseArray(target.map((child) => code(child, c)))
         if (is.str(target)) return target
         if (is.num(target)) return parseNumber(target)
         if (is.bol(target)) return target ? 'true' : 'false'
@@ -56,7 +56,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
                 if (x === 'int') if (is.num(y)) return `${y << 0}`
                 if (x === 'uint') if (is.num(y)) return `${y >>> 0}u`
-                return `${getConversions(x, c)}(${parseArray(children.slice(1).map((child: any) => code(child, c)))})`
+                return `${getConversions(x, c)}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
         }
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
@@ -82,20 +82,20 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                         if (x === 'dFdx') return `dpdx(${code(y, c)})`
                         if (x === 'dFdy') return `dpdy(${code(y, c)})`
                 }
-                return `${x}(${parseArray(children.slice(1).map((child: any) => code(child, c)))})`
+                return `${x}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
         }
         /**
          * scopes
          */
-        if (type === 'scope') return children.map((child: any) => code(child, c)).join('\n')
+        if (type === 'scope') return children.map((child) => code(child, c)).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'break') return 'break;'
         if (type === 'continue') return 'continue;'
         if (type === 'loop') return parseLoop(c, code(x, c), code(y, c), infer(x, c), id)
-        if (type === 'if') return parseIf(children.map((child: any) => code(child, c)))
-        if (type === 'switch') return parseSwitch(children.map((child: any) => code(child, c)))
-        if (type === 'declare') return parseDeclare(c, code(x, c), (y as any)?.props?.id, infer(x, c))
+        if (type === 'if') return parseIf(children.map((child) => code(child, c)))
+        if (type === 'switch') return parseSwitch(children.map((child) => code(child, c)))
+        if (type === 'declare') return parseDeclare(c, code(x, c), y?.props?.id, infer(x, c))
         if (type === 'define') {
                 if (!c.code?.headers.has(id)) {
                         const [scope, ...args] = children
@@ -109,7 +109,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                         const returnType = infer(target, c)
                         c.code?.headers.set(id, parseDefine(c, id!, scopeCode, returnType, argParams))
                 }
-                return `${id}(${parseArray(children.slice(1).map((child: any) => code(child, c)))})`
+                return `${id}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
         }
         if (type === 'struct') {
                 if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
@@ -135,11 +135,11 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(c, id)
                 if (id === 'position') return c.label === 'frag' ? 'in.position' : 'out.position'
+                const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (id === 'frag_depth' && c.label === 'frag') {
-                        c.code?.fragOutputs?.set(id, `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`)
+                        c.code?.fragOutputs?.set(id, field)
                         return `out.${id}`
                 }
-                const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.label === 'compute') c.code?.computeInputs.set(id, field)
                 else if (c.label === 'frag') c.code?.fragInputs.set(id, field)
                 else if (c.label === 'vert') c.code?.vertInputs.set(id, field)
