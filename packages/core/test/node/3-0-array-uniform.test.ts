@@ -33,13 +33,13 @@ describe('Array Node System', () => {
                 })
 
                 it('should create instancedArray with correct type', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         expect(arr.type).toBe('instanceArray')
                         expect(arr.props.id).toBe('offsets')
                 })
 
                 it('should create attributeArray with correct type', () => {
-                        const arr = attributeArray(float(), 'weights', 8)
+                        const arr = attributeArray(float(), 'weights')
                         expect(arr.type).toBe('attributeArray')
                         expect(arr.props.id).toBe('weights')
                 })
@@ -212,22 +212,22 @@ describe('Array Node System', () => {
 
         describe('instancedArray and attributeArray', () => {
                 it('instancedArray should have instanceArray node type', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         expect(arr.type).toBe('instanceArray')
                 })
 
                 it('attributeArray should have attributeArray node type', () => {
-                        const arr = attributeArray(float(), 'weights', 8)
+                        const arr = attributeArray(float(), 'weights')
                         expect(arr.type).toBe('attributeArray')
                 })
 
                 it('instancedArray should infer element type correctly', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         expect(infer(arr)).toBe('vec3')
                 })
 
                 it('instancedArray element access should generate correct code', () => {
-                        const arr = instancedArray(vec3(), 'offsets', 4)
+                        const arr = instancedArray(vec3(), 'offsets')
                         const c = wgpu()
                         const res = code(arr.element(int(0)), c)
                         expect(res).toBe('offsets[0]')

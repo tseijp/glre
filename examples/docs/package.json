@@ -16,29 +16,30 @@
                 "write-heading-ids": "docusaurus write-heading-ids"
         },
         "dependencies": {
-                "glre": "*",
-                "reev": "0.17.0",
-                "gl-matrix": "3.4.4",
                 "clsx": "2.1.1",
+                "gl-matrix": "3.4.4",
+                "glre": "*",
                 "leva": "0.10.1",
+                "reev": "0.17.0",
                 "stats.js": "0.17.0",
                 "voxelized-js": "0.13.0"
         },
         "devDependencies": {
                 "@docusaurus/core": "3.9.2",
                 "@docusaurus/module-type-aliases": "3.9.2",
+                "@docusaurus/plugin-content-docs": "3.9.2",
                 "@docusaurus/preset-classic": "3.9.2",
                 "@docusaurus/theme-live-codeblock": "3.9.2",
+                "@docusaurus/theme-mermaid": "3.9.2",
                 "@docusaurus/tsconfig": "3.9.2",
                 "@docusaurus/types": "3.9.2",
-                "@docusaurus/theme-mermaid": "3.9.2",
                 "@mdx-js/react": "3.1.1",
                 "dotenv": "*",
                 "prism-react-renderer": "2.4.1",
-                "react": "19.2.3",
-                "react-dom": "19.2.3",
-                "remark-math": "6",
+                "react": "19.2.4",
+                "react-dom": "19.2.4",
                 "rehype-katex": "7",
+                "remark-math": "6",
                 "typescript": "*"
         },
         "browserslist": {

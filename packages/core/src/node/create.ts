@@ -60,7 +60,7 @@ export const uniform = <T extends C>(x: Y<T>, id = getId()) => create<T>('unifor
 export const storage = <T extends C>(x: Y<T>, id = getId()) => create<T>('storage', { id }, x)
 export const instancedArray = <T extends C>(x: Y<T>, id = getId()) => create<T>('instanceArray', { id }, x)
 export const attributeArray = <T extends C>(x: Y<T>, id = getId()) => create<T>('attributeArray', { id }, x)
-export const uniformArray = <T extends C>(x: Y<T>, id = getId(), count = 0) => create<T>('uniformArray', { id, args: [count] }, x)
+export const uniformArray = <T extends C>(x: Y<T>, id = getId(), count?: number) => create<T>('uniformArray', { id, args: count ? [count] : [] }, x)
 export const variable = <T extends C>(id = getId()) => create<T>('variable', { id })
 export const builtin = <T extends C>(id = getId()) => create<T>('builtin', { id })
 export const varying = <T extends C>(x: X<T>, id = getId()) => {

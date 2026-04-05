@@ -21,7 +21,7 @@ const parseNumber = (target = 0) => {
 export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
-        if (is.arr(target)) return parseArray(target, c)
+        if (is.arr(target)) return parseArray((target as any[]).map((child) => code(child, c)))
         if (is.str(target)) return target
         if (is.num(target)) return parseNumber(target)
         if (is.bol(target)) return target ? 'true' : 'false'
@@ -42,12 +42,12 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         }
         if (type === 'gather')
                 return c.isWebGL //
-                        ? parseGather(c, x, y, target)
+                        ? parseGather(c, code(x, c), code(y, c), infer(target, c))
                         : `${code(x, c)}[${code(y, c)}]`
         if (type === 'scatter') {
                 const [storageNode, indexNode] = x.props.children ?? [] // x is gather node
                 return c.isWebGL
-                        ? parseScatter(c, storageNode, y) // indexNode is not using
+                        ? parseScatter(code(storageNode, c), code(y, c), infer(y, c)) // indexNode is not using
                         : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
         }
         if (type === 'ternary') return c.isWebGL ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})` : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
@@ -56,7 +56,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
                 if (x === 'int') if (is.num(y)) return `${y << 0}`
                 if (x === 'uint') if (is.num(y)) return `${y >>> 0}u`
-                return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
+                return `${getConversions(x, c)}(${parseArray(children.slice(1).map((child: any) => code(child, c)))})`
         }
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
@@ -71,9 +71,9 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
                 if ((x === 'texture' || x === 'texelFetch') && isX(y) && y.type === 'element') {
                         const [tn, ln] = y.props.children || []
-                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture') return parseTextureArray(c, x, tn, ln, z, w)
+                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture') return parseTextureArray(c, x, code(tn, c), code(ln, c), code(z, c), w ? code(w, c) : undefined)
                 }
-                if (x === 'texture') return parseTexture(c, y, z, w)
+                if (x === 'texture') return parseTexture(c, code(y, c), code(z, c), w ? code(w, c) : undefined)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 if (c.isWebGL) {
                         if (x === 'fma') return `(${code(y, c)} * ${code(z, c)} + ${code(w, c)})`
@@ -82,7 +82,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                         if (x === 'dFdx') return `dpdx(${code(y, c)})`
                         if (x === 'dFdy') return `dpdy(${code(y, c)})`
                 }
-                return `${x}(${parseArray(children.slice(1), c)})`
+                return `${x}(${parseArray(children.slice(1).map((child: any) => code(child, c)))})`
         }
         /**
          * scopes
@@ -92,17 +92,34 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'break') return 'break;'
         if (type === 'continue') return 'continue;'
-        if (type === 'loop') return parseLoop(c, x, y, id)
-        if (type === 'if') return parseIf(c, x, y, children)
-        if (type === 'switch') return parseSwitch(c, x, children)
-        if (type === 'declare') return parseDeclare(c, x, y)
+        if (type === 'loop') return parseLoop(c, code(x, c), code(y, c), infer(x, c), id)
+        if (type === 'if') return parseIf(children.map((child: any) => code(child, c)))
+        if (type === 'switch') return parseSwitch(children.map((child: any) => code(child, c)))
+        if (type === 'declare') return parseDeclare(c, code(x, c), (y as any)?.props?.id, infer(x, c))
         if (type === 'define') {
-                if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseDefine(c, props, target))
-                return `${id}(${parseArray(children.slice(1), c)})`
+                if (!c.code?.headers.has(id)) {
+                        const [scope, ...args] = children
+                        const argParams: [string, C][] = []
+                        for (let i = 0; i < args.length; i++) {
+                                const input = props.layout?.inputs?.[i]
+                                if (!input) argParams.push([`p${i}`, infer(args[i], c)])
+                                else argParams.push([input.name, input.type === 'auto' ? infer(args[i], c) : input.type])
+                        }
+                        const scopeCode = code(scope, c)
+                        const returnType = infer(target, c)
+                        c.code?.headers.set(id, parseDefine(c, id!, scopeCode, returnType, argParams))
+                }
+                return `${id}(${parseArray(children.slice(1).map((child: any) => code(child, c)))})`
         }
         if (type === 'struct') {
                 if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
-                return parseStruct(c, id, x.props.id, initialValues)
+                if (!initialValues) return parseStruct(c, id, x.props.id)
+                const ordered: string[] = []
+                for (const key in fields) {
+                        const val = initialValues[key]
+                        if (val !== undefined && val !== null) ordered.push(code(val, c))
+                }
+                return parseStruct(c, id, x.props.id, ordered.join(', '))
         }
         /**
          * headers

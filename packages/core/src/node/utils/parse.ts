@@ -1,153 +1,117 @@
-import { code } from '.'
 import { infer } from './infer'
 import { getConversions, addDependency } from './utils'
-import { is } from '../../helpers'
 import { storageSize } from '../../webgl/utils'
-import type { Constants, NodeContext, NodeProps, StructFields, Y } from '../types'
+import type { Constants, NodeContext, StructFields } from '../types'
 
-export const parseArray = (children: Y[], c: NodeContext) => {
-        return children
-                .filter((x) => !is.und(x) && !is.nul(x))
-                .map((x) => code(x, c))
-                .join(', ')
-}
+export const parseArray = (items: string[]) => items.filter(Boolean).join(', ')
 
 // only for webgl
-export const parseGather = (c: NodeContext, x: Y, y: Y, target: Y) => {
+export const parseGather = (c: NodeContext, storageCode: string, indexCode: string, valueType: Constants) => {
         const parseSwizzle = () => {
-                const valueType = infer(target, c)
                 if (valueType === 'float') return '.x'
                 if (valueType === 'vec2') return '.xy'
                 if (valueType === 'vec3') return '.xyz'
                 if (valueType === 'vec4') return ''
                 throw new Error(`Unsupported storage scatter type: ${valueType}`)
         }
-        const indexVar = code(y, c)
         const size = storageSize(c.gl?.particleCount)
-        const coordX = `int(${indexVar}) % ${size.x}`
-        const coordY = `int(${indexVar}) / ${size.x}`
-        return `texelFetch(${code(x, c)}, ivec2(${coordX}, ${coordY}), 0)${parseSwizzle()}`
+        const coordX = `int(${indexCode}) % ${size.x}`
+        const coordY = `int(${indexCode}) / ${size.x}`
+        return `texelFetch(${storageCode}, ivec2(${coordX}, ${coordY}), 0)${parseSwizzle()}`
 }
 
 // only for webgl
-export const parseScatter = (c: NodeContext, storageNode: Y, valueNode: Y) => {
-        const storageId = code(storageNode, c)
-        const valueCode = code(valueNode, c)
-        const valueType = infer(valueNode, c)
-        if (valueType === 'float') return `_${storageId} = vec4(${valueCode}, 0.0, 0.0, 1.0);`
-        if (valueType === 'vec2') return `_${storageId} = vec4(${valueCode}, 0.0, 1.0);`
-        if (valueType === 'vec3') return `_${storageId} = vec4(${valueCode}, 1.0);`
-        if (valueType === 'vec4') return `_${storageId} = ${valueCode};`
+export const parseScatter = (storageCode: string, valueCode: string, valueType: Constants) => {
+        if (valueType === 'float') return `_${storageCode} = vec4(${valueCode}, 0.0, 0.0, 1.0);`
+        if (valueType === 'vec2') return `_${storageCode} = vec4(${valueCode}, 0.0, 1.0);`
+        if (valueType === 'vec3') return `_${storageCode} = vec4(${valueCode}, 1.0);`
+        if (valueType === 'vec4') return `_${storageCode} = ${valueCode};`
         throw new Error(`Unsupported storage scatter type: ${valueType}`)
 }
 
-export const parseTexture = (c: NodeContext, y: Y, z: Y, w: Y) => {
+export const parseTexture = (c: NodeContext, y: string, z: string, w?: string) => {
         if (c.isWebGL) {
                 const args = w ? [y, z, w] : [y, z]
-                return `texture(${parseArray(args, c)})`
+                return `texture(${args.join(', ')})`
         }
-        const _y = code(y, c)
-        const args = [_y, _y + 'Sampler', code(z, c)]
+        const args = [y, y + 'Sampler', z]
         if (!w) return `textureSample(${args})`
-        args.push(code(w, c))
+        args.push(w)
         return `textureSampleLevel(${args})`
 }
 
-export const parseTextureArray = (c: NodeContext, fn: string, texNode: Y, layerNode: Y, coordNode: Y, lodNode?: Y) => {
-        const tex = code(texNode, c)
-        const layer = code(layerNode, c)
-        const coord = code(coordNode, c)
+export const parseTextureArray = (c: NodeContext, fn: string, tex: string, layer: string, coord: string, lod?: string) => {
         if (fn === 'texelFetch') {
-                const lod = lodNode ? code(lodNode, c) : '0'
-                if (c.isWebGL) return `texelFetch(${tex}, ivec3(${coord}, ${layer}), ${lod})`
-                return `textureLoad(${tex}, ${coord}, ${layer}, ${lod})`
+                const _lod = lod || '0'
+                if (c.isWebGL) return `texelFetch(${tex}, ivec3(${coord}, ${layer}), ${_lod})`
+                return `textureLoad(${tex}, ${coord}, ${layer}, ${_lod})`
         }
         if (c.isWebGL) {
-                if (lodNode) return `textureLod(${tex}, vec3(${coord}, float(${layer})), ${code(lodNode, c)})`
+                if (lod) return `textureLod(${tex}, vec3(${coord}, float(${layer})), ${lod})`
                 return `texture(${tex}, vec3(${coord}, float(${layer})))`
         }
-        if (lodNode) return `textureSampleLevel(${tex}, ${tex}Sampler, ${coord}, ${layer}, ${code(lodNode, c)})`
+        if (lod) return `textureSampleLevel(${tex}, ${tex}Sampler, ${coord}, ${layer}, ${lod})`
         return `textureSample(${tex}, ${tex}Sampler, ${coord}, ${layer})`
 }
 
 /**
  * scopes
  */
-export const parseIf = (c: NodeContext, x: Y, y: Y, children: Y[]) => {
-        let ret = `if (${code(x, c)}) {\n${code(y, c)}\n}`
-        for (let i = 2; i < children.length; i += 2) {
-                const isElse = i >= children.length - 1
-                ret += !isElse ? ` else if (${code(children[i], c)}) {\n${code(children[i + 1], c)}\n}` : ` else {\n${code(children[i], c)}\n}`
+export const parseIf = (codes: string[]) => {
+        let ret = `if (${codes[0]}) {\n${codes[1]}\n}`
+        for (let i = 2; i < codes.length; i += 2) {
+                const isElse = i >= codes.length - 1
+                ret += !isElse ? ` else if (${codes[i]}) {\n${codes[i + 1]}\n}` : ` else {\n${codes[i]}\n}`
         }
         return ret
 }
 
-export const parseSwitch = (c: NodeContext, x: Y, children: Y[]) => {
-        let ret = `switch (${code(x, c)}) {\n`
-        for (let i = 1; i < children.length; i += 2) {
-                const isDefault = i >= children.length - 1
-                if (isDefault && children.length % 2 === 0) {
-                        ret += `default:\n${code(children[i], c)}\nbreak;\n`
-                } else if (i + 1 < children.length) ret += `case ${code(children[i], c)}:\n${code(children[i + 1], c)}\nbreak;\n`
+export const parseSwitch = (codes: string[]) => {
+        let ret = `switch (${codes[0]}) {\n`
+        for (let i = 1; i < codes.length; i += 2) {
+                const isDefault = i >= codes.length - 1
+                if (isDefault && codes.length % 2 === 0) {
+                        ret += `default:\n${codes[i]}\nbreak;\n`
+                } else if (i + 1 < codes.length) ret += `case ${codes[i]}:\n${codes[i + 1]}\nbreak;\n`
         }
         ret += '}'
         return ret
 }
 
-export const parseDeclare = (c: NodeContext, x: Y, y: Y) => {
-        const type = infer(x, c)
-        const varName = (y as any)?.props?.id
-        if (c.isWebGL) return `${type} ${varName} = ${code(x, c)};`
+export const parseDeclare = (c: NodeContext, valueCode: string, varName: string, type: Constants) => {
+        if (c.isWebGL) return `${type} ${varName} = ${valueCode};`
         const wgslType = getConversions(type)
-        return `var ${varName}: ${wgslType} = ${code(x, c)};`
+        return `var ${varName}: ${wgslType} = ${valueCode};`
 }
 
-export const parseStruct = (c: NodeContext, id: string, instanceId = '', initialValues?: StructFields) => {
-        const fields = c.code?.structStructFields?.get(id) || {}
+export const parseStruct = (c: NodeContext, id: string, instanceId = '', fieldCodes?: string) => {
+        const hasInit = fieldCodes !== undefined
         if (c.isWebGL) {
-                if (initialValues) {
-                        const ordered = []
-                        for (const key in fields) ordered.push(initialValues[key])
-                        return `${id} ${instanceId} = ${id}(${parseArray(ordered, c)});`
-                } else return `${id} ${instanceId};`
-        } else {
-                if (initialValues) {
-                        const ordered = []
-                        for (const key in fields) ordered.push(initialValues[key])
-                        return `var ${instanceId}: ${id} = ${id}(${parseArray(ordered, c)});`
-                } else return `var ${instanceId}: ${id};`
+                if (hasInit) return `${id} ${instanceId} = ${id}(${fieldCodes});`
+                return `${id} ${instanceId};`
         }
+        if (hasInit) return `var ${instanceId}: ${id} = ${id}(${fieldCodes});`
+        return `var ${instanceId}: ${id};`
 }
 
 /**
  * define
  */
-export const parseDefine = (c: NodeContext, props: NodeProps, target: Y) => {
-        const { id, children = [], layout } = props
-        const [x, ...args] = children
-        const argParams: [name: string, type: Constants][] = []
+export const parseDefine = (c: NodeContext, id: string, scopeCode: string, returnType: Constants, argParams: [string, Constants][]) => {
         const params: string[] = []
-        for (let i = 0; i < args.length; i++) {
-                const input = layout?.inputs?.[i]
-                if (!input) argParams.push([`p${i}`, infer(args[i], c)])
-                else argParams.push([input.name, input.type === 'auto' ? infer(args[i], c) : input.type])
-        }
-        const scopeCode = code(x, c) // build struct headers before inferring returnType
-        const returnType = infer(target, c)
         const ret = []
         if (c?.isWebGL) {
                 for (const [paramId, type] of argParams) {
-                        addDependency(c, id!, type)
+                        addDependency(c, id, type)
                         params.push(`${type} ${paramId}`)
                 }
-                addDependency(c, id!, returnType)
+                addDependency(c, id, returnType)
                 ret.push(`${returnType} ${id}(${params}) {`)
         } else {
                 for (const [paramId, type] of argParams) params.push(`${paramId}: ${getConversions(type, c)}`)
                 const isVoid = returnType === 'void'
-                if (isVoid) {
-                        ret.push(`fn ${id}(${params}) {`)
-                } else ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
+                if (isVoid) ret.push(`fn ${id}(${params}) {`)
+                else ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
         }
         if (scopeCode) ret.push(scopeCode)
         ret.push('}')
@@ -226,17 +190,14 @@ export const parseStorageHead = (c: NodeContext, id: string, type: Constants) =>
                 const ret = `uniform sampler2D ${id};`
                 if (c.label !== 'compute') return ret
                 const location = c.units?.(id)
-                return `${ret}\nlayout(location = ${location}) out vec4 _${id};` // out texture buffer
+                return `${ret}\nlayout(location = ${location}) out vec4 _${id};`
         }
         const { group = 0, binding = 0 } = c.gl?.binding?.storage(id) || {}
         const wgslType = getConversions(type, c)
         return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`
 }
 
-export const parseLoop = (c: NodeContext, x: Y, y: Y, id: string) => {
-        const conditionType = infer(x, c)
-        const bodyCode = code(y, c)
-        const conditionCode = code(x, c)
+export const parseLoop = (c: NodeContext, conditionCode: string, bodyCode: string, conditionType: Constants, id: string) => {
         if (c.isWebGL) {
                 if (conditionType === 'int') return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
                 if (conditionType === 'float') return `for (float ${id} = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
