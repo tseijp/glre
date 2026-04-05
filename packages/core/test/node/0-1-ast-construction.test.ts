@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import { float, vec3, vertexIndex } from '../../src/node'
 
 describe('Abstract Syntax Tree Construction', () => {

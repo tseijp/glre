@@ -17,7 +17,7 @@ export const isFunction = (key: unknown): key is Functions => {
 
 export const isElement = (x: unknown): x is Element => {
         if (is.obj(x)) return false
-        return x instanceof Element
+        return typeof Element !== 'undefined' && x instanceof Element
 }
 
 export const isConversion = (key: unknown): key is Conversions => {

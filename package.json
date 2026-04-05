@@ -16,8 +16,8 @@
                 "dev": "cd examples/hono && npm run dev",
                 "qwik": "cd examples/qwik && npm run dev",
                 "solid": "cd examples/solid && npm run start",
-                "watch": "cd packages/core && npx jest --watch --runInBand",
-                "cov": "cd packages/core && npx jest --coverage --detectOpenHandles",
+                "watch": "vitest --config packages/core/vitest.config.ts",
+                "cov": "vitest run --config packages/core/vitest.config.ts --coverage",
                 "ls": "cd packages/core && npm publish --dry-run",
                 "tsup": "cd packages/core && npx tsup",
                 "vers": "npx changeset version",
@@ -25,11 +25,10 @@
         },
         "devDependencies": {
                 "@changesets/cli": "*",
-                "jest": "*",
-                "jest-environment-jsdom": "*",
-                "ts-jest": "*",
+                "@vitest/coverage-v8": "*",
                 "tsup": "*",
-                "typescript": "*"
+                "vite": "*",
+                "vitest": "*"
         },
         "engines": {
                 "node": ">=14"

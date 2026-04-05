@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import { bool, bvec2, bvec3, bvec4, float, int, ivec2, ivec3, ivec4, mat2, mat3, mat4, uint, uvec2, uvec3, uvec4, vec2, vec3, vec4 } from '../../src/node'
 import { infer } from '../../src/node/utils/infer'
 

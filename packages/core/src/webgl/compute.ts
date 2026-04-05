@@ -41,7 +41,7 @@ export const compute = (gl: GL): Partial<GL> => {
                                 const [i, o] = _storage % 2 ? [ping, pong] : [pong, ping]
                                 return createAttachment(c, i, o, loc, unit, index)
                         })
-                        c.drawBuffers(attachments)
+                        c.drawBuffers(attachments as any)
                         c.drawArrays(c.TRIANGLES, 0, 3)
                         c.bindFramebuffer(c.FRAMEBUFFER, null)
                         _storage++

@@ -1,4 +1,4 @@
-import { describe, expect, it } from '@jest/globals'
+import { describe, expect, it } from 'vitest'
 import { compute } from '../../src/node/build'
 import { float, Fn, id, int, vec2, vec3, vec4 } from '../../src/node'
 import { code } from '../../src/node/utils'
