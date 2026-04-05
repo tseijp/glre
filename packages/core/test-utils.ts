@@ -6,7 +6,7 @@ export const build = (fun: () => any, targetName = 'fn', isWebGL = false) => {
         const config = { isWebGL } as NodeContext
         const ret = Fn(fun).setLayout({ name: 'fn', type: 'auto' })()
         ret.toString(config)
-        const def = config.code?.headers?.get(targetName)
+        const def = config.headers.get(targetName)
         return def
 }
 

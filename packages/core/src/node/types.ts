@@ -88,17 +88,15 @@ export interface NodeContext {
         units?: any // @TODO FIX
         infers?: WeakMap<X, C>
         onMount?: (name: string) => void
-        code?: {
-                headers: Map<string, string>
-                fragInputs: Map<string, string>
-                fragOutputs: Map<string, string>
-                vertInputs: Map<string, string>
-                vertOutputs: Map<string, string>
-                vertVaryings: Map<string, VaryingInfo>
-                computeInputs: Map<string, string>
-                dependencies: Map<string, Set<string>>
-                structStructFields: Map<string, StructFields>
-        }
+        headers: Map<string, string>
+        fragInputs: Map<string, string>
+        fragOutputs: Map<string, string>
+        vertInputs: Map<string, string>
+        vertOutputs: Map<string, string>
+        vertVaryings: Map<string, VaryingInfo>
+        computeInputs: Map<string, string>
+        dependencies: Map<string, Set<string>>
+        structStructFields: Map<string, StructFields>
 }
 
 /**

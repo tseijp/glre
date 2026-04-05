@@ -70,7 +70,7 @@ export const inferImpl = <T extends C>(target: X<T>, c: NodeContext): T => {
         if (type === 'member') {
                 const constant = infer(x, c) // Check if struct first to avoid field/swizzle clash, e.g. Struct({ x: float(), y: float() })
                 if (!isConstants(constant)) {
-                        const fields = c.code?.structStructFields?.get(constant)
+                        const fields = c.structStructFields.get(constant)
                         if (fields && fields[y]) return infer(fields[y], c) as T
                 }
                 if (isSwizzle(y)) return inferSwizzleType(constant, y.length as 1 | 2 | 3 | 4) as T

@@ -146,7 +146,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(vec3(), 'iOffset', 16)
                         const c = wgpu()
                         code(arr, c)
-                        const header = c.code?.headers.get('iOffset')
+                        const header = c.headers.get('iOffset')
                         expect(header).toContain('var<uniform>')
                         expect(header).toContain('array<vec3f, 16>')
                         expect(header).toContain('@group(0) @binding(0)')
@@ -156,7 +156,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(float(), 'vals')
                         const c = wgpu()
                         code(arr, c)
-                        const header = c.code?.headers.get('vals')
+                        const header = c.headers.get('vals')
                         expect(header).toContain('var<uniform>')
                         expect(header).toContain('array<f32>')
                 })
@@ -165,7 +165,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(float(), 'scalars', 8)
                         const c = wgpu()
                         code(arr, c)
-                        const header = c.code?.headers.get('scalars')
+                        const header = c.headers.get('scalars')
                         expect(header).toContain('array<f32, 8>')
                 })
 
@@ -182,7 +182,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(vec3(), 'iOffset', 16)
                         const c = webgl()
                         code(arr, c)
-                        const header = c.code?.headers.get('iOffset')
+                        const header = c.headers.get('iOffset')
                         expect(header).toBe('uniform vec3 iOffset[16];')
                 })
 
@@ -190,7 +190,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(float(), 'scalars', 4)
                         const c = webgl()
                         code(arr, c)
-                        const header = c.code?.headers.get('scalars')
+                        const header = c.headers.get('scalars')
                         expect(header).toBe('uniform float scalars[4];')
                 })
 
@@ -198,7 +198,7 @@ describe('Array Node System', () => {
                         const arr = uniformArray(vec4(), 'quads')
                         const c = webgl()
                         code(arr, c)
-                        const header = c.code?.headers.get('quads')
+                        const header = c.headers.get('quads')
                         expect(header).toContain('uniform vec4 quads')
                 })
 

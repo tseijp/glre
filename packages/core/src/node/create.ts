@@ -5,7 +5,7 @@ import { is } from '../helpers'
 import type { Bool, Constants as C, Functions, NodeProps, NodeTypes, Operators, X, Y } from './types'
 
 const toPrimitive = (x: Y, hint: string) => {
-        if (hint === 'string') return code(x as any, null)
+        if (hint === 'string') return code(x as any)
 }
 
 export const create = <T extends C>(type: NodeTypes, props?: NodeProps | null, ...children: Y[]) => {

@@ -122,7 +122,7 @@ export const parseDefine = (c: NodeContext, id: string, scope: string, returnTyp
  * headers
  */
 export const parseStructHead = (c: NodeContext, id: string, fields: StructFields = {}) => {
-        c.code?.structStructFields?.set(id, fields)
+        c.structStructFields.set(id, fields)
         const lines: string[] = []
         for (const key in fields) {
                 const fieldType = fields[key]
@@ -135,7 +135,7 @@ export const parseStructHead = (c: NodeContext, id: string, fields: StructFields
 }
 
 export const parseVaryingHead = (c: NodeContext, id: string, type: Constants) => {
-        return c.isWebGL ? `${type} ${id};` : `@location(${c.code?.vertVaryings?.size || 0}) ${id}: ${getConversions(type, c)}`
+        return c.isWebGL ? `${type} ${id};` : `@location(${c.vertVaryings.size || 0}) ${id}: ${getConversions(type, c)}`
 }
 
 export const parseAttribHead = (c: NodeContext, id: string, type: Constants) => {

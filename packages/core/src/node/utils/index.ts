@@ -18,12 +18,11 @@ const parseNumber = (target = 0) => {
         return ret + '.0'
 }
 
-const codeChildren = (children: Y[], c?: NodeContext | null) => {
+const codeChildren = (children: Y[], c: NodeContext) => {
         return children.map((child) => code(child, c))
 }
 
-export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string => {
-        if (!c) c = {}
+export const code = <T extends C>(target: Y<T>, c = {} as NodeContext): string => {
         initNodeContext(c)
         if (is.arr(target)) return parseArray(codeChildren(target, c))
         if (is.str(target)) return target
@@ -101,7 +100,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         if (type === 'switch') return parseSwitch(codeChildren(children, c))
         if (type === 'declare') return parseDeclare(c, code(x, c), y?.props?.id, infer(x, c))
         if (type === 'define') {
-                if (!c.code?.headers.has(id)) {
+                if (!c.headers.has(id)) {
                         const [scope, ...args] = children
                         const argParams: [string, C][] = []
                         for (let i = 0; i < args.length; i++) {
@@ -109,12 +108,12 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                                 if (!input) argParams.push([`p${i}`, infer(args[i], c)])
                                 else argParams.push([input.name, input.type === 'auto' ? infer(args[i], c) : input.type])
                         }
-                        c.code?.headers.set(id, parseDefine(c, id!, code(scope, c), infer(target, c), argParams))
+                        c.headers.set(id, parseDefine(c, id!, code(scope, c), infer(target, c), argParams))
                 }
                 return `${id}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
         }
         if (type === 'struct') {
-                if (!c.code?.headers.has(id)) c.code?.headers.set(id, parseStructHead(c, id, fields))
+                if (!c.headers.has(id)) c.headers.set(id, parseStructHead(c, id, fields))
                 if (!initialValues) return parseStruct(c, id, x.props.id)
                 const ordered: string[] = []
                 for (const key in fields) {
@@ -127,11 +126,11 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
          * headers
          */
         if (type === 'varying') {
-                if (c.code?.vertOutputs.has(id)) return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
+                if (c.vertOutputs.has(id)) return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
                 const field = parseVaryingHead(c, id, infer(target, c))
-                c.code?.fragInputs.set(id, field)
-                c.code?.vertOutputs.set(id, field)
-                c.code?.vertVaryings.set(id, { node: x })
+                c.fragInputs.set(id, field)
+                c.vertOutputs.set(id, field)
+                c.vertVaryings.set(id, { node: x })
                 return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
         }
         if (type === 'builtin') {
@@ -139,20 +138,20 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (id === 'position') return c.label === 'frag' ? 'in.position' : 'out.position'
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (id === 'frag_depth' && c.label === 'frag') {
-                        c.code?.fragOutputs?.set(id, field)
+                        c.fragOutputs.set(id, field)
                         return `out.${id}`
                 }
-                if (c.label === 'compute') c.code?.computeInputs.set(id, field)
-                else if (c.label === 'frag') c.code?.fragInputs.set(id, field)
-                else if (c.label === 'vert') c.code?.vertInputs.set(id, field)
+                if (c.label === 'compute') c.computeInputs.set(id, field)
+                else if (c.label === 'frag') c.fragInputs.set(id, field)
+                else if (c.label === 'vert') c.vertInputs.set(id, field)
                 return `in.${id}`
         }
         if (type === 'attribute' || type === 'instance') {
                 setupEvent(c, id, type, target, x)
-                c.code?.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
+                c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
                 return c.isWebGL ? `${id}` : `in.${id}`
         }
-        if (c.code?.headers.has(id)) return id // @MEMO this guard must be after varying/builtin/attribute
+        if (c.headers.has(id)) return id // @MEMO this guard must be after varying/builtin/attribute
         let head = ''
         if (type === 'uniformArray') {
                 const varType = infer(target, c)
@@ -176,7 +175,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
         }
         if (type === 'constant') head = parseConstantHead(c, id, infer(target, c), code(x, c))
         if (head) {
-                c.code?.headers.set(id, head)
+                c.headers.set(id, head)
                 return id
         }
         return code(x, c)
