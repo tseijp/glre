@@ -6,27 +6,27 @@ import type { Constants, NodeContext, StructFields } from '../types'
 export const parseArray = (items: string[]) => items.filter(Boolean).join(', ')
 
 // only for webgl
-export const parseGather = (c: NodeContext, storageCode: string, indexCode: string, valueType: Constants) => {
+export const parseGather = (c: NodeContext, storage: string, index: string, type: Constants) => {
         const parseSwizzle = () => {
-                if (valueType === 'float') return '.x'
-                if (valueType === 'vec2') return '.xy'
-                if (valueType === 'vec3') return '.xyz'
-                if (valueType === 'vec4') return ''
-                throw new Error(`Unsupported storage scatter type: ${valueType}`)
+                if (type === 'float') return '.x'
+                if (type === 'vec2') return '.xy'
+                if (type === 'vec3') return '.xyz'
+                if (type === 'vec4') return ''
+                throw new Error(`Unsupported storage scatter type: ${type}`)
         }
         const size = storageSize(c.gl?.particleCount)
-        const coordX = `int(${indexCode}) % ${size.x}`
-        const coordY = `int(${indexCode}) / ${size.x}`
-        return `texelFetch(${storageCode}, ivec2(${coordX}, ${coordY}), 0)${parseSwizzle()}`
+        const coordX = `int(${index}) % ${size.x}`
+        const coordY = `int(${index}) / ${size.x}`
+        return `texelFetch(${storage}, ivec2(${coordX}, ${coordY}), 0)${parseSwizzle()}`
 }
 
 // only for webgl
-export const parseScatter = (storageCode: string, valueCode: string, valueType: Constants) => {
-        if (valueType === 'float') return `_${storageCode} = vec4(${valueCode}, 0.0, 0.0, 1.0);`
-        if (valueType === 'vec2') return `_${storageCode} = vec4(${valueCode}, 0.0, 1.0);`
-        if (valueType === 'vec3') return `_${storageCode} = vec4(${valueCode}, 1.0);`
-        if (valueType === 'vec4') return `_${storageCode} = ${valueCode};`
-        throw new Error(`Unsupported storage scatter type: ${valueType}`)
+export const parseScatter = (storage: string, value: string, type: Constants) => {
+        if (type === 'float') return `_${storage} = vec4(${value}, 0.0, 0.0, 1.0);`
+        if (type === 'vec2') return `_${storage} = vec4(${value}, 0.0, 1.0);`
+        if (type === 'vec3') return `_${storage} = vec4(${value}, 1.0);`
+        if (type === 'vec4') return `_${storage} = ${value};`
+        throw new Error(`Unsupported storage scatter type: ${type}`)
 }
 
 export const parseTexture = (c: NodeContext, y: string, z: string, w?: string) => {
@@ -78,26 +78,26 @@ export const parseSwitch = (codes: string[]) => {
         return ret
 }
 
-export const parseDeclare = (c: NodeContext, valueCode: string, varName: string, type: Constants) => {
-        if (c.isWebGL) return `${type} ${varName} = ${valueCode};`
+export const parseDeclare = (c: NodeContext, value: string, varName: string, type: Constants) => {
+        if (c.isWebGL) return `${type} ${varName} = ${value};`
         const wgslType = getConversions(type)
-        return `var ${varName}: ${wgslType} = ${valueCode};`
+        return `var ${varName}: ${wgslType} = ${value};`
 }
 
-export const parseStruct = (c: NodeContext, id: string, instanceId = '', fieldCodes?: string) => {
-        const hasInit = fieldCodes !== undefined
+export const parseStruct = (c: NodeContext, id: string, instanceId = '', fields?: string) => {
+        const hasInit = fields !== undefined
         if (c.isWebGL) {
-                if (hasInit) return `${id} ${instanceId} = ${id}(${fieldCodes});`
+                if (hasInit) return `${id} ${instanceId} = ${id}(${fields});`
                 return `${id} ${instanceId};`
         }
-        if (hasInit) return `var ${instanceId}: ${id} = ${id}(${fieldCodes});`
+        if (hasInit) return `var ${instanceId}: ${id} = ${id}(${fields});`
         return `var ${instanceId}: ${id};`
 }
 
 /**
  * define
  */
-export const parseDefine = (c: NodeContext, id: string, scopeCode: string, returnType: Constants, argParams: [string, Constants][]) => {
+export const parseDefine = (c: NodeContext, id: string, scope: string, returnType: Constants, argParams: [string, Constants][]) => {
         const params: string[] = []
         const ret = []
         if (c?.isWebGL) {
@@ -113,7 +113,7 @@ export const parseDefine = (c: NodeContext, id: string, scopeCode: string, retur
                 if (isVoid) ret.push(`fn ${id}(${params}) {`)
                 else ret.push(`fn ${id}(${params}) -> ${getConversions(returnType, c)} {`)
         }
-        if (scopeCode) ret.push(scopeCode)
+        if (scope) ret.push(scope)
         ret.push('}')
         return ret.join('\n')
 }
@@ -197,19 +197,19 @@ export const parseStorageHead = (c: NodeContext, id: string, type: Constants) =>
         return `@group(${group}) @binding(${binding}) var<storage, read_write> ${id}: array<${wgslType}>;`
 }
 
-export const parseLoop = (c: NodeContext, conditionCode: string, bodyCode: string, conditionType: Constants, id: string) => {
+export const parseLoop = (c: NodeContext, n: string, body: string, type: Constants, id: string) => {
         if (c.isWebGL) {
-                if (conditionType === 'int') return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
-                if (conditionType === 'float') return `for (float ${id} = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
-                if (conditionType === 'vec2') return `for (vec2 ${id} = vec2(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2(1.0)) {\n${bodyCode}\n}`
-                if (conditionType === 'vec3') return `for (vec3 ${id} = vec3(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3(1.0)) {\n${bodyCode}\n}`
-                return `for (int ${id} = 0; ${id} < ${conditionCode}; ${id} += 1) {\n${bodyCode}\n}`
+                if (type === 'int') return `for (int ${id} = 0; ${id} < ${n}; ${id} += 1) {\n${body}\n}`
+                if (type === 'float') return `for (float ${id} = 0.0; ${id} < ${n}; ${id} += 1.0) {\n${body}\n}`
+                if (type === 'vec2') return `for (vec2 ${id} = vec2(0.0); ${id}.x < ${n}.x && ${id}.y < ${n}.y; ${id} += vec2(1.0)) {\n${body}\n}`
+                if (type === 'vec3') return `for (vec3 ${id} = vec3(0.0); ${id}.x < ${n}.x && ${id}.y < ${n}.y && ${id}.z < ${n}.z; ${id} += vec3(1.0)) {\n${body}\n}`
+                return `for (int ${id} = 0; ${id} < ${n}; ${id} += 1) {\n${body}\n}`
         }
-        if (conditionType === 'int') return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
-        if (conditionType === 'float') return `for (var ${id}: f32 = 0.0; ${id} < ${conditionCode}; ${id} += 1.0) {\n${bodyCode}\n}`
-        if (conditionType === 'vec2') return `for (var ${id}: vec2f = vec2f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y; ${id} += vec2f(1.0)) {\n${bodyCode}\n}`
-        if (conditionType === 'vec3') return `for (var ${id}: vec3f = vec3f(0.0); ${id}.x < ${conditionCode}.x && ${id}.y < ${conditionCode}.y && ${id}.z < ${conditionCode}.z; ${id} += vec3f(1.0)) {\n${bodyCode}\n}`
-        return `for (var ${id}: i32 = 0; ${id} < ${conditionCode}; ${id}++) {\n${bodyCode}\n}`
+        if (type === 'int') return `for (var ${id}: i32 = 0; ${id} < ${n}; ${id}++) {\n${body}\n}`
+        if (type === 'float') return `for (var ${id}: f32 = 0.0; ${id} < ${n}; ${id} += 1.0) {\n${body}\n}`
+        if (type === 'vec2') return `for (var ${id}: vec2f = vec2f(0.0); ${id}.x < ${n}.x && ${id}.y < ${n}.y; ${id} += vec2f(1.0)) {\n${body}\n}`
+        if (type === 'vec3') return `for (var ${id}: vec3f = vec3f(0.0); ${id}.x < ${n}.x && ${id}.y < ${n}.y && ${id}.z < ${n}.z; ${id} += vec3f(1.0)) {\n${body}\n}`
+        return `for (var ${id}: i32 = 0; ${id} < ${n}; ${id}++) {\n${body}\n}`
 }
 
 export const parseConstantHead = (c: NodeContext, id: string, type: Constants, value: string) => {

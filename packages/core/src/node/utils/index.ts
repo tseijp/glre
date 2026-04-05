@@ -18,10 +18,14 @@ const parseNumber = (target = 0) => {
         return ret + '.0'
 }
 
+const codeChildren = (children: Y[], c?: NodeContext | null) => {
+        return children.map((child) => code(child, c))
+}
+
 export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string => {
         if (!c) c = {}
         initNodeContext(c)
-        if (is.arr(target)) return parseArray(target.map((child) => code(child, c)))
+        if (is.arr(target)) return parseArray(codeChildren(target, c))
         if (is.str(target)) return target
         if (is.num(target)) return parseNumber(target)
         if (is.bol(target)) return target ? 'true' : 'false'
@@ -45,18 +49,18 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                         ? parseGather(c, code(x, c), code(y, c), infer(target, c))
                         : `${code(x, c)}[${code(y, c)}]`
         if (type === 'scatter') {
-                const [storageNode, indexNode] = x.props.children ?? [] // x is gather node
+                const [storageNode, indexNode] = x.props.children ?? [] // @MEMO x is gather node
                 return c.isWebGL
-                        ? parseScatter(code(storageNode, c), code(y, c), infer(y, c)) // indexNode is not using
+                        ? parseScatter(code(storageNode, c), code(y, c), infer(y, c)) // @MEMO indexNode is not using
                         : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
         }
         if (type === 'ternary') return c.isWebGL ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})` : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
         if (type === 'conversion') {
-                if (x === 'float') if (is.num(y)) return parseNumber(y) // no conversion needed, e.g., float(1.0) → 1.0
+                if (x === 'float') if (is.num(y)) return parseNumber(y) // @MEMO no conversion needed, e.g., float(1.0) → 1.0
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
                 if (x === 'int') if (is.num(y)) return `${y << 0}`
                 if (x === 'uint') if (is.num(y)) return `${y >>> 0}u`
-                return `${getConversions(x, c)}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
+                return `${getConversions(x, c)}(${parseArray(codeChildren(children.slice(1), c))})`
         }
         if (type === 'operator') {
                 if (x === 'not' || x === 'bitNot') return `!${code(y, c)}`
@@ -76,25 +80,25 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'texture') return parseTexture(c, code(y, c), code(z, c), w ? code(w, c) : undefined)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
                 if (c.isWebGL) {
-                        if (x === 'fma') return `(${code(y, c)} * ${code(z, c)} + ${code(w, c)})`
+                        if (x === 'fma') return `(${code(y, c)} * ${code(z, c)} + ${code(w, c)})` // @MEMO GLSL lacks fma builtin
                 } else {
                         if (x === 'texelFetch') return `textureLoad(${code(y, c)}, ${code(z, c)}, ${code(w, c)})`
                         if (x === 'dFdx') return `dpdx(${code(y, c)})`
                         if (x === 'dFdy') return `dpdy(${code(y, c)})`
                 }
-                return `${x}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
+                return `${x}(${parseArray(codeChildren(children.slice(1), c))})`
         }
         /**
          * scopes
          */
-        if (type === 'scope') return children.map((child) => code(child, c)).join('\n')
+        if (type === 'scope') return codeChildren(children, c).join('\n')
         if (type === 'assign') return `${code(x, c)} = ${code(y, c)};`
         if (type === 'return') return `return ${code(x, c)};`
         if (type === 'break') return 'break;'
         if (type === 'continue') return 'continue;'
         if (type === 'loop') return parseLoop(c, code(x, c), code(y, c), infer(x, c), id)
-        if (type === 'if') return parseIf(children.map((child) => code(child, c)))
-        if (type === 'switch') return parseSwitch(children.map((child) => code(child, c)))
+        if (type === 'if') return parseIf(codeChildren(children, c))
+        if (type === 'switch') return parseSwitch(codeChildren(children, c))
         if (type === 'declare') return parseDeclare(c, code(x, c), y?.props?.id, infer(x, c))
         if (type === 'define') {
                 if (!c.code?.headers.has(id)) {
@@ -105,9 +109,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                                 if (!input) argParams.push([`p${i}`, infer(args[i], c)])
                                 else argParams.push([input.name, input.type === 'auto' ? infer(args[i], c) : input.type])
                         }
-                        const scopeCode = code(scope, c)
-                        const returnType = infer(target, c)
-                        c.code?.headers.set(id, parseDefine(c, id!, scopeCode, returnType, argParams))
+                        c.code?.headers.set(id, parseDefine(c, id!, code(scope, c), infer(target, c), argParams))
                 }
                 return `${id}(${parseArray(children.slice(1).map((child) => code(child, c)))})`
         }
@@ -150,7 +152,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 c.code?.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
                 return c.isWebGL ? `${id}` : `in.${id}`
         }
-        if (c.code?.headers.has(id)) return id // must last
+        if (c.code?.headers.has(id)) return id // @MEMO this guard must be after varying/builtin/attribute
         let head = ''
         if (type === 'uniformArray') {
                 const varType = infer(target, c)
