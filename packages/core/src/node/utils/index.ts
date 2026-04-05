@@ -55,7 +55,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'float') if (is.num(y)) return parseNumber(y) // no conversion needed, e.g., float(1.0) → 1.0
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
                 if (x === 'int') if (is.num(y)) return `${y << 0}`
-                if (x === 'uint') if (is.num(y)) return `${y >>> 0}`
+                if (x === 'uint') if (is.num(y)) return `${y >>> 0}u`
                 return `${getConversions(x, c)}(${parseArray(children.slice(1), c)})`
         }
         if (type === 'operator') {
@@ -71,8 +71,7 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
                 if (x === 'saturate') return `clamp(${code(y, c)}, 0.0, 1.0)`
                 if ((x === 'texture' || x === 'texelFetch') && isX(y) && y.type === 'element') {
                         const [tn, ln] = y.props.children || []
-                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture')
-                                return parseTextureArray(c, x, tn, ln, z, w)
+                        if (isX(tn) && tn.type === 'uniformArray' && infer(tn, c) === 'texture') return parseTextureArray(c, x, tn, ln, z, w)
                 }
                 if (x === 'texture') return parseTexture(c, y, z, w)
                 if (x === 'atan2' && c.isWebGL) return `atan(${code(y, c)}, ${code(z, c)})`
@@ -109,16 +108,20 @@ export const code = <T extends C>(target: Y<T>, c?: NodeContext | null): string 
          * headers
          */
         if (type === 'varying') {
-                if (c.code?.vertOutputs.has(id)) return c.isWebGL ? `${id}` : `out.${id}`
+                if (c.code?.vertOutputs.has(id)) return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
                 const field = parseVaryingHead(c, id, infer(target, c))
                 c.code?.fragInputs.set(id, field)
                 c.code?.vertOutputs.set(id, field)
                 c.code?.vertVaryings.set(id, { node: x })
-                return c.isWebGL ? `${id}` : `out.${id}`
+                return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
         }
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(c, id)
-                if (id === 'position') return 'out.position'
+                if (id === 'position') return c.label === 'frag' ? 'in.position' : 'out.position'
+                if (id === 'frag_depth' && c.label === 'frag') {
+                        c.code?.fragOutputs?.set(id, `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`)
+                        return `out.${id}`
+                }
                 const field = `@builtin(${id}) ${id}: ${getConversions(infer(target, c), c)}`
                 if (c.label === 'compute') c.code?.computeInputs.set(id, field)
                 else if (c.label === 'frag') c.code?.fragInputs.set(id, field)

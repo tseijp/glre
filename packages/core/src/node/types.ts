@@ -91,6 +91,7 @@ export interface NodeContext {
         code?: {
                 headers: Map<string, string>
                 fragInputs: Map<string, string>
+                fragOutputs: Map<string, string>
                 vertInputs: Map<string, string>
                 vertOutputs: Map<string, string>
                 vertVaryings: Map<string, VaryingInfo>
