@@ -43,17 +43,19 @@ export const code = <T extends C>(target: Y<T>, c = {} as NodeContext): string =
                 if (!c.isWebGL && isX(x) && infer(x, c) === 'texture') return `${code(x, c)}${is.num(y) ? y : code(y, c)}`
                 return `${code(x, c)}[${code(y, c)}]`
         }
-        if (type === 'gather')
-                return c.isWebGL //
-                        ? parseGather(c, code(x, c), code(y, c), infer(target, c))
-                        : `${code(x, c)}[${code(y, c)}]`
+        if (type === 'gather') {
+                if (c.isWebGL) return parseGather(c, code(x, c), code(y, c), infer(target, c))
+                return `${code(x, c)}[${code(y, c)}]`
+        }
         if (type === 'scatter') {
                 const [storageNode, indexNode] = x.props.children ?? [] // @MEMO x is gather node
-                return c.isWebGL
-                        ? parseScatter(code(storageNode, c), code(y, c), infer(y, c)) // @MEMO indexNode is not using
-                        : `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
+                if (c.isWebGL) return parseScatter(code(storageNode, c), code(y, c), infer(y, c)) // @MEMO indexNode is not using
+                return `${code(storageNode, c)}[${code(indexNode, c)}] = ${code(y, c)};`
         }
-        if (type === 'ternary') return c.isWebGL ? `(${code(z, c)} ? ${code(x, c)} : ${code(y, c)})` : `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
+        if (type === 'ternary') {
+                if (c.isWebGL) return `(${code(z, c)} ? ${code(x, c)}  ${code(y, c)})`
+                return `select(${code(x, c)}, ${code(y, c)}, ${code(z, c)})`
+        }
         if (type === 'conversion') {
                 if (x === 'float') if (is.num(y)) return parseNumber(y) // @MEMO no conversion needed, e.g., float(1.0) → 1.0
                 if (x === 'bool') if (is.bol(y)) return y ? 'true' : 'false'
@@ -126,12 +128,13 @@ export const code = <T extends C>(target: Y<T>, c = {} as NodeContext): string =
          * headers
          */
         if (type === 'varying') {
-                if (c.vertOutputs.has(id)) return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
+                const ret = c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
+                if (c.vertOutputs.has(id)) return ret
                 const field = parseVaryingHead(c, id, infer(target, c))
                 c.fragInputs.set(id, field)
                 c.vertOutputs.set(id, field)
                 c.vertVaryings.set(id, { node: x })
-                return c.isWebGL ? `${id}` : c.label === 'frag' ? `in.${id}` : `out.${id}`
+                return ret
         }
         if (type === 'builtin') {
                 if (c.isWebGL) return getBluiltin(c, id)
@@ -149,7 +152,8 @@ export const code = <T extends C>(target: Y<T>, c = {} as NodeContext): string =
         if (type === 'attribute' || type === 'instance') {
                 setupEvent(c, id, type, target, x)
                 c.vertInputs.set(id, parseAttribHead(c, id, infer(target, c)))
-                return c.isWebGL ? `${id}` : `in.${id}`
+                if (c.isWebGL) return `${id}`
+                return `in.${id}`
         }
         if (c.headers.has(id)) return id // @MEMO this guard must be after varying/builtin/attribute
         let head = ''
