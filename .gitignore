@@ -40,3 +40,4 @@ lerna-error.log*
 
 
 
+.pnpm-store
